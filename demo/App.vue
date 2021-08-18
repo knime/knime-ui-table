@@ -5,10 +5,15 @@ import demoProps from './props.js';
 export default {
     components: {
         Table
-    }    
-}
+    },
+    data() {
+        return {
+            tableProps: Object.freeze(demoProps)
+        };
+    }
+};
 </script>
 
 <template>
-    <Table v-bind="demoProps" />
+  <Table v-bind="tableProps" />
 </template>
