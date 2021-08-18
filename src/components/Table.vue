@@ -1,13 +1,13 @@
 <script>
 import Vue from 'vue';
-import TableControlsTop from '~/components/table/control/TableControlTop';
-import TableControlsBottom from '~/components/table/control/TableControlBottom';
-import TableColumnFilters from '~/components/table/filter/TableColumnFilter';
-import TableHeader from '~/components/table/TableHeader';
-import TableGroup from '~/components/table/TableGroup';
-import TableRow from '~/components/table/TableRow';
-import TableActionButton from '~/components/table/ui/TableActionButton';
-import TablePopover from '~/components/table/popover/TablePopover';
+import TableControlsTop from './control/TableControlTop';
+import TableControlsBottom from './control/TableControlBottom';
+import TableColumnFilters from './filter/TableColumnFilter';
+import TableHeader from './TableHeader';
+import TableGroup from './TableGroup';
+import TableRow from './TableRow';
+import TableActionButton from './ui/TableActionButton';
+import TablePopover from './popover/TablePopover';
 
 import { columnTypes, typeFormatters } from '~/config/table/table.config';
 import { defaultTimeFilter } from '~/config/table/time.config';

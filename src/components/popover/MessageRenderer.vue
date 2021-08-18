@@ -1,5 +1,5 @@
 <script>
-import PopoverPageControls from '~/components/table/popover/PopoverPageControls';
+import PopoverPageControls from './popover/PopoverPageControls';
 import ErrorIcon from '~/webapps-common/ui/assets/img/icons/sign-warning.svg?inline';
 import WarnIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 

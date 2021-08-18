@@ -1,5 +1,5 @@
 <script>
-import TableCollapserToggle from '~/components/table/ui/TableCollapserToggle';
+import TableCollapserToggle from './ui/TableCollapserToggle';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
