@@ -1,9 +1,9 @@
 <script>
-import PopoverPageControls from './popover/PopoverPageControls';
+import PopoverPageControls from './PopoverPageControls';
 import ErrorIcon from '~/webapps-common/ui/assets/img/icons/sign-warning.svg?inline';
 import WarnIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 
-import { capitalize } from '~/util/capitalize';
+import { capitalize } from '../util/capitalize';
 
 /**
  * This popover rendering component is used to display message content when provided
