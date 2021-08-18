@@ -1,0 +1,363 @@
+<script>
+import TableCollapserToggle from '~/components/table/ui/TableCollapserToggle';
+import SubMenu from '~/webapps-common/ui/components/SubMenu';
+import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
+import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+
+/**
+ * A table row element which is used for displaying data in the table body. It offers a
+ * wide range of functionality which is described in the following sections:
+ *
+ * Collapsible content:
+ * This component can be optionally collapsible for showing row-specific details/content.
+ * This expand capability is slotted for flexibility.
+ *
+ * Selection:
+ * Each row can also be selectable- with a checkbox in the first position of the row.
+ *
+ * SubMenu:
+ * A row can display a SubMenu in the last position of the row with row-specific actions
+ * configured via props.
+ *
+ * Editable rows:
+ * A cell in the row can be editable and render an input field or other component to allow
+ * real time interactions and events.
+ *
+ * Cell events:
+ * DOM events are triggered on a cell-by-cell basis for both clicking and hovering. These events
+ * emit information about the data of the cell and the index of the column in the row.
+ *
+ * Dynamic cell content:
+ * Specific columns can be slotted for dynamic rendering methods or configured to use a pre-determined
+ * rendering component with the Vue Component/v-is API.
+ *
+ * @emits rowSelect event when selection is enabled and a row checkbox is toggled.
+ * @emits rowInput event when table cells are clicked, cell input is triggered or a hover event is
+ *    detected.
+ * @emits rowSubMenuClick event when a row SubMenu action is triggered.
+ */
+export default {
+    components: {
+        TableCollapserToggle,
+        SubMenu,
+        Checkbox,
+        FunctionButton,
+        OptionsIcon,
+        CloseIcon
+    },
+    props: {
+        row: {
+            type: Array,
+            default: () => []
+        },
+        formatters: {
+            type: Array,
+            default: () => []
+        },
+        classGenerators: {
+            type: Array,
+            default: () => []
+        },
+        editableColumns: {
+            type: [Object, Array, String],
+            default: () => []
+        },
+        slottedColumns: {
+            type: Array,
+            default: () => []
+        },
+        popoverColumns: {
+            type: Array,
+            default: () => []
+        },
+        columnWidths: {
+            type: Array,
+            default: () => []
+        },
+        showCollapser: {
+            type: Boolean,
+            default: false
+        },
+        showSelection: {
+            type: Boolean,
+            default: true
+        },
+        subMenuItems: {
+            type: Array,
+            default: () => []
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data() {
+        return {
+            showContent: false
+        };
+    },
+    computed: {
+        classes() {
+            return this.row.map((item, ind) => this.classGenerators[ind].map(classItem => {
+                if (typeof classItem === 'function') {
+                    return classItem(item);
+                }
+                if (typeof classItem === 'object') {
+                    return classItem[item];
+                }
+                return classItem;
+            }));
+        }
+    },
+    methods: {
+        onRowExpand() {
+            this.showContent = !this.showContent;
+        },
+        onSelect(value) {
+            this.$emit('rowSelect', value, false);
+        },
+        onCellClick(event) {
+            if (event?.clickable) {
+                this.$emit('rowInput', {
+                    ...event,
+                    type: 'click',
+                    cell: this.$refs.dataCell[event.colInd],
+                    value: null
+                });
+            }
+        },
+        onInput(val, ind) {
+            this.$emit('rowInput', { type: 'input', cell: this.$refs.dataCell[ind], value: val });
+        },
+        onSubMenuItemClick(event, clickedItem) {
+            this.$emit('rowSubMenuClick', clickedItem);
+            event.preventDefault();
+            return false;
+        },
+        isClickable(data, ind) {
+            if (!data || data === '-' || !this.popoverColumns.includes(ind)) {
+                return false;
+            }
+            return true;
+        }
+    }
+};
+</script>
+
+<template>
+  <span>
+    <tr
+      v-if="row.length > 0"
+      :class="['row', { 'no-selection': !showSelection }, { 'no-sub-menu': !subMenuItems.length }]"
+    >
+      <TableCollapserToggle
+        v-if="showCollapser"
+        :expanded="showContent"
+        class="collapser-cell"
+        @collapserExpand="onRowExpand"
+      />
+      <td
+        v-if="showSelection"
+        class="select-cell"
+      >
+        <Checkbox
+          :value="isSelected"
+          @input="onSelect"
+        />
+      </td>
+      <td
+        v-for="(data, ind) in row"
+        ref="dataCell"
+        :key="ind"
+        :class="[classes[ind], 'data-cell', { clickable: isClickable(data, ind) }]"
+        :style="{ width: `calc(${columnWidths[ind] || 100}%)` }"
+        :title="!isClickable(data, ind) ? data : null"
+        @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
+        @input="(val) => onInput(val, ind)"
+      >
+        <slot
+          v-if="slottedColumns.includes(ind)"
+          :name="`cellContent${ind}`"
+          :row="row"
+          :ind="ind"
+        />
+        <Component
+          :is="editableColumns[ind]"
+          v-else-if="editableColumns[ind]"
+          v-bind="data"
+        >
+          <slot name="componentSlot" />
+        </Component>
+        <span v-else>
+          {{ formatters[ind](data) }}
+        </span>
+      </td>
+      <td
+        v-if="subMenuItems && subMenuItems.length"
+        button-title="actions"
+        class="action"
+      >
+        <SubMenu
+          :items="subMenuItems"
+          button-title="actions"
+          @item-click="onSubMenuItemClick"
+        >
+          <OptionsIcon />
+        </SubMenu>
+      </td>
+    </tr>
+    <tr
+      v-else
+      class="row empty-row"
+    >
+      <td>
+        -
+      </td>
+    </tr>
+    <tr
+      v-if="showContent"
+      class="collapser-row"
+    >
+      <td class="expandable-content">
+        <FunctionButton
+          class="collapser-button"
+          @click="onRowExpand"
+        >
+          <CloseIcon />
+        </FunctionButton>
+        <slot name="rowCollapserContent" />
+      </td>
+    </tr>
+  </span>
+</template>
+
+<style lang="postcss" scoped>
+@import "webapps-common/ui/css/variables";
+
+tr.row {
+  height: 40px;
+  margin-bottom: 1px;
+  transition: height 0.3s, box-shadow 0.15s;
+  background-color: var(--knime-white);
+
+  &.empty-row {
+    padding-left: 20px;
+  }
+
+  &.no-sub-menu {
+    padding-right: 10px;
+  }
+
+  &.no-selection {
+    padding-left: 10px;
+  }
+
+  & td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 40px;
+    padding: 0;
+
+    &.collapser-cell {
+      min-width: 30px;
+    }
+
+    &.select-cell {
+      min-width: 30px;
+      width: 30px;
+
+      & >>> label {
+        padding: 0;
+        display: inline;
+        max-width: unset;
+        bottom: 3px;
+        left: 8px;
+      }
+    }
+
+    &.data-cell {
+      margin-left: 10px;
+    }
+
+    &.action {
+      align-items: center;
+      display: flex;
+      overflow: visible;
+      min-width: 30px;
+
+      & svg {
+        margin: 0 auto;
+        width: 25px;
+        height: 25px;
+        stroke-width: calc(32px / 25);
+        stroke: var(--knime-dove-gray);
+      }
+
+      & >>> ul {
+        margin-top: -10px;
+        right: 10px;
+      }
+
+      & >>> .submenu-toggle {
+        display: flex;
+        align-self: stretch;
+        align-items: center;
+        height: 40px;
+        width: 30px;
+        border-radius: 0;
+        transition: background-color 0.15s;
+      }
+    }
+
+    &.clickable {
+      cursor: pointer;
+      color: var(--knime-dove-gray);
+
+      &:hover {
+        color: var(--knime-masala);
+      }
+    }
+  }
+
+  &:hover {
+    outline: none;
+    box-shadow: 1px 1px 4px 0 var(--knime-gray-dark-semi);
+  }
+
+  & a {
+    outline: none;
+  }
+}
+
+tr.collapser-row {
+  background-color: var(--knime-gray-ultra-light);
+  padding: 30px 50px 20px 50px;
+  margin-bottom: 2px;
+  position: relative;
+
+  & td.expandable-content {
+    & .collapser-button {
+      position: absolute;
+      right: 50px;
+      top: 20px;
+      height: 24px;
+      width: 24px;
+      padding: 3px;
+      z-index: 1;
+
+      & svg {
+        position: relative;
+        margin: auto;
+        width: 14px;
+        height: 14px;
+        stroke-width: calc(32px / 12);
+        stroke: var(--knime-masala);
+        top: 0;
+      }
+    }
+  }
+}
+</style>
