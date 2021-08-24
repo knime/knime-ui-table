@@ -7,7 +7,7 @@ import TableFilterInputField from '../filter/TableFilterInputField';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import SearchIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 
-import { tableTimeFilters } from '~/config/time.config';
+import { tableTimeFilters } from '../../config/time.config';
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,

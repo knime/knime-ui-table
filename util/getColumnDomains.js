@@ -1,4 +1,4 @@
-import { columnTypes, columnTypeEmptyFilters } from '~/config/table.config';
+import { columnTypes, columnTypeEmptyFilters } from '../config/table.config';
 
 export const getColumnDomains = (columnFilterConfig) => {
     let {

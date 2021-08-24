@@ -9,16 +9,16 @@ import TableRow from './TableRow';
 import TableActionButton from './ui/TableActionButton';
 import TablePopover from './popover/TablePopover';
 
-import { columnTypes, typeFormatters } from '~/config/table.config';
-import { defaultTimeFilter } from '~/config/time.config';
+import { columnTypes, typeFormatters } from '../config/table.config';
+import { defaultTimeFilter } from '../config/time.config';
 
-import { getColumnDomains, getEmptyFilters } from '~/util/getColumnDomains';
-import { getNextPage } from '~/util/getNextPage';
-import { getProcessedRowInd } from '~/util/processSelection';
-import { filter } from '~/util/transform/filter';
-import { group } from '~/util/transform/group';
-import { sort } from '~/util/transform/sort';
-import { paginate } from '~/util/transform/paginate';
+import { getColumnDomains, getEmptyFilters } from '../util/getColumnDomains';
+import { getNextPage } from '../util/getNextPage';
+import { getProcessedRowInd } from '../util/processSelection';
+import { filter } from '../util/transform/filter';
+import { group } from '../util/transform/group';
+import { sort } from '../util/transform/sort';
+import { paginate } from '../util/transform/paginate';
 
 /**
  * @see README.md

@@ -2,7 +2,7 @@
 import TableControlsBase from './TableControlBase';
 import TableControlDropdown from './TableControlDropdown';
 
-import { tablePageSizes } from '~/config/table.config';
+import { tablePageSizes } from '../../config/table.config';
 
 /**
  * Table controls for the bottom of the table optionally consisting of page controls

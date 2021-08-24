@@ -1,5 +1,5 @@
 <script>
-import { columnTypes } from '~/config/table.config';
+import { columnTypes } from '../../config/table.config';
 import { mixin as clickaway } from 'vue-clickaway';
 import StringRenderer from './StringRenderer';
 import ObjectRenderer from './ObjectRenderer';

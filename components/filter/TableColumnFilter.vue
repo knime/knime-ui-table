@@ -4,7 +4,7 @@ import TableFilterInputField from './TableFilterInputField';
 import TableFilterDropdown from './TableFilterDropdown';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import { columnTypes, columnFilterTypes } from '~/config/table.config';
+import { columnTypes, columnFilterTypes } from '../../config/table.config';
 
 /**
  * A table header element which dynamically created table data elements containing

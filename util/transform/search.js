@@ -1,4 +1,4 @@
-import { columnTypes } from '~/config/table.config';
+import { columnTypes } from '../../config/table.config';
 
 /**
  * Utility function to search a single cell. Formatters are required for the following table data types:

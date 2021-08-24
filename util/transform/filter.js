@@ -1,5 +1,5 @@
-import { columnTypes } from '~/config/table.config';
-import { tableTimeFilters, checkTimeFilter } from '~/config/time.config';
+import { columnTypes } from '../../config/table.config';
+import { tableTimeFilters, checkTimeFilter } from '../../config/time.config';
 import { searchRow, searchCell } from './search';
 
 /**
