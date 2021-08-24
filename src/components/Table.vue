@@ -180,6 +180,7 @@ export default {
             sortedData: null,
             processedData: null,
             processLevel: null,
+
             // UI FIELDS
             // column control
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
@@ -821,7 +822,7 @@ export default {
       />
     </table>
     <TablePopover
-      v-if="popoverTarget && typeof popoverData !== 'undefined'"
+      v-if="popoverTarget && (typeof popoverData !== 'undefined')"
       ref="tablePopover"
       initially-expanded
       :use-button="false"
