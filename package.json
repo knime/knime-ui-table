@@ -4,11 +4,11 @@
   "description": "JS Data Table for KNIME",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve src/dev.js",
-    "build": "vue-cli-service build --no-clean --target lib --formats umd-min src/components/UiComponent.vue",
+    "demo": "vue serve demo/App.vue",
+    "build": "vue-cli-service build --no-clean --target lib --formats umd-min src/components/Table.vue",
     "build:dev": "npm run build -- --watch",
     "dev-inte": "concurrently -n server,app -c yellow,blue \"http-server -c-1 --cors -p 4000 dist/ http-server\" \"npm run build:dev\"",
-    "inspect": "vue-cli-service inspect",
+    "inspect": "vue inspect",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint --ext .js,.vue .",
     "lint:css": "stylelint '**/*.{css,vue}'"
@@ -18,6 +18,9 @@
   "dependencies": {
     "consola": "2.10.1",
     "core-js": "3.6.5",
+    "normalize.css": "8.0.1",
+    "fontsource-roboto": "3.0.3",
+    "fontsource-roboto-mono": "3.0.3",
     "vue": "2.6.11",
     "vuex": "3.0.1",
     "vue-clickaway": "2.2.2",

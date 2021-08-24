@@ -40,6 +40,7 @@ module.exports = {
     },
     // allow relative paths for serving font files in the AP
     publicPath: '',
+
     // required to override non-IE11 compliant package build settings
     transpileDependencies: ['v-calendar']
 };
