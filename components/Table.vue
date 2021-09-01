@@ -464,6 +464,7 @@ export default {
          */
         filterData() {
             consola.trace('Filtering data.');
+            
             // declare locally to avoid asynchronous behavior
             let x = filter({
                 data: this.allData,
