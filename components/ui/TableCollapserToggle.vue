@@ -43,7 +43,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
 
 .row-collapser-toggle {
   height: 40px;

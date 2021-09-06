@@ -192,7 +192,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
 
 .base-controls {
   line-height: 40px;

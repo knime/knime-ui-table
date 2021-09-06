@@ -129,7 +129,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
 
 thead {
   height: 39px;

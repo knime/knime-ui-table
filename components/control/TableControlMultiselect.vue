@@ -165,9 +165,6 @@ export default {
             this.getNextElement(1).focus();
         },
         onDragStart(event, ind) {
-            if (typeof event.dataTransfer.setDragImage !== 'function') {
-                return; // only for IE11 & Edge
-            }
             consola.trace('Drag triggered: ', event, ind);
             this.dragInd = ind;
             this.dragGhost = this.$refs.item[ind].querySelector('label').cloneNode(true);
@@ -268,7 +265,6 @@ export default {
 </template>
 
 <style scoped lang="postcss">
-@import "webapps-common/ui/css/variables";
 
 .multiselect {
   position: relative;

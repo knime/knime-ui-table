@@ -176,7 +176,6 @@ export default {
 
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
 
 .popover {
   position: absolute;
@@ -260,14 +259,6 @@ export default {
       width: 14px;
       stroke-width: calc(32px / 14);
     }
-  }
-}
-
-@media all and (-ms-high-contrast: none) {
-  /*  IE11 hack */
-  :root {
-    --popoverTopMargin: 18px;
-    --popoverArrowSize: 15px;
   }
 }
 </style>
