@@ -79,7 +79,7 @@
       "lastRun": "2021-08-18T00:40:00.003+02:00[Europe/Berlin]",
       "lastJob": "375e5089-b923-4790-9522-2359490afb5b",
       "executionRetries": 0,
-      "user": "gabriel.einsdorf",
+      "user": "example-user",
       "configuration": {},
       "status": true,
       "nextScheduledExecution": "2021-08-19T00:40+02:00[Europe/Berlin]"
@@ -87,7 +87,7 @@
     {
       "id": "c1bbfc3b-3063-495f-af9f-aa7b04b7b20b",
       "numFailures": 0,
-      "workflowPath": "/Users/vincenzo.tursi/Metro de Madrid/KNIME_server_test_v2.knwf 1",
+      "workflowPath": "/Users/example-user/Metro de Madrid/KNIME_server_test_v2.knwf 1",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -161,7 +161,7 @@
       },
       "notifications": {},
       "executionRetries": 0,
-      "user": "roland.burger",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
@@ -169,7 +169,7 @@
     {
       "id": "a1523244-9019-4076-9cf8-da98b200ab5f",
       "numFailures": 0,
-      "workflowPath": "/Users/kathrin.melcher/Instrumentation/Summit_Regestraitions/Get_latest_registraitions",
+      "workflowPath": "/Users/example-user/Instrumentation/Summit_Regestraitions/Get_latest_registraitions",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -249,7 +249,7 @@
       "lastRun": "2020-11-25T12:00:00.003+01:00[Europe/Berlin]",
       "lastJob": "a9264668-404c-4cb1-9b02-7584aa1b6d16",
       "executionRetries": 0,
-      "user": "kathrin.melcher",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T18:00+02:00[Europe/Berlin]"
@@ -257,7 +257,7 @@
     {
       "id": "159b8b49-aa0f-416c-9b42-f19d6f64abf6",
       "numFailures": 0,
-      "workflowPath": "/Users/roland.burger/list_files_test/list_test",
+      "workflowPath": "/Users/example-user/list_files_test/list_test",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -333,7 +333,7 @@
       "lastRun": "2021-05-07T10:21+02:00[Europe/Berlin]",
       "lastJob": "320b45c9-0ec0-43a5-9012-bb53d39c9f64",
       "executionRetries": 0,
-      "user": "roland.burger",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:21+02:00[Europe/Berlin]"
@@ -341,7 +341,7 @@
     {
       "id": "09be7e8a-138a-4586-8dcf-fdf5925fda43",
       "numFailures": 0,
-      "workflowPath": "/Users/marten.pfannenschmidt/xx_old/14048_google_auth/14048_connect_to_google",
+      "workflowPath": "/Users/example-user/xx_old/14048_google_auth/14048_connect_to_google",
       "reset": false,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -413,7 +413,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["marten.pfannenschmidt@knime.com"] },
+      "notifications": { "recipients": ["example-user@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -421,11 +421,11 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["marten.pfannenschmidt@knime.com"]
+          "recipients": ["example-user@knime.com"]
         }
       ],
       "executionRetries": 0,
-      "user": "marten.pfannenschmidt",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:15+02:00[Europe/Berlin]"
@@ -433,7 +433,7 @@
     {
       "id": "d7a3a54c-6167-464f-8bb1-5636fe40729e",
       "numFailures": 0,
-      "workflowPath": "/Users/marten.pfannenschmidt/xx_old/14048_google_auth/14048_connect_to_google(2)",
+      "workflowPath": "/Users/example-user/xx_old/14048_google_auth/14048_connect_to_google(2)",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -505,7 +505,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["marten.pfannenschmidt@knime.com"] },
+      "notifications": { "recipients": ["example-user@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -513,11 +513,11 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["marten.pfannenschmidt@knime.com"]
+          "recipients": ["example-user@knime.com"]
         }
       ],
       "executionRetries": 0,
-      "user": "marten.pfannenschmidt",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
@@ -525,7 +525,7 @@
     {
       "id": "6dd33fbd-dc41-48fe-9149-580eef6ff1fa",
       "numFailures": 0,
-      "workflowPath": "/Users/tobias.schmidt/housing_heatmap_minimal",
+      "workflowPath": "/Users/example-user/housing_heatmap_minimal",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -601,7 +601,7 @@
       "lastRun": "2020-12-13T00:39:00.007+01:00[Europe/Berlin]",
       "lastJob": "d86bb6ae-a746-4663-be07-26e07eecbd4e",
       "executionRetries": 0,
-      "user": "tobias.schmidt",
+      "user": "example-user",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:39+02:00[Europe/Berlin]"
@@ -681,7 +681,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["bw@knime.com"] },
+      "notifications": { "recipients": ["example-user@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -689,17 +689,17 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": true,
-          "recipients": ["bw@knime.com"]
+          "recipients": ["example-user@knime.com"]
         }
       ],
       "lastRun": "2021-08-18T06:22:00.017+02:00[Europe/Berlin]",
       "lastJob": "d3244126-9acc-43a5-ae04-a117f368632d",
       "executionRetries": 0,
-      "user": "bernd.wiswedel",
+      "user": "example-user",
       "configuration": {
         "ap-version-127": "4.5.0",
         "jira-creds-126": {
-          "username": "bernd.wiswedel@knime.com",
+          "username": "example-user@knime.com",
           "password": "*************"
         }
       },
@@ -782,7 +782,7 @@
         }
       },
       "notifications": {
-        "recipients": ["lars.schweikardt@knime.com", "dev@knime.com"],
+        "recipients": ["example-user@knime.com", "example-user@knime.com"],
         "reportFormats": ["HTML"]
       },
       "actions": [
@@ -792,7 +792,7 @@
           "onFailure": false,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["dev@knime.com"],
+          "recipients": ["example-user@knime.com"],
           "reportFormats": ["HTML"]
         },
         {
@@ -801,14 +801,14 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["lars.schweikardt@knime.com"],
+          "recipients": ["example-user@knime.com"],
           "reportFormats": ["HTML"]
         }
       ],
       "lastRun": "2021-08-15T12:05:00.037+02:00[Europe/Berlin]",
       "lastJob": "34bf83b8-d518-4b76-8eb4-c4095beafb15",
       "executionRetries": 0,
-      "user": "lars.schweikardt",
+      "user": "example-user",
       "configuration": {},
       "status": true,
       "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]"
@@ -880,7 +880,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["bernd.wiswedel@knime.com"] },
+      "notifications": { "recipients": ["example-user@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -888,16 +888,16 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["bernd.wiswedel@knime.com"]
+          "recipients": ["example-user@knime.com"]
         }
       ],
       "lastRun": "2021-08-16T00:00:00.013+02:00[Europe/Berlin]",
       "lastJob": "73ec8bc3-b65e-416e-ab5c-8c3fc877de83",
       "executionRetries": 0,
-      "user": "bernd.wiswedel",
+      "user": "example-user",
       "configuration": {
         "google-credentials-29": {
-          "username": "bernd.wiswedel@knime.com",
+          "username": "example-user@knime.com",
           "password": "*************"
         }
       },
@@ -979,7 +979,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["bernd.wiswedel@knime.com"] },
+      "notifications": { "recipients": ["example-user@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -987,16 +987,16 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["bernd.wiswedel@knime.com"]
+          "recipients": ["example-user@knime.com"]
         }
       ],
       "lastRun": "2021-08-18T00:35:00.010+02:00[Europe/Berlin]",
       "lastJob": "c0ae11f5-b59d-4041-8fd3-536ee399b4b9",
       "executionRetries": 0,
-      "user": "bernd.wiswedel",
+      "user": "example-user",
       "configuration": {
         "google-credentials-29": {
-          "username": "bernd.wiswedel@knime.com",
+          "username": "example-user@knime.com",
           "password": "*************"
         }
       },
