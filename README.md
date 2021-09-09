@@ -1,19 +1,20 @@
 # KNIME-Table for KNIME® Analytics Platform & WebPortal
 
 This repository contains the table component used by the WebPortal and by the Table view for the Analytics Platform. It is based on the [Vue] JavaScript framework.
-The knime-ui-table repository is included into those projects as a git submodule. 
+The knime-ui-table repository is included into those projects as a git submodule.
 It itself uses webapps-common as submodule.
 
 ## Development
 
 ### Prerequisites
 
-* Install [Node.js **Version 14**][node].
-* Only for test coverage uploads to SonarQube: you also need [Java]™ 8 or 11.
+- Install [Node.js **Version 14**][node].
+- Only for test coverage uploads to SonarQube: you also need [Java]™ 8 or 11.
 
 Newer versions may also work, but have not been tested.
 
 Pull the contained [git submodules](https://stackoverflow.com/a/4438292/5134084) with
+
 ```sh
 git submodule update --init
 ```
@@ -26,8 +27,8 @@ npm install
 
 and then use the following commands. For detailed explanations see [Vue CLI docs]:
 
-
 ### Launch development server
+
 Compiles all JavaScript sources, assets, … and starts a local web server with a demo app for development.
 Includes hot-reloading, so code changes will be visible in the browser immediately.
 
@@ -38,6 +39,7 @@ npm run demo
 ### Testing
 
 #### Running unit tests
+
 This project contains unit tests written with [jest].
 They are run with
 
@@ -60,6 +62,7 @@ The output can be found in the `coverage` folder. It contains a browseable html 
 ### Running security audit
 
 npm provides a check against known security issues of used dependencies. Run it by calling
+
 ```sh
 npm audit
 ```
@@ -82,7 +85,25 @@ Results are saved to `/dist`.
 
 ## Embedding the KNIME-Table in your Vue application
 
-TODO
+```js
+import { Table } from "knime-ui-table";
+
+export default {
+  // ...
+  components: {
+    Table,
+  },
+  // ...
+};
+```
+
+Use in Template
+
+```xml
+<template>
+  <Table />
+</template>
+```
 
 ### Requirements
 
@@ -91,20 +112,10 @@ The KNIME-Table expects that the embedding app provides the following:
 - Vue and Consola compatible to the versions defined in [`package.json`](package.json)
 - global `window.Vue` object
 - global `window.consola` instance for logging
-- CSS variables as defined in the `webapps-common` project.
-  They are not included in the build in order to avoid duplication.
-- calls the method 'initStore' as described in the next section, before PageBuilder store actions and the component are
-  being used
 
-### Usage example
-
-For example, in a Nuxt app, the following middleware registers the `PageBuilder` component globally and initializes
-the PageBuilder store:
-
-
-[Vue]: https://vuejs.org/
-[Vue CLI docs]: https://cli.vuejs.org/guide/
-[Vue library]: https://cli.vuejs.org/guide/build-targets.html#library
+[vue]: https://vuejs.org/
+[vue cli docs]: https://cli.vuejs.org/guide/
+[vue library]: https://cli.vuejs.org/guide/build-targets.html#library
 [jest]: https://jestjs.io/en
-[LCOV]: https://github.com/linux-test-project/lcov
-[Clover]: http://openclover.org/
+[lcov]: https://github.com/linux-test-project/lcov
+[clover]: http://openclover.org/

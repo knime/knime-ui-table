@@ -1,6 +1,6 @@
 {
   "name": "knime-ui-table",
-  "version": "0.1.22",
+  "version": "0.1.24",
   "description": "JS Data Table for KNIME",
   "scripts": {
     "audit": "check-audit --production",
@@ -15,7 +15,7 @@
     "opensourcecredits": "npm run --prefix webapps-common/ opensourcecredits",
     "test:unit": "jest"
   },
-  "license": "UNLICENSED",
+  "license": "See the file LICENSE",
   "author": "KNIME AG, Zurich, Switzerland",
   "main": "dist/KNIME-Table.common.js",
   "files": [
