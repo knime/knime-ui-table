@@ -1,5 +1,5 @@
 {
-  "name": "knime-ui-table",
+  "name": "@knime/knime-ui-table",
   "version": "0.1.27",
   "description": "JS Data Table for KNIME",
   "scripts": {
