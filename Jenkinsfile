@@ -68,7 +68,8 @@ timeout(time: 15, unit: 'MINUTES') {
                 if (currentBuild.result != 'UNSTABLE') {
                     stage('Build and deploy to npm') {
                         env.lastStage = env.STAGE_NAME
-                        withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN')]) {
+                        withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN'),
+                            gitUsernamePassword(credentialsId: 'bitbucket-jenkins')]) {
                             sh '''
                                 npm run build
                                 npm version patch
