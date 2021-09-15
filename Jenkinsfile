@@ -66,10 +66,12 @@ timeout(time: 15, unit: 'MINUTES') {
                     }
                 }
                 if (currentBuild.result != 'UNSTABLE') {
-                    stage('Deploy to npm') {
+                    stage('Build and deploy to npm') {
                         env.lastStage = env.STAGE_NAME
                         withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN')]) {
                             sh '''
+                                npm run build
+                                npm version patch
                                 echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" >> ~/.npmrc
                                 npm publish 
                             '''
