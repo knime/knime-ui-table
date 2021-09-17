@@ -85,7 +85,7 @@ timeout(time: 15, unit: 'MINUTES') {
                             }
                         }
                     } catch (ex) {
-                        def time = (System.currentTimeMillis()) / 1000
+                        def time = "0.042" 
                         def timestamp = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
                             .format(java.time.LocalDateTime.now())
                         writeFile file: 'publish.xml', text:
