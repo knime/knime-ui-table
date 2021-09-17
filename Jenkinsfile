@@ -55,6 +55,14 @@ timeout(time: 15, unit: 'MINUTES') {
                 }
                 junit 'coverage/junit.xml'
             }
+            if (currentBuild.result != 'UNSTABLE') {
+                stage('NPM Build') {
+                    env.lastStage = env.STAGE_NAME
+                    sh '''
+                        npm run build
+                    '''
+                }
+            }
 
             if (BRANCH_NAME == "master") {
                 stage('Upload Coverage data') {
@@ -66,15 +74,31 @@ timeout(time: 15, unit: 'MINUTES') {
                     }
                 }
                 if (currentBuild.result != 'UNSTABLE') {
-                    stage('Build and deploy to npm') {
-                        env.lastStage = env.STAGE_NAME
-                        withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN'),]) {
-                            sh '''
-                                npm run build
-                                echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" >> ~/.npmrc
-                                npm publish  || true
-                            '''
+                    try {
+                        stage('Deploy to npm') {
+                            env.lastStage = env.STAGE_NAME
+                            withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN'),]) {
+                                sh '''
+                                    echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" >> ~/.npmrc
+                                    npm publish --quiet
+                                '''
+                            }
                         }
+                    } catch (ex) {
+                        def time = (System.currentTimeMillis()) / 1000
+                        def timestamp = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+                            .format(java.time.LocalDateTime.now())
+                        writeFile file: 'publish.xml', text:
+                            """<?xml version="1.0" encoding="UTF-8"?>
+                                <testsuite tests="1" name="Publish" errors="1" failures="0" time="${time}" timestamp="${timestamp}">
+                                    <testcase classname="org.knime.publishing" name="NPM Publish" time="${time}">
+                                        <error type="general.publishing.error" message="${ex?.message.replace('"', '&quot;')}">NPM Publishing failed, most likely the version has not been increased</error>
+                                    </testcase>
+                                </testsuite>
+                            """
+                        currentBuild.result = 'UNSTABLE'
+                        env.testFailure = true
+                        junit 'publish.xml'
                     }
                 }
             }
@@ -83,5 +107,7 @@ timeout(time: 15, unit: 'MINUTES') {
     } catch (ex) {
         currentBuild.result = 'FAILED'
         throw ex
+    } finally {
+        notifications.notifyBuild(currentBuild.result)
     }
 }
