@@ -6,7 +6,7 @@ import ObjectRenderer from '~/components/popover/ObjectRenderer';
 import ArrayRenderer from '~/components/popover/ArrayRenderer';
 import MessageRenderer from '~/components/popover/MessageRenderer';
 
-jest.mock('vue-clickaway', () => ({
+jest.mock('vue-clickaway2', () => ({
     mixin: {}
 }), { virtual: true });
 

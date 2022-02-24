@@ -9,8 +9,9 @@
     "coverage": "npm run test:unit -- --coverage",
     "demo": "ESLINT_NO_DEV_ERRORS='true' vue serve demo/Demo.vue",
     "inspect": "vue inspect",
-    "lint": "npm run lint:js && npm run lint:css",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
     "lint:js": "eslint --ext .js,.vue .",
+    "lint:json": "eslint --ext .json .",
     "lint:css": "stylelint '**/*.{css,vue}'",
     "opensourcecredits": "npm run --prefix webapps-common/ opensourcecredits",
     "test:unit": "jest",
@@ -26,7 +27,7 @@
     "README.md"
   ],
   "dependencies": {
-    "vue-clickaway": "2.2.2"
+    "vue-clickaway2": "2.3.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.5.4",
@@ -38,9 +39,11 @@
     "consola": "2.10.1",
     "core-js": "3.6.5",
     "cross-var": "1.1.0",
-    "eslint": "5.16.0",
-    "eslint-plugin-vue": "7.10.0",
+    "eslint": "7.32.0",
+    "eslint-plugin-jest": "25.2.4",
     "eslint-plugin-jest-formatting": "3.0.0",
+    "eslint-plugin-jsonc": "2.0.0",
+    "eslint-plugin-vue": "7.10.0",
     "fontsource-roboto": "3.0.3",
     "fontsource-roboto-mono": "3.0.3",
     "jest": "24.9.0",
@@ -59,7 +62,7 @@
     "vue": "2.6.*",
     "vue-jest": "3.0.4",
     "vue-svg-loader": "0.16.0",
-    "vue-template-compiler": "2.6.11",
+    "vue-template-compiler": "2.6.14",
     "webapps-common": "file:webapps-common"
   },
   "peerDependencies": {

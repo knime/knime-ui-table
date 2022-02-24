@@ -1,6 +1,6 @@
 <script>
 import { columnTypes } from '../../config/table.config';
-import { mixin as clickaway } from 'vue-clickaway';
+import { mixin as clickaway } from 'vue-clickaway2';
 import StringRenderer from './StringRenderer';
 import ObjectRenderer from './ObjectRenderer';
 import ArrayRenderer from './ArrayRenderer';
@@ -74,16 +74,16 @@ export default {
                 return this.renderer.type;
             }
             switch (this.renderer) {
-            case columnTypes.Nominal:
-            case columnTypes.String:
-                return 'StringRenderer';
-            case columnTypes.Array:
-                return 'ArrayRenderer';
-            case columnTypes.DateTime:
-            case columnTypes.Number:
-            case columnTypes.Boolean:
-            default:
-                return 'ObjectRenderer';
+                case columnTypes.Nominal:
+                case columnTypes.String:
+                    return 'StringRenderer';
+                case columnTypes.Array:
+                    return 'ArrayRenderer';
+                case columnTypes.DateTime:
+                case columnTypes.Number:
+                case columnTypes.Boolean:
+                default:
+                    return 'ObjectRenderer';
             }
         },
         processedData() {

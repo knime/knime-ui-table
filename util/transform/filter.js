@@ -89,19 +89,19 @@ export const filter = filterConfig => {
                     return false;
                 }
                 switch (columnType) {
-                case columnTypes.Nominal:
-                    return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue);
-                case columnTypes.Number:
-                case columnTypes.String:
-                case columnTypes.DateTime:
-                case columnTypes.Object:
-                case columnTypes.Array:
-                    return searchCell(rowValue, columnType, colFormatter, filterVal);
-                case columnTypes.Boolean:
-                    return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue.toString());
-                // return filterVal.includes(rowValue.toString());
-                default:
-                    return true;
+                    case columnTypes.Nominal:
+                        return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue);
+                    case columnTypes.Number:
+                    case columnTypes.String:
+                    case columnTypes.DateTime:
+                    case columnTypes.Object:
+                    case columnTypes.Array:
+                        return searchCell(rowValue, columnType, colFormatter, filterVal);
+                    case columnTypes.Boolean:
+                        return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue.toString());
+                        // return filterVal.includes(rowValue.toString());
+                    default:
+                        return true;
                 }
             });
             if (inFilter) {

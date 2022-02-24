@@ -21,23 +21,23 @@ export const searchCell = (field, type, formatter, query) => {
     try {
         let formattedData;
         switch (type) {
-        case columnTypes.Number:
-        case columnTypes.String:
-        case columnTypes.Nominal:
-        case columnTypes.DateTime:
-        case columnTypes.Boolean:
-            formattedData = formatter(field);
-            break;
-        case columnTypes.Array:
-        case columnTypes.Object:
-            formattedData = JSON.stringify(field);
-            // search both JSON data and displayed value if custom formatter provided
-            if (formatter?.name && !columnTypes[formatter.name]) {
-                formattedData += formatter(field);
-            }
-            break;
-        default:
-            formattedData = field.toString();
+            case columnTypes.Number:
+            case columnTypes.String:
+            case columnTypes.Nominal:
+            case columnTypes.DateTime:
+            case columnTypes.Boolean:
+                formattedData = formatter(field);
+                break;
+            case columnTypes.Array:
+            case columnTypes.Object:
+                formattedData = JSON.stringify(field);
+                // search both JSON data and displayed value if custom formatter provided
+                if (formatter?.name && !columnTypes[formatter.name]) {
+                    formattedData += formatter(field);
+                }
+                break;
+            default:
+                formattedData = field.toString();
         }
         return formattedData.search(new RegExp(query.trim(), 'i')) > -1;
     } catch (err) {

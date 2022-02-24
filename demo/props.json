@@ -16,7 +16,12 @@
         "delay": 1,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -100,7 +105,12 @@
         "delay": 2,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -183,9 +193,18 @@
         "delayType": "MINUTES",
         "filter": {
           "times": [
-            { "start": "07:00:00", "end": "07:00:59" },
-            { "start": "12:00:00", "end": "12:00:59" },
-            { "start": "18:00:00", "end": "18:00:59" }
+            {
+              "start": "07:00:00",
+              "end": "07:00:59"
+            },
+            {
+              "start": "12:00:00",
+              "end": "12:00:59"
+            },
+            {
+              "start": "18:00:00",
+              "end": "18:00:59"
+            }
           ],
           "daysOfWeek": [
             "MONDAY",
@@ -270,7 +289,12 @@
         "delay": 1,
         "delayType": "HOURS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -354,7 +378,12 @@
         "delay": 5,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -413,7 +442,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -421,7 +454,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": [
+            "example-user@knime.com"
+          ]
         }
       ],
       "executionRetries": 0,
@@ -446,7 +481,12 @@
         "delay": 5,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -505,7 +545,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -513,7 +557,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": [
+            "example-user@knime.com"
+          ]
         }
       ],
       "executionRetries": 0,
@@ -538,7 +584,12 @@
         "delay": 1,
         "delayType": "HOURS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -622,107 +673,12 @@
         "delay": 1,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
-          "daysOfWeek": [
-            "MONDAY",
-            "TUESDAY",
-            "WEDNESDAY",
-            "THURSDAY",
-            "FRIDAY",
-            "SATURDAY",
-            "SUNDAY"
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
           ],
-          "months": [
-            "JANUARY",
-            "FEBRUARY",
-            "MARCH",
-            "APRIL",
-            "MAY",
-            "JUNE",
-            "JULY",
-            "AUGUST",
-            "SEPTEMBER",
-            "OCTOBER",
-            "NOVEMBER",
-            "DECEMBER"
-          ],
-          "days": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29,
-            30,
-            31
-          ]
-        }
-      },
-      "notifications": { "recipients": ["example-user@knime.com"] },
-      "actions": [
-        {
-          "type": "SendMail",
-          "onSuccess": false,
-          "onFailure": true,
-          "onInactivityDiscard": false,
-          "appendNodeMessages": true,
-          "recipients": ["example-user@knime.com"]
-        }
-      ],
-      "lastRun": "2021-08-18T06:22:00.017+02:00[Europe/Berlin]",
-      "lastJob": "d3244126-9acc-43a5-ae04-a117f368632d",
-      "executionRetries": 0,
-      "user": "example-user",
-      "configuration": {
-        "ap-version-127": "4.5.0",
-        "jira-creds-126": {
-          "username": "example-user@knime.com",
-          "password": "*************"
-        }
-      },
-      "status": true,
-      "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]"
-    },
-    {
-      "id": "ef3ea63d-314e-475d-a483-4b795075c10e",
-      "numFailures": 0,
-      "workflowPath": "/Development/JIRA/Extract Bitbucket Branches",
-      "reset": true,
-      "discardAfterSuccessfulExec": false,
-      "discardAfterFailedExec": false,
-      "targetName": "Extract Bitbucket Branches",
-      "schedule": {
-        "startTime": "2020-12-27T12:05+01:00[Europe/Berlin]",
-        "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]",
-        "disabled": false,
-        "skipIfPreviousJobStillRunning": false,
-        "delay": 7,
-        "delayType": "DAYS",
-        "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -782,145 +738,58 @@
         }
       },
       "notifications": {
-        "recipients": ["example-user@knime.com", "example-user@knime.com"],
-        "reportFormats": ["HTML"]
+        "recipients": [
+          "example-user@knime.com"
+        ]
       },
       "actions": [
-        {
-          "type": "SendMail",
-          "onSuccess": true,
-          "onFailure": false,
-          "onInactivityDiscard": false,
-          "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"],
-          "reportFormats": ["HTML"]
-        },
         {
           "type": "SendMail",
           "onSuccess": false,
           "onFailure": true,
           "onInactivityDiscard": false,
-          "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"],
-          "reportFormats": ["HTML"]
-        }
-      ],
-      "lastRun": "2021-08-15T12:05:00.037+02:00[Europe/Berlin]",
-      "lastJob": "34bf83b8-d518-4b76-8eb4-c4095beafb15",
-      "executionRetries": 0,
-      "user": "example-user",
-      "configuration": {},
-      "status": true,
-      "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]"
-    },
-    {
-      "id": "d79751d0-376b-4001-941c-1254045c0a87",
-      "numFailures": 0,
-      "workflowPath": "/Development/Sonar/Sonar Weekly Reminder",
-      "reset": false,
-      "discardAfterSuccessfulExec": true,
-      "discardAfterFailedExec": false,
-      "targetName": "Sonar Weekly Reminder",
-      "schedule": {
-        "startTime": "2021-01-25T00:00+01:00[Europe/Berlin]",
-        "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]",
-        "disabled": false,
-        "skipIfPreviousJobStillRunning": false,
-        "delay": 7,
-        "delayType": "DAYS",
-        "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
-          "daysOfWeek": ["MONDAY"],
-          "months": [
-            "JANUARY",
-            "FEBRUARY",
-            "MARCH",
-            "APRIL",
-            "MAY",
-            "JUNE",
-            "JULY",
-            "AUGUST",
-            "SEPTEMBER",
-            "OCTOBER",
-            "NOVEMBER",
-            "DECEMBER"
-          ],
-          "days": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29,
-            30,
-            31
+          "appendNodeMessages": true,
+          "recipients": [
+            "example-user@knime.com"
           ]
         }
-      },
-      "notifications": { "recipients": ["example-user@knime.com"] },
-      "actions": [
-        {
-          "type": "SendMail",
-          "onSuccess": false,
-          "onFailure": true,
-          "onInactivityDiscard": false,
-          "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
-        }
       ],
-      "lastRun": "2021-08-16T00:00:00.013+02:00[Europe/Berlin]",
-      "lastJob": "73ec8bc3-b65e-416e-ab5c-8c3fc877de83",
+      "lastRun": "2021-08-18T06:22:00.017+02:00[Europe/Berlin]",
+      "lastJob": "d3244126-9acc-43a5-ae04-a117f368632d",
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {
-        "google-credentials-29": {
+        "ap-version-127": "4.5.0",
+        "jira-creds-126": {
           "username": "example-user@knime.com",
           "password": "*************"
         }
       },
       "status": true,
-      "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]"
     },
     {
-      "id": "2652b64e-d262-438e-a08f-54a4e0c5d633",
+      "id": "ef3ea63d-314e-475d-a483-4b795075c10e",
       "numFailures": 0,
-      "workflowPath": "/Development/Sonar/Sonar Daily Alert",
+      "workflowPath": "/Development/JIRA/Extract Bitbucket Branches",
       "reset": true,
-      "discardAfterSuccessfulExec": true,
+      "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
-      "targetName": "Sonar Daily Alert",
+      "targetName": "Extract Bitbucket Branches",
       "schedule": {
-        "startTime": "2021-01-21T00:35+01:00[Europe/Berlin]",
-        "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]",
+        "startTime": "2020-12-27T12:05+01:00[Europe/Berlin]",
+        "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]",
         "disabled": false,
-        "skipIfPreviousJobStillRunning": true,
-        "delay": 1,
+        "skipIfPreviousJobStillRunning": false,
+        "delay": 7,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -979,7 +848,130 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com",
+          "example-user@knime.com"
+        ],
+        "reportFormats": [
+          "HTML"
+        ]
+      },
+      "actions": [
+        {
+          "type": "SendMail",
+          "onSuccess": true,
+          "onFailure": false,
+          "onInactivityDiscard": false,
+          "appendNodeMessages": false,
+          "recipients": [
+            "example-user@knime.com"
+          ],
+          "reportFormats": [
+            "HTML"
+          ]
+        },
+        {
+          "type": "SendMail",
+          "onSuccess": false,
+          "onFailure": true,
+          "onInactivityDiscard": false,
+          "appendNodeMessages": false,
+          "recipients": [
+            "example-user@knime.com"
+          ],
+          "reportFormats": [
+            "HTML"
+          ]
+        }
+      ],
+      "lastRun": "2021-08-15T12:05:00.037+02:00[Europe/Berlin]",
+      "lastJob": "34bf83b8-d518-4b76-8eb4-c4095beafb15",
+      "executionRetries": 0,
+      "user": "example-user",
+      "configuration": {},
+      "status": true,
+      "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]"
+    },
+    {
+      "id": "d79751d0-376b-4001-941c-1254045c0a87",
+      "numFailures": 0,
+      "workflowPath": "/Development/Sonar/Sonar Weekly Reminder",
+      "reset": false,
+      "discardAfterSuccessfulExec": true,
+      "discardAfterFailedExec": false,
+      "targetName": "Sonar Weekly Reminder",
+      "schedule": {
+        "startTime": "2021-01-25T00:00+01:00[Europe/Berlin]",
+        "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]",
+        "disabled": false,
+        "skipIfPreviousJobStillRunning": false,
+        "delay": 7,
+        "delayType": "DAYS",
+        "filter": {
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
+          "daysOfWeek": [
+            "MONDAY"
+          ],
+          "months": [
+            "JANUARY",
+            "FEBRUARY",
+            "MARCH",
+            "APRIL",
+            "MAY",
+            "JUNE",
+            "JULY",
+            "AUGUST",
+            "SEPTEMBER",
+            "OCTOBER",
+            "NOVEMBER",
+            "DECEMBER"
+          ],
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ]
+        }
+      },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -987,7 +979,119 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": [
+            "example-user@knime.com"
+          ]
+        }
+      ],
+      "lastRun": "2021-08-16T00:00:00.013+02:00[Europe/Berlin]",
+      "lastJob": "73ec8bc3-b65e-416e-ab5c-8c3fc877de83",
+      "executionRetries": 0,
+      "user": "example-user",
+      "configuration": {
+        "google-credentials-29": {
+          "username": "example-user@knime.com",
+          "password": "*************"
+        }
+      },
+      "status": true,
+      "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]"
+    },
+    {
+      "id": "2652b64e-d262-438e-a08f-54a4e0c5d633",
+      "numFailures": 0,
+      "workflowPath": "/Development/Sonar/Sonar Daily Alert",
+      "reset": true,
+      "discardAfterSuccessfulExec": true,
+      "discardAfterFailedExec": false,
+      "targetName": "Sonar Daily Alert",
+      "schedule": {
+        "startTime": "2021-01-21T00:35+01:00[Europe/Berlin]",
+        "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]",
+        "disabled": false,
+        "skipIfPreviousJobStillRunning": true,
+        "delay": 1,
+        "delayType": "DAYS",
+        "filter": {
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
+          "daysOfWeek": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "months": [
+            "JANUARY",
+            "FEBRUARY",
+            "MARCH",
+            "APRIL",
+            "MAY",
+            "JUNE",
+            "JULY",
+            "AUGUST",
+            "SEPTEMBER",
+            "OCTOBER",
+            "NOVEMBER",
+            "DECEMBER"
+          ],
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ]
+        }
+      },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
+      "actions": [
+        {
+          "type": "SendMail",
+          "onSuccess": false,
+          "onFailure": true,
+          "onInactivityDiscard": false,
+          "appendNodeMessages": false,
+          "recipients": [
+            "example-user@knime.com"
+          ]
         }
       ],
       "lastRun": "2021-08-18T00:35:00.010+02:00[Europe/Berlin]",
@@ -1068,9 +1172,15 @@
     "id": "String"
   },
   "allFormatters": {},
-  "allClassGenerators": { "workflowPath": ["workflow-path"] },
+  "allClassGenerators": {
+    "workflowPath": [
+      "workflow-path"
+    ]
+  },
   "allEditableColumns": {},
-  "allSlottedColumns": ["status"],
+  "allSlottedColumns": [
+    "status"
+  ],
   "allPopoverColumns": [
     "schedule",
     "inputParameters",
@@ -1106,20 +1216,33 @@
     {
       "name": "delete",
       "text": "Delete",
-      "icon": { "functional": true, "_Ctor": {} }
+      "icon": {
+        "functional": true,
+        "_Ctor": {}
+      }
     },
     {
       "name": "copy",
       "text": "Copy link",
-      "icon": { "functional": true, "_Ctor": {} }
+      "icon": {
+        "functional": true,
+        "_Ctor": {}
+      }
     }
   ],
   "groupSubMenuItems": [
     {
       "name": "delete",
       "text": "Delete all",
-      "icon": { "functional": true, "_Ctor": {} }
+      "icon": {
+        "functional": true,
+        "_Ctor": {}
+      }
     }
   ],
-  "popoverRenderers": { "status": { "type": "StringRenderer" } }
+  "popoverRenderers": {
+    "status": {
+      "type": "StringRenderer"
+    }
+  }
 }

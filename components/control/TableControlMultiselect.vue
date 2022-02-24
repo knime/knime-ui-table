@@ -2,7 +2,7 @@
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import MenuOptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
-import { mixin as clickaway } from 'vue-clickaway';
+import { mixin as clickaway } from 'vue-clickaway2';
 
 const BLUR_TIMEOUT = 1;
 
