@@ -146,7 +146,6 @@ export default {
     data() {
         return {
             // Reference State
-            defaultTimeFilter,
             domains: {},
             allGroups: this.allColumnHeaders
                 .filter((header, colInd) => this.allColumnTypes[this.allColumnKeys[colInd]] === columnTypes.Nominal),
@@ -162,7 +161,7 @@ export default {
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
-            currentTimeFilter: this.timeFilterKey ? this.defaultTimeFilter : null,
+            currentTimeFilter: this.timeFilterKey ? defaultTimeFilter : null,
             // group-by
             currentGroup: null,
             groupTitles: [],
@@ -729,8 +728,8 @@ export default {
     >
       <span :key="rowInd + '_' + colInd + '_' + col">
         <slot
-            :name="`cellContent-${key}`"
-            :data="{ row, key, colInd, rowInd }"
+          :name="`cellContent-${key}`"
+          :data="{ row, key, colInd, rowInd }"
         />
       </span>
     </template>

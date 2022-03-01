@@ -21,7 +21,8 @@ describe('Row.vue', () => {
         },
         columnConfigs: []
     };
-    propsData.row.forEach(i => propsData.columnConfigs.push({
+    propsData.row.forEach((data, i) => propsData.columnConfigs.push({
+        key: i.toString(),
         formatter: f,
         classGenerator: [],
         size: 20,
@@ -118,7 +119,7 @@ describe('Row.vue', () => {
             wrapper = shallowMount(Row, {
                 propsData,
                 slots: {
-                    cellContent2: '<iframe> Custom content </iframe>'
+                    'cellContent-2': '<iframe> Custom content </iframe>'
                 }
             });
 
@@ -133,7 +134,7 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 propsData,
                 scopedSlots: {
-                    cellContent2: props => `<div>${props.row}</div>`
+                    'cellContent-2': props => `<div>${props.row}</div>`
                 }
             });
 

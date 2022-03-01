@@ -1,6 +1,6 @@
 import { months } from './time.config';
 
-export const defaultPageSize = 10; 
+export const defaultPageSize = 10;
 
 export const tablePageSizes = [5, 10, 25, 50, 100];
 

@@ -66,7 +66,6 @@ describe('TableController.vue', () => {
                 currentGroupValues: ['None']
             },
             searchConfig: { searchQuery: '' },
-            timeFilterConfig: { currentTimeFilter: null },
             sortConfig: { sortColumn: 0, sortDirection: -1 },
             subMenuItems: [],
             groupSubMenuItems: []
@@ -134,13 +133,10 @@ describe('TableController.vue', () => {
             });
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
-                wrapper = shallowMount(TableController, {
-                    propsData: {
-                        ...propsData,
-                        timeFilterKey: 'a',
-                        defaultTimeFilter: 'Last month'
-                    }
-                });
+                wrapper = shallowMount(TableController, { propsData: {
+                    ...propsData,
+                    timeFilterKey: 'a'
+                } });
                 expect(wrapper.vm.currentTimeFilter).toBe('Last month');
                 wrapper.find(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
