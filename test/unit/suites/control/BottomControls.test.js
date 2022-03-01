@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import BottomControls from '~/components/control/BottomControls';
 import BaseControls from '~/components/control/BaseControls';

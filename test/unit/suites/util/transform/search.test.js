@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { searchCell } from '~/util/transform/search';
 import { columnTypes } from '~/config/table.config';
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import TableController from '~/components/TableController';
 import TableUI from '~/components/TableUI';
