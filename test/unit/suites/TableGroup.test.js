@@ -11,7 +11,7 @@ describe('TableGroup.vue', () => {
             propsData: {
                 title: 'Group 1',
                 show: true,
-                subMenuItems: [{
+                groupSubMenuItems: [{
                     text: 'test'
                 }]
             }
@@ -29,7 +29,7 @@ describe('TableGroup.vue', () => {
             propsData: {
                 title: 'Group 1',
                 show: true,
-                subMenuItems: [{
+                groupSubMenuItems: [{
                     text: 'test'
                 }]
             },
@@ -51,7 +51,7 @@ describe('TableGroup.vue', () => {
             propsData: {
                 title: 'Group 1',
                 show: false,
-                subMenuItems: [{
+                groupSubMenuItems: [{
                     text: 'test'
                 }]
             },
@@ -72,7 +72,7 @@ describe('TableGroup.vue', () => {
             propsData: {
                 title: 'Group 1',
                 show: true,
-                subMenuItems: []
+                groupSubMenuItems: []
             },
             slots: {
                 default: '<tr class="data">Some Data</tr>'
@@ -88,14 +88,14 @@ describe('TableGroup.vue', () => {
     });
 
     it('emits a groupSubMenuClick event when the submenu is clicked', () => {
-        let subMenuItems = [{
+        let groupSubMenuItems = [{
             text: 'test'
         }];
         wrapper = shallowMount(TableGroup, {
             propsData: {
                 title: 'Group 1',
                 show: true,
-                subMenuItems
+                groupSubMenuItems
             },
             slots: {
                 default: '<tr class="data">Some Data</tr>'
@@ -108,9 +108,9 @@ describe('TableGroup.vue', () => {
         wrapper.find(SubMenu).vm.$emit(
             'item-click',
             new MouseEvent('click'),
-            subMenuItems[0]
+            groupSubMenuItems[0]
         );
         expect(wrapper.emitted().groupSubMenuClick).toBeTruthy();
-        expect(wrapper.emitted().groupSubMenuClick[0][0]).toBe(subMenuItems[0]);
+        expect(wrapper.emitted().groupSubMenuClick[0][0]).toBe(groupSubMenuItems[0]);
     });
 });

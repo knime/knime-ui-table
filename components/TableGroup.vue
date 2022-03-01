@@ -24,7 +24,7 @@ export default {
             type: Boolean,
             default: false
         },
-        subMenuItems: {
+        groupSubMenuItems: {
             type: Array,
             default: () => []
         }
@@ -49,12 +49,12 @@ export default {
         {{ title }}
       </td>
       <td
-        v-if="subMenuItems && subMenuItems.length"
+        v-if="groupSubMenuItems.length"
         button-title="actions"
         class="action"
       >
         <SubMenu
-          :items="subMenuItems"
+          :items="groupSubMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
         >

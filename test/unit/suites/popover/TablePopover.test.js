@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { columnTypes } from '~/config/table.config';
 import TablePopover from '~/components/popover/TablePopover.vue';

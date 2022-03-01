@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import TableControlBottom from '~/components/control/TableControlBottom';
 import TableControlsBase from '~/components/control/TableControlBase';
@@ -6,16 +7,18 @@ import { tablePageSizes } from '~/config/table.config';
 
 describe('TableControlBottom.vue', () => {
     let wrapper;
+    let propsData = {
+        pageConfig: {
+            tableSize: 100,
+            currentSize: 100,
+            possiblePageSizes: tablePageSizes,
+            pageSize: 25,
+            currentPage: 1
+        }
+    };
 
     it('renders table bottom controls', () => {
-        wrapper = shallowMount(TableControlBottom, {
-            propsData: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
-            }
-        });
+        wrapper = shallowMount(TableControlBottom, { propsData });
 
         expect(wrapper.find(TableControlBottom).exists()).toBe(true);
         expect(wrapper.find(TableControlsBase).exists()).toBe(true);
@@ -23,19 +26,19 @@ describe('TableControlBottom.vue', () => {
     });
 
     it('creates page size text for display in the page size dropdown', () => {
-        wrapper = shallowMount(TableControlBottom);
+        wrapper = shallowMount(TableControlBottom, { propsData });
         expect(wrapper.vm.createText(50)).toBe('50 per page');
         expect(wrapper.vm.createText(5)).toBe('5 per page');
     });
 
     it('parses page size text for consumption by the parent table', () => {
-        wrapper = shallowMount(TableControlBottom);
+        wrapper = shallowMount(TableControlBottom, { propsData });
         expect(wrapper.vm.parseSize('50 per page')).toBe(50);
         expect(wrapper.vm.parseSize('5 per page')).toBe(5);
     });
 
     it('creates dropdown items when provided with a list of page sizes', () => {
-        wrapper = shallowMount(TableControlBottom);
+        wrapper = shallowMount(TableControlBottom, { propsData });
         let items = wrapper.vm.getSelectItems(tablePageSizes);
         items.forEach((item, itemInd) => {
             expect(item).toStrictEqual({
@@ -46,14 +49,7 @@ describe('TableControlBottom.vue', () => {
     });
 
     it('emits pageSizeUpdate events', () => {
-        wrapper = shallowMount(TableControlBottom, {
-            propsData: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
-            }
-        });
+        wrapper = shallowMount(TableControlBottom, { propsData });
         expect(wrapper.emitted().prevPage).toBeFalsy();
         wrapper.find(TableControlDropdown).vm.$emit('input', '50 per page');
         expect(wrapper.emitted().pageSizeUpdate[0][0]).toBe(50);
@@ -63,12 +59,7 @@ describe('TableControlBottom.vue', () => {
         let nextPageMock = jest.fn();
         let prevPageMock = jest.fn();
         wrapper = shallowMount(TableControlBottom, {
-            propsData: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
-            },
+            propsData,
             listeners: {
                 nextPage: nextPageMock,
                 prevPage: prevPageMock

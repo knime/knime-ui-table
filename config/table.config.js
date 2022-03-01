@@ -12,38 +12,40 @@ export const columnTypes = {
     Object: 'Object'
 };
 
-export const createEmptyTypeValues = {
-    Nominal: () => [],
-    String: () => '',
-    DateTime: () => '',
-    Number: () => NaN,
-    Boolean: () => null,
-    Array: () => [],
-    Object: () => ({})
-};
-
-export const columnFilterTypes = {
-    [columnTypes.Nominal]: 'TableFilterMultiselect',
-    [columnTypes.String]: 'TableFilterInputField',
-    [columnTypes.DateTime]: 'TableFilterInputField',
-    [columnTypes.Number]: 'TableFilterInputField',
-    [columnTypes.Boolean]: 'TableFilterDropdown',
-    [columnTypes.Array]: 'TableFilterInputField',
-    [columnTypes.Object]: 'TableFilterInputField',
+export const columnFilterConfigs = {
+    [columnTypes.Nominal]: {
+        is: 'TableFilterMultiselect',
+        value: () => []
+    },
+    [columnTypes.String]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    },
+    [columnTypes.DateTime]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    },
+    [columnTypes.Number]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    },
+    [columnTypes.Boolean]: {
+        is: 'TableFilterDropdown',
+        value: () => []
+    },
+    [columnTypes.Array]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    },
+    [columnTypes.Object]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    },
     // eslint-disable-next-line no-undefined
-    [undefined]: 'TableFilterInputField'
-};
-
-export const columnTypeEmptyFilters = {
-    [columnTypes.Nominal]: [],
-    [columnTypes.String]: '',
-    [columnTypes.DateTime]: '',
-    [columnTypes.Number]: [],
-    [columnTypes.Boolean]: [],
-    [columnTypes.Array]: '',
-    [columnTypes.Object]: '',
-    // eslint-disable-next-line no-undefined
-    [undefined]: ''
+    [undefined]: {
+        is: 'TableFilterInputField',
+        value: () => ''
+    }
 };
 
 export const typeFormatters = {
@@ -77,8 +79,8 @@ export const typeFormatters = {
             return val;
         }
     },
-    Number: val => val.toString(),
-    Boolean: val => val.toString(),
+    Number: val => val?.toString(),
+    Boolean: val => val?.toString(),
     Array: val => val?.length ? `${val.length} items` : '-',
     Object: val => val ? `${Object.keys(val).length} items` : '-'
 };

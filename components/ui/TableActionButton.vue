@@ -13,13 +13,9 @@ export default {
         Button
     },
     props: {
-        actionButtonText: {
-            type: String,
-            default: ''
-        },
-        actionCallback: {
-            type: Function,
-            default: () => {}
+        config: {
+            type: Object,
+            default: null
         }
     },
     data() {
@@ -30,7 +26,7 @@ export default {
     methods: {
         onClick(e) {
             consola.debug('Table action triggered.');
-            this.actionCallback();
+            this.config.actionCallback();
         }
     }
 };
@@ -43,7 +39,7 @@ export default {
         with-border
         @click="onClick"
       >
-        {{ actionButtonText }}
+        {{ config.actionButtonText }}
       </Button>
     </td>
   </tr>

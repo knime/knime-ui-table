@@ -52,39 +52,11 @@ export default {
             type: Array,
             default: () => []
         },
-        formatters: {
-            type: Array,
-            default: () => []
+        tableConfig: {
+            type: Object,
+            default: () => ({})
         },
-        classGenerators: {
-            type: Array,
-            default: () => []
-        },
-        editableColumns: {
-            type: [Object, Array, String],
-            default: () => []
-        },
-        slottedColumns: {
-            type: Array,
-            default: () => []
-        },
-        popoverColumns: {
-            type: Array,
-            default: () => []
-        },
-        columnWidths: {
-            type: Array,
-            default: () => []
-        },
-        showCollapser: {
-            type: Boolean,
-            default: false
-        },
-        showSelection: {
-            type: Boolean,
-            default: true
-        },
-        subMenuItems: {
+        columnConfigs: {
             type: Array,
             default: () => []
         },
@@ -99,8 +71,24 @@ export default {
         };
     },
     computed: {
+        columnSizes() {
+            return this.getPropertiesFromColumns('size');
+        },
+        formatters() {
+            return this.getPropertiesFromColumns('formatter');
+        },
+        classGenerators() {
+            return this.getPropertiesFromColumns('classGenerator');
+        },
+        slottedColumns() {
+            return this.getPropertiesFromColumns('hasSlotContent');
+        },
+        clickableColumns() {
+            // enforce boolean to reduce reactivity
+            return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
+        },
         classes() {
-            return this.row.map((item, ind) => this.classGenerators[ind].map(classItem => {
+            return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
                 if (typeof classItem === 'function') {
                     return classItem(item);
                 }
@@ -112,11 +100,14 @@ export default {
         }
     },
     methods: {
+        getPropertiesFromColumns(key) {
+            return this.columnConfigs.map(colConfig => colConfig[key]);
+        },
         onRowExpand() {
             this.showContent = !this.showContent;
         },
         onSelect(value) {
-            this.$emit('rowSelect', value, false);
+            this.$emit('rowSelect', value);
         },
         onCellClick(event) {
             if (event?.clickable) {
@@ -137,7 +128,7 @@ export default {
             return false;
         },
         isClickable(data, ind) {
-            if (!data || data === '-' || !this.popoverColumns.includes(ind)) {
+            if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
                 return false;
             }
             return true;
@@ -150,16 +141,18 @@ export default {
   <span>
     <tr
       v-if="row.length > 0"
-      :class="['row', { 'no-selection': !showSelection }, { 'no-sub-menu': !subMenuItems.length }]"
+      :class="['row', {
+        'no-selection': !tableConfig.showSelection }, { 'no-sub-menu': !tableConfig.subMenuItems.length
+      }]"
     >
       <TableCollapserToggle
-        v-if="showCollapser"
+        v-if="tableConfig.showCollapser"
         :expanded="showContent"
         class="collapser-cell"
         @collapserExpand="onRowExpand"
       />
       <td
-        v-if="showSelection"
+        v-if="tableConfig.showSelection"
         class="select-cell"
       >
         <Checkbox
@@ -172,35 +165,28 @@ export default {
         ref="dataCell"
         :key="ind"
         :class="[classes[ind], 'data-cell', { clickable: isClickable(data, ind) }]"
-        :style="{ width: `calc(${columnWidths[ind] || 100}%)` }"
+        :style="{ width: `calc(${columnSizes[ind] || 100}%)` }"
         :title="!isClickable(data, ind) ? data : null"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
       >
         <slot
-          v-if="slottedColumns.includes(ind)"
+          v-if="slottedColumns[ind]"
           :name="`cellContent${ind}`"
           :row="row"
           :ind="ind"
         />
-        <Component
-          :is="editableColumns[ind]"
-          v-else-if="editableColumns[ind]"
-          v-bind="data"
-        >
-          <slot name="componentSlot" />
-        </Component>
         <span v-else>
           {{ formatters[ind](data) }}
         </span>
       </td>
       <td
-        v-if="subMenuItems && subMenuItems.length"
+        v-if="tableConfig.subMenuItems.length"
         button-title="actions"
         class="action"
       >
         <SubMenu
-          :items="subMenuItems"
+          :items="tableConfig.subMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
         >

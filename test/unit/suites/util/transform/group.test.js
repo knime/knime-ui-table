@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { group } from '~/util/transform/group';
 
 describe('group', () => {

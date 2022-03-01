@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { sort } from '~/util/transform/sort';
 import { orderedData, reversedData, unorderedData, groupedData, missingGroupedData,
     groupedIndicies, columnKeys, currentColumnTypes } from './mockData';

@@ -79,7 +79,7 @@
       "lastRun": "2021-08-18T00:40:00.003+02:00[Europe/Berlin]",
       "lastJob": "375e5089-b923-4790-9522-2359490afb5b",
       "executionRetries": 0,
-      "user": "example-user",
+      "user": "example-user2",
       "configuration": {},
       "status": true,
       "nextScheduledExecution": "2021-08-19T00:40+02:00[Europe/Berlin]"
@@ -87,7 +87,7 @@
     {
       "id": "c1bbfc3b-3063-495f-af9f-aa7b04b7b20b",
       "numFailures": 0,
-      "workflowPath": "/Users/example-user/Metro de Madrid/KNIME_server_test_v2.knwf 1",
+      "workflowPath": "/Users/example-user2/Metro de Madrid/KNIME_server_test_v2.knwf 1",
       "reset": true,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -161,7 +161,7 @@
       },
       "notifications": {},
       "executionRetries": 0,
-      "user": "example-user",
+      "user": "example-user2",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
@@ -341,7 +341,7 @@
     {
       "id": "09be7e8a-138a-4586-8dcf-fdf5925fda43",
       "numFailures": 0,
-      "workflowPath": "/Users/example-user/xx_old/14048_google_auth/14048_connect_to_google",
+      "workflowPath": "/Users/example-user2/xx_old/14048_google_auth/14048_connect_to_google",
       "reset": false,
       "discardAfterSuccessfulExec": false,
       "discardAfterFailedExec": false,
@@ -413,7 +413,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": { "recipients": ["example-user2@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -421,11 +421,11 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": ["example-user2@knime.com"]
         }
       ],
       "executionRetries": 0,
-      "user": "example-user",
+      "user": "example-user2",
       "configuration": {},
       "status": false,
       "nextScheduledExecution": "2021-08-18T14:15+02:00[Europe/Berlin]"
@@ -681,7 +681,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": { "recipients": ["example-user2@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -689,17 +689,17 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": true,
-          "recipients": ["example-user@knime.com"]
+          "recipients": ["example-user2@knime.com"]
         }
       ],
       "lastRun": "2021-08-18T06:22:00.017+02:00[Europe/Berlin]",
       "lastJob": "d3244126-9acc-43a5-ae04-a117f368632d",
       "executionRetries": 0,
-      "user": "example-user",
+      "user": "example-user2",
       "configuration": {
         "ap-version-127": "4.5.0",
         "jira-creds-126": {
-          "username": "example-user@knime.com",
+          "username": "example-user2@knime.com",
           "password": "*************"
         }
       },
@@ -979,7 +979,7 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": { "recipients": ["example-users@knime.com"] },
       "actions": [
         {
           "type": "SendMail",
@@ -987,7 +987,7 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": ["example-users@knime.com"]
         }
       ],
       "lastRun": "2021-08-18T00:35:00.010+02:00[Europe/Berlin]",
@@ -996,7 +996,7 @@
       "user": "example-user",
       "configuration": {
         "google-credentials-29": {
-          "username": "example-user@knime.com",
+          "username": "example-users@knime.com",
           "password": "*************"
         }
       },
@@ -1071,15 +1071,7 @@
   "allClassGenerators": { "workflowPath": ["workflow-path"] },
   "allEditableColumns": {},
   "allSlottedColumns": ["status"],
-  "allPopoverColumns": [
-    "schedule",
-    "inputParameters",
-    "notifications",
-    "actions",
-    "configurationWithPasswords",
-    "configuration"
-  ],
-  "timeFilterKey": null,
+  "timeFilterKey": "lastRun",
   "defaultColumns": [
     "lastRun",
     "nextScheduledExecution",
@@ -1090,36 +1082,16 @@
     "id"
   ],
   "defaultTimeFilter": "Last month",
-  "showTimeFilter": true,
-  "showColumns": true,
-  "showGroups": true,
-  "showSearch": true,
-  "showColumnFilters": true,
-  "showBottomControls": true,
-  "showCollapser": true,
-  "showSelection": true,
-  "showActionButton": false,
   "parentSelected": [],
   "pageSize": 10,
   "actionButtonText": "",
-  "subMenuItems": [
-    {
-      "name": "delete",
-      "text": "Delete",
-      "icon": { "functional": true, "_Ctor": {} }
-    },
-    {
-      "name": "copy",
-      "text": "Copy link",
-      "icon": { "functional": true, "_Ctor": {} }
-    }
-  ],
-  "groupSubMenuItems": [
-    {
-      "name": "delete",
-      "text": "Delete all",
-      "icon": { "functional": true, "_Ctor": {} }
-    }
-  ],
-  "popoverRenderers": { "status": { "type": "StringRenderer" } }
+  "allPopoverRenderers": {
+    "status": { "type": "StringRenderer" },
+    "schedule": true,
+    "inputParameters": true,
+    "notifications": true,
+    "actions": true,
+    "configurationWithPasswords": true,
+    "configuration": true
+  }
 }

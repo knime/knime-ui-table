@@ -13,21 +13,16 @@ export default {
         TablePageControl
     },
     props: {
-        totalItems: {
-            type: Number,
-            default: 0
-        },
-        currentItems: {
-            type: Number,
-            default: 0
-        },
-        pageSize: {
-            type: Number,
-            default: 0
-        },
-        currentPage: {
-            type: Number,
-            default: 0
+        pageConfig: {
+            type: Object,
+            default: () => ({}),
+            validate(pageConfig) {
+                if (typeof pageConfig !== 'object') {
+                    return false;
+                }
+                const requiredProperties = ['currentSize', 'tableSize', 'pageSize', 'currentPage', 'possiblePageSizes'];
+                return requiredProperties.every(key => pageConfig.hasOwnProperty(key));
+            }
         }
     },
     methods: {
@@ -47,10 +42,10 @@ export default {
   <thead>
     <tr>
       <TablePageControl
-        :total-items="totalItems"
-        :current-items="currentItems"
-        :page-size="pageSize"
-        :current-page="currentPage"
+        :total-items="pageConfig.tableSize"
+        :current-items="pageConfig.currentSize"
+        :page-size="pageConfig.pageSize"
+        :current-page="pageConfig.currentPage"
         @nextPage="onNextPage"
         @prevPage="onPrevPage"
       />

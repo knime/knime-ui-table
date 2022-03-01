@@ -1,8 +1,6 @@
 @import "webapps-common/ui/css";
 @import "webapps-common/ui/css/headlines";
-@import "./prism-theme-knime";
 @import "webapps-common/ui/css/variables";
-@import "normalize.css";
 
 :root {
   font-size: 16px;

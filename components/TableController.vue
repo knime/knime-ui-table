@@ -1,18 +1,12 @@
 <script>
 import Vue from 'vue';
-import TableControlsTop from './control/TableControlTop';
-import TableControlsBottom from './control/TableControlBottom';
-import TableColumnFilters from './filter/TableColumnFilter';
-import TableHeader from './TableHeader';
-import TableGroup from './TableGroup';
-import TableRow from './TableRow';
-import TableActionButton from './ui/TableActionButton';
-import TablePopover from './popover/TablePopover';
+import TableUI from './TableUI';
 
-import { columnTypes, typeFormatters } from '../config/table.config';
+import { columnTypes, typeFormatters, tablePageSizes } from '../config/table.config';
 import { defaultTimeFilter } from '../config/time.config';
 
-import { getColumnDomains, getEmptyFilters } from '../util/getColumnDomains';
+import getColumnDomains from '../util/getColumnDomains';
+import { getFilterConfigs, getDefaultFilterValues } from '../util/getFilterConfigs';
 import { getNextPage } from '../util/getNextPage';
 import { getProcessedRowInd } from '../util/processSelection';
 import { filter } from '../util/transform/filter';
@@ -28,14 +22,7 @@ import { paginate } from '../util/transform/paginate';
  */
 export default {
     components: {
-        TableControlsTop,
-        TableControlsBottom,
-        TableColumnFilters,
-        TableHeader,
-        TableGroup,
-        TableRow,
-        TableActionButton,
-        TablePopover
+        TableUI
     },
     props: {
         /**
@@ -65,17 +52,13 @@ export default {
             type: Object,
             default: () => ({})
         },
-        allEditableColumns: {
-            type: [Object, Array, String],
-            default: () => ({})
-        },
         allSlottedColumns: {
             type: Array,
             default: () => null
         },
-        allPopoverColumns: {
-            type: Array,
-            default: () => null
+        allPopoverRenderers: {
+            type: Object,
+            default: () => ({})
         },
         timeFilterKey: {
             type: String,
@@ -95,15 +78,19 @@ export default {
         /**
          * Visual element configuration props.
          */
+        showSorting: {
+            type: Boolean,
+            default: true
+        },
         showTimeFilter: {
             type: Boolean,
             default: true
         },
-        showColumns: {
+        showColumnSelection: {
             type: Boolean,
             default: true
         },
-        showGroups: {
+        showGroupBy: {
             type: Boolean,
             default: true
         },
@@ -131,6 +118,10 @@ export default {
             type: Boolean,
             default: false
         },
+        showPopovers: {
+            type: Boolean,
+            default: true
+        },
         /**
          * Additional configuration options.
          */
@@ -157,36 +148,25 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
-        },
-        popoverRenderers: {
-            type: Object,
-            default: () => ({})
         }
     },
     data() {
         return {
             // REFERENCE FIELDS
-            allFilterConfigs: getColumnDomains({
-                data: this.allData,
-                formatters: this.allFormatters,
-                types: this.allColumnTypes
-            }),
+            domains: {},
             allGroups: this.allColumnHeaders
                 .filter((header, colInd) => this.allColumnTypes[this.allColumnKeys[colInd]] === columnTypes.Nominal),
-            defaultFilterValues: getEmptyFilters(this.allColumnKeys, this.allColumnTypes),
             // Managed reactivity fields (for partial re-processing w/ low memory penalty)
             filteredDataConfig: null,
             groupedDataConfig: null,
             sortedData: null,
             processedData: null,
             processLevel: null,
-
             // UI FIELDS
             // column control
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
-            currentColumns: this.defaultColumns
-                .map(col => this.allColumnKeys.indexOf(col)).filter(ind => ind > -1)
-                .sort((a, b) => a > b),
+            currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
+                .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter control
             currentTimeFilter: this.timeFilterKey ? this.defaultTimeFilter : null,
             // group-by control
@@ -205,21 +185,13 @@ export default {
             columnSortDirection: -1,
             // column filter
             showFilter: false,
-            filterValues: {},
+            filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // INTERNAL FIELDS
-            // column size state
-            columnSizes: this.defaultColumns.map(() => 100 / this.defaultColumns.length),
-            tableWidth: 100,
-            // popover state
-            popoverTarget: null,
-            popoverData: null,
-            popoverColumn: null,
-            popoverRenderer: null,
             // selection state
             processedIndicies: [],
             masterSelected: (() => {
                 let initSelected = this.allData.map(item => 0);
-                if (this.parentSelected && this.parentSelected.length) {
+                if (this.parentSelected?.length) {
                     this.parentSelected.forEach(rowInd => {
                         initSelected[rowInd] = 1;
                     });
@@ -229,11 +201,106 @@ export default {
         };
     },
     computed: {
+        currentSelection() {
+            return this.processedIndicies?.map((group, groupInd) => group.map(
+                rowInd => Boolean(this.masterSelected[this.getProcessedRowIndex(rowInd, groupInd)])
+            ));
+        },
+        totalSelected() {
+            return this.masterSelected?.reduce((count, isSelected) => count + isSelected, 0);
+        },
+        dataConfig() {
+            let dataConfig = {
+                columnConfigs: []
+            };
+            let defaultColumnSize = 100 / (this.currentColumns.length || 1);
+            this.currentColumnKeys.forEach((key, ind) => {
+                if (!key) {
+                    return;
+                }
+                let columnType = this.currentColumnTypes[ind];
+                let columnConfig = {
+                    key,
+                    header: this.currentHeaders[ind],
+                    type: columnType,
+                    size: defaultColumnSize,
+                    filterConfig: this.currentFilterConfigs[ind],
+                    formatter: this.currentFormatters[ind],
+                    classGenerator: this.currentClassGenerators[ind] || [],
+                    popoverRenderer: this.allPopoverRenderers[key],
+                    hasSlotContent: Boolean(this.currentSlottedColumns[ind])
+                };
+                dataConfig.columnConfigs.push(columnConfig);
+            });
+            return dataConfig;
+        },
+        tableConfig() {
+            let tableConfig = {
+                showSelection: this.showSelection,
+                showCollapser: this.showCollapser,
+                showPopovers: this.showPopovers,
+                showColumnFilters: this.showColumnFilters,
+                showBottomControls: this.showBottomControls,
+                subMenuItems: this.subMenuItems,
+                groupSubMenuItems: this.groupSubMenuItems,
+                pageConfig: {
+                    tableSize: this.totalTableSize,
+                    currentSize: this.currentTableSize,
+                    pageSize: this.currentPageSize,
+                    possiblePageSizes: tablePageSizes,
+                    currentPage: this.currentPage
+                }
+            };
+            if (this.showTimeFilter) {
+                tableConfig.timeFilterConfig = {
+                    currentTimeFilter: this.currentTimeFilter
+                };
+            }
+            if (this.showSearch) {
+                tableConfig.searchConfig = {
+                    searchQuery: this.searchQuery
+                };
+            }
+            if (this.showColumnSelection) {
+                tableConfig.columnSelectionConfig = {
+                    possibleColumns: this.allHeadersOrdered,
+                    currentColumns: this.currentHeaders
+                };
+            }
+            if (this.showGroupBy) {
+                tableConfig.groupByConfig = {
+                    possibleGroups: this.allGroups,
+                    currentGroup: this.currentGroup,
+                    currentGroupValues: this.groupTitles
+                };
+            }
+            if (this.showSorting) {
+                tableConfig.sortConfig = {
+                    sortColumn: this.columnSort,
+                    sortDirection: this.columnSortDirection
+                };
+            }
+            if (this.showActionButton) {
+                tableConfig.actionButtonConfig = {
+                    text: this.actionButtonText,
+                    callback: this.actionCallback
+                };
+            }
+            return tableConfig;
+        },
         /*
          * Tracks changes in column order by Header value.
          */
         allHeadersOrdered() {
             return this.currentAllColumnOrder.map(colInd => this.allColumnHeaders[colInd]);
+        },
+        defaultFormatters() {
+            return this.allColumnKeys.reduce((formatters, colKey) => {
+                formatters[colKey] = this.allFormatters[colKey] ||
+                    typeFormatters[this.allColumnTypes[colKey]] ||
+                    (item => item);
+                return formatters;
+            }, {});
         },
         /*
          * Current table config. E.g. if 4/10 columns displayed, 'current' fields return values w/ length 4.
@@ -248,33 +315,21 @@ export default {
             return this.filterByColumn(Object.values(this.allColumnTypes));
         },
         currentFormatters() {
-            return this.currentColumnKeys
-                .map((colKey, colInd) => this.allFormatters[colKey] ||
-                    typeFormatters[this.currentColumnTypes[colInd]] ||
-                    (item => item));
+            return this.currentColumnKeys.map(colKey => this.defaultFormatters[colKey]);
         },
         currentClassGenerators() {
-            return this.currentColumnKeys.map((colKey, colInd) => this.allClassGenerators[colKey] || []);
-        },
-        currentEditableColumns() {
-            return this.currentColumnKeys.map((colKey, colInd) => this.allEditableColumns[colKey] || null);
+            return this.currentColumnKeys.map(colKey => this.allClassGenerators[colKey] || []);
         },
         currentSlottedColumns() {
             return this.currentColumnKeys.map((col, colInd) => this.allSlottedColumns?.includes(col) ? colInd : null);
         },
-        currentPopoverColumns() {
-            return this.currentColumnKeys.map((col, colInd) => this.allPopoverColumns?.includes(col) ? colInd : null);
-        },
         currentFilterConfigs() {
-            return this.currentColumnKeys.map((col, colInd) => {
-                let filterConfig = Object.assign({}, this.allFilterConfigs[col]);
-                let defaultFilter = this.defaultFilterValues[col];
-                filterConfig.value = this.filterValues[col] || JSON.parse(JSON.stringify(defaultFilter));
-                return filterConfig;
-            }).filter(config => config.value !== null);
-        },
-        tableHeaderClass() {
-            return `table-header${this.subMenuItems?.length && !this.showColumnFilters ? ' sub-menu-active' : ''}`;
+            return getFilterConfigs({
+                domains: this.domains,
+                columns: this.currentColumnKeys,
+                types: this.allColumnTypes,
+                values: this.filterValues
+            });
         },
         /*
          * Column key of the current group-by column.
@@ -323,14 +378,6 @@ export default {
         }
     },
     watch: {
-        /*
-         * General watchers.
-         */
-        currentColumns(newColumns) {
-            // TODO WEBP-588: Improve column sizing.
-            // adjust column sizes when displayed columns change.
-            this.columnSizes = newColumns.map(() => 100 / newColumns.length);
-        },
         pageRowCount(newCount) {
             if (newCount === 0) {
                 this.onPageSizeUpdate(this.currentPageSize);
@@ -418,18 +465,21 @@ export default {
     mounted() {
         // If reactivity partially updates on the initial load, update the state manually.
         if (this.allData?.length && this.processedData === null) {
+            this.domains = this.getDomains();
             this.processedData = this.filterLevelUpdate();
         }
-        this.$nextTick(() => {
-            if (this.$refs.table) {
-                this.updateTableWidth();
-            }
-        });
     },
     methods: {
         /*
          * Managed reactivity methods.
          */
+        getDomains() {
+            return getColumnDomains({
+                data: this.allData,
+                formatters: this.defaultFormatters,
+                types: this.allColumnTypes
+            });
+        },
         filterLevelUpdate() {
             consola.trace('Filter level update.');
             return this.paginateData(this.sortData(this.groupData(this.filterData())));
@@ -447,14 +497,7 @@ export default {
             return this.paginateData(this.sortedData);
         },
         onAllDataUpdate(newData) {
-            let newColumnDomains = getColumnDomains({
-                data: newData,
-                formatters: this.allFormatters,
-                types: this.allColumnTypes
-            });
-            if (JSON.stringify(newColumnDomains) !== this.allFilterConfigs) {
-                this.allFilterConfigs = newColumnDomains;
-            }
+            this.domains = this.getDomains();
             if (this.totalTableSize !== newData?.length) {
                 this.totalTableSize = this.allData.length;
             }
@@ -464,7 +507,6 @@ export default {
          */
         filterData() {
             consola.trace('Filtering data.');
-            
             // declare locally to avoid asynchronous behavior
             let x = filter({
                 data: this.allData,
@@ -524,9 +566,6 @@ export default {
          * Utilities.
          *
          */
-        createFormItems(valueArr) {
-            return valueArr.map(item => ({ text: item, id: item }));
-        },
         filterByColumn(localData) {
             return localData?.length ? this.currentColumns.map(colInd => localData[colInd]).filter(item => item) : [];
         },
@@ -546,15 +585,17 @@ export default {
          *
          */
         onTimeFilterUpdate(newTimeFilter) {
+            consola.debug(`TableController received: timeFilterUpdate ${newTimeFilter}`);
             this.currentTimeFilter = newTimeFilter;
             this.currentPage = 1;
         },
         onColumnUpdate(newColumnList) {
+            consola.debug(`TableController received: columnUpdate ${newColumnList}`);
             let x = newColumnList.map(col => this.allHeadersOrdered.indexOf(col)).sort((a, b) => a - b);
             this.currentColumns = x.map(colInd => this.currentAllColumnOrder[colInd]);
-            this.updateTableWidth();
         },
         onColumnReorder(colInd, newColInd) {
+            consola.debug(`TableController received: columnReorder ${colInd} ${newColInd}`);
             let trueColumnInd = this.currentAllColumnOrder[colInd];
             let newAllColumns = this.currentAllColumnOrder.filter(col => col !== trueColumnInd);
             newAllColumns.splice(newColInd, 0, trueColumnInd);
@@ -566,18 +607,21 @@ export default {
             }
         },
         onGroupUpdate(group) {
+            consola.debug(`TableController received: groupUpdate ${group}`);
             this.currentGroup = group;
             if (group) {
                 this.currentPage = 1;
             }
         },
         onSearch(input) {
+            consola.debug(`TableController received: search ${input}`);
             this.searchQuery = input || null;
             if (input) {
                 this.currentPage = 1;
             }
         },
         onPageChange(pageNumberDiff) {
+            consola.debug(`TableController received: pageChange ${pageNumberDiff}`);
             let proposedPage = this.currentPage + pageNumberDiff;
             let isWithinRange = (proposedPage * this.currentPageSize - this.currentTableSize) < this.currentPageSize;
             if (proposedPage > 0 && isWithinRange) {
@@ -585,6 +629,7 @@ export default {
             }
         },
         onPageSizeUpdate(newPageSize) {
+            consola.debug(`TableController received: pageSizeUpdate ${newPageSize}`);
             this.currentPageSize = newPageSize;
             let newPageNumber =
                 getNextPage(this.currentPageSize, this.currentPage, this.currentTableSize, this.pageRowCount);
@@ -598,82 +643,50 @@ export default {
          * Table header methods.
          *
          */
-        onHeaderSort({ type, ind, value }) {
-            if (type === 'sort') {
-                let isNewColumn = this.columnSort !== ind;
-                if (isNewColumn) {
-                    this.currentPage = 1;
-                    this.columnSort = ind;
-                    this.columnSortDirection = -1;
-                } else {
-                    let ascendingSort = this.columnSortDirection === null || this.columnSortDirection < 0;
-                    this.columnSortDirection = ascendingSort ? 1 : -1;
-                }
-            }
-        },
-        onToggleFilter() {
-            this.showFilter = !this.showFilter;
-        },
-        /*
-         *
-         * Column filter methods.
-         *
-         */
-        onHeaderFilter({ colInd, values }) {
-            let colKey = this.currentColumnKeys[colInd];
-            if (!values || !values.length) {
-                Vue.set(this.filterValues, colKey, JSON.parse(JSON.stringify(this.defaultFilterValues[colKey])));
-            } else {
-                Vue.set(this.filterValues, colKey, values);
+        onColumnSort(colInd) {
+            consola.debug(`TableController received: columnSort ${colInd}`);
+            let isNewColumn = this.columnSort !== colInd;
+            if (isNewColumn) {
                 this.currentPage = 1;
+                this.columnSort = colInd;
+                this.columnSortDirection = -1;
+            } else {
+                let ascendingSort = this.columnSortDirection === null || this.columnSortDirection < 0;
+                this.columnSortDirection = ascendingSort ? 1 : -1;
             }
+        },
+        onColumnFilter(colInd, value) {
+            consola.debug(`TableController received: columnFilter ${colInd} ${value}`);
+            let colKey = this.currentColumnKeys[colInd];
+            Vue.set(this.filterValues, colKey, value);
         },
         onClearFilter() {
-            this.filterValues = {};
+            consola.debug(`TableController received: clearFilter`);
+            this.filterValues = getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes);
         },
-        /*
-         * Column size methods.
-         */
-        updateTableWidth() {
-            this.tableWidth = this.$refs.table.offsetWidth;
+        onToggleFilter(filterActive) {
+            consola.debug(`TableController received: toggleFilter ${this.filterActive}`);
+            this.showFilter = filterActive;
         },
-        /*
-         *
-         * Row methods.
-         *
-         */
-        onRowSelect(selected, isHeader, rowInd, groupInd) {
-            // Toggle selection only the filtered data set on header selection
-            if (isHeader) {
-                // we cannot directly modify the masterSelected field (either reactivity is missed or a Vue error is thrown)
-                let local = [...this.masterSelected];
-                this.processedIndicies.forEach(indGroup => {
-                    // there is a bug with Vue which requires an explicit type check here for the nested array
-                    if (indGroup && Array.isArray(indGroup)) {
-                        indGroup.forEach(rowInd => {
-                            local[rowInd] = selected ? 1 : 0;
-                        });
-                    }
-                });
-                this.masterSelected = local;
-            } else {
-                Vue.set(
-                    this.masterSelected,
-                    this.processedIndicies[groupInd][this.getProcessedRowIndex(rowInd, groupInd)],
-                    selected ? 1 : 0
-                );
-            }
-            this.$emit('tableSelect', rowInd, this.masterSelected.reduce((count, selected) => count + selected, 0));
+        onSelectAll(selected) {
+            consola.debug(`TableController received: selectAll ${selected}`);
+            this.masterSelected = this.masterSelected.map(item => selected ? 1 : 0);
+            this.$emit('tableSelect', this.totalSelected);
         },
-        onRowInput(event) {
+        onRowSelect(selected, rowInd, groupInd) {
+            consola.debug(
+                `TableController received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.processedIndicies}`
+            );
+            Vue.set(
+                this.masterSelected,
+                this.processedIndicies[groupInd][this.getProcessedRowIndex(rowInd, groupInd)],
+                selected ? 1 : 0
+            );
+            this.$emit('tableSelect', this.totalSelected);
+        },
+        onTableInput(event) {
+            consola.debug(`TableController received: tableInput ${event}`);
             this.$emit('tableInput', event);
-            this.openPopover(event);
-        },
-        onGroupSubMenuClick(event, group) {
-            event.callback(group, this);
-        },
-        onRowSubMenuClick(event, row) {
-            event.callback(row, this);
         },
         /*
          *
@@ -686,266 +699,57 @@ export default {
                 .filter(row => row !== false);
         },
         clearSelection() {
+            consola.debug(`TableController clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
-        },
-        openPopover(event) {
-            this.popoverColumn = this.currentColumnKeys[event.colInd];
-            this.popoverRenderer = this.popoverRenderers[this.currentColumnKeys[event.colInd]] ||
-                this.currentColumnTypes[event.colInd];
-            this.popoverData = this.processedData[event.groupInd][event.rowInd][this.popoverColumn];
-            this.popoverTarget = event.cell;
-            window.addEventListener('resize', this.onPopoverClose);
-        },
-        onPopoverClose() {
-            this.popoverTarget = null;
-            this.popoverColumn = null;
-            this.popoverRenderer = null;
-            this.popoverData = null;
-            window.removeEventListener('resize', this.onPopoverClose);
         }
     }
 };
 </script>
 
 <template>
-  <div class="wrapper">
-    <table
-      ref="table"
+  <TableUI
+    :data="processedData"
+    :current-selection="currentSelection"
+    :total-selected="totalSelected"
+    :data-config="dataConfig"
+    :table-config="tableConfig"
+    @timeFilterUpdate="onTimeFilterUpdate"
+    @columnUpdate="onColumnUpdate"
+    @columnReorder="onColumnReorder"
+    @groupUpdate="onGroupUpdate"
+    @search="onSearch"
+    @pageChange="onPageChange"
+    @pageSizeUpdate="onPageSizeUpdate"
+    @columnSort="onColumnSort"
+    @columnFilter="onColumnFilter"
+    @clearFilter="onClearFilter"
+    @toggleFilter="onToggleFilter"
+    @selectAll="onSelectAll"
+    @rowSelect="onRowSelect"
+    @tableInput="onTableInput"
+  >
+    <!-- @tableSelect="onRowSelect" -->
+    <template
+      v-for="colInd in currentSlottedColumns"
+      #[`cellContent-${currentColumnKeys[colInd]}`]="cellData"
     >
-      <TableControlsTop
-        :total-items="totalTableSize"
-        :current-items="currentTableSize"
-        :page-size="currentPageSize"
-        :current-page="currentPage"
-        :all-columns="allHeadersOrdered"
-        :current-columns="currentHeaders"
-        :all-groups="allGroups"
-        :current-group="currentGroup"
-        :time-filter="currentTimeFilter"
-        :search-query="searchQuery"
-        :show-time-filter="showTimeFilter"
-        :show-columns="showColumns"
-        :show-groups="showGroups"
-        :show-search="showSearch"
-        @nextPage="onPageChange(1)"
-        @prevPage="onPageChange(-1)"
-        @columnUpdate="onColumnUpdate"
-        @columnReorder="onColumnReorder"
-        @groupUpdate="onGroupUpdate"
-        @searchUpdate="onSearch"
-        @timeFilterUpdate="onTimeFilterUpdate"
+      <slot
+        :name="`cellContent-${currentColumnKeys[colInd]}`"
+        :data="{ ...cellData }"
       />
-      <TableHeader
-        :row="currentHeaders"
-        :column-sort="columnSort"
-        :sort-direction="columnSortDirection"
-        :column-widths="columnSizes"
-        :is-selected="masterSelected.some(item => item === 1)"
-        :filters-active="showFilter"
-        :show-collapser="showCollapser"
-        :show-selection="showSelection"
-        :show-column-filters="showColumnFilters"
-        :class="tableHeaderClass"
-        @rowSelect="onRowSelect"
-        @headerSort="onHeaderSort"
-        @toggleFilter="onToggleFilter"
+    </template>
+    <template #collapserContent="{ row }">
+      <slot
+        name="collapserContent"
+        :row="row"
       />
-      <TableColumnFilters
-        v-if="showColumnFilters && showFilter"
-        :columns="currentHeaders"
-        :column-widths="columnSizes"
-        :show-collapser="showCollapser"
-        :filter-configs="currentFilterConfigs"
-        :types="currentColumnTypes"
-        @headerFilter="onHeaderFilter"
-        @clearFilter="onClearFilter"
+    </template>
+    <template #popoverContent="{ data, popoverColumn }">
+      <slot
+        name="popoverContent"
+        :data="data"
+        :popoverColumn="popoverColumn"
       />
-      <TableGroup
-        v-for="(dataGroup, groupInd) in processedData"
-        :key="groupInd"
-        :title="groupTitles[groupInd]"
-        :sub-menu-items="groupSubMenuItems"
-        :show="processedData.length > 1 && dataGroup.length > 0"
-        @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
-      >
-        <TableRow
-          v-for="(row, rowInd) in dataGroup"
-          :key="row.id"
-          :row="currentColumnKeys.map(column => row[column])"
-          :column-widths="columnSizes"
-          :formatters="currentFormatters"
-          :class-generators="currentClassGenerators"
-          :editable-columns="currentEditableColumns"
-          :slotted-columns="currentSlottedColumns"
-          :popover-columns="currentPopoverColumns"
-          :is-selected="masterSelected[processedIndicies[groupInd][getProcessedRowIndex(rowInd, groupInd)]] === 1"
-          :sub-menu-items="subMenuItems"
-          :show-collapser="showCollapser"
-          :show-selection="showSelection"
-          @rowSelect="(selected, isHeader) => onRowSelect(selected, isHeader, rowInd, groupInd)"
-          @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
-          @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
-        >
-          <template
-            v-for="colInd in currentSlottedColumns"
-            #[`cellContent${colInd}`]="cellData"
-          >
-            <!-- Add key for dynamic scoped slots to help Vue framework manage events. -->
-            <span :key="rowInd + '_' + colInd">
-              <slot
-                :name="`cellContent-${currentColumnKeys[colInd]}`"
-                :data="{ ...cellData, column: currentColumnKeys[colInd], rowInd }"
-              />
-            </span>
-          </template>
-          <template slot="rowCollapserContent">
-            <slot
-              name="collapserContent"
-              :row="row"
-            />
-          </template>
-        </TableRow>
-      </TableGroup>
-      <TableControlsBottom
-        v-if="showBottomControls"
-        :total-items="totalTableSize"
-        :current-items="currentTableSize"
-        :page-size="currentPageSize"
-        :current-page="currentPage"
-        @nextPage="onPageChange(1)"
-        @prevPage="onPageChange(-1)"
-        @pageSizeUpdate="onPageSizeUpdate"
-      />
-      <TableActionButton
-        v-if="!showBottomControls && showActionButton"
-        :action-button-text="actionButtonText"
-        :action-callback="actionCallback"
-      />
-    </table>
-    <TablePopover
-      v-if="popoverTarget && (typeof popoverData !== 'undefined')"
-      ref="tablePopover"
-      initially-expanded
-      :use-button="false"
-      :data="popoverData"
-      :target="popoverTarget"
-      :renderer="popoverRenderer"
-      @close="onPopoverClose"
-    >
-      <template #content>
-        <slot
-          name="popoverContent"
-          :data="popoverData"
-          :column="popoverColumn"
-        />
-      </template>
-    </TablePopover>
-  </div>
+    </template>
+  </TableUI>
 </template>
-
-<style lang="postcss" scoped>
-
-.wrapper {
-  position: relative;
-}
-
-table {
-  font-size: 13px;
-  font-weight: 400;
-  table-layout: fixed;
-
-  & >>> td > a {
-    text-decoration: none;
-    display: block;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 100%;
-    padding-right: 15px;
-  }
-
-  & >>> td:first-child > a {
-    padding-left: 15px;
-  }
-}
-
-table,
-thead,
-tbody {
-  width: 100%;
-}
-
-table >>> tr {
-  display: flex;
-
-  &:not(:first-child):not(:last-child) {
-    padding: 0 5px;
-  }
-}
-
-.empty-message {
-  font-size: 13px;
-  line-height: 18px;
-}
-
->>> .more-button { /* standard focus on button interferes when clicked */
-  & button:focus {
-    color: var(--knime-masala);
-    background-color: var(--knime-silver-sand-semi);
-  }
-}
-
-@media only screen and (max-width: 1180px) {
-  table {
-    table-layout: fixed;
-    width: 100%;
-
-    & th,
-    & >>> td > a {
-      padding-right: 0;
-      padding-left: 5px;
-      margin-left: 0;
-    }
-  }
-}
-
-@media only screen and (max-width: 750px) {
-  table {
-    & >>> .name {
-      width: 40%;
-      align-items: center;
-    }
-
-    & >>> td.name {
-      line-height: unset;
-      white-space: pre-wrap;
-
-      & a {
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* number of lines to show */
-        -webkit-box-orient: vertical;
-      }
-    }
-
-    & >>> .owner {
-      width: 30%;
-    }
-
-    & >>> .start-date {
-      width: 25%;
-    }
-
-    & >>> .state {
-      width: 5%;
-
-      &::before {
-        padding-left: 5px;
-      }
-    }
-
-    & >>> th.state {
-      overflow: visible;
-      padding-left: 0;
-    }
-  }
-}
-</style>

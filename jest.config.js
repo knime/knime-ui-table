@@ -35,7 +35,8 @@ module.exports = {
         '!.eslintrc*.js',
         '!**/.eslintrc*.js',
         '!buildtools/**/*.js',
-        '!.stylelintrc.js'
+        '!.stylelintrc.js',
+        '!demo/**/*'
     ],
     coveragePathIgnorePatterns: [
         '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test)/'

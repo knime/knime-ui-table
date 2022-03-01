@@ -5,22 +5,35 @@ import TableFilterInputField from '~/components/filter/TableFilterInputField';
 import TableFilterDropdown from '~/components/filter/TableFilterDropdown';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import { columnTypes } from '~/config/table.config';
 
 describe('TableColumnFilter.vue', () => {
     let propsData = {
-        columns: ['User', 'Count', 'Enabled'],
-        columnWidths: [33, 33, 33],
+        columnHeaders: ['User', 'Count', 'Enabled'],
+        // eslint-disable-next-line no-magic-numbers
+        columnSizes: [33, 33, 33],
         filterConfigs: [
             {
-                domain: ['Root', 'Alice', 'Bob']
+                is: 'TableFilterMultiselect',
+                value: [],
+                possibleValues: [
+                    { id: 'Root', text: 'Root' },
+                    { id: 'Alice', text: 'Alice' },
+                    { id: 'Bob', text: 'Bob' }
+                ],
+                placeholder: 'Column1'
             },
-            {},
+            { is: 'TableFilterInputField', value: '', placeholder: 'Column2' },
             {
-                domain: ['Yes', 'No', '-']
+                is: 'TableFilterDropdown',
+                value: [],
+                possibleValues: [
+                    { id: 'Yes', text: 'Yes' },
+                    { id: 'No', text: 'No' },
+                    { id: '-', text: '-' }
+                ],
+                placeholder: 'Column3'
             }
-        ],
-        types: [columnTypes.Nominal, columnTypes.Number, columnTypes.Boolean]
+        ]
     };
 
     it('renders column filters controls', () => {
@@ -34,12 +47,12 @@ describe('TableColumnFilter.vue', () => {
         expect(wrapper.find(CloseIcon).exists()).toBe(true);
     });
 
-    it('emits headerFilter events', () => {
+    it('emits columnFilter events', () => {
         let wrapper = shallowMount(TableColumnFilter, { propsData });
-        expect(wrapper.emitted().headerFilter).toBeFalsy();
+        expect(wrapper.emitted().columnFilter).toBeFalsy();
         wrapper.find(TableFilterInputField).vm.$emit('input', 'New Value');
-        expect(wrapper.emitted().headerFilter).toBeTruthy();
-        expect(wrapper.emitted().headerFilter[0][0]).toStrictEqual({ colInd: 1, values: 'New Value' });
+        expect(wrapper.emitted().columnFilter).toBeTruthy();
+        expect(wrapper.emitted().columnFilter[0]).toStrictEqual([1, 'New Value']);
     });
 
     it('emits clearFilter events', () => {

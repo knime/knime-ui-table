@@ -8,8 +8,10 @@ describe('TableActionButton.vue', () => {
     it('renders default', () => {
         wrapper = shallowMount(TableActionButton, {
             propsData: {
-                actionButtonText: 'test',
-                actionCallback: jest.fn()
+                config: {
+                    actionButtonText: 'test',
+                    actionCallback: jest.fn()
+                }
             }
         });
         expect(wrapper.find(TableActionButton).exists()).toBe(true);
@@ -20,8 +22,10 @@ describe('TableActionButton.vue', () => {
         let actionCallbackMock = jest.fn();
         wrapper = shallowMount(TableActionButton, {
             propsData: {
-                actionButtonText: 'test',
-                actionCallback: actionCallbackMock
+                config: {
+                    actionButtonText: 'test',
+                    actionCallback: actionCallbackMock
+                }
             }
         });
         expect(actionCallbackMock).not.toHaveBeenCalled();

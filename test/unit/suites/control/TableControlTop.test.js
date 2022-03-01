@@ -7,22 +7,39 @@ import TableFilterInputField from '~/components/filter/TableFilterInputField';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
 describe('TableControlTop.vue', () => {
-    let allColumns = ['Workflow', 'User', 'Date'];
-    let currentColumns = ['User'];
-    let allGroups = ['Department', 'Access', 'Location'];
-    let currentGroups = 'Access';
-
     let propsData = {
-        totalItems: 100,
-        currentItems: 100,
-        pageSize: 25,
-        currentPage: 1,
-        allColumns,
-        currentColumns,
-        allGroups,
-        currentGroups,
-        showSearch: true,
-        timeFilter: 'Last month'
+        tableConfig: {
+            pageConfig: {
+                totalItems: 100,
+                currentItems: 100,
+                pageSize: 25,
+                currentPage: 1
+            },
+            searchConfig: {
+                searchQuery: ''
+            },
+            timeFilterConfig: {
+                currentTimeFilter: 'Last month'
+            },
+            columnSelectionConfig: {
+                possibleColumns: []
+            },
+            groupByConfig: {
+                currentGroup: '',
+                possibleGroups: []
+            }
+        },
+        columnHeaders: ['Workflow', 'User', 'Date']
+        // totalItems: 100,
+        // currentItems: 100,
+        // pageSize: 25,
+        // currentPage: 1,
+        // allColumns,
+        // currentColumns,
+        // allGroups,
+        // currentGroups,
+        // showSearch: true,
+        // timeFilter: 'Last month'
     };
 
     it('renders table top controls', () => {
@@ -43,53 +60,42 @@ describe('TableControlTop.vue', () => {
         expect(wrapper.findAll(TableControlDropdown).length).toBe(2);
         expect(wrapper.find(TableControlMultiselect).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(true);
-        wrapper.setProps({ showTimeFilter: false });
+        wrapper.setProps({ tableConfig: {
+            ...propsData.tableConfig,
+            timeFilterConfig: null
+        } });
         expect(wrapper.findAll(TableControlDropdown).length).toBe(1);
-        wrapper.setProps({ showColumns: false });
+        wrapper.setProps({ tableConfig: {
+            ...propsData.tableConfig,
+            columnSelectionConfig: null
+        } });
         expect(wrapper.find(TableControlMultiselect).exists()).toBe(false);
-        wrapper.setProps({ showGroups: false });
+        wrapper.setProps({ tableConfig: {
+            ...propsData.tableConfig,
+            groupByConfig: null,
+            timeFilterConfig: null
+        } });
         expect(wrapper.findAll(TableControlDropdown).length).toBe(0);
-        wrapper.setProps({ showSearch: false });
+        wrapper.setProps({ tableConfig: {
+            ...propsData.tableConfig,
+            searchConfig: null
+        } });
         expect(wrapper.find(FunctionButton).exists()).toBe(false);
     });
 
-    it('controls component visibility via prop', () => {
-        let wrapper = shallowMount(TableControlTop, { propsData });
-
-        expect(wrapper.find(TableControlTop).exists()).toBe(true);
-        expect(wrapper.find(TableControlsBase).exists()).toBe(true);
-        expect(wrapper.findAll(TableControlDropdown).length).toBe(2);
-        expect(wrapper.find(TableControlMultiselect).exists()).toBe(true);
-        expect(wrapper.find(FunctionButton).exists()).toBe(true);
-        wrapper.setProps({ showTimeFilter: false });
-        expect(wrapper.findAll(TableControlDropdown).length).toBe(1);
-        wrapper.setProps({ showColumns: false });
-        expect(wrapper.find(TableControlMultiselect).exists()).toBe(false);
-        wrapper.setProps({ showGroups: false });
-        expect(wrapper.findAll(TableControlDropdown).length).toBe(0);
-        wrapper.setProps({ showSearch: false });
-        expect(wrapper.find(FunctionButton).exists()).toBe(false);
-    });
-
-    it('creates dropdown items when provided with a list of page sizes', () => {
+    it('creates dropdown items when provided with a list of possible values', () => {
         let wrapper = shallowMount(TableControlTop);
-        let items = wrapper.vm.getSelectItems(allColumns);
+        let columnHeaders = propsData.columnHeaders;
+        let items = wrapper.vm.getSelectItems(columnHeaders);
         items.forEach((item, itemInd) => {
             expect(item).toStrictEqual({
-                id: allColumns[itemInd],
-                text: allColumns[itemInd]
+                id: columnHeaders[itemInd],
+                text: columnHeaders[itemInd]
             });
         });
     });
 
     describe('time controls', () => {
-        it('hides time selection if no timeFilter value is provided', () => {
-            let wrapper = shallowMount(TableControlTop, { propsData });
-            expect(wrapper.findAll(TableControlDropdown).length).toBe(2);
-            wrapper.setProps({ timeFilter: null });
-            expect(wrapper.findAll(TableControlDropdown).length).toBe(1);
-        });
-
         it('emits timeFilterUpdate when timeFilter value is updated', () => {
             let wrapper = shallowMount(TableControlTop, { propsData });
             let timeFilterControls = wrapper.findAll(TableControlDropdown).at(0);
@@ -119,13 +125,6 @@ describe('TableControlTop.vue', () => {
     });
 
     describe('group controls', () => {
-        it('hides groups if the number of groups in the data is 0', () => {
-            let wrapper = shallowMount(TableControlTop, { propsData });
-            expect(wrapper.findAll(TableControlDropdown).length).toBe(2);
-            wrapper.setProps({ allGroups: [] });
-            expect(wrapper.findAll(TableControlDropdown).length).toBe(1);
-        });
-
         it('emits groupUpdate when group value is updated', () => {
             let wrapper = shallowMount(TableControlTop, { propsData });
             let groupFilterControls = wrapper.findAll(TableControlDropdown).at(1);
@@ -185,12 +184,7 @@ describe('TableControlTop.vue', () => {
             let nextPageMock = jest.fn();
             let prevPageMock = jest.fn();
             let wrapper = shallowMount(TableControlTop, {
-                propsData: {
-                    totalItems: 100,
-                    currentItems: 100,
-                    pageSize: 25,
-                    currentPage: 1
-                },
+                propsData,
                 listeners: {
                     nextPage: nextPageMock,
                     prevPage: prevPageMock

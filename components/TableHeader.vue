@@ -22,19 +22,15 @@ export default {
         FilterIcon
     },
     props: {
-        row: {
+        tableConfig: {
+            type: Object,
+            default: () => ({})
+        },
+        columnHeaders: {
             type: Array,
             default: () => []
         },
-        columnSort: {
-            type: Number,
-            default: 0
-        },
-        sortDirection: {
-            type: Number,
-            default: 1
-        },
-        columnWidths: {
+        columnSizes: {
             type: Array,
             default: () => []
         },
@@ -45,18 +41,6 @@ export default {
         filtersActive: {
             type: Boolean,
             default: false
-        },
-        showCollapser: {
-            type: Boolean,
-            default: false
-        },
-        showSelection: {
-            type: Boolean,
-            default: true
-        },
-        showColumnFilters: {
-            type: Boolean,
-            default: true
         }
     },
     data() {
@@ -64,16 +48,25 @@ export default {
             height: 40
         };
     },
+    computed: {
+        enableSorting() {
+            return Boolean(this.tableConfig?.sortConfig);
+        },
+        sortColumn() {
+            return this.tableConfig?.sortConfig?.sortColumn;
+        },
+        sortDirection() {
+            return this.tableConfig?.sortConfig?.sortDirection;
+        }
+    },
     methods: {
         onSelect() {
-            this.$emit('rowSelect', !this.isSelected, true);
+            this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            this.$emit('headerSort', {
-                type: 'sort',
-                ind,
-                value: this.row[ind]
-            });
+            if (this.enableSorting) {
+                this.$emit('columnSort', ind, this.columnHeaders[ind]);
+            }
         },
         onToggleFilter() {
             this.$emit('toggleFilter');
@@ -84,14 +77,14 @@ export default {
 
 <template>
   <thead>
-    <tr v-if="row.length > 0">
+    <tr v-if="columnHeaders.length > 0">
       <th
-        v-if="showCollapser"
+        v-if="tableConfig.showCollapser"
         :cell-type="'th'"
         class="collapser-cell-spacer"
       />
       <th
-        v-if="showSelection"
+        v-if="tableConfig.showSelection"
         class="select-cell"
       >
         <Checkbox
@@ -100,21 +93,21 @@ export default {
         />
       </th>
       <th
-        v-for="(data, ind) in row"
+        v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnWidths[ind] || 100}%)` }"
-        :class="['column-header', {'inverted': sortDirection === -1}]"
+        :style="{ width: `calc(${columnSizes[ind] || 100}%)` }"
+        :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1} ]"
         tabindex="0"
         @click="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
-        <ArrowIcon :class="['icon', { active: columnSort === ind }]" />
-        <div :class="['header-text-container', { 'with-icon': columnSort === ind }]">
-          {{ data }}
+        <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
+        <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+          {{ header }}
         </div>
       </th>
       <th
-        v-if="showColumnFilters"
+        v-if="tableConfig.showColumnFilters"
         :class="['action', { 'filter-active': filtersActive }]"
       >
         <FunctionButton @click="onToggleFilter">
@@ -165,7 +158,6 @@ thead {
 
       &.column-header {
         position: relative;
-        cursor: pointer;
         display: flex;
         flex-direction: row-reverse;
         justify-content: flex-end;
@@ -201,14 +193,18 @@ thead {
           transform: scaleY(-1);
         }
 
-        &:hover,
-        &:focus {
-          outline: none;
-          color: var(--knime-dove-gray);
+        &.sortable {
+          cursor: pointer;
 
-          & .icon {
-            display: unset;
-            stroke: var(--knime-dove-gray);
+          &:hover,
+          &:focus {
+            outline: none;
+            color: var(--knime-dove-gray);
+
+            & .icon {
+              display: unset;
+              stroke: var(--knime-dove-gray);
+            }
           }
         }
       }

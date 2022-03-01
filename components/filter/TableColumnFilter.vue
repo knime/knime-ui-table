@@ -4,7 +4,6 @@ import TableFilterInputField from './TableFilterInputField';
 import TableFilterDropdown from './TableFilterDropdown';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import { columnTypes, columnFilterTypes } from '../../config/table.config';
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -23,19 +22,15 @@ export default {
         CloseIcon
     },
     props: {
-        columns: {
-            type: Array,
-            default: () => []
-        },
-        columnWidths: {
-            type: Array,
-            default: () => []
-        },
         filterConfigs: {
             type: Array,
             default: () => []
         },
-        types: {
+        columnHeaders: {
+            type: Array,
+            default: () => []
+        },
+        columnSizes: {
             type: Array,
             default: () => []
         },
@@ -44,27 +39,10 @@ export default {
             default: false
         }
     },
-    data() {
-        return {
-            columnTypes,
-            columnFilterTypes,
-            requirePossibleValues: ['TableFilterMultiselect', 'TableFilterDropdown']
-        };
-    },
-    computed: {
-        possibleValues() {
-            return this.columns.map((col, colInd) => {
-                if (this.requirePossibleValues.includes(this.columnFilterTypes[this.types[colInd]])) {
-                    return this.filterConfigs[colInd].domain.map(val => ({ id: val, text: val }));
-                }
-                return null;
-            });
-        }
-    },
     methods: {
-        onInput(columnInd, value) {
+        onInput(colInd, value) {
             consola.debug('Updated table column filter: ', value);
-            this.$emit('headerFilter', { colInd: columnInd, values: value });
+            this.$emit('columnFilter', colInd, value);
         },
         onClearFilter() {
             consola.debug('Table column filter cleared.');
@@ -83,18 +61,17 @@ export default {
       />
       <th class="select-cell-spacer" />
       <th
-        v-for="(column, ind) in columns"
+        v-for="(column, ind) in columnHeaders"
         :key="ind + 'filter'"
-        :style="{ width: `calc(${columnWidths[ind] || 100}% - 15px)` }"
+        :style="{ width: `calc(${columnSizes[ind] || 100}% - 15px)` }"
         :cell-type="'th'"
         class="filter"
       >
         <Component
-          :is="columnFilterTypes[types[ind]]"
-          :value="filterConfigs[ind].value"
+          :is="filterConfigs[ind].is"
+          v-bind="filterConfigs[ind]"
           :placeholder="column"
           :aria-label="`filter-${column}`"
-          :possible-values="possibleValues[ind]"
           @input="value => onInput(ind, value)"
         />
       </th>

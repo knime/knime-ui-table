@@ -2,8 +2,6 @@
 import TableControlsBase from './TableControlBase';
 import TableControlDropdown from './TableControlDropdown';
 
-import { tablePageSizes } from '../../config/table.config';
-
 /**
  * Table controls for the bottom of the table optionally consisting of page controls
  * and a drop-"up" selection input for table page size.
@@ -17,27 +15,17 @@ export default {
         TableControlDropdown
     },
     props: {
-        totalItems: {
-            type: Number,
-            default: 0
-        },
-        currentItems: {
-            type: Number,
-            default: 0
-        },
-        pageSize: {
-            type: Number,
-            default: 0
-        },
-        currentPage: {
-            type: Number,
-            default: 0
+        pageConfig: {
+            type: Object,
+            default: () => ({}),
+            validate(pageConfig) {
+                if (typeof pageConfig !== 'object') {
+                    return false;
+                }
+                const requiredProperties = ['currentSize', 'tableSize', 'pageSize', 'currentPage', 'possiblePageSizes'];
+                return requiredProperties.every(key => pageConfig.hasOwnProperty(key));
+            }
         }
-    },
-    data() {
-        return {
-            allPageSizes: tablePageSizes
-        };
     },
     methods: {
         createText(size) {
@@ -66,9 +54,9 @@ export default {
   >
     <TableControlDropdown
       open-up
-      :value="createText(pageSize)"
+      :value="createText(pageConfig.pageSize)"
       :aria-label="'Choose page size'"
-      :possible-values="getSelectItems(allPageSizes.map(num => createText(num)))"
+      :possible-values="getSelectItems(pageConfig.possiblePageSizes.map(num => createText(num)))"
       class="dropdown-controls"
       placeholder="Items per page"
       @input="onPageSizeSelect"

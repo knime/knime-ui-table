@@ -1,7 +1,7 @@
 // Development app logger config. Not included in production build.
 
 const { _types } = require('consola');
-let level = process.env.VUE_APP_LOG_LEVEL || 'info';
+let level = process.env.VUE_APP_LOG_LEVEL || 'debug';
 
 module.exports = {
     level: _types[level].level,

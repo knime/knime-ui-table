@@ -13,13 +13,28 @@ describe('TableRow.vue', () => {
     let f = item => item;
     let propsData = {
         row: ['data1', 'data2', 'data3', 'data4', 'data5'],
-        formatters: [f, f, f, f, f],
-        classGenerators: [[], [], [], [], []],
-        editableColumns: [null, null, null, null, null],
-        slottedColumns: [],
-        popoverColumns: [0],
-        columnWidths: [20, 20, 20, 20, 20],
-        subMenuItems: [{ id: 'action', text: 'Action' }]
+        tableConfig: {
+            showPopovers: true,
+            showSelection: true,
+            showCollapser: false,
+            subMenuItems: [{ id: 'action', text: 'Action' }]
+        },
+        columnConfigs: []
+    };
+    propsData.row.forEach(i => propsData.columnConfigs.push({
+        formatter: f,
+        classGenerator: [],
+        size: 20,
+        hasSlotContent: false,
+        popoverRenderer: false
+    }));
+    let getUpdatedPropsData = (colProp, values) => {
+        let updatedProps = JSON.parse(JSON.stringify(propsData));
+        updatedProps.columnConfigs.forEach((colConfig, colInd) => {
+            colConfig.formatter = f;
+            colConfig[colProp] = values[colInd];
+        });
+        return updatedProps;
     };
 
     describe('rendering', () => {
@@ -55,7 +70,10 @@ describe('TableRow.vue', () => {
             wrapper = shallowMount(TableRow, {
                 propsData: {
                     ...propsData,
-                    showCollapser: true
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        showCollapser: true
+                    }
                 }
             });
 
@@ -67,7 +85,10 @@ describe('TableRow.vue', () => {
             wrapper = shallowMount(TableRow, {
                 propsData: {
                     ...propsData,
-                    showSelection: false
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        showSelection: false
+                    }
                 }
             });
 
@@ -79,7 +100,10 @@ describe('TableRow.vue', () => {
             wrapper = shallowMount(TableRow, {
                 propsData: {
                     ...propsData,
-                    subMenuItems: []
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems: []
+                    }
                 }
             });
 
@@ -88,11 +112,11 @@ describe('TableRow.vue', () => {
         });
 
         it('selectively generates slots for specific columns', () => {
+            let propsData = getUpdatedPropsData('hasSlotContent', [
+                false, false, true, false, false
+            ]);
             wrapper = shallowMount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    slottedColumns: [2]
-                },
+                propsData,
                 slots: {
                     cellContent2: '<iframe> Custom content </iframe>'
                 }
@@ -103,11 +127,11 @@ describe('TableRow.vue', () => {
         });
 
         it('provides column data to the slotted column', () => {
+            let propsData = getUpdatedPropsData('hasSlotContent', [
+                false, false, true, false, false
+            ]);
             wrapper = mount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    slottedColumns: [2]
-                },
+                propsData,
                 scopedSlots: {
                     cellContent2: props => `<div>${props.row}</div>`
                 }
@@ -117,40 +141,19 @@ describe('TableRow.vue', () => {
             expect(wrapper.vm.$refs.dataCell[2].innerHTML).toContain('data3');
         });
 
-        it('provides column data to dynamic, slotted cell components', () => {
-            let MagicComponent = {
-                props: ['magicLevel'],
-                template: '<div>Magic Level {{ magicLevel }} <slot/></div>'
-            };
-            let localRow = [...propsData.row];
-            localRow[2] = { magicLevel: 100 };
+        it('uses formatters for rendering', () => {
+            let propsData = getUpdatedPropsData('formatter', [
+                val => val.toUpperCase(),
+                val => val.value,
+                val => typeof val,
+                val => val || '-',
+                // eslint-disable-next-line no-magic-numbers
+                val => val % 33
+            ]);
             wrapper = mount(TableRow, {
                 propsData: {
                     ...propsData,
-                    row: localRow,
-                    editableColumns: [null, null, MagicComponent]
-                },
-                slots: {
-                    componentSlot: `(Awesome)`
-                }
-            });
-
-            expect(wrapper.find(TableRow).exists()).toBe(true);
-            expect(wrapper.vm.$refs.dataCell[2].innerHTML).toContain('<div>Magic Level 100 (Awesome)</div>');
-        });
-
-        it('uses formatters for default rendering', () => {
-            wrapper = mount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    row: ['val', { value: 'val' }, [null], false, 100],
-                    formatters: [
-                        val => val.toUpperCase(),
-                        val => val.value,
-                        val => typeof val,
-                        val => val || '-',
-                        val => val % 33
-                    ]
+                    row: ['val', { value: 'val' }, [null], false, 100]
                 }
             });
             let cells = wrapper.vm.$refs.dataCell;
@@ -165,7 +168,10 @@ describe('TableRow.vue', () => {
             wrapper = mount(TableRow, {
                 propsData: {
                     ...propsData,
-                    showCollapser: true
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        showCollapser: true
+                    }
                 }
             });
             expect(wrapper.find('.expandable-content').exists()).toBe(false);
@@ -183,10 +189,13 @@ describe('TableRow.vue', () => {
             expect(wrapper.find(TableRow).emitted().rowSelect).toBeFalsy();
             wrapper.find(Checkbox).vm.$emit('input', true);
             expect(wrapper.find(TableRow).emitted().rowSelect).toBeTruthy();
-            expect(wrapper.find(TableRow).emitted().rowSelect[0]).toStrictEqual([true, false]);
+            expect(wrapper.find(TableRow).emitted().rowSelect[0][0]).toBe(true);
         });
 
         it('emits a rowInput event when a cell is clicked if popover column', () => {
+            let propsData = getUpdatedPropsData('popoverRenderer', [
+                true, false, false, false, false
+            ]);
             wrapper = shallowMount(TableRow, {
                 propsData
             });
@@ -229,7 +238,10 @@ describe('TableRow.vue', () => {
             wrapper = shallowMount(TableRow, {
                 propsData: {
                     ...propsData,
-                    showCollapser: true
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        showCollapser: true
+                    }
                 }
             });
             expect(wrapper.vm.showContent).toBe(false);
@@ -246,10 +258,10 @@ describe('TableRow.vue', () => {
             wrapper.find(SubMenu).vm.$emit(
                 'item-click',
                 new MouseEvent('click'),
-                propsData.subMenuItems[0]
+                propsData.tableConfig.subMenuItems[0]
             );
             expect(wrapper.emitted().rowSubMenuClick).toBeTruthy();
-            expect(wrapper.emitted().rowSubMenuClick[0][0]).toBe(propsData.subMenuItems[0]);
+            expect(wrapper.emitted().rowSubMenuClick[0][0]).toBe(propsData.tableConfig.subMenuItems[0]);
         });
     });
 
@@ -262,18 +274,14 @@ describe('TableRow.vue', () => {
                 data4: 'width-4',
                 data5: 'width-5'
             };
-            wrapper = shallowMount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    classGenerators: [
-                        [classMap],
-                        [classMap],
-                        [classMap],
-                        [classMap],
-                        [classMap]
-                    ]
-                }
-            });
+            let propsData = getUpdatedPropsData('classGenerator', [
+                [classMap],
+                [classMap],
+                [classMap],
+                [classMap],
+                [classMap]
+            ]);
+            wrapper = shallowMount(TableRow, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
@@ -288,18 +296,14 @@ describe('TableRow.vue', () => {
 
         it('applies function class generators to the data', () => {
             let classFunction = data => `width-${data.slice(-1)}`;
-            wrapper = shallowMount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    classGenerators: [
-                        [classFunction],
-                        [classFunction],
-                        [classFunction],
-                        [classFunction],
-                        [classFunction]
-                    ]
-                }
-            });
+            let propsData = getUpdatedPropsData('classGenerator', [
+                [classFunction],
+                [classFunction],
+                [classFunction],
+                [classFunction],
+                [classFunction]
+            ]);
+            wrapper = shallowMount(TableRow, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
@@ -313,12 +317,10 @@ describe('TableRow.vue', () => {
         });
 
         it('uses custom classes', () => {
-            wrapper = shallowMount(TableRow, {
-                propsData: {
-                    ...propsData,
-                    classGenerators: [['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']]
-                }
-            });
+            let propsData = getUpdatedPropsData('classGenerator', [
+                ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
+            ]);
+            wrapper = shallowMount(TableRow, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']

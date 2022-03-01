@@ -32,61 +32,13 @@ export default {
         SearchIcon
     },
     props: {
-        totalItems: {
-            type: Number,
-            default: 0
+        tableConfig: {
+            type: Object,
+            default: () => ({})
         },
-        currentItems: {
-            type: Number,
-            default: 0
-        },
-        pageSize: {
-            type: Number,
-            default: 0
-        },
-        currentPage: {
-            type: Number,
-            default: 0
-        },
-        allColumns: {
+        columnHeaders: {
             type: Array,
             default: () => []
-        },
-        currentColumns: {
-            type: Array,
-            default: () => []
-        },
-        allGroups: {
-            type: Array,
-            default: () => []
-        },
-        currentGroup: {
-            type: String,
-            default: () => null
-        },
-        timeFilter: {
-            type: String,
-            default: null
-        },
-        searchQuery: {
-            type: String,
-            default: ''
-        },
-        showTimeFilter: {
-            type: Boolean,
-            default: true
-        },
-        showColumns: {
-            type: Boolean,
-            default: true
-        },
-        showGroups: {
-            type: Boolean,
-            default: true
-        },
-        showSearch: {
-            type: Boolean,
-            default: false
         }
     },
     data() {
@@ -94,6 +46,35 @@ export default {
             searchActive: false,
             timeFilters: Object.keys(tableTimeFilters)
         };
+    },
+    computed: {
+        showTimeFilter() {
+            return this.tableConfig?.timeFilterConfig;
+        },
+        timeFilter() {
+            return this.tableConfig?.timeFilterConfig?.currentTimeFilter;
+        },
+        showColumnSelection() {
+            return this.tableConfig?.columnSelectionConfig;
+        },
+        possibleColumns() {
+            return this.tableConfig?.columnSelectionConfig?.possibleColumns;
+        },
+        showGroupBy() {
+            return this.tableConfig?.groupByConfig;
+        },
+        currentGroup() {
+            return this.tableConfig?.groupByConfig?.currentGroup;
+        },
+        possibleGroups() {
+            return this.tableConfig?.groupByConfig?.possibleGroups;
+        },
+        showSearch() {
+            return this.tableConfig?.searchConfig;
+        },
+        searchQuery() {
+            return this.tableConfig?.searchConfig?.searchQuery;
+        }
     },
     methods: {
         getSelectItems(itemArr) {
@@ -143,10 +124,11 @@ export default {
   <TableControlsBase
     class="base-controls"
     v-bind="$props"
+    :page-config="tableConfig.pageConfig"
     v-on="$listeners"
   >
     <TableControlDropdown
-      v-if="showTimeFilter && timeFilter"
+      v-if="showTimeFilter"
       :value="timeFilter"
       :possible-values="getSelectItems(timeFilters)"
       :placeholder="timeFilter"
@@ -154,19 +136,19 @@ export default {
       @input="onTimeFilterSelect"
     />
     <TableControlMultiselect
-      v-if="showColumns"
+      v-if="showColumnSelection"
       lock-placeholder
-      :value="currentColumns"
-      :possible-values="getSelectItems(allColumns)"
+      :value="columnHeaders"
+      :possible-values="getSelectItems(possibleColumns)"
       placeholder="Select columns"
       @input="onColumnSelect"
       @columnReorder="onColumnReorder"
     />
     <TableControlDropdown
-      v-if="showGroups && allGroups.length"
+      v-if="showGroupBy"
       include-placeholder
       :value="currentGroup || ''"
-      :possible-values="getSelectItems(allGroups)"
+      :possible-values="getSelectItems(possibleGroups)"
       :placeholder="'Group by…'"
       :aria-label="'Group by category'"
       :formatter="group => `Grouped by '${group}'`"

@@ -1,4 +1,4 @@
-import { getColumnDomains } from '~/util/getColumnDomains';
+import getColumnDomains from '~/util/getColumnDomains';
 import { columnTypes } from '~/config/table.config';
 
 describe('getColumnDomains', () => {
@@ -20,23 +20,15 @@ describe('getColumnDomains', () => {
 
     it('creates filter configurations for Nominal, Numeric and Boolean', () => {
         expect(getColumnDomains({ data: dataMock, formatters, types })).toStrictEqual({
-            col1: {
-                domain: ['Yes', 'No']
-            },
-            col2: {
-                domain: ['a', 'b', 'c', 'd', 'e']
-            }
+            col1: ['Yes', 'No'],
+            col2: ['a', 'b', 'c', 'd', 'e']
         });
     });
 
     it('removes duplicate values', () => {
         expect(getColumnDomains({ data: [...dataMock, ...dataMock], formatters, types })).toStrictEqual({
-            col1: {
-                domain: ['Yes', 'No']
-            },
-            col2: {
-                domain: ['a', 'b', 'c', 'd', 'e']
-            }
+            col1: ['Yes', 'No'],
+            col2: ['a', 'b', 'c', 'd', 'e']
         });
     });
 
@@ -48,12 +40,9 @@ describe('getColumnDomains', () => {
         });
         formatters.col2 = item => item;
         expect(getColumnDomains({ data: [...cardinalData, ...cardinalData], formatters, types })).toStrictEqual({
-            col1: {
-                domain: ['Yes', 'No']
-            },
-            col2: {
-                domain: [0, 1, 2, 3, 4]
-            }
+            col1: ['Yes', 'No'],
+            // eslint-disable-next-line no-magic-numbers
+            col2: [0, 1, 2, 3, 4]
         });
     });
 
@@ -83,19 +72,15 @@ describe('getColumnDomains', () => {
             col2: item => nominalMap[item] || 'No Data'
         };
         expect(getColumnDomains({ data: [...dataMock, ...dataMock], formatters, types })).toStrictEqual({
-            col1: {
-                domain: ['Yes', '-', 'No']
-            },
-            col2: {
-                domain: [
-                    'Class A',
-                    'Class B',
-                    'Class C',
-                    'Class D',
-                    'Class E',
-                    'No Data'
-                ]
-            }
+            col1: ['Yes', '-', 'No'],
+            col2: [
+                'Class A',
+                'Class B',
+                'Class C',
+                'Class D',
+                'Class E',
+                'No Data'
+            ]
         });
     });
 });
