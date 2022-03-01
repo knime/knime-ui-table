@@ -42,7 +42,7 @@ export default {
                 }
                 return baseInfo;
             }
-            return `No data${(this.totalItems ? ` (${this.totalItems} hidden)` : '')}`;
+            return `No data${this.totalItems ? ` (${this.totalItems} hidden)` : ''}`;
         },
         pageRangeStart() {
             return 1 + ((this.currentPage * this.pageSize) - this.pageSize);

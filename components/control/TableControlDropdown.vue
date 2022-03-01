@@ -1,7 +1,7 @@
 <script>
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import Vue from 'vue';
-import { mixin as clickaway } from 'vue-clickaway';
+import { mixin as clickaway } from 'vue-clickaway2';
 
 const KEY_DOWN = 40;
 const KEY_UP = 38;

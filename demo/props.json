@@ -16,7 +16,12 @@
         "delay": 1,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -100,7 +105,12 @@
         "delay": 2,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -183,9 +193,18 @@
         "delayType": "MINUTES",
         "filter": {
           "times": [
-            { "start": "07:00:00", "end": "07:00:59" },
-            { "start": "12:00:00", "end": "12:00:59" },
-            { "start": "18:00:00", "end": "18:00:59" }
+            {
+              "start": "07:00:00",
+              "end": "07:00:59"
+            },
+            {
+              "start": "12:00:00",
+              "end": "12:00:59"
+            },
+            {
+              "start": "18:00:00",
+              "end": "18:00:59"
+            }
           ],
           "daysOfWeek": [
             "MONDAY",
@@ -270,7 +289,12 @@
         "delay": 1,
         "delayType": "HOURS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -354,7 +378,12 @@
         "delay": 5,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -446,7 +475,12 @@
         "delay": 5,
         "delayType": "MINUTES",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -505,7 +539,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -513,7 +551,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": [
+            "example-user@knime.com"
+          ]
         }
       ],
       "executionRetries": 0,
@@ -538,7 +578,12 @@
         "delay": 1,
         "delayType": "HOURS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -622,7 +667,12 @@
         "delay": 1,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -722,7 +772,12 @@
         "delay": 7,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -782,8 +837,13 @@
         }
       },
       "notifications": {
-        "recipients": ["example-user@knime.com", "example-user@knime.com"],
-        "reportFormats": ["HTML"]
+        "recipients": [
+          "example-user@knime.com",
+          "example-user@knime.com"
+        ],
+        "reportFormats": [
+          "HTML"
+        ]
       },
       "actions": [
         {
@@ -792,8 +852,12 @@
           "onFailure": false,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"],
-          "reportFormats": ["HTML"]
+          "recipients": [
+            "example-user@knime.com"
+          ],
+          "reportFormats": [
+            "HTML"
+          ]
         },
         {
           "type": "SendMail",
@@ -801,8 +865,12 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"],
-          "reportFormats": ["HTML"]
+          "recipients": [
+            "example-user@knime.com"
+          ],
+          "reportFormats": [
+            "HTML"
+          ]
         }
       ],
       "lastRun": "2021-08-15T12:05:00.037+02:00[Europe/Berlin]",
@@ -829,8 +897,15 @@
         "delay": 7,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
-          "daysOfWeek": ["MONDAY"],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
+          "daysOfWeek": [
+            "MONDAY"
+          ],
           "months": [
             "JANUARY",
             "FEBRUARY",
@@ -880,7 +955,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -888,7 +967,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user@knime.com"]
+          "recipients": [
+            "example-user@knime.com"
+          ]
         }
       ],
       "lastRun": "2021-08-16T00:00:00.013+02:00[Europe/Berlin]",
@@ -920,7 +1001,12 @@
         "delay": 1,
         "delayType": "DAYS",
         "filter": {
-          "times": [{ "start": "00:00:00", "end": "23:59:59" }],
+          "times": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59"
+            }
+          ],
           "daysOfWeek": [
             "MONDAY",
             "TUESDAY",
@@ -979,7 +1065,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-users@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-users@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -987,7 +1077,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-users@knime.com"]
+          "recipients": [
+            "example-users@knime.com"
+          ]
         }
       ],
       "lastRun": "2021-08-18T00:35:00.010+02:00[Europe/Berlin]",
@@ -1068,7 +1160,11 @@
     "id": "String"
   },
   "allFormatters": {},
-  "allClassGenerators": { "workflowPath": ["workflow-path"] },
+  "allClassGenerators": {
+    "workflowPath": [
+      "workflow-path"
+    ]
+  },
   "allEditableColumns": {},
   "allSlottedColumns": ["status"],
   "timeFilterKey": "lastRun",
