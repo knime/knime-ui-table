@@ -71,6 +71,9 @@ export default {
         };
     },
     computed: {
+        columnKeys() {
+            return this.getPropertiesFromColumns('key');
+        },
         columnSizes() {
             return this.getPropertiesFromColumns('size');
         },
@@ -172,7 +175,7 @@ export default {
       >
         <slot
           v-if="slottedColumns[ind]"
-          :name="`cellContent${ind}`"
+          :name="`cellContent-${columnKeys[ind]}`"
           :row="row"
           :ind="ind"
         />

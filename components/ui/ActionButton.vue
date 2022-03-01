@@ -15,7 +15,7 @@ export default {
     props: {
         config: {
             type: Object,
-            default: null
+            default: () => ({})
         }
     },
     data() {
@@ -26,7 +26,7 @@ export default {
     methods: {
         onClick(e) {
             consola.debug('Table action triggered.');
-            this.config.actionCallback();
+            this.config.callback();
         }
     }
 };
@@ -39,7 +39,7 @@ export default {
         with-border
         @click="onClick"
       >
-        {{ config.actionButtonText }}
+        {{ config.text }}
       </Button>
     </td>
   </tr>

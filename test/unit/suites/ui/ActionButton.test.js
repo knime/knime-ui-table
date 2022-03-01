@@ -9,8 +9,8 @@ describe('ActionButton.vue', () => {
         wrapper = shallowMount(ActionButton, {
             propsData: {
                 config: {
-                    actionButtonText: 'test',
-                    actionCallback: jest.fn()
+                    text: 'test',
+                    callback: jest.fn()
                 }
             }
         });
@@ -23,8 +23,8 @@ describe('ActionButton.vue', () => {
         wrapper = shallowMount(ActionButton, {
             propsData: {
                 config: {
-                    actionButtonText: 'test',
-                    actionCallback: actionCallbackMock
+                    text: 'test',
+                    callback: actionCallbackMock
                 }
             }
         });

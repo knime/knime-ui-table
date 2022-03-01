@@ -2,7 +2,7 @@
 import Vue from 'vue';
 import TableUI from './TableUI';
 
-import { columnTypes, typeFormatters, tablePageSizes } from '../config/table.config';
+import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
 import { defaultTimeFilter } from '../config/time.config';
 
 import getColumnDomains from '../util/getColumnDomains';
@@ -64,16 +64,9 @@ export default {
             type: String,
             default: null
         },
-        /**
-         * Default props.
-         */
         defaultColumns: {
             type: Array,
             default: () => []
-        },
-        defaultTimeFilter: {
-            type: String,
-            default: defaultTimeFilter
         },
         /**
          * Visual element configuration props.
@@ -125,13 +118,13 @@ export default {
         /**
          * Additional configuration options.
          */
+        pageSize: {
+            type: Number,
+            default: defaultPageSize
+        },
         parentSelected: {
             type: Array,
             default: () => []
-        },
-        pageSize: {
-            type: Number,
-            default: 10
         },
         actionButtonText: {
             type: String,
@@ -153,6 +146,7 @@ export default {
     data() {
         return {
             // Reference State
+            defaultTimeFilter,
             domains: {},
             allGroups: this.allColumnHeaders
                 .filter((header, colInd) => this.allColumnTypes[this.allColumnKeys[colInd]] === columnTypes.Nominal),
@@ -227,7 +221,7 @@ export default {
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
                     popoverRenderer: this.allPopoverRenderers[key],
-                    hasSlotContent: Boolean(this.currentSlottedColumns[ind])
+                    hasSlotContent: this.currentSlottedColumns?.includes(key)
                 };
                 dataConfig.columnConfigs.push(columnConfig);
             });
@@ -250,7 +244,7 @@ export default {
                     currentPage: this.currentPage
                 }
             };
-            if (this.showTimeFilter) {
+            if (this.showTimeFilter && this.timeFilterKey) {
                 tableConfig.timeFilterConfig = {
                     currentTimeFilter: this.currentTimeFilter
                 };
@@ -320,7 +314,9 @@ export default {
             return this.currentColumnKeys.map(colKey => this.allClassGenerators[colKey] || []);
         },
         currentSlottedColumns() {
-            return this.currentColumnKeys.map((col, colInd) => this.allSlottedColumns?.includes(col) ? colInd : null);
+            return this.currentColumnKeys
+                .map(col => this.allSlottedColumns?.includes(col) ? col : null)
+                .filter(col => col !== null);
         },
         currentFilterConfigs() {
             return getFilterConfigs({
@@ -728,13 +724,15 @@ export default {
     @tableInput="onTableInput"
   >
     <template
-      v-for="colInd in currentSlottedColumns"
-      #[`cellContent-${currentColumnKeys[colInd]}`]="cellData"
+      v-for="col in currentSlottedColumns"
+      #[`cellContent-${col}`]="{ data: { row, key, colInd, rowInd } } = { data: {} }"
     >
-      <slot
-        :name="`cellContent-${currentColumnKeys[colInd]}`"
-        :data="{ ...cellData }"
-      />
+      <span :key="rowInd + '_' + colInd + '_' + col">
+        <slot
+            :name="`cellContent-${key}`"
+            :data="{ row, key, colInd, rowInd }"
+        />
+      </span>
     </template>
     <template #collapserContent="{ row }">
       <slot

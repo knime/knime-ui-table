@@ -105,7 +105,9 @@ export default {
             return this.getPropertiesFromColumns('key');
         },
         slottedColumns() {
-            return this.getPropertiesFromColumns('hasSlotContent');
+            return this.getPropertiesFromColumns('hasSlotContent')
+                .map((hasSlotContent, colInd) => hasSlotContent ? colInd : null)
+                .filter(colInd => colInd !== null);
         },
         popoverRenderers() {
             return this.getPropertiesFromColumns('popoverRenderer').map((renderer, colInd) => {
@@ -274,13 +276,13 @@ export default {
         >
           <template
             v-for="colInd in slottedColumns"
-            #[`cellContent${colInd}`]="cellData"
+            #[`cellContent-${columnKeys[colInd]}`]="cellData"
           >
             <!-- Add key for dynamic scoped slots to help Vue framework manage events. -->
             <span :key="rowInd + '_' + colInd">
               <slot
                 :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{ ...cellData, column: columnKeys[colInd], rowInd }"
+                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
               />
             </span>
           </template>

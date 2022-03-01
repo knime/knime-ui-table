@@ -36,8 +36,8 @@
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.3",
     "babel-jest": "24.9.0",
-    "consola": "2.10.1",
     "concurrently": "5.3.0",
+    "consola": "2.10.1",
     "core-js": "3.6.5",
     "cross-var": "1.1.0",
     "eslint": "7.32.0",
@@ -67,10 +67,10 @@
     "webapps-common": "file:webapps-common"
   },
   "peerDependencies": {
-    "vue": "2.6.*",
     "consola": "2.*",
     "fontsource-roboto": "~3.*",
-    "fontsource-roboto-mono": "~3.*"
+    "fontsource-roboto-mono": "~3.*",
+    "vue": "2.6.*"
   },
   "engines": {
     "node": "14.x"
