@@ -1,7 +1,7 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import TableFilterMultiselect from '~/components/filter/TableFilterMultiselect';
+import FilterMultiselect from '~/components/filter/FilterMultiselect';
 
-describe('TableFilterMultiselect.vue', () => {
+describe('FilterMultiselect.vue', () => {
     let localVue;
 
     beforeAll(() => {
@@ -9,7 +9,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('renders', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -30,7 +30,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('renders placeholder or number of selected items', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -62,7 +62,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('emits input events', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -82,7 +82,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('toggles properly', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -105,7 +105,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('adds values to the checked values', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -125,7 +125,7 @@ describe('TableFilterMultiselect.vue', () => {
     });
 
     it('removes values from the checked values', () => {
-        const wrapper = mount(TableFilterMultiselect, {
+        const wrapper = mount(FilterMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -149,7 +149,7 @@ describe('TableFilterMultiselect.vue', () => {
 
     describe('keyboard interaction', () => {
         it('show options on space', () => {
-            const wrapper = mount(TableFilterMultiselect, {
+            const wrapper = mount(FilterMultiselect, {
                 propsData: {
                     possibleValues: [{
                         id: 'test1',
@@ -171,7 +171,7 @@ describe('TableFilterMultiselect.vue', () => {
 
         it('hide options on esc', () => {
             jest.useFakeTimers();
-            const wrapper = mount(TableFilterMultiselect, {
+            const wrapper = mount(FilterMultiselect, {
                 propsData: {
                     possibleValues: [{
                         id: 'test1',
@@ -198,7 +198,7 @@ describe('TableFilterMultiselect.vue', () => {
         it('hide options when focus leaves the component', () => {
             jest.useFakeTimers();
 
-            const wrapper = mount(TableFilterMultiselect, {
+            const wrapper = mount(FilterMultiselect, {
                 propsData: {
                     possibleValues: [{
                         id: 'test1',
@@ -232,7 +232,7 @@ describe('TableFilterMultiselect.vue', () => {
 
         describe('arrow key navigation', () => {
             it('gets next item to focus', () => {
-                const wrapper = mount(TableFilterMultiselect, {
+                const wrapper = mount(FilterMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -265,7 +265,7 @@ describe('TableFilterMultiselect.vue', () => {
             });
     
             it('focuses next element on key down', () => {
-                const wrapper = mount(TableFilterMultiselect, {
+                const wrapper = mount(FilterMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -284,7 +284,6 @@ describe('TableFilterMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
@@ -296,7 +295,7 @@ describe('TableFilterMultiselect.vue', () => {
             });
     
             it('focuses previous element on key up', () => {
-                const wrapper = mount(TableFilterMultiselect, {
+                const wrapper = mount(FilterMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -315,7 +314,6 @@ describe('TableFilterMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[1].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
@@ -327,7 +325,7 @@ describe('TableFilterMultiselect.vue', () => {
             });
     
             it('focuses first element on key down at list end', () => {
-                const wrapper = mount(TableFilterMultiselect, {
+                const wrapper = mount(FilterMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -346,7 +344,6 @@ describe('TableFilterMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[2].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[2]);
@@ -358,7 +355,7 @@ describe('TableFilterMultiselect.vue', () => {
             });
     
             it('focuses last element on key up at list start', () => {
-                const wrapper = mount(TableFilterMultiselect, {
+                const wrapper = mount(FilterMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -377,7 +374,6 @@ describe('TableFilterMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);

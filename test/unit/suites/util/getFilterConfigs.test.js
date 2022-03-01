@@ -27,27 +27,27 @@ describe('getFilterConfigs', () => {
             domains: mockDomains, columns: mockColumns, types: mockTypes, values: mockValues
         });
         expect(filterConfigs).toStrictEqual([{
-            is: 'TableFilterMultiselect',
+            is: 'FilterMultiselect',
             possibleValues: [{ id: 'test1', text: 'test1' }, { id: 'test2', text: 'test2' }],
             value: []
         }, {
-            is: 'TableFilterInputField',
+            is: 'FilterInputField',
             value: ''
         }, {
-            is: 'TableFilterInputField',
+            is: 'FilterInputField',
             value: ''
         }, {
-            is: 'TableFilterInputField',
+            is: 'FilterInputField',
             value: ''
         }, {
-            is: 'TableFilterDropdown',
+            is: 'FilterDropdown',
             possibleValues: [{ id: 'test1', text: 'test1' }, { id: 'test2', text: 'test2' }],
             value: []
         }, {
-            is: 'TableFilterInputField',
+            is: 'FilterInputField',
             value: ''
         }, {
-            is: 'TableFilterInputField',
+            is: 'FilterInputField',
             value: ''
         }]);
     });

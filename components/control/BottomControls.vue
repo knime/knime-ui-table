@@ -1,18 +1,18 @@
 <script>
-import TableControlsBase from './TableControlBase';
-import TableControlDropdown from './TableControlDropdown';
+import BaseControls from './BaseControls';
+import ControlDropdown from './ControlDropdown';
 
 /**
  * Table controls for the bottom of the table optionally consisting of page controls
  * and a drop-"up" selection input for table page size.
  *
  * @emits pageSizeUpdate when the page size it updated.
- * @emits $listeners from @see TableControlsBase
+ * @emits $listeners from @see BaseControls
  */
 export default {
     components: {
-        TableControlsBase,
-        TableControlDropdown
+        BaseControls,
+        ControlDropdown
     },
     props: {
         pageConfig: {
@@ -47,12 +47,12 @@ export default {
 </script>
 
 <template>
-  <TableControlsBase
+  <BaseControls
     class="base-controls"
     v-bind="$props"
     v-on="$listeners"
   >
-    <TableControlDropdown
+    <ControlDropdown
       open-up
       :value="createText(pageConfig.pageSize)"
       :aria-label="'Choose page size'"
@@ -61,7 +61,7 @@ export default {
       placeholder="Items per page"
       @input="onPageSizeSelect"
     />
-  </TableControlsBase>
+  </BaseControls>
 </template>
 
 <style lang="postcss" scoped>

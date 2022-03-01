@@ -1,5 +1,5 @@
 <script>
-import TablePageControl from './TablePageControl';
+import PageControls from './PageControls';
 
 /**
  * Base table header component with table page controls on the left of the table row
@@ -10,7 +10,7 @@ import TablePageControl from './TablePageControl';
  */
 export default {
     components: {
-        TablePageControl
+        PageControls
     },
     props: {
         pageConfig: {
@@ -41,7 +41,7 @@ export default {
 <template>
   <thead>
     <tr>
-      <TablePageControl
+      <PageControls
         :total-items="pageConfig.tableSize"
         :current-items="pageConfig.currentSize"
         :page-size="pageConfig.pageSize"

@@ -1,11 +1,11 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import TableFilterDropdown from '~/components/filter/TableFilterDropdown';
+import FilterDropdown from '~/components/filter/FilterDropdown';
 
 jest.mock('vue-clickaway2', () => ({
     mixin: {}
 }), { virtual: true });
 
-describe('TableFilterDropdown.vue', () => {
+describe('FilterDropdown.vue', () => {
     let propsData, localVue;
     
     beforeAll(() => {
@@ -36,7 +36,7 @@ describe('TableFilterDropdown.vue', () => {
     });
 
     it('renders', () => {
-        const wrapper = mount(TableFilterDropdown, {
+        const wrapper = mount(FilterDropdown, {
             propsData,
             localVue
         });
@@ -46,7 +46,7 @@ describe('TableFilterDropdown.vue', () => {
     });
 
     it('sets the correct aria-* attributes', () => {
-        const wrapper = mount(TableFilterDropdown, {
+        const wrapper = mount(FilterDropdown, {
             propsData,
             localVue
         });
@@ -57,7 +57,7 @@ describe('TableFilterDropdown.vue', () => {
 
     it('renders value text or placeholder if no or empty value set', () => {
         let placeholder = 'my-placeholder';
-        const wrapper = mount(TableFilterDropdown, {
+        const wrapper = mount(FilterDropdown, {
             propsData: {
                 ...propsData,
                 placeholder,
@@ -76,7 +76,7 @@ describe('TableFilterDropdown.vue', () => {
     });
 
     it('opens the listbox on click of button and emits event for clicked value', () => {
-        const wrapper = mount(TableFilterDropdown, {
+        const wrapper = mount(FilterDropdown, {
             propsData,
             localVue
         });
@@ -98,7 +98,7 @@ describe('TableFilterDropdown.vue', () => {
 
     describe('keyboard navigation', () => {
         it('opens and closes the listbox on enter/space/esc', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData,
                 localVue
             });
@@ -120,7 +120,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets the values on keydown navigation', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test2' // defines start point
@@ -134,7 +134,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets the values on keyup navigation', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test2' // defines start point
@@ -148,7 +148,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets no values on keyup navigation at the start', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test1' // defines start point
@@ -162,7 +162,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets no values on keydown navigation at the end', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test5' // defines start point
@@ -176,7 +176,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets the values to the first value on home key', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test3' // defines start point
@@ -190,7 +190,7 @@ describe('TableFilterDropdown.vue', () => {
         });
 
         it('sets the values to the last value on end key', () => {
-            const wrapper = mount(TableFilterDropdown, {
+            const wrapper = mount(FilterDropdown, {
                 propsData: {
                     ...propsData,
                     value: 'test3' // defines start point

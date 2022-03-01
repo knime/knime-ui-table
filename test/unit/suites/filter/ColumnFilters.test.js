@@ -1,19 +1,18 @@
 import { shallowMount } from '@vue/test-utils';
-import TableColumnFilter from '~/components/filter/TableColumnFilter';
-import TableFilterMultiselect from '~/components/filter/TableFilterMultiselect';
-import TableFilterInputField from '~/components/filter/TableFilterInputField';
-import TableFilterDropdown from '~/components/filter/TableFilterDropdown';
+import ColumnFilters from '~/components/filter/ColumnFilters';
+import FilterMultiselect from '~/components/filter/FilterMultiselect';
+import FilterInputField from '~/components/filter/FilterInputField';
+import FilterDropdown from '~/components/filter/FilterDropdown';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
-describe('TableColumnFilter.vue', () => {
+describe('ColumnFilters.vue', () => {
     let propsData = {
         columnHeaders: ['User', 'Count', 'Enabled'],
-        // eslint-disable-next-line no-magic-numbers
         columnSizes: [33, 33, 33],
         filterConfigs: [
             {
-                is: 'TableFilterMultiselect',
+                is: 'FilterMultiselect',
                 value: [],
                 possibleValues: [
                     { id: 'Root', text: 'Root' },
@@ -22,9 +21,9 @@ describe('TableColumnFilter.vue', () => {
                 ],
                 placeholder: 'Column1'
             },
-            { is: 'TableFilterInputField', value: '', placeholder: 'Column2' },
+            { is: 'FilterInputField', value: '', placeholder: 'Column2' },
             {
-                is: 'TableFilterDropdown',
+                is: 'FilterDropdown',
                 value: [],
                 possibleValues: [
                     { id: 'Yes', text: 'Yes' },
@@ -37,26 +36,26 @@ describe('TableColumnFilter.vue', () => {
     };
 
     it('renders column filters controls', () => {
-        let wrapper = shallowMount(TableColumnFilter, { propsData });
+        let wrapper = shallowMount(ColumnFilters, { propsData });
 
-        expect(wrapper.find(TableColumnFilter).exists()).toBe(true);
-        expect(wrapper.find(TableFilterMultiselect).exists()).toBe(true);
-        expect(wrapper.find(TableFilterDropdown).exists()).toBe(true);
-        expect(wrapper.find(TableFilterInputField).exists()).toBe(true);
+        expect(wrapper.find(ColumnFilters).exists()).toBe(true);
+        expect(wrapper.find(FilterMultiselect).exists()).toBe(true);
+        expect(wrapper.find(FilterDropdown).exists()).toBe(true);
+        expect(wrapper.find(FilterInputField).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(true);
         expect(wrapper.find(CloseIcon).exists()).toBe(true);
     });
 
     it('emits columnFilter events', () => {
-        let wrapper = shallowMount(TableColumnFilter, { propsData });
+        let wrapper = shallowMount(ColumnFilters, { propsData });
         expect(wrapper.emitted().columnFilter).toBeFalsy();
-        wrapper.find(TableFilterInputField).vm.$emit('input', 'New Value');
+        wrapper.find(FilterInputField).vm.$emit('input', 'New Value');
         expect(wrapper.emitted().columnFilter).toBeTruthy();
         expect(wrapper.emitted().columnFilter[0]).toStrictEqual([1, 'New Value']);
     });
 
     it('emits clearFilter events', () => {
-        let wrapper = shallowMount(TableColumnFilter, { propsData });
+        let wrapper = shallowMount(ColumnFilters, { propsData });
         expect(wrapper.emitted().clearFilter).toBeFalsy();
         wrapper.find(FunctionButton).vm.$emit('click');
         expect(wrapper.emitted().clearFilter).toBeTruthy();

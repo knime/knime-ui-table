@@ -1,12 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
-import TableControlBase from '~/components/control/TableControlBase';
-import TablePageControl from '~/components/control/TablePageControl';
+import BaseControls from '~/components/control/BaseControls';
+import PageControls from '~/components/control/PageControls';
 
-describe('TableControlBase.vue', () => {
+describe('BaseControls.vue', () => {
     let wrapper;
 
     it('renders page controls', () => {
-        wrapper = shallowMount(TableControlBase, {
+        wrapper = shallowMount(BaseControls, {
             propsData: {
                 totalItems: 100,
                 currentItems: 100,
@@ -18,13 +18,13 @@ describe('TableControlBase.vue', () => {
             }
         });
 
-        expect(wrapper.find(TableControlBase).exists()).toBe(true);
-        expect(wrapper.find(TablePageControl).exists()).toBe(true);
+        expect(wrapper.find(BaseControls).exists()).toBe(true);
+        expect(wrapper.find(PageControls).exists()).toBe(true);
         expect(wrapper.find('h3').exists()).toBe(true);
     });
 
     it('emits next and previous page events', () => {
-        wrapper = shallowMount(TableControlBase, {
+        wrapper = shallowMount(BaseControls, {
             propsData: {
                 totalItems: 100,
                 currentItems: 100,
@@ -37,10 +37,10 @@ describe('TableControlBase.vue', () => {
         });
         expect(wrapper.emitted().nextPage).toBeFalsy();
         expect(wrapper.emitted().prevPage).toBeFalsy();
-        wrapper.find(TablePageControl).vm.$emit('nextPage');
+        wrapper.find(PageControls).vm.$emit('nextPage');
         expect(wrapper.emitted().nextPage).toBeTruthy();
         expect(wrapper.emitted().prevPage).toBeFalsy();
-        wrapper.find(TablePageControl).vm.$emit('prevPage');
+        wrapper.find(PageControls).vm.$emit('prevPage');
         expect(wrapper.emitted().prevPage).toBeTruthy();
     });
 });

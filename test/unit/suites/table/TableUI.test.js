@@ -1,13 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import TableUI from '~/components/TableUI';
-import TableControlsTop from '~/components/control/TableControlTop';
-import TableControlsBottom from '~/components/control/TableControlBottom';
-import TableColumnFilters from '~/components/filter/TableColumnFilter';
-import TableHeader from '~/components/TableHeader';
-import TableGroup from '~/components/TableGroup';
-import TableRow from '~/components/TableRow';
-import TableActionButton from '~/components/ui/TableActionButton';
+import TopControls from '~/components/control/TopControls';
+import BottomControls from '~/components/control/BottomControls';
+import ColumnFilters from '~/components/filter/ColumnFilters';
+import Header from '~/components/layout/Header';
+import Group from '~/components/layout/Group';
+import Row from '~/components/layout/Row';
+import ActionButton from '~/components/ui/ActionButton';
 import TablePopover from '~/components/popover/TablePopover';
 
 import { columnTypes } from '~/config/table.config';
@@ -26,7 +26,7 @@ describe('TableUI.vue', () => {
                 size: 50,
                 filterConfig: {
                     value: '',
-                    is: 'TableFilterInputField'
+                    is: 'FilterInputField'
                 },
                 formatter: (x) => x,
                 classGenerator: [],
@@ -42,7 +42,7 @@ describe('TableUI.vue', () => {
                 size: 50,
                 filterConfig: {
                     value: '',
-                    is: 'TableFilterInputField'
+                    is: 'FilterInputField'
                 },
                 formatter: (x) => x,
                 classGenerator: [],
@@ -76,21 +76,21 @@ describe('TableUI.vue', () => {
         it('renders', () => {
             wrapper = shallowMount(TableUI, { propsData });
             expect(wrapper.find(TableUI).exists()).toBe(true);
-            expect(wrapper.find(TableControlsTop).exists()).toBe(true);
-            expect(wrapper.find(TableControlsBottom).exists()).toBe(true);
-            expect(wrapper.find(TableColumnFilters).exists()).toBe(false);
-            expect(wrapper.find(TableHeader).exists()).toBe(true);
-            expect(wrapper.find(TableGroup).exists()).toBe(true);
-            expect(wrapper.find(TableRow).exists()).toBe(true);
+            expect(wrapper.find(TopControls).exists()).toBe(true);
+            expect(wrapper.find(BottomControls).exists()).toBe(true);
+            expect(wrapper.find(ColumnFilters).exists()).toBe(false);
+            expect(wrapper.find(Header).exists()).toBe(true);
+            expect(wrapper.find(Group).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
         });
 
         it('shows column filters via data', () => {
             wrapper = shallowMount(TableUI, { propsData });
             expect(wrapper.find(TableUI).exists()).toBe(true);
-            expect(wrapper.find(TableHeader).exists()).toBe(true);
-            expect(wrapper.find(TableColumnFilters).exists()).toBe(false);
+            expect(wrapper.find(Header).exists()).toBe(true);
+            expect(wrapper.find(ColumnFilters).exists()).toBe(false);
             wrapper.setData({ filterActive: true });
-            expect(wrapper.find(TableColumnFilters).exists()).toBe(true);
+            expect(wrapper.find(ColumnFilters).exists()).toBe(true);
         });
 
         it('shows action button via config', () => {
@@ -104,8 +104,8 @@ describe('TableUI.vue', () => {
             } });
 
             expect(wrapper.find(TableUI).exists()).toBe(true);
-            expect(wrapper.find(TableControlsBottom).exists()).toBe(false);
-            expect(wrapper.find(TableActionButton).exists()).toBe(true);
+            expect(wrapper.find(BottomControls).exists()).toBe(false);
+            expect(wrapper.find(ActionButton).exists()).toBe(true);
         });
     });
 
@@ -114,49 +114,49 @@ describe('TableUI.vue', () => {
             it('handles next page events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().pageChange).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('nextPage');
+                wrapper.find(TopControls).vm.$emit('nextPage');
                 expect(wrapper.emitted().pageChange).toStrictEqual([[1]]);
             });
     
             it('handles prev page events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().pageChange).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('prevPage');
+                wrapper.find(TopControls).vm.$emit('prevPage');
                 expect(wrapper.emitted().pageChange).toStrictEqual([[-1]]);
             });
 
             it('handles column update events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().columnUpdate).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('columnUpdate', ['A']);
+                wrapper.find(TopControls).vm.$emit('columnUpdate', ['A']);
                 expect(wrapper.emitted().columnUpdate).toStrictEqual([[['A']]]);
             });
 
             it('handles column reorder events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('columnReorder', 1, 0);
+                wrapper.find(TopControls).vm.$emit('columnReorder', 1, 0);
                 expect(wrapper.emitted().columnReorder).toStrictEqual([[1, 0]]);
             });
 
             it('handles group update events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().groupUpdate).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('groupUpdate', 'New Group');
+                wrapper.find(TopControls).vm.$emit('groupUpdate', 'New Group');
                 expect(wrapper.emitted().groupUpdate).toStrictEqual([['New Group']]);
             });
 
             it('handles search events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().search).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('searchUpdate', 'Query');
+                wrapper.find(TopControls).vm.$emit('searchUpdate', 'Query');
                 expect(wrapper.emitted().search).toStrictEqual([['Query']]);
             });
 
             it('handles time filter update events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().timeFilterUpdate).toBeFalsy();
-                wrapper.find(TableControlsTop).vm.$emit('timeFilterUpdate', 'Last year');
+                wrapper.find(TopControls).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.emitted().timeFilterUpdate).toStrictEqual([['Last year']]);
             });
         });
@@ -165,21 +165,21 @@ describe('TableUI.vue', () => {
             it('handles time header selection events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().selectAll).toBeFalsy();
-                wrapper.find(TableHeader).vm.$emit('headerSelect', true);
+                wrapper.find(Header).vm.$emit('headerSelect', true);
                 expect(wrapper.emitted().selectAll).toStrictEqual([[true]]);
             });
 
             it('handles column sort events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().columnSort).toBeFalsy();
-                wrapper.find(TableHeader).vm.$emit('columnSort', 0);
+                wrapper.find(Header).vm.$emit('columnSort', 0);
                 expect(wrapper.emitted().columnSort).toStrictEqual([[0]]);
             });
 
             it('handles toggle filter events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().toggleFilter).toBeFalsy();
-                wrapper.find(TableHeader).vm.$emit('toggleFilter', true);
+                wrapper.find(Header).vm.$emit('toggleFilter', true);
                 expect(wrapper.emitted().toggleFilter).toStrictEqual([[true]]);
             });
         });
@@ -187,17 +187,17 @@ describe('TableUI.vue', () => {
         describe('column filter', () => {
             it('handles column filter events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
-                wrapper.find(TableHeader).vm.$emit('toggleFilter', true);
+                wrapper.find(Header).vm.$emit('toggleFilter', true);
                 expect(wrapper.emitted().columnFilter).toBeFalsy();
-                wrapper.find(TableColumnFilters).vm.$emit('columnFilter', 0, '0');
+                wrapper.find(ColumnFilters).vm.$emit('columnFilter', 0, '0');
                 expect(wrapper.emitted().columnFilter).toStrictEqual([[0, '0']]);
             });
 
             it('handles clear filter events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
-                wrapper.find(TableHeader).vm.$emit('toggleFilter', true);
+                wrapper.find(Header).vm.$emit('toggleFilter', true);
                 expect(wrapper.emitted().clearFilter).toBeFalsy();
-                wrapper.find(TableColumnFilters).vm.$emit('clearFilter');
+                wrapper.find(ColumnFilters).vm.$emit('clearFilter');
                 expect(wrapper.emitted().clearFilter).toBeTruthy();
             });
         });
@@ -205,7 +205,7 @@ describe('TableUI.vue', () => {
         it('handles group sub menu items', () => {
             wrapper = shallowMount(TableUI, { propsData });
             let callbackMock = jest.fn();
-            wrapper.find(TableGroup).vm.$emit('groupSubMenuClick', { callback: callbackMock });
+            wrapper.find(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
             expect(callbackMock).toHaveBeenCalledWith(propsData.data[0], expect.anything());
         });
 
@@ -213,14 +213,14 @@ describe('TableUI.vue', () => {
             it('handles select events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().rowSelect).toBeFalsy();
-                wrapper.find(TableRow).vm.$emit('rowSelect', true);
+                wrapper.find(Row).vm.$emit('rowSelect', true);
                 expect(wrapper.emitted().rowSelect).toStrictEqual([[true, 0, 0]]);
             });
 
             it('handles input events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().tableInput).toBeFalsy();
-                wrapper.find(TableRow).vm.$emit('rowInput', { cell: true });
+                wrapper.find(Row).vm.$emit('rowInput', { cell: true });
                 expect(wrapper.emitted().tableInput).toStrictEqual(
                     [[{ cell: true, rowInd: 0, groupInd: 0, id: expect.undefined }]]
                 );
@@ -229,7 +229,7 @@ describe('TableUI.vue', () => {
             it('handles submenu clicks', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 let callbackMock = jest.fn();
-                wrapper.find(TableRow).vm.$emit('rowSubMenuClick', { callback: callbackMock });
+                wrapper.find(Row).vm.$emit('rowSubMenuClick', { callback: callbackMock });
                 expect(callbackMock).toHaveBeenCalledWith(propsData.data[0][0], expect.anything());
             });
         });
@@ -238,21 +238,21 @@ describe('TableUI.vue', () => {
             it('handles next page events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().pageChange).toBeFalsy();
-                wrapper.find(TableControlsBottom).vm.$emit('nextPage');
+                wrapper.find(BottomControls).vm.$emit('nextPage');
                 expect(wrapper.emitted().pageChange).toStrictEqual([[1]]);
             });
     
             it('handles prev page events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().pageChange).toBeFalsy();
-                wrapper.find(TableControlsBottom).vm.$emit('prevPage');
+                wrapper.find(BottomControls).vm.$emit('prevPage');
                 expect(wrapper.emitted().pageChange).toStrictEqual([[-1]]);
             });
 
             it('registers pageSizeUpdate events', () => {
                 wrapper = shallowMount(TableUI, { propsData });
                 expect(wrapper.emitted().pageSizeUpdate).toBeFalsy();
-                wrapper.find(TableControlsBottom).vm.$emit('pageSizeUpdate', 25);
+                wrapper.find(BottomControls).vm.$emit('pageSizeUpdate', 25);
                 expect(wrapper.emitted().pageSizeUpdate).toStrictEqual([[25]]);
             });
         });
@@ -265,7 +265,7 @@ describe('TableUI.vue', () => {
                 expect(wrapper.vm.popoverData).toBeFalsy();
                 expect(wrapper.vm.popoverRenderer).toBeFalsy();
                 expect(wrapper.vm.popoverTarget).toBeFalsy();
-                wrapper.findAll(TableRow).at(0).vm.$emit('rowInput', {
+                wrapper.findAll(Row).at(0).vm.$emit('rowInput', {
                     colInd: 1,
                     cell: '<td>1</td>'
                 });
@@ -283,7 +283,7 @@ describe('TableUI.vue', () => {
             });
 
             it('uses configured popover renderer', () => {
-                wrapper.findAll(TableRow).at(0).vm.$emit('rowInput', {
+                wrapper.findAll(Row).at(0).vm.$emit('rowInput', {
                     colInd: 0,
                     cell: '<td>1</td>'
                 });

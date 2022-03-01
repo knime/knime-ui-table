@@ -24,7 +24,7 @@ describe('TableController.vue', () => {
 
         expect(wrapper.vm.dataConfig).toStrictEqual({ columnConfigs: [{
             classGenerator: [],
-            filterConfig: { is: 'TableFilterInputField', value: '' },
+            filterConfig: { is: 'FilterInputField', value: '' },
             formatter: expect.any(Function),
             hasSlotContent: false,
             header: 'A',
@@ -34,7 +34,7 @@ describe('TableController.vue', () => {
             type: columnTypes.Number
         }, {
             classGenerator: [],
-            filterConfig: { is: 'TableFilterInputField', value: '' },
+            filterConfig: { is: 'FilterInputField', value: '' },
             formatter: expect.any(Function),
             hasSlotContent: false,
             header: 'B',

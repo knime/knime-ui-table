@@ -1,7 +1,7 @@
 <script>
-import TableFilterMultiselect from './TableFilterMultiselect';
-import TableFilterInputField from './TableFilterInputField';
-import TableFilterDropdown from './TableFilterDropdown';
+import FilterMultiselect from './FilterMultiselect';
+import FilterInputField from './FilterInputField';
+import FilterDropdown from './FilterDropdown';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
@@ -10,14 +10,14 @@ import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
  * input fields for modifying column-specific filter values. It also has a button
  * to trigger a reset of all current filter values.
  *
- * @emits headerFilter event when a filter value is modified.
+ * @emits columnFilter event when a filter value is modified.
  * @emits clearFilter event when the filters are cleared.
  */
 export default {
     components: {
-        TableFilterMultiselect,
-        TableFilterInputField,
-        TableFilterDropdown,
+        FilterMultiselect,
+        FilterInputField,
+        FilterDropdown,
         FunctionButton,
         CloseIcon
     },

@@ -1,23 +1,23 @@
 import { shallowMount } from '@vue/test-utils';
-import TablePageControl from '~/components/control/TablePageControl';
+import PageControls from '~/components/control/PageControls';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowNextIcon from '~/webapps-common/ui/assets/img/icons/arrow-next.svg?inline';
 import ArrowPrevIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
-describe('TablePageControl.vue', () => {
+describe('PageControls.vue', () => {
     let wrapper;
 
     it('renders page controls', () => {
-        wrapper = shallowMount(TablePageControl);
+        wrapper = shallowMount(PageControls);
 
-        expect(wrapper.find(TablePageControl).exists()).toBe(true);
+        expect(wrapper.find(PageControls).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(false);
         expect(wrapper.find(ArrowNextIcon).exists()).toBe(false);
         expect(wrapper.find(ArrowPrevIcon).exists()).toBe(false);
     });
 
     it('has dynamic range text', () => {
-        wrapper = shallowMount(TablePageControl, {
+        wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 100,
                 currentItems: 100,
@@ -35,7 +35,7 @@ describe('TablePageControl.vue', () => {
     });
 
     it('hides "total" count if 0 rows', () => {
-        wrapper = shallowMount(TablePageControl, {
+        wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 0,
                 currentItems: 0,
@@ -49,7 +49,7 @@ describe('TablePageControl.vue', () => {
 
 
     it('disables next page button if no next page', () => {
-        wrapper = shallowMount(TablePageControl, {
+        wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 12,
                 pageSize: 5,
@@ -61,7 +61,7 @@ describe('TablePageControl.vue', () => {
     });
 
     it('disables prev page button if no prev page', () => {
-        wrapper = shallowMount(TablePageControl, {
+        wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 12,
                 currentItems: 10,
@@ -74,7 +74,7 @@ describe('TablePageControl.vue', () => {
     });
 
     it('emits next and previous page events', () => {
-        wrapper = shallowMount(TablePageControl, {
+        wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 100,
                 currentItems: 100,

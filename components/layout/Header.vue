@@ -10,8 +10,8 @@ import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
  * for selecting all rows in the table and listens for clicks on the individual column
  * headers to allow sorting.
  *
- * @emits rowSelect event when the checkbox is selected for table-wide toggling of selection.
- * @emits headerSort event when a column name is clicked to trigger sorting.
+ * @emits headerSelect event when the checkbox is selected for table-wide toggling of selection.
+ * @emits columnSort event when a column name is clicked to trigger sorting.
  * @emits toggleFilter event when the filter-toggle control is clicked.
  */
 export default {

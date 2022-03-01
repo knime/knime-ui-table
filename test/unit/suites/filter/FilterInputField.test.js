@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
-import TableFilterInputField from '~/components/filter/TableFilterInputField';
+import FilterInputField from '~/components/filter/FilterInputField';
 
-describe('InputField.vue', () => {
+describe('FilterInputField.vue', () => {
     it('renders', () => {
-        const wrapper = mount(TableFilterInputField, {
+        const wrapper = mount(FilterInputField, {
             propsData: {
                 value: 'Test value'
             }
@@ -17,7 +17,7 @@ describe('InputField.vue', () => {
     });
 
     it('emits input events', () => {
-        const wrapper = mount(TableFilterInputField);
+        const wrapper = mount(FilterInputField);
         const newValue = 'new value';
         let input = wrapper.find('input');
         input.setValue(newValue);
@@ -25,7 +25,7 @@ describe('InputField.vue', () => {
     });
 
     it('emits input events', () => {
-        const wrapper = mount(TableFilterInputField);
+        const wrapper = mount(FilterInputField);
         wrapper.vm.focus();
         expect(wrapper.emitted().blur).toBeFalsy();
         wrapper.find('input').trigger('keydown.esc');
@@ -33,7 +33,7 @@ describe('InputField.vue', () => {
     });
 
     it('focuses on focus call', () => {
-        const wrapper = mount(TableFilterInputField);
+        const wrapper = mount(FilterInputField);
         wrapper.vm.focus();
         expect(document.activeElement).toEqual(wrapper.find('input').element);
     });

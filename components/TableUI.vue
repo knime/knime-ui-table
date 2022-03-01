@@ -1,11 +1,11 @@
 <script>
-import TableControlsTop from './control/TableControlTop';
-import TableControlsBottom from './control/TableControlBottom';
-import TableColumnFilters from './filter/TableColumnFilter';
-import TableHeader from './TableHeader';
-import TableGroup from './TableGroup';
-import TableRow from './TableRow';
-import TableActionButton from './ui/TableActionButton';
+import TopControls from './control/TopControls';
+import BottomControls from './control/BottomControls';
+import ColumnFilters from './filter/ColumnFilters';
+import Header from './layout/Header';
+import Group from './layout/Group';
+import Row from './layout/Row';
+import ActionButton from './ui/ActionButton';
 import TablePopover from './popover/TablePopover';
 
 /**
@@ -16,13 +16,13 @@ import TablePopover from './popover/TablePopover';
  */
 export default {
     components: {
-        TableControlsTop,
-        TableControlsBottom,
-        TableColumnFilters,
-        TableHeader,
-        TableGroup,
-        TableRow,
-        TableActionButton,
+        TopControls,
+        BottomControls,
+        ColumnFilters,
+        Header,
+        Group,
+        Row,
+        ActionButton,
         TablePopover
     },
     props: {
@@ -221,7 +221,7 @@ export default {
     <table
       ref="table"
     >
-      <TableControlsTop
+      <TopControls
         :table-config="tableConfig"
         :column-headers="columnHeaders"
         @nextPage="onPageChange(1)"
@@ -232,7 +232,7 @@ export default {
         @searchUpdate="onSearch"
         @timeFilterUpdate="onTimeFilterUpdate"
       />
-      <TableHeader
+      <Header
         :table-config="tableConfig"
         :column-headers="columnHeaders"
         :column-sizes="columnSizes"
@@ -243,7 +243,7 @@ export default {
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
       />
-      <TableColumnFilters
+      <ColumnFilters
         v-if="filterActive"
         :filter-configs="columnFilterConfigs"
         :column-headers="columnHeaders"
@@ -253,7 +253,7 @@ export default {
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
-      <TableGroup
+      <Group
         v-for="(dataGroup, groupInd) in data"
         :key="groupInd"
         :title="getGroupName(groupInd)"
@@ -261,7 +261,7 @@ export default {
         :show="data.length > 1 && dataGroup.length > 0"
         @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
       >
-        <TableRow
+        <Row
           v-for="(row, rowInd) in dataGroup"
           :key="row.id"
           :row="columnKeys.map(column => row[column])"
@@ -290,16 +290,16 @@ export default {
               :row="row"
             />
           </template>
-        </TableRow>
-      </TableGroup>
-      <TableControlsBottom
+        </Row>
+      </Group>
+      <BottomControls
         v-if="tableConfig.showBottomControls"
         :page-config="tableConfig.pageConfig"
         @nextPage="onPageChange(1)"
         @prevPage="onPageChange(-1)"
         @pageSizeUpdate="onPageSizeUpdate"
       />
-      <TableActionButton
+      <ActionButton
         v-else-if="tableConfig.actionButtonConfig"
         :config="tableConfig.actionButtonConfig"
       />

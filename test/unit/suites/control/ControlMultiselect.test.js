@@ -2,11 +2,11 @@ import { mount, createLocalVue } from '@vue/test-utils';
 
 const localVue = createLocalVue();
 
-import TableControlMultiselect from '~/components/control/TableControlMultiselect';
+import ControlMultiselect from '~/components/control/ControlMultiselect';
 
-describe('TableControlMultiselect.vue', () => {
+describe('ControlMultiselect.vue', () => {
     it('renders', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -27,7 +27,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('renders placeholder until options have been selected', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -59,7 +59,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('locks placeholder', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -92,7 +92,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('emits input events', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -112,7 +112,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('toggles properly', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -135,7 +135,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('adds values to the checked values', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -155,7 +155,7 @@ describe('TableControlMultiselect.vue', () => {
     });
 
     it('removes values from the checked values', () => {
-        const wrapper = mount(TableControlMultiselect, {
+        const wrapper = mount(ControlMultiselect, {
             propsData: {
                 possibleValues: [{
                     id: 'test1',
@@ -179,7 +179,7 @@ describe('TableControlMultiselect.vue', () => {
 
     describe('keyboard interaction', () => {
         it('show options on space', () => {
-            const wrapper = mount(TableControlMultiselect, {
+            const wrapper = mount(ControlMultiselect, {
                 propsData: {
                     possibleValues: [{
                         id: 'test1',
@@ -201,7 +201,7 @@ describe('TableControlMultiselect.vue', () => {
 
         it('hide options on esc', () => {
             jest.useFakeTimers();
-            const wrapper = mount(TableControlMultiselect, {
+            const wrapper = mount(ControlMultiselect, {
                 propsData: {
                     possibleValues: [{
                         id: 'test1',
@@ -227,7 +227,7 @@ describe('TableControlMultiselect.vue', () => {
 
         describe('arrow key navigation', () => {
             it('gets next item to focus', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -260,7 +260,7 @@ describe('TableControlMultiselect.vue', () => {
             });
     
             it('focuses next element on key down', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -279,7 +279,6 @@ describe('TableControlMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
@@ -291,7 +290,7 @@ describe('TableControlMultiselect.vue', () => {
             });
     
             it('focuses previous element on key up', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -310,7 +309,6 @@ describe('TableControlMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[1].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
@@ -322,7 +320,7 @@ describe('TableControlMultiselect.vue', () => {
             });
     
             it('focuses first element on key down at list end', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -341,7 +339,6 @@ describe('TableControlMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[2].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[2]);
@@ -353,7 +350,7 @@ describe('TableControlMultiselect.vue', () => {
             });
     
             it('focuses last element on key up at list start', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -372,7 +369,6 @@ describe('TableControlMultiselect.vue', () => {
                 expect(wrapper.vm.collapsed).toBe(true);
                 wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
-                // eslint-disable-next-line no-magic-numbers
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
@@ -386,7 +382,7 @@ describe('TableControlMultiselect.vue', () => {
 
         describe('drag reordering', () => {
             it('reorders items on drag', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',
@@ -435,7 +431,7 @@ describe('TableControlMultiselect.vue', () => {
             });
 
             it('clears hover ind when drag leaves multiselect', () => {
-                const wrapper = mount(TableControlMultiselect, {
+                const wrapper = mount(ControlMultiselect, {
                     propsData: {
                         possibleValues: [{
                             id: 'test1',

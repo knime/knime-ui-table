@@ -1,12 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
-import TableHeader from '~/components/TableHeader';
+import Header from '~/components/layout/Header';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
-describe('TableHeader.vue', () => {
+describe('Header.vue', () => {
     let wrapper;
 
     let propsData = {
@@ -26,9 +26,9 @@ describe('TableHeader.vue', () => {
     };
 
     it('renders default table header', () => {
-        wrapper = shallowMount(TableHeader, { propsData });
+        wrapper = shallowMount(Header, { propsData });
 
-        expect(wrapper.find(TableHeader).exists()).toBe(true);
+        expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find(Checkbox).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(true);
         expect(wrapper.find(FilterIcon).exists()).toBe(true);
@@ -44,9 +44,9 @@ describe('TableHeader.vue', () => {
     });
 
     it('hides "tr" element if no headers provided', () => {
-        wrapper = shallowMount(TableHeader);
+        wrapper = shallowMount(Header);
 
-        expect(wrapper.find(TableHeader).exists()).toBe(true);
+        expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find(Checkbox).exists()).toBe(false);
         expect(wrapper.find(FunctionButton).exists()).toBe(false);
         expect(wrapper.find(ArrowIcon).exists()).toBe(false);
@@ -55,7 +55,7 @@ describe('TableHeader.vue', () => {
     });
 
     it('hides the checkbox via config', () => {
-        wrapper = shallowMount(TableHeader, { propsData: {
+        wrapper = shallowMount(Header, { propsData: {
             ...propsData,
             tableConfig: {
                 ...propsData.tableConfig,
@@ -63,12 +63,12 @@ describe('TableHeader.vue', () => {
             }
         } });
 
-        expect(wrapper.find(TableHeader).exists()).toBe(true);
+        expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find(Checkbox).exists()).toBe(false);
     });
 
     it('hides the column filter toggle via config', () => {
-        wrapper = shallowMount(TableHeader, { propsData: {
+        wrapper = shallowMount(Header, { propsData: {
             ...propsData,
             tableConfig: {
                 ...propsData.tableConfig,
@@ -76,12 +76,12 @@ describe('TableHeader.vue', () => {
             }
         } });
 
-        expect(wrapper.find(TableHeader).exists()).toBe(true);
+        expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(false);
     });
 
     it('adds a collapser control spacer via config', () => {
-        wrapper = shallowMount(TableHeader, { propsData: {
+        wrapper = shallowMount(Header, { propsData: {
             ...propsData,
             tableConfig: {
                 ...propsData.tableConfig,
@@ -89,38 +89,38 @@ describe('TableHeader.vue', () => {
             }
         } });
 
-        expect(wrapper.find(TableHeader).exists()).toBe(true);
+        expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find('.collapser-cell-spacer').exists()).toBe(true);
     });
 
     it('emits a rowSelect event when the header checkbox is selected', () => {
-        wrapper = shallowMount(TableHeader, { propsData });
+        wrapper = shallowMount(Header, { propsData });
 
-        expect(wrapper.find(TableHeader).emitted().headerSelect).toBeFalsy();
+        expect(wrapper.find(Header).emitted().headerSelect).toBeFalsy();
         wrapper.find(Checkbox).vm.$emit('input');
-        expect(wrapper.find(TableHeader).emitted().headerSelect).toBeTruthy();
-        expect(wrapper.find(TableHeader).emitted().headerSelect[0]).toStrictEqual([true]);
+        expect(wrapper.find(Header).emitted().headerSelect).toBeTruthy();
+        expect(wrapper.find(Header).emitted().headerSelect[0]).toStrictEqual([true]);
     });
 
     it('emits a headerSort event when a column is clicked', () => {
-        wrapper = shallowMount(TableHeader, { propsData });
+        wrapper = shallowMount(Header, { propsData });
 
-        expect(wrapper.find(TableHeader).emitted().columnSort).toBeFalsy();
+        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
         wrapper.findAll('th.column-header').at(0).trigger('click', 0);
-        expect(wrapper.find(TableHeader).emitted().columnSort).toBeTruthy();
-        expect(wrapper.find(TableHeader).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
+        expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
+        expect(wrapper.find(Header).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
     });
 
     it('emits a toggleFilter event when the filter toggle is clicked', () => {
-        wrapper = shallowMount(TableHeader, { propsData });
+        wrapper = shallowMount(Header, { propsData });
 
-        expect(wrapper.find(TableHeader).emitted().toggleFilter).toBeFalsy();
+        expect(wrapper.find(Header).emitted().toggleFilter).toBeFalsy();
         wrapper.find(FunctionButton).vm.$emit('click');
-        expect(wrapper.find(TableHeader).emitted().toggleFilter).toBeTruthy();
+        expect(wrapper.find(Header).emitted().toggleFilter).toBeTruthy();
     });
 
     it('disables sorting via config', () => {
-        wrapper = shallowMount(TableHeader, { propsData: {
+        wrapper = shallowMount(Header, { propsData: {
             ...propsData,
             tableConfig: {
                 ...propsData.tableConfig,
@@ -128,7 +128,7 @@ describe('TableHeader.vue', () => {
             }
         } });
 
-        expect(wrapper.find(TableHeader).emitted().columnSort).toBeFalsy();
+        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
         wrapper.findAll('th.column-header').wrappers.forEach(thWrapper => {
             expect(thWrapper.classes).not.toContain('sortable');
         });
@@ -136,6 +136,6 @@ describe('TableHeader.vue', () => {
             expect(iconWrapper.classes).not.toContain('active');
         });
         wrapper.findAll('th.column-header').at(0).trigger('click', 0);
-        expect(wrapper.find(TableHeader).emitted().columnSort).toBeFalsy();
+        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
     });
 });

@@ -1,8 +1,8 @@
 <script>
-import TableControlsBase from './TableControlBase';
-import TableControlDropdown from './TableControlDropdown';
-import TableControlMultiselect from './TableControlMultiselect';
-import TableFilterInputField from '../filter/TableFilterInputField';
+import BaseControls from './BaseControls';
+import ControlDropdown from './ControlDropdown';
+import ControlMultiselect from './ControlMultiselect';
+import FilterInputField from '../filter/FilterInputField';
 
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import SearchIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
@@ -20,14 +20,14 @@ import { tableTimeFilters } from '../../config/time.config';
  * @emits columnUpdate when the selected columns change.
  * @emits groupUpdate when the selected group change.
  * @emits searchUpdate when the search field value changes.
- * @emits $listeners from @see TableControlsBase
+ * @emits $listeners from @see BaseControls
  */
 export default {
     components: {
-        TableControlsBase,
-        TableFilterInputField,
-        TableControlDropdown,
-        TableControlMultiselect,
+        BaseControls,
+        FilterInputField,
+        ControlDropdown,
+        ControlMultiselect,
         FunctionButton,
         SearchIcon
     },
@@ -121,13 +121,13 @@ export default {
 </script>
 
 <template>
-  <TableControlsBase
+  <BaseControls
     class="base-controls"
     v-bind="$props"
     :page-config="tableConfig.pageConfig"
     v-on="$listeners"
   >
-    <TableControlDropdown
+    <ControlDropdown
       v-if="showTimeFilter"
       :value="timeFilter"
       :possible-values="getSelectItems(timeFilters)"
@@ -135,7 +135,7 @@ export default {
       :aria-label="'Filter by time'"
       @input="onTimeFilterSelect"
     />
-    <TableControlMultiselect
+    <ControlMultiselect
       v-if="showColumnSelection"
       lock-placeholder
       :value="columnHeaders"
@@ -144,7 +144,7 @@ export default {
       @input="onColumnSelect"
       @columnReorder="onColumnReorder"
     />
-    <TableControlDropdown
+    <ControlDropdown
       v-if="showGroupBy"
       include-placeholder
       :value="currentGroup || ''"
@@ -154,7 +154,7 @@ export default {
       :formatter="group => `Grouped by '${group}'`"
       @input="onGroupSelect"
     />
-    <TableFilterInputField
+    <FilterInputField
       v-if="showSearch && searchActive"
       ref="searchField"
       class="input-control"
@@ -170,7 +170,7 @@ export default {
     >
       <SearchIcon />
     </FunctionButton>
-  </TableControlsBase>
+  </BaseControls>
 </template>
 
 <style lang="postcss" scoped>

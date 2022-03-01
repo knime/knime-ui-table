@@ -1,13 +1,13 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import TableRow from '~/components/TableRow';
-import TableCollapserToggle from '~/components/ui/TableCollapserToggle';
+import Row from '~/components/layout/Row';
+import CollapserToggle from '~/components/ui/CollapserToggle';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
-describe('TableRow.vue', () => {
+describe('Row.vue', () => {
     let wrapper;
 
     let f = item => item;
@@ -39,10 +39,10 @@ describe('TableRow.vue', () => {
 
     describe('rendering', () => {
         it('displays empty "tr" element if no data provided', () => {
-            wrapper = shallowMount(TableRow);
+            wrapper = shallowMount(Row);
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
-            expect(wrapper.find(TableCollapserToggle).exists()).toBe(false);
+            expect(wrapper.find(Row).exists()).toBe(true);
+            expect(wrapper.find(CollapserToggle).exists()).toBe(false);
             expect(wrapper.find(SubMenu).exists()).toBe(false);
             expect(wrapper.find(Checkbox).exists()).toBe(false);
             expect(wrapper.find(FunctionButton).exists()).toBe(false);
@@ -53,11 +53,11 @@ describe('TableRow.vue', () => {
         });
 
         it('renders default table row', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
-            expect(wrapper.find(TableRow).exists()).toBe(true);
-            expect(wrapper.find(TableCollapserToggle).exists()).toBe(false);
+            expect(wrapper.find(Row).exists()).toBe(true);
+            expect(wrapper.find(CollapserToggle).exists()).toBe(false);
             expect(wrapper.find(SubMenu).exists()).toBe(true);
             expect(wrapper.find(Checkbox).exists()).toBe(true);
             expect(wrapper.find(FunctionButton).exists()).toBe(false);
@@ -67,7 +67,7 @@ describe('TableRow.vue', () => {
         });
 
         it('shows the collapser toggle via prop', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
                     tableConfig: {
@@ -77,12 +77,12 @@ describe('TableRow.vue', () => {
                 }
             });
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
-            expect(wrapper.find(TableCollapserToggle).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
+            expect(wrapper.find(CollapserToggle).exists()).toBe(true);
         });
 
         it('hides the checkbox via prop', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
                     tableConfig: {
@@ -92,12 +92,12 @@ describe('TableRow.vue', () => {
                 }
             });
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.find(Checkbox).exists()).toBe(false);
         });
 
         it('hides the submenu if no items are provided', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
                     tableConfig: {
@@ -107,7 +107,7 @@ describe('TableRow.vue', () => {
                 }
             });
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.find(SubMenu).exists()).toBe(false);
         });
 
@@ -115,14 +115,14 @@ describe('TableRow.vue', () => {
             let propsData = getUpdatedPropsData('hasSlotContent', [
                 false, false, true, false, false
             ]);
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData,
                 slots: {
                     cellContent2: '<iframe> Custom content </iframe>'
                 }
             });
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.vm.$refs.dataCell[2].innerHTML).toBe('<iframe> Custom content </iframe>');
         });
 
@@ -130,14 +130,14 @@ describe('TableRow.vue', () => {
             let propsData = getUpdatedPropsData('hasSlotContent', [
                 false, false, true, false, false
             ]);
-            wrapper = mount(TableRow, {
+            wrapper = mount(Row, {
                 propsData,
                 scopedSlots: {
                     cellContent2: props => `<div>${props.row}</div>`
                 }
             });
 
-            expect(wrapper.find(TableRow).exists()).toBe(true);
+            expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.vm.$refs.dataCell[2].innerHTML).toContain('data3');
         });
 
@@ -147,10 +147,9 @@ describe('TableRow.vue', () => {
                 val => val.value,
                 val => typeof val,
                 val => val || '-',
-                // eslint-disable-next-line no-magic-numbers
                 val => val % 33
             ]);
-            wrapper = mount(TableRow, {
+            wrapper = mount(Row, {
                 propsData: {
                     ...propsData,
                     row: ['val', { value: 'val' }, [null], false, 100]
@@ -165,7 +164,7 @@ describe('TableRow.vue', () => {
         });
 
         it('conditionally renders expandable row content', () => {
-            wrapper = mount(TableRow, {
+            wrapper = mount(Row, {
                 propsData: {
                     ...propsData,
                     tableConfig: {
@@ -182,29 +181,29 @@ describe('TableRow.vue', () => {
 
     describe('events', () => {
         it('emits a rowSelect event when the checkbox is clicked', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
 
-            expect(wrapper.find(TableRow).emitted().rowSelect).toBeFalsy();
+            expect(wrapper.find(Row).emitted().rowSelect).toBeFalsy();
             wrapper.find(Checkbox).vm.$emit('input', true);
-            expect(wrapper.find(TableRow).emitted().rowSelect).toBeTruthy();
-            expect(wrapper.find(TableRow).emitted().rowSelect[0][0]).toBe(true);
+            expect(wrapper.find(Row).emitted().rowSelect).toBeTruthy();
+            expect(wrapper.find(Row).emitted().rowSelect[0][0]).toBe(true);
         });
 
         it('emits a rowInput event when a cell is clicked if popover column', () => {
             let propsData = getUpdatedPropsData('popoverRenderer', [
                 true, false, false, false, false
             ]);
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
             let event = new MouseEvent('click');
             let clickEvent = { event, colInd: 0, data: propsData.row[0] };
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeFalsy();
+            expect(wrapper.find(Row).emitted().rowInput).toBeFalsy();
             wrapper.findAll('td.data-cell').at(0).trigger('click', clickEvent);
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeTruthy();
-            expect(wrapper.find(TableRow).emitted().rowInput[0][0]).toStrictEqual({
+            expect(wrapper.find(Row).emitted().rowInput).toBeTruthy();
+            expect(wrapper.find(Row).emitted().rowInput[0][0]).toStrictEqual({
                 ...clickEvent,
                 clickable: true,
                 event: expect.anything(),
@@ -215,27 +214,27 @@ describe('TableRow.vue', () => {
         });
 
         it('does not emit a rowInput event when a cell is clicked if not popover column', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
             let event = new MouseEvent('click');
             let clickEvent = { event, colInd: 1, data: propsData.row[1] };
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeFalsy();
+            expect(wrapper.find(Row).emitted().rowInput).toBeFalsy();
             wrapper.findAll('td.data-cell').at(1).trigger('click', clickEvent);
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeFalsy();
+            expect(wrapper.find(Row).emitted().rowInput).toBeFalsy();
         });
 
         it('emits a rowInput event when a there is input in a cell', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeFalsy();
+            expect(wrapper.find(Row).emitted().rowInput).toBeFalsy();
             wrapper.findAll('td.data-cell').at(0).trigger('input', 0);
-            expect(wrapper.find(TableRow).emitted().rowInput).toBeTruthy();
+            expect(wrapper.find(Row).emitted().rowInput).toBeTruthy();
         });
 
         it('toggles the expandable content when the collapser toggle is clicked', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
                     tableConfig: {
@@ -245,13 +244,13 @@ describe('TableRow.vue', () => {
                 }
             });
             expect(wrapper.vm.showContent).toBe(false);
-            wrapper.find(TableCollapserToggle).vm.$emit('collapserExpand');
+            wrapper.find(CollapserToggle).vm.$emit('collapserExpand');
             expect(wrapper.vm.showContent).toBe(true);
             expect(wrapper.find(CloseIcon).exists()).toBe(true);
         });
 
         it('emits a rowSubMenuClick event when the submenu is clicked', () => {
-            wrapper = shallowMount(TableRow, {
+            wrapper = shallowMount(Row, {
                 propsData
             });
             expect(wrapper.emitted().rowSubMenuClick).toBeFalsy();
@@ -281,7 +280,7 @@ describe('TableRow.vue', () => {
                 [classMap],
                 [classMap]
             ]);
-            wrapper = shallowMount(TableRow, { propsData });
+            wrapper = shallowMount(Row, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
@@ -303,7 +302,7 @@ describe('TableRow.vue', () => {
                 [classFunction],
                 [classFunction]
             ]);
-            wrapper = shallowMount(TableRow, { propsData });
+            wrapper = shallowMount(Row, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
@@ -320,7 +319,7 @@ describe('TableRow.vue', () => {
             let propsData = getUpdatedPropsData('classGenerator', [
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
             ]);
-            wrapper = shallowMount(TableRow, { propsData });
+            wrapper = shallowMount(Row, { propsData });
 
             expect(wrapper.vm.classes).toStrictEqual([
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']

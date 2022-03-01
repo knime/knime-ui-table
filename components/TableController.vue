@@ -152,7 +152,7 @@ export default {
     },
     data() {
         return {
-            // REFERENCE FIELDS
+            // Reference State
             domains: {},
             allGroups: this.allColumnHeaders
                 .filter((header, colInd) => this.allColumnTypes[this.allColumnKeys[colInd]] === columnTypes.Nominal),
@@ -162,17 +162,17 @@ export default {
             sortedData: null,
             processedData: null,
             processLevel: null,
-            // UI FIELDS
-            // column control
+            // Control State
+            // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
-            // time filter control
+            // time filter
             currentTimeFilter: this.timeFilterKey ? this.defaultTimeFilter : null,
-            // group-by control
+            // group-by
             currentGroup: null,
             groupTitles: [],
-            // search control
+            // search
             searchQuery: '',
             // pagination
             totalTableSize: this.allData.length,
@@ -186,8 +186,7 @@ export default {
             // column filter
             showFilter: false,
             filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
-            // INTERNAL FIELDS
-            // selection state
+            // Selection State
             processedIndicies: [],
             masterSelected: (() => {
                 let initSelected = this.allData.map(item => 0);
@@ -728,7 +727,6 @@ export default {
     @rowSelect="onRowSelect"
     @tableInput="onTableInput"
   >
-    <!-- @tableSelect="onRowSelect" -->
     <template
       v-for="colInd in currentSlottedColumns"
       #[`cellContent-${currentColumnKeys[colInd]}`]="cellData"

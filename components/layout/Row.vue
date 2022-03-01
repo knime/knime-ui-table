@@ -1,5 +1,5 @@
 <script>
-import TableCollapserToggle from './ui/TableCollapserToggle';
+import CollapserToggle from '../ui/CollapserToggle';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
@@ -40,7 +40,7 @@ import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
  */
 export default {
     components: {
-        TableCollapserToggle,
+        CollapserToggle,
         SubMenu,
         Checkbox,
         FunctionButton,
@@ -145,7 +145,7 @@ export default {
         'no-selection': !tableConfig.showSelection }, { 'no-sub-menu': !tableConfig.subMenuItems.length
       }]"
     >
-      <TableCollapserToggle
+      <CollapserToggle
         v-if="tableConfig.showCollapser"
         :expanded="showContent"
         class="collapser-cell"

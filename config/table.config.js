@@ -14,36 +14,36 @@ export const columnTypes = {
 
 export const columnFilterConfigs = {
     [columnTypes.Nominal]: {
-        is: 'TableFilterMultiselect',
+        is: 'FilterMultiselect',
         value: () => []
     },
     [columnTypes.String]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     },
     [columnTypes.DateTime]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     },
     [columnTypes.Number]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     },
     [columnTypes.Boolean]: {
-        is: 'TableFilterDropdown',
+        is: 'FilterDropdown',
         value: () => []
     },
     [columnTypes.Array]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     },
     [columnTypes.Object]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     },
     // eslint-disable-next-line no-undefined
     [undefined]: {
-        is: 'TableFilterInputField',
+        is: 'FilterInputField',
         value: () => ''
     }
 };

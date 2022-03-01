@@ -1,12 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
-import TableActionButton from '~/components/ui/TableActionButton';
+import ActionButton from '~/components/ui/ActionButton';
 import Button from '~/webapps-common/ui/components/Button';
 
-describe('TableActionButton.vue', () => {
+describe('ActionButton.vue', () => {
     let wrapper;
 
     it('renders default', () => {
-        wrapper = shallowMount(TableActionButton, {
+        wrapper = shallowMount(ActionButton, {
             propsData: {
                 config: {
                     actionButtonText: 'test',
@@ -14,13 +14,13 @@ describe('TableActionButton.vue', () => {
                 }
             }
         });
-        expect(wrapper.find(TableActionButton).exists()).toBe(true);
+        expect(wrapper.find(ActionButton).exists()).toBe(true);
         expect(wrapper.find(Button).text()).toBe('test');
     });
 
     it('invokes a callback function on click', () => {
         let actionCallbackMock = jest.fn();
-        wrapper = shallowMount(TableActionButton, {
+        wrapper = shallowMount(ActionButton, {
             propsData: {
                 config: {
                     actionButtonText: 'test',

@@ -41,7 +41,6 @@ describe('getColumnDomains', () => {
         formatters.col2 = item => item;
         expect(getColumnDomains({ data: [...cardinalData, ...cardinalData], formatters, types })).toStrictEqual({
             col1: ['Yes', 'No'],
-            // eslint-disable-next-line no-magic-numbers
             col2: [0, 1, 2, 3, 4]
         });
     });

@@ -1,13 +1,13 @@
 import { shallowMount } from '@vue/test-utils';
-import TableGroup from '~/components/TableGroup';
+import Group from '~/components/layout/Group';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 
-describe('TableGroup.vue', () => {
+describe('Group.vue', () => {
     let wrapper;
 
     it('renders a table group', () => {
-        wrapper = shallowMount(TableGroup, {
+        wrapper = shallowMount(Group, {
             propsData: {
                 title: 'Group 1',
                 show: true,
@@ -17,7 +17,7 @@ describe('TableGroup.vue', () => {
             }
         });
 
-        expect(wrapper.find(TableGroup).exists()).toBe(true);
+        expect(wrapper.find(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
         expect(wrapper.find(SubMenu).exists()).toBe(true);
         expect(wrapper.find(OptionsIcon).exists()).toBe(true);
@@ -25,7 +25,7 @@ describe('TableGroup.vue', () => {
     });
 
     it('shows slotted content', () => {
-        wrapper = shallowMount(TableGroup, {
+        wrapper = shallowMount(Group, {
             propsData: {
                 title: 'Group 1',
                 show: true,
@@ -38,7 +38,7 @@ describe('TableGroup.vue', () => {
             }
         });
 
-        expect(wrapper.find(TableGroup).exists()).toBe(true);
+        expect(wrapper.find(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
         expect(wrapper.find(SubMenu).exists()).toBe(true);
         expect(wrapper.find(OptionsIcon).exists()).toBe(true);
@@ -47,7 +47,7 @@ describe('TableGroup.vue', () => {
     });
 
     it('hides group but shows slotted content', () => {
-        wrapper = shallowMount(TableGroup, {
+        wrapper = shallowMount(Group, {
             propsData: {
                 title: 'Group 1',
                 show: false,
@@ -60,7 +60,7 @@ describe('TableGroup.vue', () => {
             }
         });
 
-        expect(wrapper.find(TableGroup).exists()).toBe(true);
+        expect(wrapper.find(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(false);
         expect(wrapper.find(SubMenu).exists()).toBe(false);
         expect(wrapper.find(OptionsIcon).exists()).toBe(false);
@@ -68,7 +68,7 @@ describe('TableGroup.vue', () => {
     });
 
     it('hides group submenu if no items', () => {
-        wrapper = shallowMount(TableGroup, {
+        wrapper = shallowMount(Group, {
             propsData: {
                 title: 'Group 1',
                 show: true,
@@ -79,7 +79,7 @@ describe('TableGroup.vue', () => {
             }
         });
 
-        expect(wrapper.find(TableGroup).exists()).toBe(true);
+        expect(wrapper.find(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
         expect(wrapper.find(SubMenu).exists()).toBe(false);
         expect(wrapper.find(OptionsIcon).exists()).toBe(false);
@@ -91,7 +91,7 @@ describe('TableGroup.vue', () => {
         let groupSubMenuItems = [{
             text: 'test'
         }];
-        wrapper = shallowMount(TableGroup, {
+        wrapper = shallowMount(Group, {
             propsData: {
                 title: 'Group 1',
                 show: true,
@@ -101,7 +101,7 @@ describe('TableGroup.vue', () => {
                 default: '<tr class="data">Some Data</tr>'
             }
         });
-        expect(wrapper.find(TableGroup).exists()).toBe(true);
+        expect(wrapper.find(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
         expect(wrapper.find(SubMenu).exists()).toBe(true);
         expect(wrapper.emitted().groupSubMenuClick).toBeFalsy();
