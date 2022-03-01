@@ -117,7 +117,7 @@ export default {
         },
         tableHeaderClass() {
             return `table-header${
-              this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
+                this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
         }
     },

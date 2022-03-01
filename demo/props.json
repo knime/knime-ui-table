@@ -442,7 +442,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user2@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user2@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -450,7 +454,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": false,
-          "recipients": ["example-user2@knime.com"]
+          "recipients": [
+            "example-user2@knime.com"
+          ]
         }
       ],
       "executionRetries": 0,
@@ -731,7 +737,11 @@
           ]
         }
       },
-      "notifications": { "recipients": ["example-user2@knime.com"] },
+      "notifications": {
+        "recipients": [
+          "example-user2@knime.com"
+        ]
+      },
       "actions": [
         {
           "type": "SendMail",
@@ -739,7 +749,9 @@
           "onFailure": true,
           "onInactivityDiscard": false,
           "appendNodeMessages": true,
-          "recipients": ["example-user2@knime.com"]
+          "recipients": [
+            "example-user2@knime.com"
+          ]
         }
       ],
       "lastRun": "2021-08-18T06:22:00.017+02:00[Europe/Berlin]",
@@ -1166,7 +1178,9 @@
     ]
   },
   "allEditableColumns": {},
-  "allSlottedColumns": ["status"],
+  "allSlottedColumns": [
+    "status"
+  ],
   "timeFilterKey": "lastRun",
   "defaultColumns": [
     "lastRun",
@@ -1182,7 +1196,9 @@
   "pageSize": 10,
   "actionButtonText": "",
   "allPopoverRenderers": {
-    "status": { "type": "StringRenderer" },
+    "status": {
+      "type": "StringRenderer"
+    },
     "schedule": true,
     "inputParameters": true,
     "notifications": true,
