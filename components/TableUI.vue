@@ -274,11 +274,12 @@ export default {
           @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
           @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
         >
+          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <template
             v-for="colInd in slottedColumns"
             #[`cellContent-${columnKeys[colInd]}`]="cellData"
           >
-            <!-- Add key for dynamic scoped slots to help Vue framework manage events. -->
+            <!-- Vue requires key on real element for dynamic scoped slots to help Vue framework manage events. -->
             <span :key="rowInd + '_' + colInd">
               <slot
                 :name="`cellContent-${columnKeys[colInd]}`"
