@@ -15,6 +15,14 @@ describe('Table.vue', () => {
         allFormatters: { a: x => x, b: x => x },
         allClassGenerators: {},
         defaultColumns: ['a', 'b'],
+        showSorting: true,
+        showColumnSelection: true,
+        showGroupBy: true,
+        showSearch: true,
+        showColumnFilters: true,
+        showBottomControls: true,
+        showSelection: true,
+        showPopovers: true,
         parentSelected: [0]
     };
 

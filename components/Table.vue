@@ -71,50 +71,17 @@ export default {
         /**
          * Visual element configuration props.
          */
-        showSorting: {
-            type: Boolean,
-            default: true
-        },
-        showTimeFilter: {
-            type: Boolean,
-            default: true
-        },
-        showColumnSelection: {
-            type: Boolean,
-            default: true
-        },
-        showGroupBy: {
-            type: Boolean,
-            default: true
-        },
-        showSearch: {
-            type: Boolean,
-            default: true
-        },
-        showColumnFilters: {
-            type: Boolean,
-            default: true
-        },
-        showBottomControls: {
-            type: Boolean,
-            default: true
-        },
-        showCollapser: {
-            type: Boolean,
-            default: false
-        },
-        showSelection: {
-            type: Boolean,
-            default: true
-        },
-        showActionButton: {
-            type: Boolean,
-            default: false
-        },
-        showPopovers: {
-            type: Boolean,
-            default: true
-        },
+        showSorting: Boolean,
+        showTimeFilter: Boolean,
+        showColumnSelection: Boolean,
+        showGroupBy: Boolean,
+        showSearch: Boolean,
+        showColumnFilters: Boolean,
+        showBottomControls: Boolean,
+        showCollapser: Boolean,
+        showSelection: Boolean,
+        showActionButton: Boolean,
+        showPopovers: Boolean,
         /**
          * Additional configuration options.
          */
