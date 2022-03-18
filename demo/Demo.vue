@@ -1,5 +1,5 @@
 <script>
-import TableController from '../components/TableController.vue';
+import Table from '../components/Table.vue';
 import demoProps from './props.json';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
@@ -35,7 +35,7 @@ const groupSubMenuItems = [{
 
 export default {
     components: {
-        TableController,
+        Table,
         Checkbox
     },
     data() {
@@ -58,8 +58,8 @@ export default {
     },
     methods: {
         printConfig() {
-            consola.log('TableUI DataConfig prop:', this.$refs?.tableController.dataConfig);
-            consola.log('TableUI TableConfig prop:', this.$refs?.tableController.tableConfig);
+            consola.log('TableUI DataConfig prop:', this.$refs?.knimeTable.dataConfig);
+            consola.log('TableUI TableConfig prop:', this.$refs?.knimeTable.tableConfig);
         }
     }
 };
@@ -86,8 +86,8 @@ export default {
       <Checkbox v-model="showPopovers">popovers</Checkbox>
     </div>
     <br>
-    <TableController
-      ref="tableController"
+    <Table
+      ref="knimeTable"
       v-bind="_data"
     >
       <template #collapserContent="{ row }">
@@ -96,7 +96,7 @@ export default {
           {{ JSON.stringify(row, null, 4) }}
         </pre>
       </template>
-    </TableController>
+    </Table>
     <br>
     <button @click="printConfig">Print TableUI config to console</button>
   </div>

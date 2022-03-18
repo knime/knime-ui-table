@@ -579,17 +579,17 @@ export default {
          *
          */
         onTimeFilterUpdate(newTimeFilter) {
-            consola.debug(`TableController received: timeFilterUpdate ${newTimeFilter}`);
+            consola.debug(`Table received: timeFilterUpdate ${newTimeFilter}`);
             this.currentTimeFilter = newTimeFilter;
             this.currentPage = 1;
         },
         onColumnUpdate(newColumnList) {
-            consola.debug(`TableController received: columnUpdate ${newColumnList}`);
+            consola.debug(`Table received: columnUpdate ${newColumnList}`);
             let x = newColumnList.map(col => this.allHeadersOrdered.indexOf(col)).sort((a, b) => a - b);
             this.currentColumns = x.map(colInd => this.currentAllColumnOrder[colInd]);
         },
         onColumnReorder(colInd, newColInd) {
-            consola.debug(`TableController received: columnReorder ${colInd} ${newColInd}`);
+            consola.debug(`Table received: columnReorder ${colInd} ${newColInd}`);
             let trueColumnInd = this.currentAllColumnOrder[colInd];
             let newAllColumns = this.currentAllColumnOrder.filter(col => col !== trueColumnInd);
             newAllColumns.splice(newColInd, 0, trueColumnInd);
@@ -601,21 +601,21 @@ export default {
             }
         },
         onGroupUpdate(group) {
-            consola.debug(`TableController received: groupUpdate ${group}`);
+            consola.debug(`Table received: groupUpdate ${group}`);
             this.currentGroup = group;
             if (group) {
                 this.currentPage = 1;
             }
         },
         onSearch(input) {
-            consola.debug(`TableController received: search ${input}`);
+            consola.debug(`Table received: search ${input}`);
             this.searchQuery = input || null;
             if (input) {
                 this.currentPage = 1;
             }
         },
         onPageChange(pageNumberDiff) {
-            consola.debug(`TableController received: pageChange ${pageNumberDiff}`);
+            consola.debug(`Table received: pageChange ${pageNumberDiff}`);
             let proposedPage = this.currentPage + pageNumberDiff;
             let isWithinRange = (proposedPage * this.currentPageSize - this.currentTableSize) < this.currentPageSize;
             if (proposedPage > 0 && isWithinRange) {
@@ -623,7 +623,7 @@ export default {
             }
         },
         onPageSizeUpdate(newPageSize) {
-            consola.debug(`TableController received: pageSizeUpdate ${newPageSize}`);
+            consola.debug(`Table received: pageSizeUpdate ${newPageSize}`);
             this.currentPageSize = newPageSize;
             let newPageNumber =
                 getNextPage(this.currentPageSize, this.currentPage, this.currentTableSize, this.pageRowCount);
@@ -638,7 +638,7 @@ export default {
          *
          */
         onColumnSort(colInd) {
-            consola.debug(`TableController received: columnSort ${colInd}`);
+            consola.debug(`Table received: columnSort ${colInd}`);
             let isNewColumn = this.columnSort !== colInd;
             if (isNewColumn) {
                 this.currentPage = 1;
@@ -650,26 +650,26 @@ export default {
             }
         },
         onColumnFilter(colInd, value) {
-            consola.debug(`TableController received: columnFilter ${colInd} ${value}`);
+            consola.debug(`Table received: columnFilter ${colInd} ${value}`);
             let colKey = this.currentColumnKeys[colInd];
             Vue.set(this.filterValues, colKey, value);
         },
         onClearFilter() {
-            consola.debug(`TableController received: clearFilter`);
+            consola.debug(`Table received: clearFilter`);
             this.filterValues = getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes);
         },
         onToggleFilter(filterActive) {
-            consola.debug(`TableController received: toggleFilter ${this.filterActive}`);
+            consola.debug(`Table received: toggleFilter ${this.filterActive}`);
             this.showFilter = filterActive;
         },
         onSelectAll(selected) {
-            consola.debug(`TableController received: selectAll ${selected}`);
+            consola.debug(`Table received: selectAll ${selected}`);
             this.masterSelected = this.masterSelected.map(item => selected ? 1 : 0);
             this.$emit('tableSelect', this.totalSelected);
         },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(
-                `TableController received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.processedIndicies}`
+                `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.processedIndicies}`
             );
             Vue.set(
                 this.masterSelected,
@@ -679,7 +679,7 @@ export default {
             this.$emit('tableSelect', this.totalSelected);
         },
         onTableInput(event) {
-            consola.debug(`TableController received: tableInput ${event}`);
+            consola.debug(`Table received: tableInput ${event}`);
             this.$emit('tableInput', event);
         },
         /*
@@ -693,7 +693,7 @@ export default {
                 .filter(row => row !== false);
         },
         clearSelection() {
-            consola.debug(`TableController clearing selection.`);
+            consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
         }
     }

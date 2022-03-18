@@ -1,10 +1,10 @@
 import { shallowMount } from '@vue/test-utils';
-import TableController from '~/components/TableController';
+import Table from '~/components/Table';
 import TableUI from '~/components/TableUI';
 
 import { columnTypes } from '~/config/table.config';
 
-describe('TableController.vue', () => {
+describe('Table.vue', () => {
     let wrapper;
 
     let propsData = {
@@ -19,7 +19,7 @@ describe('TableController.vue', () => {
     };
 
     it('creates UI configurations', () => {
-        wrapper = shallowMount(TableController, { propsData });
+        wrapper = shallowMount(Table, { propsData });
 
         expect(wrapper.vm.dataConfig).toStrictEqual({ columnConfigs: [{
             classGenerator: [],
@@ -81,7 +81,7 @@ describe('TableController.vue', () => {
                 for (let i = 0; i < 100; i++) {
                     localPropsData.allData.push({ a: i, b: i + 1 });
                 }
-                wrapper = shallowMount(TableController, { propsData: localPropsData });
+                wrapper = shallowMount(Table, { propsData: localPropsData });
                 expect(wrapper.vm.currentPage).toBe(1);
                 wrapper.find(TableUI).vm.$emit('pageChange', 1);
                 expect(wrapper.vm.currentPage).toBe(2);
@@ -90,49 +90,49 @@ describe('TableController.vue', () => {
             });
 
             it('registers search events and updates query', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search', 'Find me');
                 expect(wrapper.vm.searchQuery).toBe('Find me');
             });
 
             it('empties search query if search event value is empty', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search', '');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('empties search query if search event value is missing', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('registers groupUpdate events and updates the current group', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.currentGroup).toBe(null);
                 wrapper.find(TableUI).vm.$emit('groupUpdate', 'a');
                 expect(wrapper.vm.currentGroup).toBe('a');
             });
 
             it('registers columnReorder events and updates the column order', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([0, 1]);
                 wrapper.find(TableUI).vm.$emit('columnReorder', 1, 0);
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([1, 0]);
             });
 
             it('registers columnUpdate events and updates the currentColumns', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
                 wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
                 expect(wrapper.vm.currentColumns).toStrictEqual([0]);
             });
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
-                wrapper = shallowMount(TableController, { propsData: {
+                wrapper = shallowMount(Table, { propsData: {
                     ...propsData,
                     timeFilterKey: 'a'
                 } });
@@ -142,7 +142,7 @@ describe('TableController.vue', () => {
             });
 
             it('toggles the column filters', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.showFilter).toBe(false);
                 wrapper.find(TableUI).vm.$emit('toggleFilter', true);
                 expect(wrapper.vm.showFilter).toBe(true);
@@ -151,7 +151,7 @@ describe('TableController.vue', () => {
 
         describe('columnar', () => {
             it('registers column sort events', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
                 wrapper.find(TableUI).vm.$emit('columnSort', 0);
@@ -160,7 +160,7 @@ describe('TableController.vue', () => {
             });
 
             it('sorts columns in ascending order when the sort column changes', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
                 wrapper.find(TableUI).vm.$emit('columnSort', 1);
@@ -169,7 +169,7 @@ describe('TableController.vue', () => {
             });
 
             it('registers column filter events', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
@@ -177,7 +177,7 @@ describe('TableController.vue', () => {
             });
 
             it('resets filter to default if value is empty', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('clearFilter', 0, null);
@@ -185,7 +185,7 @@ describe('TableController.vue', () => {
             });
 
             it('resets filter to default if value is missing', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('clearFilter', 0);
@@ -193,7 +193,7 @@ describe('TableController.vue', () => {
             });
 
             it('registers clear filter events', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
@@ -205,7 +205,7 @@ describe('TableController.vue', () => {
 
         describe('selection', () => {
             it('registers select all events', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('selectAll', false);
@@ -215,7 +215,7 @@ describe('TableController.vue', () => {
             });
 
             it('registers single row selection', () => {
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('rowSelect', false, 0, 0);
@@ -226,7 +226,7 @@ describe('TableController.vue', () => {
 
             it('registers and emits table input events', () => {
                 let testEvent = { value: 'test' };
-                wrapper = shallowMount(TableController, { propsData });
+                wrapper = shallowMount(Table, { propsData });
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('tableInput', testEvent);
                 expect(wrapper.emitted().tableInput).toBeTruthy();
@@ -238,20 +238,20 @@ describe('TableController.vue', () => {
 
     describe('utilities', () => {
         it('provides method to get current selection to parent component', () => {
-            wrapper = shallowMount(TableController, { propsData });
+            wrapper = shallowMount(Table, { propsData });
             expect(wrapper.vm.masterSelected).toStrictEqual([1]);
             expect(wrapper.vm.getSelected()).toStrictEqual([0]);
         });
 
         it('provides method to programmatically clear selection', () => {
-            wrapper = shallowMount(TableController, { propsData });
+            wrapper = shallowMount(Table, { propsData });
             expect(wrapper.vm.masterSelected).toStrictEqual([1]);
             wrapper.vm.clearSelection();
             expect(wrapper.vm.masterSelected).toStrictEqual([0]);
         });
 
         it('can filter an array based on the current columns', () => {
-            wrapper = shallowMount(TableController, { propsData });
+            wrapper = shallowMount(Table, { propsData });
             expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([5, 10]);
             wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
