@@ -109,3 +109,7 @@ typings/
 target/
 
 dist/*
+
+# Maven build artifacts
+**/.flattened-pom.xml
+**/target/
