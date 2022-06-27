@@ -3,7 +3,7 @@
 // Now that the KNIME AP build is moved to the new build system:
 // - investigate the role of the maven build vs the nodeJS build and see if they can be combined
 
-def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-06'
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-09'
 
 library "knime-pipeline@$BN"
 
