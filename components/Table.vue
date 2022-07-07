@@ -14,6 +14,9 @@ import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 
+const MIN_COLUMN_SIZE = 30;
+const RESERVED_BODY_WIDTH = 165;
+
 /**
  * @see README.md
  *
@@ -125,6 +128,7 @@ export default {
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
+            currentAllColumnSizes: null,
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -172,7 +176,6 @@ export default {
             let dataConfig = {
                 columnConfigs: []
             };
-            let defaultColumnSize = 100 / (this.currentColumns.length || 1);
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {
                     return;
@@ -182,7 +185,7 @@ export default {
                     key,
                     header: this.currentHeaders[ind],
                     type: columnType,
-                    size: defaultColumnSize,
+                    size: this.currentColumnSizes[ind],
                     filterConfig: this.currentFilterConfigs[ind],
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
@@ -269,6 +272,9 @@ export default {
         },
         currentColumnKeys() {
             return this.filterByColumn(this.allColumnKeys);
+        },
+        currentColumnSizes() {
+            return this.filterByColumn(this.currentAllColumnSizes);
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -429,6 +435,9 @@ export default {
             this.domains = this.getDomains();
             this.processedData = this.filterLevelUpdate();
         }
+        const defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
+            (this.$el.clientWidth - RESERVED_BODY_WIDTH) / (this.currentColumns.length || 1));
+        this.currentAllColumnSizes = Array(this.allColumnKeys.length).fill(defaultColumnSize);
     },
     methods: {
         /*
@@ -649,6 +658,10 @@ export default {
             consola.debug(`Table received: tableInput ${event}`);
             this.$emit('tableInput', event);
         },
+        onColumnResize(columnIndex, newColumnSize) {
+            consola.debug(`Table received: columnResize ${columnIndex} ${newColumnSize}`);
+            Vue.set(this.currentAllColumnSizes, this.currentColumns[columnIndex], newColumnSize);
+        },
         /*
          *
          * Table methods.
@@ -688,6 +701,7 @@ export default {
     @selectAll="onSelectAll"
     @rowSelect="onRowSelect"
     @tableInput="onTableInput"
+    @columnResize="onColumnResize"
   >
     <template
       v-for="col in currentSlottedColumns"

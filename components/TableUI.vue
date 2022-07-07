@@ -82,7 +82,9 @@ export default {
             popoverTarget: null,
             popoverData: null,
             popoverColumn: null,
-            popoverRenderer: null
+            popoverRenderer: null,
+            // the index of the column that is currently being resized and for which a border should be shown
+            showBorderColumnIndex: null
         };
     },
     computed: {
@@ -226,6 +228,15 @@ export default {
             this.popoverRenderer = null;
             this.popoverData = null;
             window.removeEventListener('resize', this.onPopoverClose);
+        },
+        onColumnResize(columnIndex, newColumnSize) {
+            this.$emit('columnResize', columnIndex, newColumnSize);
+        },
+        onShowColumnBorder(columnIndex) {
+            this.showBorderColumnIndex = columnIndex;
+        },
+        onHideColumnBorder() {
+            this.showBorderColumnIndex = null;
         }
     }
 };
@@ -258,6 +269,9 @@ export default {
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
+        @columnResize="onColumnResize"
+        @showColumnBorder="onShowColumnBorder"
+        @hideColumnBorder="onHideColumnBorder"
       />
       <ColumnFilters
         v-if="filterActive"
@@ -285,6 +299,7 @@ export default {
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :is-selected="currentSelection[groupInd][rowInd]"
+          :show-border-column-index="showBorderColumnIndex"
           @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
           @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
           @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
@@ -353,6 +368,8 @@ table {
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
+  display: block;
+  overflow: auto;
 
   & >>> td > a {
     text-decoration: none;

@@ -4,6 +4,8 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
+const MIN_COLUMN_SIZE = 30;
+
 /**
  * A table header element for displaying the column names in a table. This component
  * has a filter-toggle button to programmatically display column filters, a checkbox
@@ -49,12 +51,18 @@ export default {
     },
     data() {
         return {
-            height: 40
+            height: 40,
+            hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
+            dragIndex: null, // the index of the column that is currently being dragged / resized
+            columnSizeOnDragStart: null, // the original width of the column that is currently being resized
+            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+            cursor: document.body.style.cursor // the default body cursor to which we reset after the resize via drag
         };
     },
     computed: {
         enableSorting() {
-            return Boolean(this.tableConfig?.sortConfig);
+            // do not enable sorting when currently resizing or hovering over a drag handle
+            return Boolean(this.tableConfig?.sortConfig) && this.hoverIndex === null && this.dragIndex === null;
         },
         sortColumn() {
             return this.tableConfig?.sortConfig?.sortColumn;
@@ -71,12 +79,53 @@ export default {
             this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            if (this.enableSorting) {
+            if (this.enableSorting && this.dragIndex === null) {
                 this.$emit('columnSort', ind, this.columnHeaders[ind]);
             }
         },
         onToggleFilter() {
             this.$emit('toggleFilter');
+        },
+        onDragStart(event, columnIndex) {
+            consola.debug('Resize via drag triggered: ', event);
+            // for resize via drag, we need to listen to mouse events even while the mouse is outside this component
+            window.addEventListener('mousemove', this.onMouseMove);
+            window.addEventListener('mouseup', this.onMouseUp);
+            this.dragIndex = columnIndex;
+            this.columnSizeOnDragStart = this.columnSizes[columnIndex];
+            this.pageXOnDragStart = event.pageX;
+            this.$emit('showColumnBorder', this.dragIndex);
+        },
+        onMouseMove(event) {
+            consola.debug('Resize via drag ongoing: ', event);
+            const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+            this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+        },
+        onMouseUp(event) {
+            consola.debug('Resize via drag finished: ', event);
+            window.removeEventListener('mousemove', this.onMouseMove);
+            window.removeEventListener('mouseup', this.onMouseUp);
+            this.dragIndex = null;
+            // also set hoverIndex to null, since the mouse leave event of the dragged handle already fired
+            this.hoverIndex = null;
+            this.$emit('hideColumnBorder');
+            document.body.style.cursor = this.cursor;
+        },
+        onMouseOverDragHandle(event, columnIndex) {
+            consola.debug('Begin hover over drag handle: ', event);
+            if (this.dragIndex === null) {
+                this.hoverIndex = columnIndex;
+                // while it would be a cleaner solution to set the cursor via css, we want to keep the resize cursor
+                // even when dragging outside this component
+                document.body.style.cursor = 'col-resize';
+            }
+        },
+        onMouseLeaveDragHandle(event) {
+            consola.debug('End hover over drag handle: ', event);
+            if (this.dragIndex === null) {
+                this.hoverIndex = null;
+                document.body.style.cursor = this.cursor;
+            }
         }
     }
 };
@@ -102,25 +151,33 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || 100}%)`}"
+        :style="{ width: `calc(${columnSizes[ind] || 100}px)`}"
         :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
-        @click="onHeaderClick(ind)"
+        @mousedown="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
-        <div class="main-header">
-          <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-          <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
-            {{ header }}
+        <div class="column-header-content">
+          <div class="main-header">
+            <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
+            <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+              {{ header }}
+            </div>
+          </div>
+          <div
+            v-if="columnSubHeaders[ind]"
+            class="sub-header-text-container"
+          >
+            {{ columnSubHeaders[ind] }}
           </div>
         </div>
         <div
-          v-if="columnSubHeaders[ind]"
-          class="sub-header-text-container"
-        >
-          {{ columnSubHeaders[ind] }}
-        </div>
+          :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
+          @mousedown="onDragStart($event, ind)"
+          @mouseover="onMouseOverDragHandle($event, ind)"
+          @mouseleave="onMouseLeaveDragHandle($event)"
+        />
       </th>
       <th
         v-if="tableConfig.showColumnFilters"
@@ -174,53 +231,79 @@ thead {
       }
 
       &.column-header {
-        margin-left: 10px;
+        position: relative;
         display: flex;
-        justify-content: center;
-        flex-direction: column;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        margin-left: 10px;
 
-        & .main-header {
-          position: relative;
+        & .column-header-content {
           display: flex;
-          flex-direction: row-reverse;
-          justify-content: flex-end;
+          justify-content: center;
+          flex-direction: column;
 
-          & .header-text-container {
-            max-width: calc(100%);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 700;
-            line-height: 16px;
-            font-size: 14px;
+          & .main-header {
+            position: relative;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
 
-            &.with-icon {
-              max-width: calc(100% - 30px);
+            & .header-text-container {
+              max-width: calc(100%);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              font-weight: 700;
+              line-height: 16px;
+              font-size: 14px;
+
+              &.with-icon {
+                max-width: calc(100% - 30px);
+              }
+            }
+
+            & .icon {
+              width: 13px;
+              height: 13px;
+              stroke-width: calc(32px / 13);
+              stroke: var(--knime-masala);
+              pointer-events: none;
+              transition: transform 0.2s ease-in-out;
+              margin: auto 5px;
+              display: none;
+
+              &.active {
+                display: unset;
+              }
             }
           }
 
-          & .icon {
-            width: 13px;
-            height: 13px;
+          & .sub-header-text-container {
+            font-weight: 400;
+            font-size: 10px;
+            line-height: 12px;
+            font-style: italic;
             stroke-width: calc(32px / 13);
-            stroke: var(--knime-masala);
-            pointer-events: none;
-            transition: transform 0.2s ease-in-out;
-            margin: auto 5px;
-            display: none;
-
-            &.active {
-              display: unset;
-            }
+            display: flex;
           }
+
         }
 
-        & .sub-header-text-container {
-          font-weight: 400;
-          font-size: 10px;
-          line-height: 12px;
-          font-style: italic;
-          stroke-width: calc(32px / 13);
-          display: flex;
+        & .drag-handle {
+          opacity: 0;
+          height: 100%;
+          right: 0;
+          width: 5px;
+          position: absolute;
+          background-color: var(--knime-dove-gray);
+
+          &.hover {
+            opacity: 1;
+          }
+
+          &.drag {
+            opacity: 1;
+            width: 1px;
+          }
         }
 
         &:not(.inverted) .icon.active {

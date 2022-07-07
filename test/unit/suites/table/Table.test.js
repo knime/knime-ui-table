@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, mount } from '@vue/test-utils';
 import Table from '~/components/Table';
 import TableUI from '~/components/TableUI';
 
@@ -27,7 +27,7 @@ describe('Table.vue', () => {
     };
 
     it('creates UI configurations', () => {
-        wrapper = shallowMount(Table, { propsData });
+        wrapper = mount(Table, { propsData });
 
         expect(wrapper.vm.dataConfig).toStrictEqual({ columnConfigs: [{
             classGenerator: [],
@@ -37,7 +37,7 @@ describe('Table.vue', () => {
             header: 'A',
             key: 'a',
             popoverRenderer: expect.undefined,
-            size: 50,
+            size: 30,
             type: columnTypes.Number
         }, {
             classGenerator: [],
@@ -47,7 +47,7 @@ describe('Table.vue', () => {
             header: 'B',
             key: 'b',
             popoverRenderer: expect.undefined,
-            size: 50,
+            size: 30,
             type: columnTypes.Number
         }] });
         expect(wrapper.vm.tableConfig).toStrictEqual({

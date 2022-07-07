@@ -69,6 +69,10 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
+        },
+        showBorderColumnIndex: {
+            type: Number,
+            default: null
         }
     },
     data() {
@@ -178,8 +182,9 @@ export default {
         v-for="(data, ind) in row"
         ref="dataCell"
         :key="ind"
-        :class="[classes[ind], 'data-cell', { clickable: isClickable(data, ind) }]"
-        :style="{ width: `calc(${columnSizes[ind] || 100}%)` }"
+        :class="[classes[ind], 'data-cell',
+                 { clickable: isClickable(data, ind), showColumnBorder: showBorderColumnIndex === ind}]"
+        :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
         :title="!isClickable(data, ind) ? data : null"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
@@ -329,6 +334,10 @@ tr.row {
       &:hover {
         color: var(--knime-masala);
       }
+    }
+
+    &.showColumnBorder {
+      border-right: 1px solid var(--knime-dove-gray);
     }
   }
 
