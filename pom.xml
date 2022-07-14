@@ -23,7 +23,7 @@
         <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
-        <sonar.exclusions>test/**,node_modules/**/*,dist/**/*,.nyc_output/**/*,coverage/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**</sonar.exclusions>
+        <sonar.exclusions>test/**,demo/**,node_modules/**/*,dist/**/*,.nyc_output/**/*,coverage/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**</sonar.exclusions>
         <node.version>v14.19.0</node.version>
         <npm.version>6.14.5</npm.version>
         <resourcedir>dist/inlined</resourcedir>

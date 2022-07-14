@@ -8,8 +8,7 @@ It itself uses webapps-common as submodule.
 
 ### Prerequisites
 
-- Install [Node.js **Version 14**][node].
-- Only for test coverage uploads to SonarQube: you also need [Java]™ 8 or 11.
+* Install [Node.js][node], see version in [package.json](package.json).
 
 Newer versions may also work, but have not been tested.
 
@@ -114,6 +113,7 @@ The KNIME-Table expects that the embedding app provides the following:
 - global `window.consola` instance for logging
 
 [vue]: https://vuejs.org/
+[node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
 [vue cli docs]: https://cli.vuejs.org/guide/
 [vue library]: https://cli.vuejs.org/guide/build-targets.html#library
 [jest]: https://jestjs.io/en
