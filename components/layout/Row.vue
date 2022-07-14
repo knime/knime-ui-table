@@ -5,6 +5,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import MissingValueIcon from '~/webapps-common/ui/assets/img/icons/missing-value.svg?inline';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -45,7 +46,8 @@ export default {
         Checkbox,
         FunctionButton,
         OptionsIcon,
-        CloseIcon
+        CloseIcon,
+        MissingValueIcon
     },
     props: {
         row: {
@@ -59,6 +61,10 @@ export default {
         columnConfigs: {
             type: Array,
             default: () => []
+        },
+        rowConfig: {
+            type: Object,
+            default: () => ({})
         },
         isSelected: {
             type: Boolean,
@@ -89,6 +95,9 @@ export default {
         clickableColumns() {
             // enforce boolean to reduce reactivity
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
+        },
+        rowHeight() {
+            return this.rowConfig?.rowHeight;
         },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
@@ -147,6 +156,7 @@ export default {
       :class="['row', {
         'no-selection': !tableConfig.showSelection }, { 'no-sub-menu': !tableConfig.subMenuItems.length
       }]"
+      :style="{ height: `${rowHeight || 40}px` }"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
@@ -173,8 +183,12 @@ export default {
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
       >
+        <MissingValueIcon
+          v-if="data === null"
+          class="missing-value-icon"
+        />
         <slot
-          v-if="slottedColumns[ind]"
+          v-else-if="slottedColumns[ind]"
           :name="`cellContent-${columnKeys[ind]}`"
           :row="row"
           :ind="ind"
@@ -225,7 +239,6 @@ export default {
 <style lang="postcss" scoped>
 
 tr.row {
-  height: 40px;
   margin-bottom: 1px;
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);
@@ -268,6 +281,12 @@ tr.row {
 
     &.data-cell {
       margin-left: 10px;
+
+      & .missing-value-icon {
+        vertical-align: middle;
+        width: 25px;
+        height: 25px;
+      }
     }
 
     &.action {

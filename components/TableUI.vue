@@ -273,6 +273,7 @@ export default {
           :row="columnKeys.map(column => row[column])"
           :table-config="tableConfig"
           :column-configs="dataConfig.columnConfigs"
+          :row-config="dataConfig.rowConfig"
           :is-selected="currentSelection[groupInd][rowInd]"
           @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
           @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
