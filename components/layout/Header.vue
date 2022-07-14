@@ -30,6 +30,10 @@ export default {
             type: Array,
             default: () => []
         },
+        columnSubHeaders: {
+            type: Array,
+            default: () => []
+        },
         columnSizes: {
             type: Array,
             default: () => []
@@ -101,9 +105,17 @@ export default {
         @click="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
-        <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-        <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
-          {{ header }}
+        <div :class="['main-header']">
+          <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
+          <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+            {{ header }}
+          </div>
+        </div>
+        <div
+          v-if="columnSubHeaders[ind]"
+          :class="['sub-header-text-container']"
+        >
+          {{ columnSubHeaders[ind] }}
         </div>
       </th>
       <th
@@ -135,7 +147,7 @@ thead {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 40px;
+      line-height: 42px;
       padding: 0;
       text-align: left;
 
@@ -157,36 +169,53 @@ thead {
       }
 
       &.column-header {
-        position: relative;
+        margin-left: 10px;
         display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        justify-content: center;
+        flex-direction: column;
 
-        & .header-text-container {
-          max-width: calc(100%);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          margin-left: 10px;
-          font-weight: 500;
+        & .main-header {
+          position: relative;
+          display: flex;
+          flex-direction: row-reverse;
+          justify-content: flex-end;
 
-          &.with-icon {
-            max-width: calc(100% - 30px);
+          & .header-text-container {
+            max-width: calc(100%);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
+            line-height: 16px;
+            font-size: 14px;
+
+            &.with-icon {
+              max-width: calc(100% - 30px);
+            }
+          }
+
+          & .icon {
+            width: 13px;
+            height: 13px;
+            stroke-width: calc(32px / 13);
+            stroke: var(--knime-masala);
+            pointer-events: none;
+            transition: transform 0.2s ease-in-out;
+            margin: auto 5px;
+            display: none;
+
+            &.active {
+              display: unset;
+            }
           }
         }
 
-        & .icon {
-          width: 13px;
-          height: 13px;
+        & .sub-header-text-container {
+          font-weight: 400;
+          font-size: 10px;
+          line-height: 12px;
+          font-style: italic;
           stroke-width: calc(32px / 13);
-          stroke: var(--knime-masala);
-          pointer-events: none;
-          transition: transform 0.2s ease-in-out;
-          margin: auto 5px;
-          display: none;
-
-          &.active {
-            display: unset;
-          }
+          display: flex;
         }
 
         &:not(.inverted) .icon.active {
@@ -201,9 +230,11 @@ thead {
             outline: none;
             color: var(--knime-dove-gray);
 
-            & .icon {
-              display: unset;
-              stroke: var(--knime-dove-gray);
+            & .main-header {
+              & .icon {
+                display: unset;
+                stroke: var(--knime-dove-gray);
+              }
             }
           }
         }

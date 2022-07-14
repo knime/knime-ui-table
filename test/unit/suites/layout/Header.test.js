@@ -19,6 +19,7 @@ describe('Header.vue', () => {
             showColumnFilters: true
         },
         columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
+        columnSubHeaders: [],
         columnSizes: [20, 20, 20, 20, 20],
         isSelected: false,
         filtersActive: false
@@ -26,7 +27,6 @@ describe('Header.vue', () => {
 
     it('renders default table header', () => {
         wrapper = shallowMount(Header, { propsData });
-
         expect(wrapper.find(Header).exists()).toBe(true);
         expect(wrapper.find(Checkbox).exists()).toBe(true);
         expect(wrapper.find(FunctionButton).exists()).toBe(true);
@@ -40,7 +40,21 @@ describe('Header.vue', () => {
         expect(columns.at(2).text()).toContain(propsData.columnHeaders[2]);
         expect(columns.at(3).text()).toContain(propsData.columnHeaders[3]);
         expect(columns.at(4).text()).toContain(propsData.columnHeaders[4]);
+        expect(wrapper.find('.sub-header-text-container').exists()).toBe(false);
     });
+
+    it('renders sub headers', () => {
+        propsData.columnSubHeaders = ['SubHeader 1', 'SubHeader 2', 'SubHeader 3', 'SubHeader 4', 'SubHeader 5'];
+        wrapper = shallowMount(Header, { propsData });
+        let columns = wrapper.findAll('.sub-header-text-container');
+        expect(columns.length).toBe(5);
+        expect(columns.at(0).text()).toContain(propsData.columnSubHeaders[0]);
+        expect(columns.at(1).text()).toContain(propsData.columnSubHeaders[1]);
+        expect(columns.at(2).text()).toContain(propsData.columnSubHeaders[2]);
+        expect(columns.at(3).text()).toContain(propsData.columnSubHeaders[3]);
+        expect(columns.at(4).text()).toContain(propsData.columnSubHeaders[4]);
+    });
+
 
     it('hides "tr" element if no headers provided', () => {
         wrapper = shallowMount(Header);

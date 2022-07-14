@@ -92,6 +92,9 @@ export default {
         columnHeaders() {
             return this.getPropertiesFromColumns('header');
         },
+        columnSubHeaders() {
+            return this.getPropertiesFromColumns('subHeader');
+        },
         columnSizes() {
             return this.getPropertiesFromColumns('size');
         },
@@ -237,6 +240,7 @@ export default {
       <Header
         :table-config="tableConfig"
         :column-headers="columnHeaders"
+        :column-sub-headers="columnSubHeaders"
         :column-sizes="columnSizes"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"

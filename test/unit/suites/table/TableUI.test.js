@@ -21,6 +21,7 @@ describe('TableUI.vue', () => {
             columnConfigs: [{
                 key: 'a',
                 header: 'a',
+                subHeader: 'a',
                 type: columnTypes.Number,
                 size: 50,
                 filterConfig: {
@@ -37,6 +38,7 @@ describe('TableUI.vue', () => {
             }, {
                 key: 'b',
                 header: 'b',
+                subHeader: 'b',
                 type: columnTypes.Number,
                 size: 50,
                 filterConfig: {
