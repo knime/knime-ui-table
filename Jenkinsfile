@@ -36,7 +36,7 @@ try {
                     withCredentials([string(credentialsId: 'NPM_AUTH_TOKEN', variable: 'NPM_AUTH_TOKEN'),]) {
                         sh '''
                             echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" >> ~/.npmrc
-                            npm publish --quiet
+                            target/node/npm publish --quiet
                         '''
                     }
                 }
