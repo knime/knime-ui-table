@@ -61,6 +61,9 @@ export default {
         },
         sortDirection() {
             return this.tableConfig?.sortConfig?.sortDirection;
+        },
+        hasSubHeaders() {
+            return this.columnSubHeaders.some(item => typeof item !== 'undefined');
         }
     },
     methods: {
@@ -81,15 +84,17 @@ export default {
 
 <template>
   <thead>
-    <tr v-if="columnHeaders.length > 0">
+    <tr
+      v-if="columnHeaders.length > 0"
+    >
       <th
         v-if="tableConfig.showCollapser"
         :cell-type="'th'"
-        class="collapser-cell-spacer"
+        :class="['collapser-cell-spacer', {'with-subheaders': hasSubHeaders}]"
       />
       <th
         v-if="tableConfig.showSelection"
-        class="select-cell"
+        :class="['select-cell', {'with-subheaders': hasSubHeaders}]"
       >
         <Checkbox
           :value="isSelected"
@@ -99,13 +104,14 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || 100}%)` }"
-        :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1} ]"
+        :style="{ width: `calc(${columnSizes[ind] || 100}%)`}"
+        :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
+                 {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
         @click="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
-        <div :class="['main-header']">
+        <div class="main-header">
           <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
           <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
             {{ header }}
@@ -113,7 +119,7 @@ export default {
         </div>
         <div
           v-if="columnSubHeaders[ind]"
-          :class="['sub-header-text-container']"
+          class="sub-header-text-container"
         >
           {{ columnSubHeaders[ind] }}
         </div>
@@ -142,15 +148,16 @@ thead {
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
-
     & th {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 42px;
+      line-height: 40px;
       padding: 0;
       text-align: left;
-
+      &.with-subheaders {
+        line-height: 42px;
+      }
       &.collapser-cell-spacer {
         min-width: 30px;
       }
