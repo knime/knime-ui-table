@@ -63,7 +63,7 @@ export default {
             return this.tableConfig?.sortConfig?.sortDirection;
         },
         hasSubHeaders() {
-            return this.columnSubHeaders.some(item => typeof item !== 'undefined');
+            return this.columnSubHeaders.some(item => item);
         }
     },
     methods: {
@@ -84,9 +84,7 @@ export default {
 
 <template>
   <thead>
-    <tr
-      v-if="columnHeaders.length > 0"
-    >
+    <tr v-if="columnHeaders.length">
       <th
         v-if="tableConfig.showCollapser"
         :cell-type="'th'"
