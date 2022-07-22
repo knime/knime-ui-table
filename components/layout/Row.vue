@@ -5,7 +5,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import MissingValueIcon from '~/webapps-common/ui/assets/img/icons/missing-value.svg?inline';
+import CircleHelpIcon from '~/webapps-common/ui/assets/img/icons/circle-help.svg?inline';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -47,7 +47,7 @@ export default {
         FunctionButton,
         OptionsIcon,
         CloseIcon,
-        MissingValueIcon
+        CircleHelpIcon
     },
     props: {
         row: {
@@ -96,8 +96,9 @@ export default {
             // enforce boolean to reduce reactivity
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
         },
-        rowHeight() {
-            return this.rowConfig?.rowHeight;
+        rowHeightStyle() {
+            const defaultRowHeight = 40;
+            return `height: ${this.rowConfig?.rowHeight || defaultRowHeight}px;`;
         },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
@@ -156,7 +157,7 @@ export default {
       :class="['row', {
         'no-selection': !tableConfig.showSelection }, { 'no-sub-menu': !tableConfig.subMenuItems.length
       }]"
-      :style="{ height: `${rowHeight || 40}px` }"
+      :style="rowHeightStyle"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
@@ -183,7 +184,7 @@ export default {
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
       >
-        <MissingValueIcon
+        <CircleHelpIcon
           v-if="data === null"
           class="missing-value-icon"
         />
@@ -286,6 +287,8 @@ tr.row {
         vertical-align: middle;
         width: 25px;
         height: 25px;
+        stroke-width: calc(32px / 25);
+        stroke: var(--theme-color-kudos);
       }
     }
 
