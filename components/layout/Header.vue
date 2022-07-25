@@ -55,8 +55,7 @@ export default {
             hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
             dragIndex: null, // the index of the column that is currently being dragged / resized
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
-            cursor: document.body.style.cursor // the default body cursor to which we reset after the resize via drag
+            pageXOnDragStart: null // the x coordinate at which the mouse was clicked when starting the resize drag
         };
     },
     computed: {
@@ -99,7 +98,7 @@ export default {
             consola.debug('End hover over drag handle: ', event);
             if (this.dragIndex === null) {
                 this.hoverIndex = null;
-                document.body.style.cursor = this.cursor;
+                document.body.style.cursor = 'auto';
             }
         },
         onPointerDown(event, columnIndex) {
@@ -124,7 +123,6 @@ export default {
             consola.debug('Resize via drag finished: ', event);
             this.dragIndex = null;
             this.$emit('hideColumnBorder');
-            document.body.style.cursor = this.cursor;
         }
     }
 };
