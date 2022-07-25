@@ -86,32 +86,7 @@ export default {
         onToggleFilter() {
             this.$emit('toggleFilter');
         },
-        onDragStart(event, columnIndex) {
-            consola.debug('Resize via drag triggered: ', event);
-            // for resize via drag, we need to listen to mouse events even while the mouse is outside this component
-            window.addEventListener('mousemove', this.onMouseMove);
-            window.addEventListener('mouseup', this.onMouseUp);
-            this.dragIndex = columnIndex;
-            this.columnSizeOnDragStart = this.columnSizes[columnIndex];
-            this.pageXOnDragStart = event.pageX;
-            this.$emit('showColumnBorder', this.dragIndex);
-        },
-        onMouseMove(event) {
-            consola.debug('Resize via drag ongoing: ', event);
-            const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-            this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
-        },
-        onMouseUp(event) {
-            consola.debug('Resize via drag finished: ', event);
-            window.removeEventListener('mousemove', this.onMouseMove);
-            window.removeEventListener('mouseup', this.onMouseUp);
-            this.dragIndex = null;
-            // also set hoverIndex to null, since the mouse leave event of the dragged handle already fired
-            this.hoverIndex = null;
-            this.$emit('hideColumnBorder');
-            document.body.style.cursor = this.cursor;
-        },
-        onMouseOverDragHandle(event, columnIndex) {
+        onPointerOver(event, columnIndex) {
             consola.debug('Begin hover over drag handle: ', event);
             if (this.dragIndex === null) {
                 this.hoverIndex = columnIndex;
@@ -120,12 +95,36 @@ export default {
                 document.body.style.cursor = 'col-resize';
             }
         },
-        onMouseLeaveDragHandle(event) {
+        onPointerLeave(event) {
             consola.debug('End hover over drag handle: ', event);
             if (this.dragIndex === null) {
                 this.hoverIndex = null;
                 document.body.style.cursor = this.cursor;
             }
+        },
+        onPointerDown(event, columnIndex) {
+            consola.debug('Resize via drag triggered: ', event);
+            // prevent default browser behavior
+            event.preventDefault();
+            // stop the event from propagating up the DOM tree
+            event.stopPropagation();
+            // capture move events until the pointer is released
+            event.target.setPointerCapture?.(event.pointerId);
+            this.dragIndex = columnIndex;
+            this.columnSizeOnDragStart = this.columnSizes[columnIndex];
+            this.pageXOnDragStart = event.pageX;
+            this.$emit('showColumnBorder', this.dragIndex);
+        },
+        onPointerMove(event) {
+            consola.debug('Resize via drag ongoing: ', event);
+            const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+            this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+        },
+        onPointerUp(event) {
+            consola.debug('Resize via drag finished: ', event);
+            this.dragIndex = null;
+            this.$emit('hideColumnBorder');
+            document.body.style.cursor = this.cursor;
         }
     }
 };
@@ -174,9 +173,11 @@ export default {
         </div>
         <div
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
-          @mousedown="onDragStart($event, ind)"
-          @mouseover="onMouseOverDragHandle($event, ind)"
-          @mouseleave="onMouseLeaveDragHandle($event)"
+          @pointerover="onPointerOver($event, ind)"
+          @pointerleave="onPointerLeave"
+          @pointerdown="onPointerDown($event, ind)"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
         />
       </th>
       <th
