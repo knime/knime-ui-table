@@ -128,7 +128,8 @@ export default {
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
-            currentAllColumnSizes: null,
+            defaultColumnSize: MIN_COLUMN_SIZE,
+            currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -274,7 +275,7 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            return this.filterByColumn(this.currentAllColumnSizes);
+            return this.filterByColumn(this.currentAllColumnSizes).map(s => s > 0 ? s : this.defaultColumnSize);
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -435,9 +436,12 @@ export default {
             this.domains = this.getDomains();
             this.processedData = this.filterLevelUpdate();
         }
-        const defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
-            (this.$el.clientWidth - RESERVED_BODY_WIDTH) / (this.currentColumns.length || 1));
-        this.currentAllColumnSizes = Array(this.allColumnKeys.length).fill(defaultColumnSize);
+        // determine default column size on mounted, since only then do we know the clientWidth of this element
+        this.updateDefaultColumnSize();
+        window.addEventListener('resize', this.updateDefaultColumnSize);
+    },
+    unmounted() {
+        window.removeEventListener('resize', this.updateDefaultColumnSize);
     },
     methods: {
         /*
@@ -675,6 +679,10 @@ export default {
         clearSelection() {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
+        },
+        updateDefaultColumnSize() {
+            this.defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
+                (this.$el.clientWidth - RESERVED_BODY_WIDTH) / (this.currentColumns.length || 1));
         }
     }
 };
