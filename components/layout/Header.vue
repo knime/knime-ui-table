@@ -240,9 +240,9 @@ thead {
           display: flex;
           justify-content: center;
           flex-direction: column;
+          width: 100%;
 
           & .main-header {
-            position: relative;
             display: flex;
             flex-direction: row-reverse;
             justify-content: flex-end;
@@ -284,24 +284,23 @@ thead {
             stroke-width: calc(32px / 13);
             display: flex;
           }
-
         }
 
         & .drag-handle {
-          opacity: 0;
-          height: 100%;
-          right: 0;
-          width: 5px;
           position: absolute;
           background-color: var(--knime-dove-gray);
+          right: 0;
+          height: 100%;
+          width: 5px;
+          opacity: 0;
 
           &.hover {
             opacity: 1;
           }
 
           &.drag {
-            opacity: 1;
             width: 1px;
+            opacity: 1;
           }
         }
 
