@@ -15,7 +15,8 @@ import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 
 const MIN_COLUMN_SIZE = 30;
-const RESERVED_BODY_WIDTH = 165;
+const SPECIAL_COLUMNS_SIZE = 30;
+const RESERVED_CLIENT_WIDTH = 74;
 
 /**
  * @see README.md
@@ -128,7 +129,7 @@ export default {
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
-            defaultColumnSize: MIN_COLUMN_SIZE,
+            clientWidth: 0,
             currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
@@ -275,7 +276,17 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            return this.filterByColumn(this.currentAllColumnSizes).map(s => s > 0 ? s : this.defaultColumnSize);
+            let specialColumnsSizeTotal = RESERVED_CLIENT_WIDTH + SPECIAL_COLUMNS_SIZE;
+            if (this.showCollapser) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            if (this.showSelection) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
+                (this.clientWidth - specialColumnsSizeTotal) / (this.currentColumns.length || 1));
+            return this.filterByColumn(this.currentAllColumnSizes).map(s => s > 0 ? s : defaultColumnSize);
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -437,11 +448,11 @@ export default {
             this.processedData = this.filterLevelUpdate();
         }
         // determine default column size on mounted, since only then do we know the clientWidth of this element
-        this.updateDefaultColumnSize();
-        window.addEventListener('resize', this.updateDefaultColumnSize);
+        this.updateClientWidth();
+        window.addEventListener('resize', this.updateClientWidth);
     },
     unmounted() {
-        window.removeEventListener('resize', this.updateDefaultColumnSize);
+        window.removeEventListener('resize', this.updateClientWidth);
     },
     methods: {
         /*
@@ -680,9 +691,8 @@ export default {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
         },
-        updateDefaultColumnSize() {
-            this.defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
-                (this.$el.clientWidth - RESERVED_BODY_WIDTH) / (this.currentColumns.length || 1));
+        updateClientWidth() {
+            this.clientWidth = this.$el.clientWidth;
         }
     }
 };

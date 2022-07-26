@@ -158,9 +158,7 @@ export default {
   <span>
     <tr
       v-if="row.length > 0"
-      :class="['row', {
-        'no-selection': !tableConfig.showSelection }, { 'no-sub-menu': !tableConfig.subMenuItems.length
-      }]"
+      :class="['row', { 'no-sub-menu': !tableConfig.subMenuItems.length}]"
       :style="rowHeightStyle"
     >
       <CollapserToggle
@@ -255,10 +253,6 @@ tr.row {
 
   &.no-sub-menu {
     padding-right: 10px;
-  }
-
-  &.no-selection {
-    padding-left: 10px;
   }
 
   & td {
