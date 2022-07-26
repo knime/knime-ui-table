@@ -78,7 +78,7 @@ export default {
             this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            if (this.enableSorting && this.dragIndex === null) {
+            if (this.enableSorting) {
                 this.$emit('columnSort', ind, this.columnHeaders[ind]);
             }
         },
