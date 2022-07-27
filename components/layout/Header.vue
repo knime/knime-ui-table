@@ -3,8 +3,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
-
-const MIN_COLUMN_SIZE = 30;
+import { MIN_COLUMN_SIZE } from '../../util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -148,7 +147,7 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || 100}px)`}"
+        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
         :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"

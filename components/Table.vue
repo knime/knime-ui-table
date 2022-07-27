@@ -13,9 +13,9 @@ import { filter } from '../util/transform/filter';
 import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '../util/constants';
 
-const MIN_COLUMN_SIZE = 30;
-const SPECIAL_COLUMNS_SIZE = 30;
+// The difference between this.$el.clientWidth and the sum of of all column widths
 const RESERVED_CLIENT_WIDTH = 74;
 
 /**
@@ -692,7 +692,11 @@ export default {
             this.masterSelected = this.allData.map(item => 0);
         },
         updateClientWidth() {
-            this.clientWidth = this.$el.clientWidth;
+            const updatedClientWidth = this.$el.clientWidth;
+            // also update all non-default column widths according to the relative change in client width
+            const ratio = updatedClientWidth / this.clientWidth;
+            this.currentAllColumnSizes = this.currentAllColumnSizes.map(s => s > 0 ? s * ratio : s);
+            this.clientWidth = updatedClientWidth;
         }
     }
 };
