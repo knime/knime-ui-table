@@ -126,6 +126,16 @@ export default {
             }`;
         }
     },
+    watch: {
+        'tableConfig.showColumnFilters': {
+            handler(newVal) {
+                if (!newVal && this.filterActive) {
+                    this.onToggleFilter();
+                    this.onClearFilter();
+                }
+            }
+        }
+    },
     methods: {
         // Utilities
         getPropertiesFromColumns(key) {
