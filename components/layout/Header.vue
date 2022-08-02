@@ -106,7 +106,7 @@ export default {
             // stop the event from propagating up the DOM tree
             event.stopPropagation();
             // capture move events until the pointer is released
-            event.target.setPointerCapture?.(event.pointerId);
+            event.target.setPointerCapture(event.pointerId);
             this.dragIndex = columnIndex;
             this.columnSizeOnDragStart = this.columnSizes[columnIndex];
             this.pageXOnDragStart = event.pageX;

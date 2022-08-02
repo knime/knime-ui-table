@@ -140,10 +140,12 @@ describe('Header.vue', () => {
     it('emits a showColumnBorder event on drag handle pointerdown', () => {
         wrapper = shallowMount(Header, { propsData });
         const header = wrapper.find(Header);
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
 
         expect(wrapper.vm.dragIndex).toBe(null);
         expect(header.emitted().showColumnBorder).toBeFalsy();
-        wrapper.findAll('.drag-handle').at(0).trigger('pointerdown', 0);
+        dragHandle.trigger('pointerdown', 0);
         expect(wrapper.vm.dragIndex).toBe(0);
         expect(header.emitted().showColumnBorder).toBeTruthy();
     });
@@ -152,6 +154,7 @@ describe('Header.vue', () => {
         wrapper = shallowMount(Header, { propsData });
         const header = wrapper.find(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
 
         expect(header.emitted().columnResize).toBeFalsy();
         dragHandle.trigger('pointerdown', 0);
@@ -163,6 +166,7 @@ describe('Header.vue', () => {
         wrapper = shallowMount(Header, { propsData });
         const header = wrapper.find(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
 
         expect(header.emitted().hideColumnBorder).toBeFalsy();
         dragHandle.trigger('pointerdown', 0);
@@ -181,6 +185,7 @@ describe('Header.vue', () => {
     it('does not set hover index on drag handle pointerover during drag', () => {
         wrapper = shallowMount(Header, { propsData });
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
 
         dragHandle.trigger('pointerdown', 1);
         dragHandle.trigger('pointerover', 0);
@@ -199,6 +204,7 @@ describe('Header.vue', () => {
     it('does not unset hover index on drag handle pointerleave after pointerover during drag', () => {
         wrapper = shallowMount(Header, { propsData });
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
 
         dragHandle.trigger('pointerover', 0);
         dragHandle.trigger('pointerdown', 0);
