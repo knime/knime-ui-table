@@ -161,7 +161,7 @@ export default {
         :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
-        @mousedown="onHeaderClick(ind)"
+        @click="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
         <div class="column-header-content">

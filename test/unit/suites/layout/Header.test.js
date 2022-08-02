@@ -131,7 +131,7 @@ describe('Header.vue', () => {
         wrapper = shallowMount(Header, { propsData });
 
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
-        wrapper.findAll('th.column-header').at(0).trigger('mousedown', 0);
+        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
         expect(wrapper.find(Header).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
     });
