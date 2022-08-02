@@ -5,6 +5,13 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
+
 describe('Header.vue', () => {
     let wrapper;
 

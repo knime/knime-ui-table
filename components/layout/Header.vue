@@ -3,6 +3,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
+import throttle from 'raf-throttle';
 import { MIN_COLUMN_SIZE } from '../../util/constants';
 
 /**
@@ -112,20 +113,26 @@ export default {
             this.pageXOnDragStart = event.pageX;
             this.$emit('showColumnBorder', this.dragIndex);
         },
-        onPointerMove(event) {
+        onPointerMove: throttle(function (event) {
+            /* eslint-disable no-invalid-this */
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag ongoing: ', event);
                 const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
                 this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
             }
-        },
-        onPointerUp(event) {
+            /* eslint-enable no-invalid-this */
+        }),
+        /* Because the onPointerMove function is throttled we also need to throttle the onPointerUp
+         * function to guarantee order of event handling */
+        onPointerUp: throttle(function (event) {
+            /* eslint-disable no-invalid-this */
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag finished: ', event);
                 this.dragIndex = null;
                 this.$emit('hideColumnBorder');
             }
-        }
+            /* eslint-enable no-invalid-this */
+        })
     }
 };
 </script>

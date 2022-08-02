@@ -13,6 +13,7 @@ import { filter } from '../util/transform/filter';
 import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
+import throttle from 'raf-throttle';
 import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '../util/constants';
 
 // The difference between this.$el.clientWidth and the sum of of all column widths
@@ -691,13 +692,15 @@ export default {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
         },
-        updateClientWidth() {
+        updateClientWidth: throttle(function () {
+            /* eslint-disable no-invalid-this */
             const updatedClientWidth = this.$el.clientWidth;
             // also update all non-default column widths according to the relative change in client width
             const ratio = updatedClientWidth / this.clientWidth;
             this.currentAllColumnSizes = this.currentAllColumnSizes.map(s => s > 0 ? s * ratio : s);
             this.clientWidth = updatedClientWidth;
-        }
+            /* eslint-enable no-invalid-this */
+        })
     }
 };
 </script>
