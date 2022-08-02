@@ -14,10 +14,7 @@ import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '../util/constants';
-
-// The difference between this.$el.clientWidth and the sum of of all column widths
-const RESERVED_CLIENT_WIDTH = 74;
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
 
 /**
  * @see README.md
@@ -277,7 +274,7 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            let specialColumnsSizeTotal = RESERVED_CLIENT_WIDTH + SPECIAL_COLUMNS_SIZE;
+            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
             if (this.showCollapser) {
                 specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
             }
@@ -285,8 +282,10 @@ export default {
                 specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
             }
             
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE,
-                (this.clientWidth - specialColumnsSizeTotal) / (this.currentColumns.length || 1));
+            const nColunns = this.currentColumns.length;
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
+                nColunns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColunns || 1));
             return this.filterByColumn(this.currentAllColumnSizes).map(s => s > 0 ? s : defaultColumnSize);
         },
         currentColumnTypes() {
