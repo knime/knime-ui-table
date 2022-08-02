@@ -90,14 +90,13 @@ export default {
                 this.hoverIndex = columnIndex;
                 // while it would be a cleaner solution to set the cursor via css, we want to keep the resize cursor
                 // even when dragging outside this component
-                document.body.style.cursor = 'col-resize';
+                event.target.style.cursor = 'col-resize';
             }
         },
         onPointerLeave(event) {
             consola.debug('End hover over drag handle: ', event);
             if (this.dragIndex === null) {
                 this.hoverIndex = null;
-                document.body.style.cursor = 'auto';
             }
         },
         onPointerDown(event, columnIndex) {
