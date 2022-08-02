@@ -79,6 +79,17 @@ describe('Table.vue', () => {
         });
     });
 
+    it('adds and removes listener', () => {
+        jest.spyOn(window, 'addEventListener');
+        jest.spyOn(window, 'removeEventListener');
+
+        wrapper = shallowMount(Table, { propsData });
+        expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+
+        wrapper.destroy();
+        expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+    });
+
     describe('events', () => {
         describe('page control', () => {
             it('registers pageChange events', () => {

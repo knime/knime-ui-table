@@ -451,7 +451,7 @@ export default {
         this.updateClientWidth();
         window.addEventListener('resize', this.updateClientWidth);
     },
-    unmounted() {
+    beforeDestroy() {
         window.removeEventListener('resize', this.updateClientWidth);
     },
     methods: {
