@@ -27,6 +27,23 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
+        },
+        filterActive: {
+            type: Boolean,
+            default: false
+        },
+        fixHeaderRows: {
+            type: Boolean,
+            default: false
+        }
+    },
+    computed: {
+        bodyHeightOnFixHeaders() {
+            if (!this.fixHeaderRows) {
+                return 'auto';
+            }
+            // columnFilters height: 40px, topControls: 40px, header: 39px
+            return `calc(100% - ${this.filterActive ? '119px' : '79px'})`;
         }
     },
     methods: {
@@ -40,7 +57,9 @@ export default {
 </script>
 
 <template>
-  <tbody>
+  <tbody
+    :style="{ 'height': bodyHeightOnFixHeaders}"
+  >
     <tr
       v-if="show"
       class="table-group"

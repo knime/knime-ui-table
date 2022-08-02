@@ -124,6 +124,9 @@ export default {
             return `table-header${
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
+        },
+        fixHeaderRows() {
+            return this.dataConfig.rowConfig.fixHeader;
         }
     },
     watch: {
@@ -232,7 +235,10 @@ export default {
 </script>
 
 <template>
-  <div class="wrapper">
+  <div
+    class="wrapper"
+    :class="{ 'sticky-header-rows': fixHeaderRows}"
+  >
     <table
       ref="table"
     >
@@ -275,6 +281,8 @@ export default {
         :title="getGroupName(groupInd)"
         :group-sub-menu-items="tableConfig.groupSubMenuItems"
         :show="data.length > 1 && dataGroup.length > 0"
+        :filter-active="filterActive"
+        :fix-header-rows="fixHeaderRows"
         @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
       >
         <Row
@@ -391,6 +399,26 @@ table >>> tr {
   & button:focus {
     color: var(--knime-masala);
     background-color: var(--knime-silver-sand-semi);
+  }
+}
+
+.sticky-header-rows {
+  height: 100%;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+
+  & table {
+    height: 100%;
+
+    & tbody {
+      display: block;
+      overflow-y: auto;
+    }
+
+    & thead {
+      display: block;
+    }
   }
 }
 
