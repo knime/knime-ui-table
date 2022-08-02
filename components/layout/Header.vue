@@ -129,6 +129,8 @@ export default {
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag finished: ', event);
                 this.dragIndex = null;
+                /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
+                this.hoverIndex = null;
                 this.$emit('hideColumnBorder');
             }
             /* eslint-enable no-invalid-this */
