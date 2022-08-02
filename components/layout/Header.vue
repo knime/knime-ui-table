@@ -114,14 +114,18 @@ export default {
             this.$emit('showColumnBorder', this.dragIndex);
         },
         onPointerMove(event) {
-            consola.debug('Resize via drag ongoing: ', event);
-            const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-            this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+            if (this.dragIndex !== null) {
+                consola.debug('Resize via drag ongoing: ', event);
+                const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+            }
         },
         onPointerUp(event) {
-            consola.debug('Resize via drag finished: ', event);
-            this.dragIndex = null;
-            this.$emit('hideColumnBorder');
+            if (this.dragIndex !== null) {
+                consola.debug('Resize via drag finished: ', event);
+                this.dragIndex = null;
+                this.$emit('hideColumnBorder');
+            }
         }
     }
 };
