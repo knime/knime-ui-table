@@ -286,7 +286,8 @@ export default {
             const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
                 nColunns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
             const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColunns || 1));
-            return this.filterByColumn(this.currentAllColumnSizes).map(s => s > 0 ? s : defaultColumnSize);
+            return this.filterByColumn(this.currentAllColumnSizes)
+                .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -696,7 +697,8 @@ export default {
             const updatedClientWidth = this.$el.clientWidth;
             // also update all non-default column widths according to the relative change in client width
             const ratio = updatedClientWidth / this.clientWidth;
-            this.currentAllColumnSizes = this.currentAllColumnSizes.map(s => s > 0 ? s * ratio : s);
+            this.currentAllColumnSizes = this.currentAllColumnSizes
+                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
             this.clientWidth = updatedClientWidth;
             /* eslint-enable no-invalid-this */
         })
