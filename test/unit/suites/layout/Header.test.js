@@ -163,6 +163,7 @@ describe('Header.vue', () => {
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
+        dragHandle.trigger('pointermove');
         expect(header.emitted().columnResize).toBeFalsy();
         dragHandle.trigger('pointerdown', 0);
         dragHandle.trigger('pointermove');
@@ -175,6 +176,7 @@ describe('Header.vue', () => {
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
+        dragHandle.trigger('pointerup');
         expect(header.emitted().hideColumnBorder).toBeFalsy();
         dragHandle.trigger('pointerdown', 0);
         dragHandle.trigger('pointerup');

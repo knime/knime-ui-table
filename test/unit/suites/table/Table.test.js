@@ -3,6 +3,8 @@ import Table from '~/components/Table';
 import TableUI from '~/components/TableUI';
 
 import { columnTypes } from '~/config/table.config';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '~/util/constants';
+
 
 describe('Table.vue', () => {
     let wrapper;
@@ -278,6 +280,38 @@ describe('Table.vue', () => {
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([5]);
             wrapper.find(TableUI).vm.$emit('columnUpdate', ['B']);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([10]);
+        });
+
+        it('computes currentColumnSizes correctly', () => {
+            let checkCurrentColumnSizes = (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
+                wrapper = shallowMount(Table, { propsData: { ...propsData, showCollapser, showSelection } });
+                wrapper.setData({ clientWidth });
+                const nColumns = wrapper.vm.currentColumns.length;
+                let currentColumnSizes;
+                if (columnSizeOverride) {
+                    for (let i = 0; i < nColumns; i++) {
+                        wrapper.vm.onColumnResize(i, columnSizeOverride);
+                    }
+                    currentColumnSizes = Array(nColumns).fill(columnSizeOverride);
+                } else {
+                    let reservedSize = SPECIAL_COLUMNS_SIZE + nColumns * DATA_COLUMNS_MARGIN + 2 * TABLE_BORDER_SPACING;
+                    if (showCollapser) {
+                        reservedSize += SPECIAL_COLUMNS_SIZE;
+                    } if (showSelection) {
+                        reservedSize += SPECIAL_COLUMNS_SIZE;
+                    }
+                    const defaultColumnWidth = Math.max((clientWidth - reservedSize) / nColumns, MIN_COLUMN_SIZE);
+                    currentColumnSizes = Array(nColumns).fill(defaultColumnWidth);
+                }
+                expect(wrapper.vm.currentColumnSizes).toStrictEqual(currentColumnSizes);
+            };
+
+            checkCurrentColumnSizes(0, false, false, null);
+            checkCurrentColumnSizes(200, false, false, null);
+            checkCurrentColumnSizes(200, false, true, null);
+            checkCurrentColumnSizes(200, true, false, null);
+            checkCurrentColumnSizes(200, true, true, null);
+            checkCurrentColumnSizes(200, true, true, 100);
         });
     });
 });

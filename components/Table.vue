@@ -282,10 +282,10 @@ export default {
                 specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
             }
             
-            const nColunns = this.currentColumns.length;
+            const nColumns = this.currentColumns.length;
             const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
-                nColunns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColunns || 1));
+                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
             return this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
         },
