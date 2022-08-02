@@ -44,6 +44,10 @@ export default {
             type: Boolean,
             default: false
         },
+        shouldFixHeaders: {
+            type: Boolean,
+            default: false
+        },
         filtersActive: {
             type: Boolean,
             default: false
@@ -136,7 +140,10 @@ export default {
 </script>
 
 <template>
-  <thead>
+  <thead
+    :style="[{ ...(shouldFixHeaders && hasSubHeaders && { height: '41px'}),
+               ...(shouldFixHeaders && !hasSubheaders && {'margin-top': '2px', 'margin-bottom': '2px'}) }]"
+  >
     <tr v-if="columnHeaders.length">
       <th
         v-if="tableConfig.showCollapser"

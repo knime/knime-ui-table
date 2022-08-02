@@ -126,6 +126,12 @@ export default {
             return `table-header${
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
+        },
+        hasColumnSubHeaders() {
+            return this.columnSubHeaders.some(item => item);
+        },
+        shouldFixHeaders() {
+            return Boolean(this.dataConfig.rowConfig?.fixHeader);
         }
     },
     watch: {
@@ -243,7 +249,10 @@ export default {
 </script>
 
 <template>
-  <div class="wrapper">
+  <div
+    class="wrapper"
+    :class="{ 'sticky-header': shouldFixHeaders}"
+  >
     <table
       ref="table"
     >
@@ -265,6 +274,7 @@ export default {
         :column-sizes="columnSizes"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
+        :should-fix-headers="shouldFixHeaders"
         :class="tableHeaderClass"
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
@@ -289,6 +299,9 @@ export default {
         :title="getGroupName(groupInd)"
         :group-sub-menu-items="tableConfig.groupSubMenuItems"
         :show="data.length > 1 && dataGroup.length > 0"
+        :filter-active="filterActive"
+        :fix-header-rows="shouldFixHeaders"
+        :has-column-sub-headers="hasColumnSubHeaders"
         @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
       >
         <Row
@@ -408,6 +421,24 @@ table >>> tr {
   & button:focus {
     color: var(--knime-masala);
     background-color: var(--knime-silver-sand-semi);
+  }
+}
+
+.sticky-header {
+  height: 100%;
+  overflow-y: hidden;
+
+  & table {
+    height: 100%;
+
+    & >>> thead {
+      display: block;
+    }
+
+    & >>> tbody {
+      display: block;
+      overflow-y: auto;
+    }
   }
 }
 
