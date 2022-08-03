@@ -5,6 +5,12 @@ import TableUI from '~/components/TableUI';
 import { columnTypes } from '~/config/table.config';
 import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '~/util/constants';
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
 
 describe('Table.vue', () => {
     let wrapper;
@@ -81,18 +87,23 @@ describe('Table.vue', () => {
         });
     });
 
-    it('adds and removes listener', () => {
-        jest.spyOn(window, 'addEventListener');
-        jest.spyOn(window, 'removeEventListener');
-
-        wrapper = shallowMount(Table, { propsData });
-        expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
-
-        wrapper.destroy();
-        expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
-    });
-
     describe('events', () => {
+        it('adds resize listener, updates client width on resize, and removes resize listener', () => {
+            jest.spyOn(window, 'addEventListener');
+            jest.spyOn(window, 'removeEventListener');
+    
+            wrapper = shallowMount(Table, { propsData });
+            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+    
+            expect(wrapper.vm.clientWidth).toBe(0);
+            wrapper.vm.$el = { clientWidth: 500 };
+            window.dispatchEvent(new Event('resize'));
+            expect(wrapper.vm.clientWidth).toBe(500);
+    
+            wrapper.destroy();
+            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+        });
+
         describe('page control', () => {
             it('registers pageChange events', () => {
                 let localPropsData = {
