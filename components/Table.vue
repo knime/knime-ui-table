@@ -148,15 +148,7 @@ export default {
             filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // Selection State
             processedIndicies: [],
-            masterSelected: (() => {
-                let initSelected = this.allData.map(item => 0);
-                if (this.parentSelected?.length) {
-                    this.parentSelected.forEach(rowInd => {
-                        initSelected[rowInd] = 1;
-                    });
-                }
-                return initSelected;
-            })()
+            masterSelected: this.initMasterSelected()
         };
     },
     computed: {
@@ -461,6 +453,7 @@ export default {
             this.domains = this.getDomains();
             if (this.totalTableSize !== newData?.length) {
                 this.totalTableSize = this.allData.length;
+                this.masterSelected = this.initMasterSelected();
             }
         },
         /*
@@ -539,6 +532,15 @@ export default {
                 currentGroup: this.currentGroup,
                 processedIndicies: this.processedIndicies
             });
+        },
+        initMasterSelected() {
+            let initSelected = this.allData.map(_ => 0);
+            if (this.parentSelected?.length) {
+                this.parentSelected.forEach(rowInd => {
+                    initSelected[rowInd] = 1;
+                });
+            }
+            return initSelected;
         },
         /*
          *
@@ -631,7 +633,9 @@ export default {
         },
         onSelectAll(selected) {
             consola.debug(`Table received: selectAll ${selected}`);
-            this.masterSelected = this.masterSelected.map(item => selected ? 1 : 0);
+            this.masterSelected = this.masterSelected.map(
+                (_, i) => selected && this.processedIndicies.some(group => group.includes(i)) ? 1 : 0
+            );
             this.$emit('tableSelect', this.totalSelected);
         },
         onRowSelect(selected, rowInd, groupInd) {
