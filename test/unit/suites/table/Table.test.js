@@ -26,6 +26,17 @@ describe('Table.vue', () => {
         parentSelected: [0]
     };
 
+    const mockTablePropsWithData = (newSize) => {
+        let localPropsData = {
+            ...propsData,
+            allData: []
+        };
+        for (let i = 0; i < newSize; i++) {
+            localPropsData.allData.push({ a: i, b: i + 1 });
+        }
+        return localPropsData;
+    };
+
     it('creates UI configurations', () => {
         wrapper = shallowMount(Table, { propsData });
 
@@ -79,16 +90,39 @@ describe('Table.vue', () => {
         });
     });
 
+    describe('component lifecycle', () => {
+        it('creates internally required index reference lists on creation', () => {
+            wrapper = shallowMount(Table, { propsData });
+
+            expect(wrapper.vm.masterSelected).toStrictEqual([1]);
+            expect(wrapper.vm.processedIndicies).toStrictEqual([[0]]);
+        });
+
+        it('updates internal reference lists when data changes', () => {
+            wrapper = shallowMount(Table, { propsData });
+            const expectedMasterSelection = [1];
+            const expectedProcessedIndicies = [[0]];
+
+            expect(wrapper.vm.masterSelected).toStrictEqual(expectedMasterSelection);
+            expect(wrapper.vm.processedIndicies).toStrictEqual(expectedProcessedIndicies);
+
+            const newTableSize = 10;
+            let localPropsData = mockTablePropsWithData(newTableSize);
+            wrapper = shallowMount(Table, { propsData: localPropsData });
+
+            for (let i = 1; i < newTableSize; i++) {
+                expectedMasterSelection.push(0);
+                expectedProcessedIndicies[0].unshift(i);
+            }
+            expect(wrapper.vm.masterSelected).toStrictEqual(expectedMasterSelection);
+            expect(wrapper.vm.processedIndicies).toStrictEqual(expectedProcessedIndicies);
+        });
+    });
+
     describe('events', () => {
         describe('page control', () => {
             it('registers pageChange events', () => {
-                let localPropsData = {
-                    ...propsData,
-                    allData: []
-                };
-                for (let i = 0; i < 100; i++) {
-                    localPropsData.allData.push({ a: i, b: i + 1 });
-                }
+                let localPropsData = mockTablePropsWithData(100);
                 wrapper = shallowMount(Table, { propsData: localPropsData });
                 expect(wrapper.vm.currentPage).toBe(1);
                 wrapper.find(TableUI).vm.$emit('pageChange', 1);
