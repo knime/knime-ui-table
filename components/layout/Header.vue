@@ -122,17 +122,16 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
-        /* Because the onPointerMove function is throttled we also need to throttle the onPointerUp
-         * function to guarantee order of event handling */
-        onPointerUp: throttle(function (event) {
+        /* The lostpointercapture event is triggered if the pointer capture is lost for any reason, including its
+        orderly release via a pointerup event. Because the onPointerMove function is throttled we also need to throttle
+        the onLostPointerCapture function to guarantee order of event handling. */
+        onLostPointerCapture: throttle(function (event) {
             /* eslint-disable no-invalid-this */
-            if (this.dragIndex !== null) {
-                consola.debug('Resize via drag finished: ', event);
-                this.dragIndex = null;
-                /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
-                this.hoverIndex = null;
-                this.$emit('hideColumnBorder');
-            }
+            consola.debug('Resize via drag finished: ', event);
+            this.dragIndex = null;
+            /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
+            this.hoverIndex = null;
+            this.$emit('hideColumnBorder');
             /* eslint-enable no-invalid-this */
         })
     }
@@ -186,7 +185,7 @@ export default {
           @pointerleave="onPointerLeave"
           @pointerdown="onPointerDown($event, ind)"
           @pointermove="onPointerMove"
-          @pointerup="onPointerUp"
+          @lostpointercapture="onLostPointerCapture"
         />
       </th>
       <th

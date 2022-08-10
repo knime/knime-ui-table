@@ -170,16 +170,14 @@ describe('Header.vue', () => {
         expect(header.emitted().columnResize).toBeTruthy();
     });
 
-    it('emits a hideColumnBorder event on pointerup during drag', () => {
+    it('emits a hideColumnBorder event on lostpointercapture', () => {
         wrapper = shallowMount(Header, { propsData });
         const header = wrapper.find(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
-        dragHandle.trigger('pointerup');
         expect(header.emitted().hideColumnBorder).toBeFalsy();
-        dragHandle.trigger('pointerdown', 0);
-        dragHandle.trigger('pointerup');
+        dragHandle.trigger('lostpointercapture');
         expect(header.emitted().hideColumnBorder).toBeTruthy();
     });
 
