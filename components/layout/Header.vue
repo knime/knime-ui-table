@@ -1,10 +1,12 @@
 <script>
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
+import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
+import ArrowDropdown from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT } from '../../util/constants';
+import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '../../util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -15,12 +17,15 @@ import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT } from '../../util/c
  * @emits headerSelect event when the checkbox is selected for table-wide toggling of selection.
  * @emits columnSort event when a column name is clicked to trigger sorting.
  * @emits toggleFilter event when the filter-toggle control is clicked.
+ * @emits subMenuItemSelection event when the selection of a submenu item is changed
  */
 export default {
     components: {
         FunctionButton,
         Checkbox,
+        SubMenu,
         ArrowIcon,
+        ArrowDropdown,
         FilterIcon
     },
     props: {
@@ -44,6 +49,10 @@ export default {
             type: Array,
             default: () => []
         },
+        columnSubMenuItems: {
+            type: Array,
+            default: () => []
+        },
         isSelected: {
             type: Boolean,
             default: false
@@ -64,7 +73,9 @@ export default {
             dragIndex: null, // the index of the column that is currently being dragged / resized
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
             pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
-            minimumColumnWidth: MIN_COLUMN_SIZE // need to add this here since it is referenced in the template
+            minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
+            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
+            expandedSubMenuColumnInd: null // the column index of the expanded sub menu
         };
     },
     computed: {
@@ -80,6 +91,19 @@ export default {
         },
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
+        },
+        // column index and subMenu index within $refs can differ because not all columns have a subMenu (e.g. RowKeys)
+        columnIndSubMenuIndMap() {
+            let numberOfSkippedEntries = 0;
+            const indexMap = new Map();
+            this.columnSubMenuItems.forEach((entry, index) => {
+                if (entry) {
+                    indexMap.set(index, index - numberOfSkippedEntries);
+                } else {
+                    numberOfSkippedEntries++;
+                }
+            });
+            return indexMap;
         }
     },
     methods: {
@@ -110,6 +134,7 @@ export default {
             }
         },
         onPointerDown(event, columnIndex) {
+            this.$refs.subMenu?.[this.columnIndSubMenuIndMap.get(this.expandedSubMenuColumnInd)]?.closeMenu(false);
             consola.debug('Resize via drag triggered: ', event);
             // prevent default browser behavior
             event.preventDefault();
@@ -143,6 +168,18 @@ export default {
         }),
         dragHandleHeight(isDragging) {
             return isDragging ? this.currentTableHeight : HEADER_HEIGHT;
+        },
+        onSubMenuItemSelection(item, ind) {
+            this.$emit('subMenuItemSelection', item, ind);
+        },
+        onSubMenuToggle(ind, expanded) {
+            if (expanded) {
+                this.expandedSubMenuColumnInd = ind;
+            /* don't use !expanded because closing a menu is registered after opening a menu when expanding two menus
+            consecutively without closing the first expanded menu */
+            } else if (this.expandedSubMenuColumnInd === ind) {
+                this.expandedSubMenuColumnInd = null;
+            }
         }
     }
 };
@@ -169,16 +206,19 @@ export default {
         v-for="(header, ind) in columnHeaders"
         :key="ind"
         :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
-        :class="['column-header', { sortable: isColumnSortable(ind), inverted: sortDirection === -1},
-                 {'with-subheaders': hasSubHeaders}]"
-        tabindex="0"
-        @click="onHeaderClick(ind)"
-        @keydown.space="onHeaderClick(ind)"
+        class="column-header"
       >
-        <div class="column-header-content">
+        <div
+          class="column-header-content"
+          :class="[{ sortable: isColumnSortable(ind), inverted: sortDirection === -1, 'with-subheaders': hasSubHeaders,
+                     'with-sub-menu': columnSubMenuItems[ind] }]"
+          tabindex="0"
+          @click="onHeaderClick(ind)"
+          @keydown.space="onHeaderClick(ind)"
+        >
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-            <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+            <div class="header-text-container">
               {{ header }}
             </div>
           </div>
@@ -188,6 +228,23 @@ export default {
           >
             {{ columnSubHeaders[ind] }}
           </div>
+        </div>
+        <div
+          v-if="columnSubMenuItems[ind]"
+          class="sub-menu-select-header"
+        >
+          <SubMenu
+            ref="subMenu"
+            :items="columnSubMenuItems[ind]"
+            orientation="left"
+            :max-menu-width="maximumSubMenuWidth"
+            :prevent-overflow-main-axis="false"
+            button-title="Open table column header submenu"
+            @item-click="(_, item) => { onSubMenuItemSelection(item, ind) }"
+            @menu-toggled="expanded => onSubMenuToggle(ind, expanded)"
+          >
+            <ArrowDropdown class="icon" />
+          </SubMenu>
         </div>
         <div
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
@@ -257,19 +314,23 @@ thead {
       &.column-header {
         position: relative;
         display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        flex-direction: row;
+        justify-content: space-between;
         margin-left: 10px;
-
-        &:not(.inverted) .icon.active {
-          transform: scaleY(-1);
-        }
 
         & .column-header-content {
           display: flex;
           justify-content: center;
           flex-direction: column;
           width: 100%;
+
+          &.with-sub-menu {
+              width: calc(100% - 27px); /* due to .sub-menu-select-header: width + padding */
+          }
+
+          &:not(.inverted) .icon.active {
+            transform: scaleY(-1);
+          }
 
           & .main-header {
             display: flex;
@@ -283,13 +344,10 @@ thead {
               font-weight: 700;
               line-height: 16px;
               font-size: 14px;
-
-              &.with-icon {
-                max-width: calc(100% - 30px);
-              }
             }
 
             & .icon {
+              min-width: 13px; /* needs to be set such that the icon does not shrink when shrinkig the column width */
               width: 13px;
               height: 13px;
               stroke-width: calc(32px / 13);
@@ -306,13 +364,51 @@ thead {
           }
 
           & .sub-header-text-container {
-            overflow: hidden;
             font-weight: 400;
             font-size: 10px;
             line-height: 12px;
             font-style: italic;
             stroke-width: calc(32px / 13);
-            display: flex;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          &.sortable {
+            cursor: pointer;
+
+            &:hover,
+            &:focus {
+              outline: none;
+              color: var(--knime-dove-gray);
+
+              & .main-header {
+                & .icon {
+                  display: unset;
+                  stroke: var(--knime-dove-gray);
+                }
+              }
+            }
+          }
+        }
+
+        & .sub-menu-select-header {
+          width: 22px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          right: 5px;
+
+          & >>> .submenu-toggle {
+            padding: 4px;
+
+            & svg {
+              height: 14px;
+              width: 14px;
+            }
+          }
+
+          & >>> .menu-wrapper {
+            z-index: 1;
           }
         }
 
@@ -332,23 +428,6 @@ thead {
           &.drag {
             width: 1px;
             opacity: 1;
-          }
-        }
-
-        &.sortable {
-          cursor: pointer;
-
-          &:hover,
-          &:focus {
-            outline: none;
-            color: var(--knime-dove-gray);
-
-            & .main-header {
-              & .icon {
-                display: unset;
-                stroke: var(--knime-dove-gray);
-              }
-            }
           }
         }
       }

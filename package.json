@@ -31,7 +31,8 @@
     "raf-throttle": "2.0.5",
     "vue-clickaway2": "2.3.2",
     "@fontsource/roboto": "4.5.7",
-    "@fontsource/roboto-mono": "4.5.7"
+    "@fontsource/roboto-mono": "4.5.7",
+    "@popperjs/core": "2.5.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.5.4",

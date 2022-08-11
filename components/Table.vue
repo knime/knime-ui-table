@@ -142,6 +142,10 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
+        },
+        headerSubMenuItems: {
+            type: Array,
+            default: () => []
         }
     },
     data() {
@@ -218,6 +222,7 @@ export default {
                     classGenerator: this.currentClassGenerators[ind] || [],
                     popoverRenderer: this.allPopoverRenderers[key],
                     hasSlotContent: this.currentSlottedColumns?.includes(key),
+                    ...this.headerSubMenuItems.length > 0 && { headerSubMenuItems: this.headerSubMenuItems[ind] },
                     ...this.currentColumnSpecificSortConfigs.length !== 0 &&
                         { isSortable: this.currentColumnSpecificSortConfigs[ind] }
                 };
@@ -754,6 +759,10 @@ export default {
             consola.debug(`Table received: columnResize ${columnIndex} ${newColumnSize}`);
             Vue.set(this.currentAllColumnSizes, this.currentColumns[columnIndex], newColumnSize);
         },
+        onHeaderSubMenuItemSelection(item, index) {
+            consola.debug(`Table received: headerSubMenuItemSelection ${item} ${index}`);
+            this.$emit('headerSubMenuSelect', item, index);
+        },
         /*
          *
          * Table methods.
@@ -821,6 +830,7 @@ export default {
     @rowSelect="onRowSelect"
     @tableInput="onTableInput"
     @columnResize="onColumnResize"
+    @headerSubMenuItemSelection="onHeaderSubMenuItemSelection"
   >
     <template
       v-for="col in currentSlottedColumns"

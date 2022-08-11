@@ -274,6 +274,14 @@ describe('TableUI.vue', () => {
                 wrapper.find(Header).vm.$emit('toggleFilter', true);
                 expect(wrapper.emitted().toggleFilter).toStrictEqual([[true]]);
             });
+
+            it('handles header submenu events', () => {
+                const subMenuItem = { text: 'renderer1', id: 'rend1', section: 'dataRendering', selected: true };
+                const { wrapper } = doMount();
+                expect(wrapper.emitted().headerSubMenuItemSelection).toBeFalsy();
+                wrapper.find(Header).vm.$emit('subMenuItemSelection', subMenuItem, 1);
+                expect(wrapper.emitted().headerSubMenuItemSelection).toStrictEqual([[subMenuItem, 1]]);
+            });
         });
 
         describe('column filter', () => {

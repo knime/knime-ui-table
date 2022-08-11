@@ -125,6 +125,9 @@ export default {
         columnSubHeaders() {
             return this.getPropertiesFromColumns('subHeader');
         },
+        columnHeaderSubMenuItems() {
+            return this.getPropertiesFromColumns('headerSubMenuItems');
+        },
         columnSizes() {
             return this.getPropertiesFromColumns('size');
         },
@@ -312,6 +315,10 @@ export default {
             consola.debug(`TableUI emitting: selectAll ${selected}`);
             this.$emit('selectAll', selected);
         },
+        onHeaderSubMenuItemSelection(item, colInd) {
+            consola.debug(`TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`);
+            this.$emit('headerSubMenuItemSelection', item, colInd);
+        },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd}`);
             this.$emit('rowSelect', selected, rowInd, groupInd);
@@ -399,6 +406,7 @@ export default {
         :column-headers="columnHeaders"
         :column-sub-headers="columnSubHeaders"
         :column-sizes="columnSizes"
+        :column-sub-menu-items="columnHeaderSubMenuItems"
         :column-sort-configs="columnSortConfigs"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
@@ -409,6 +417,7 @@ export default {
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
         @columnResize="onColumnResize"
+        @subMenuItemSelection="onHeaderSubMenuItemSelection"
       />
       <ColumnFilters
         v-if="filterActive"

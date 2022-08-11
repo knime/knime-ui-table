@@ -5,6 +5,8 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
 import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg?inline';
 
+const numberOfColumns = 19;
+
 const allColumnSpecificSortConfigs = [true, true, false, false, true, true, true, true, true, true, true, true, true,
     true, true, true, true, true, true];
 
@@ -36,6 +38,15 @@ const groupSubMenuItems = [{
     }
 }];
 
+const headerSubMenuItems = new Array(numberOfColumns).fill([
+    { text: 'Section1', sectionHeadline: true, separator: true },
+    { text: 'Item 1', id: 's1i1', selected: true, section: 'section1' },
+    { text: 'Item 2', id: 's1i2', selected: false, section: 'section1' },
+    { text: 'Section2', sectionHeadline: true, separator: true },
+    { text: 'Item 1', id: 's2i1', selected: true, section: 'section2' },
+    { text: 'Item 2', id: 's2i2', selected: false, section: 'section2' }
+]);
+
 export default {
     components: {
         Table,
@@ -60,6 +71,7 @@ export default {
             fixHeader: true,
             showActionButton: false,
             enableVirtualScrolling: false,
+            headerSubMenuItems: [],
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false
@@ -103,6 +115,9 @@ export default {
         printConfig() {
             consola.log('TableUI DataConfig prop:', this.$refs?.knimeTable.dataConfig);
             consola.log('TableUI TableConfig prop:', this.$refs?.knimeTable.tableConfig);
+        },
+        onShowHeaderSubMenu(checked) {
+            this.headerSubMenuItems = checked ? headerSubMenuItems : [];
         },
         onDisableSortOfSpecificColumns(checked) {
             this.allColumnSpecificSortConfigs = checked ? allColumnSpecificSortConfigs : [];
@@ -153,6 +168,7 @@ export default {
       <Checkbox v-model="compactMode">compact mode</Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
       <Checkbox v-model="fixHeader">fix header</Checkbox>
+      <Checkbox @input="onShowHeaderSubMenu">header sub menu settings</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>

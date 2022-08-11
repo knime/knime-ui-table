@@ -1,7 +1,8 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import Header from '~/components/layout/Header.vue';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
+import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
@@ -11,6 +12,12 @@ jest.mock('raf-throttle', () => function (func) {
         return func.apply(this, args);
     };
 });
+
+const columnSubMenuItems = [
+    { text: 'Data renderer', separator: true, sectionHeadline: true },
+    { text: 'renderer1', id: 'rend1', section: 'dataRendering', selected: false, showTooltip: true },
+    { text: 'renderer2', id: 'rend2', section: 'dataRendering', selected: true, showTooltip: true }
+];
 
 describe('Header.vue', () => {
     let wrapper;
@@ -27,7 +34,8 @@ describe('Header.vue', () => {
         },
         columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
         columnSubHeaders: [],
-        columnSizes: [20, 20, 20, 20, 20],
+        columnSizes: [75, 75, 75, 75, 75],
+        columnSubMenuItems: [],
         columnSortConfigs: [true, true, true, true, true],
         isSelected: false,
         filtersActive: false
@@ -132,7 +140,7 @@ describe('Header.vue', () => {
         wrapper = shallowMount(Header, { propsData });
 
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
-        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        wrapper.findAll('th.column-header .column-header-content').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
         expect(wrapper.find(Header).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
     });
@@ -176,6 +184,46 @@ describe('Header.vue', () => {
         dragHandle.trigger('pointerdown', 0);
         dragHandle.trigger('lostpointercapture');
         expect(wrapper.vm.dragIndex).toBe(null);
+    });
+
+    it('emits a subMenuItemSelection event when another subMenuItem is selected', () => {
+        const subMenuClickedItem = { text: 'renderer1', id: 'rend1', section: 'dataRendering' };
+        wrapper = mount(Header, { propsData: { ...propsData,
+            columnSubMenuItems: new Array(5).fill(columnSubMenuItems) } });
+        wrapper.findAll(SubMenu).at(1).vm.$emit('item-click', {}, subMenuClickedItem);
+        expect(wrapper.find(Header).emitted().subMenuItemSelection).toBeTruthy();
+        expect(wrapper.find(Header).emitted().subMenuItemSelection).toStrictEqual([[subMenuClickedItem, 1]]);
+    });
+
+    it('sets the correct mapping for subMenu indices to column indices', () => {
+        const resultMap = new Map();
+        resultMap.set(1, 0);
+        resultMap.set(4, 1);
+        wrapper = mount(Header, { propsData: { ...propsData,
+            columnSubMenuItems: [null, columnSubMenuItems, null, null, columnSubMenuItems] } });
+        expect(wrapper.vm.columnIndSubMenuIndMap).toStrictEqual(resultMap);
+    });
+
+    it('adjusts the subMenuColumnIndex on subMenu toggle', () => {
+        jest.useFakeTimers();
+        wrapper = mount(Header, { propsData: { ...propsData,
+            columnSubMenuItems: new Array(5).fill(columnSubMenuItems) } });
+        const onSubMenuToggleSpy = jest.spyOn(wrapper.vm, 'onSubMenuToggle');
+
+        wrapper.findAll(SubMenu).at(1).find({ ref: 'submenu-toggle' }).trigger('click');
+        jest.runAllTimers();
+        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(1, 1, true);
+        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(1);
+
+        wrapper.findAll(SubMenu).at(2).find({ ref: 'submenu-toggle' }).trigger('click');
+        jest.runAllTimers();
+        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(2, 2, true);
+        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(2);
+
+        wrapper.findAll(SubMenu).at(2).vm.closeMenu(false);
+        jest.runAllTimers();
+        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(3, 2, false);
+        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(null);
     });
 
     it('sets hover index on drag handle pointerover', () => {
@@ -226,13 +274,13 @@ describe('Header.vue', () => {
         } });
 
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
-        wrapper.findAll('th.column-header').wrappers.forEach(thWrapper => {
+        wrapper.findAll('th .column-header-content').wrappers.forEach(thWrapper => {
             expect(thWrapper.classes()).not.toContain('sortable');
         });
         wrapper.findAll(ArrowIcon).wrappers.forEach(iconWrapper => {
             expect(iconWrapper.classes()).not.toContain('active');
         });
-        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
     });
 
@@ -242,11 +290,11 @@ describe('Header.vue', () => {
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        const wrappers = wrapper.findAll('th.column-header').wrappers;
+        const wrappers = wrapper.findAll('th .column-header-content').wrappers;
         expect(wrappers[2].classes()).not.toContain('sortable');
         expect(wrappers[3].classes()).not.toContain('sortable');
 
-        wrapper.findAll('th.column-header').at(2).trigger('click', 2);
+        wrapper.findAll('th .column-header-content').at(2).trigger('click', 2);
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
     });
 
@@ -256,12 +304,12 @@ describe('Header.vue', () => {
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        const wrappers = wrapper.findAll('th.column-header').wrappers;
+        const wrappers = wrapper.findAll('th .column-header-content').wrappers;
         expect(wrappers[0].classes()).toContain('sortable');
         expect(wrappers[1].classes()).toContain('sortable');
         expect(wrappers[4].classes()).toContain('sortable');
 
-        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
     });
 
@@ -275,10 +323,10 @@ describe('Header.vue', () => {
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        wrapper.findAll('th.column-header').wrappers.forEach(thWrapper => {
+        wrapper.findAll('th .column-header-content').wrappers.forEach(thWrapper => {
             expect(thWrapper.classes()).not.toContain('sortable');
         });
-        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
     });
 });

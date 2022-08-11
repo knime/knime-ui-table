@@ -12,6 +12,11 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
+const headerSubMenuItems = [
+    [{ text: 'Column 1: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }],
+    [{ text: 'Column 2: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }]
+];
+
 describe('Table.vue', () => {
     const defaultPropsData = {
         allColumnHeaders: ['A', 'B'],
@@ -182,6 +187,14 @@ describe('Table.vue', () => {
 
         expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
     });
+
+    it('generates the correct data config with headerSubMenuItems key if there are sub menu items for the header',
+        () => {
+            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems: [headerSubMenuItems, null] } });
+            expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [
+                { headerSubMenuItems }, { headerSubMenuItems: null }
+            ] });
+        });
 
     describe('component lifecycle', () => {
         it('creates internally required index reference lists on creation', () => {
@@ -493,6 +506,15 @@ describe('Table.vue', () => {
             const { wrapper } = doMount();
             await wrapper.setData({ currentColumns: [] });
             expect(wrapper.vm.currentColumnSizes).toStrictEqual([]);
+        });
+
+        it('emits header sub menu selection events', () => {
+            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems } });
+            expect(wrapper.emitted().headerSubMenuSelect).toBeFalsy();
+            wrapper.find(TableUI).vm.$emit('headerSubMenuItemSelection', headerSubMenuItems, 1);
+            expect(wrapper.emitted().headerSubMenuSelect).toStrictEqual([[
+                headerSubMenuItems, 1
+            ]]);
         });
     });
 });
