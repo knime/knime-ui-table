@@ -2,11 +2,6 @@
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 
-const subControlHeaderHeight = 40;
-const columnHeaderHeight = 39;
-const columnWithSubHeaderHeight = 41;
-const columnFilterHeight = 40;
-
 /**
  * This component is a wrapper for groups of table rows. It can display a "group" row
  * conditionally if there are multiple groups in the table. This "group" row is styled
@@ -32,27 +27,6 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
-        },
-        filterActive: {
-            type: Boolean,
-            default: false
-        },
-        hasColumnSubHeaders: {
-            type: Boolean,
-            default: false
-        },
-        fixHeaderRows: {
-            type: Boolean,
-            default: false
-        }
-    },
-    computed: {
-        currentHeaderHeight() {
-            let headerHeight = subControlHeaderHeight;
-            // -2 due to introduced margins on fixHeader
-            headerHeight += (this.hasColumnSubHeaders ? columnWithSubHeaderHeight : columnHeaderHeight) - 2;
-            headerHeight += this.filterActive ? columnFilterHeight - 2 : 0;
-            return headerHeight;
         }
     },
     methods: {
@@ -66,9 +40,7 @@ export default {
 </script>
 
 <template>
-  <tbody
-    :style="{ ...(fixHeaderRows && { height: `calc(100% - ${currentHeaderHeight}px)`}) }"
-  >
+  <tbody>
     <tr
       v-if="show"
       class="table-group"
