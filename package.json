@@ -1,6 +1,6 @@
 {
   "name": "@knime/knime-ui-table",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "description": "JS Data Table for KNIME",
   "scripts": {
     "audit": "check-audit --production --json > target/audit.json || true",
@@ -21,6 +21,7 @@
   "author": "KNIME AG, Zurich, Switzerland",
   "main": "dist/KNIME-Table.common.js",
   "files": [
+    "util/constants.js",
     "dist/KNIME-Table.*",
     "package.json",
     "LICENSE",
