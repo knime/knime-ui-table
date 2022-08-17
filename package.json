@@ -63,7 +63,8 @@
     "vue-jest": "3.0.4",
     "vue-svg-loader": "0.16.0",
     "vue-template-compiler": "2.6.14",
-    "webapps-common": "file:webapps-common"
+    "webapps-common": "file:webapps-common",
+    "vue-virtual-scroller": "^1.0.10"
   },
   "peerDependencies": {
     "consola": "2.*",

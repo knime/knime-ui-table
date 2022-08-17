@@ -7,6 +7,8 @@ import Group from './layout/Group';
 import Row from './layout/Row';
 import ActionButton from './ui/ActionButton';
 import TablePopover from './popover/TablePopover';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 
 /**
  * @see README.md
@@ -23,7 +25,9 @@ export default {
         Group,
         Row,
         ActionButton,
-        TablePopover
+        TablePopover,
+        DynamicScroller,
+        DynamicScrollerItem
     },
     props: {
         /**
@@ -82,7 +86,8 @@ export default {
             popoverTarget: null,
             popoverData: null,
             popoverColumn: null,
-            popoverRenderer: null
+            popoverRenderer: null,
+            lastScrollIndex: 0
         };
     },
     computed: {
@@ -124,6 +129,11 @@ export default {
             return `table-header${
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
+        },
+        mappedData() {
+            return this.data.map(groupData => groupData.map(
+                (rowData, index) => ({ id: index, data: rowData })
+            ));
         }
     },
     watch: {
@@ -145,6 +155,14 @@ export default {
             return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || '';
         },
         // Event handling
+        onUpdate(startIndex, endIndex) {
+            if (this.lastScrollIndex === endIndex) {
+                return;
+            }
+            const direction = this.lastScrollIndex < endIndex ? 1 : -1;
+            this.lastScrollIndex = endIndex;
+            this.$emit('lazyload', { direction, startIndex, endIndex });
+        },
         onTimeFilterUpdate(newTimeFilter) {
             consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
             this.$emit('timeFilterUpdate', newTimeFilter);
@@ -270,45 +288,65 @@ export default {
         @clearFilter="onClearFilter"
       />
       <Group
-        v-for="(dataGroup, groupInd) in data"
+        v-for="(dataGroup, groupInd) in mappedData"
         :key="groupInd"
         :title="getGroupName(groupInd)"
         :group-sub-menu-items="tableConfig.groupSubMenuItems"
         :show="data.length > 1 && dataGroup.length > 0"
         @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
       >
-        <Row
-          v-for="(row, rowInd) in dataGroup"
-          :key="row.id"
-          :row="columnKeys.map(column => row[column])"
-          :table-config="tableConfig"
-          :column-configs="dataConfig.columnConfigs"
-          :row-config="dataConfig.rowConfig"
-          :is-selected="currentSelection[groupInd][rowInd]"
-          @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-          @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
-          @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
+        <DynamicScroller
+          :items="dataGroup"
+          :min-item-size="54"
+          class="scroller"
+          :emit-update="true"
+          @update="onUpdate"
         >
-          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-          <template
-            v-for="colInd in slottedColumns"
-            #[`cellContent-${columnKeys[colInd]}`]="cellData"
-          >
-            <!-- Vue requires key on real element for dynamic scoped slots to help Vue framework manage events. -->
-            <span :key="rowInd + '_' + colInd">
-              <slot
-                :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
-              />
-            </span>
+          <template #default="{ item, index, active }">
+            <DynamicScrollerItem
+              :item="item"
+              :active="active"
+              :data-index="index"
+              :size-dependencies="[
+                item.data,
+              ]"
+            >
+              <Row
+                :key="item.id"
+                class="custom-row"
+                :row="columnKeys.map(column => item.data[column])"
+                :table-config="tableConfig"
+                :column-configs="dataConfig.columnConfigs"
+                :row-config="dataConfig.rowConfig"
+                :is-selected="currentSelection[0][index]"
+                @rowSelect="selected => onRowSelect(selected, index, 0)"
+                @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+                @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+              >
+                <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+                <template
+                  v-for="colInd in slottedColumns"
+                  #[`cellContent-${columnKeys[colInd]}`]="cellData"
+                >
+                  <!-- Vue requires key on real element for dynamic scoped slots
+                       to help Vue framework manage events. -->
+                  <span :key="rowInd + '_' + colInd">
+                    <slot
+                      :name="`cellContent-${columnKeys[colInd]}`"
+                      :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                    />
+                  </span>
+                </template>
+                <template slot="rowCollapserContent">
+                  <slot
+                    name="collapserContent"
+                    :row="row"
+                  />
+                </template>
+              </Row>
+            </DynamicScrollerItem>
           </template>
-          <template slot="rowCollapserContent">
-            <slot
-              name="collapserContent"
-              :row="row"
-            />
-          </template>
-        </Row>
+        </DynamicScroller>
       </Group>
       <BottomControls
         v-if="tableConfig.showBottomControls"
@@ -344,7 +382,10 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
+.scroller {
+  height: 83vh;
+  overflow-y: auto;
+}
 .wrapper {
   position: relative;
 }
