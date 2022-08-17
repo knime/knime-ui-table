@@ -89,9 +89,6 @@ export default {
             consola.debug('Begin hover over drag handle: ', event);
             if (this.dragIndex === null) {
                 this.hoverIndex = columnIndex;
-                // while it would be a cleaner solution to set the cursor via css, we want to keep the resize cursor
-                // even when dragging outside this component
-                event.target.style.cursor = 'col-resize';
             }
         },
         onPointerLeave(event) {
@@ -212,6 +209,7 @@ thead {
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
+
     & th {
       white-space: nowrap;
       overflow: hidden;
@@ -219,9 +217,11 @@ thead {
       line-height: 40px;
       padding: 0;
       text-align: left;
+
       &.with-subheaders {
         line-height: 42px;
       }
+
       &.collapser-cell-spacer {
         min-width: 30px;
       }
@@ -245,6 +245,10 @@ thead {
         flex-direction: row-reverse;
         justify-content: flex-end;
         margin-left: 10px;
+
+        &:not(.inverted) .icon.active {
+          transform: scaleY(-1);
+        }
 
         & .column-header-content {
           display: flex;
@@ -303,6 +307,7 @@ thead {
           height: 100%;
           width: 5px;
           opacity: 0;
+          cursor: col-resize;
 
           &.hover {
             opacity: 1;
@@ -312,10 +317,6 @@ thead {
             width: 1px;
             opacity: 1;
           }
-        }
-
-        &:not(.inverted) .icon.active {
-          transform: scaleY(-1);
         }
 
         &.sortable {
