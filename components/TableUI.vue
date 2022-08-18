@@ -378,12 +378,9 @@ table {
   table-layout: fixed;
   display: block;
   overflow: auto;
-  /* height: 100%;
-  display: flex;
-  flex-direction: column; */
 
   & .table-group-wrapper {
-    display: flex;
+    display: contents;
 
     & >>> td > a {
       text-decoration: none;
@@ -434,17 +431,25 @@ table >>> tr {
     height: 100%;
 
     & >>> thead {
-      display: block;
+      &.base-controls {
+        position: sticky;
+        top: 2px;
+        background-color: white;
+      }
+
+      &.table-header {
+        position: sticky;
+        top: 40px;
+      }
+
+      &.column-filters {
+        position: sticky;
+        top: 79px;
+      }
     }
 
     & .table-group-wrapper {
-      display: block;
       overflow-y: auto;
-
-      & >>> tbody {
-        display: block;
-      }
-    }
   }
 }
 
@@ -502,4 +507,4 @@ table >>> tr {
     }
   }
 }
-</style>
+}</style>
