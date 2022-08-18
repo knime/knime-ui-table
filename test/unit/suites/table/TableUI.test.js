@@ -11,69 +11,67 @@ import TablePopover from '~/components/popover/TablePopover.vue';
 
 import { columnTypes } from '~/config/table.config';
 
-const getPropsData = (includeSubHeaders, fixHeader) => ({
-    data: [[{ a: 1, b: 2 }]],
-    currentSelection: [[false]],
-    dataConfig: {
-        columnConfigs: [{
-            key: 'a',
-            header: 'a',
-            ...includeSubHeaders && { subHeader: 'a' },
-            type: columnTypes.Number,
-            size: 50,
-            filterConfig: {
-                value: '',
-                is: 'FilterInputField'
-            },
-            formatter: (x) => x,
-            classGenerator: [],
-            popoverRenderer: {
-                type: 'MessageRenderer',
-                process: data => data
-            },
-            hasSlotContent: false
-        }, {
-            key: 'b',
-            header: 'b',
-            ...includeSubHeaders && { subHeader: 'b' },
-            type: columnTypes.Number,
-            size: 50,
-            filterConfig: {
-                value: '',
-                is: 'FilterInputField'
-            },
-            formatter: (x) => x,
-            classGenerator: [],
-            hasSlotContent: false
-        }],
-        rowConfig: { fixHeader }
-    },
-    tableConfig: {
-        pageConfig: {
-            currentSize: 1,
-            tableSize: 1,
-            pageSize: 5,
-            possiblePageSizes: [5, 10, 25],
-            currentPage: 1
-        },
-        showColumnFilters: true,
-        showBottomControls: true,
-        searchConfig: {
-            searchQuery: ''
-        },
-        timeFilterConfig: {
-            currentTimeFilter: ''
-        },
-        columnSelectionConfig: {
-            possibleColumns: ['a', 'b'],
-            currentColumns: ['a', 'b']
-        }
-    }
-});
-
 describe('TableUI.vue', () => {
     let wrapper;
-    let propsData = getPropsData(true, false);
+
+    let propsData = {
+        data: [[{ a: 1, b: 2 }]],
+        currentSelection: [[false]],
+        dataConfig: {
+            columnConfigs: [{
+                key: 'a',
+                header: 'a',
+                subHeader: 'a',
+                type: columnTypes.Number,
+                size: 50,
+                filterConfig: {
+                    value: '',
+                    is: 'FilterInputField'
+                },
+                formatter: (x) => x,
+                classGenerator: [],
+                popoverRenderer: {
+                    type: 'MessageRenderer',
+                    process: data => data
+                },
+                hasSlotContent: false
+            }, {
+                key: 'b',
+                header: 'b',
+                subHeader: 'b',
+                type: columnTypes.Number,
+                size: 50,
+                filterConfig: {
+                    value: '',
+                    is: 'FilterInputField'
+                },
+                formatter: (x) => x,
+                classGenerator: [],
+                hasSlotContent: false
+            }]
+        },
+        tableConfig: {
+            pageConfig: {
+                currentSize: 1,
+                tableSize: 1,
+                pageSize: 5,
+                possiblePageSizes: [5, 10, 25],
+                currentPage: 1
+            },
+            showColumnFilters: true,
+            showBottomControls: true,
+            searchConfig: {
+                searchQuery: ''
+            },
+            timeFilterConfig: {
+                currentTimeFilter: ''
+            },
+            columnSelectionConfig: {
+                possibleColumns: ['a', 'b'],
+                currentColumns: ['a', 'b']
+            }
+        }
+    };
 
     describe('configuration', () => {
         it('renders', () => {
@@ -322,30 +320,6 @@ describe('TableUI.vue', () => {
                 wrapper.find(Header).vm.$emit('hideColumnBorder');
                 expect(wrapper.vm.showBorderColumnIndex).toBe(null);
             });
-        });
-    });
-
-    describe('height of table-group-wrapper on sticky headers', () => {
-        it('gets the correct height of the headers when subHeaders & filters are disabled', () => {
-            wrapper = shallowMount(TableUI, { propsData: getPropsData(false, true) });
-            expect(wrapper.vm.currentHeaderHeight).toEqual(77);
-        });
-
-        it('gets the correct height of the headers when subHeaders are enabled & filters are disabled', () => {
-            wrapper = shallowMount(TableUI, { propsData: getPropsData(true, true) });
-            expect(wrapper.vm.currentHeaderHeight).toEqual(79);
-        });
-
-        it('gets the correct height of the headers when subHeaders disabled & filters enabled', () => {
-            wrapper = shallowMount(TableUI, { propsData: getPropsData(false, true) });
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentHeaderHeight).toEqual(115);
-        });
-
-        it('gets the correct height of the headers when subHeaders & filters are enabled', () => {
-            wrapper = shallowMount(TableUI, { propsData: getPropsData(true, true) });
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentHeaderHeight).toEqual(117);
         });
     });
 });

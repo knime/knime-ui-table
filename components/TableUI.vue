@@ -8,11 +8,6 @@ import Row from './layout/Row.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 
-const subControlHeaderHeight = 40;
-const columnHeaderHeight = 39;
-const columnWithSubHeaderHeight = 41;
-const columnFilterHeight = 40;
-
 /**
  * @see README.md
  *
@@ -132,18 +127,8 @@ export default {
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
         },
-        hasColumnSubHeaders() {
-            return this.columnSubHeaders.some(item => item);
-        },
         shouldFixHeaders() {
             return Boolean(this.dataConfig.rowConfig?.fixHeader);
-        },
-        currentHeaderHeight() {
-            let headerHeight = subControlHeaderHeight;
-            // -2 due to introduced margins on fixHeader
-            headerHeight += (this.hasColumnSubHeaders ? columnWithSubHeaderHeight : columnHeaderHeight) - 2;
-            headerHeight += this.filterActive ? columnFilterHeight - 2 : 0;
-            return headerHeight;
         }
     },
     watch: {
@@ -286,7 +271,6 @@ export default {
         :column-sizes="columnSizes"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
-        :should-fix-headers="shouldFixHeaders"
         :class="tableHeaderClass"
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
@@ -305,10 +289,7 @@ export default {
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
-      <div
-        class="table-group-wrapper"
-        :style="{ ...(shouldFixHeaders && { height: `calc(100% - ${currentHeaderHeight}px)`}) }"
-      >
+      <div class="table-group-wrapper">
         <Group
           v-for="(dataGroup, groupInd) in data"
           :key="groupInd"
@@ -397,6 +378,9 @@ table {
   table-layout: fixed;
   display: block;
   overflow: auto;
+  /* height: 100%;
+  display: flex;
+  flex-direction: column; */
 
   & .table-group-wrapper {
     display: flex;

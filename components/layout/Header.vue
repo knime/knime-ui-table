@@ -44,10 +44,6 @@ export default {
             type: Boolean,
             default: false
         },
-        shouldFixHeaders: {
-            type: Boolean,
-            default: false
-        },
         filtersActive: {
             type: Boolean,
             default: false
@@ -140,10 +136,7 @@ export default {
 </script>
 
 <template>
-  <thead
-    :style="[{ ...(shouldFixHeaders && hasSubHeaders && { height: '41px'}),
-               ...(shouldFixHeaders && !hasSubheaders && {'margin-top': '2px', 'margin-bottom': '2px'}) }]"
-  >
+  <thead>
     <tr v-if="columnHeaders.length">
       <th
         v-if="tableConfig.showCollapser"
@@ -216,7 +209,6 @@ thead {
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
-
     & th {
       white-space: nowrap;
       overflow: hidden;
@@ -224,11 +216,9 @@ thead {
       line-height: 40px;
       padding: 0;
       text-align: left;
-
       &.with-subheaders {
         line-height: 42px;
       }
-
       &.collapser-cell-spacer {
         min-width: 30px;
       }
