@@ -53,7 +53,7 @@ export default {
 </script>
 
 <template>
-  <thead class="column-filters">
+  <thead>
     <tr>
       <th
         v-if="showCollapser"

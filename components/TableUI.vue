@@ -8,6 +8,16 @@ import Row from './layout/Row.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 
+const heightBaseControlHeader = 40;
+const heightColumnHeader = 39;
+const heightColumnWithSubHeader = 41;
+const heightColumnFilters = 40;
+
+const widthColumnMarginLeft = 10;
+const widthColumnSelection = 30;
+const widthColumnFilter = 30;
+const widthGroupWrapperMarginLeft = 2;
+
 /**
  * @see README.md
  *
@@ -129,6 +139,21 @@ export default {
         },
         shouldFixHeaders() {
             return Boolean(this.dataConfig.rowConfig?.fixHeader);
+        },
+        hasColumnSubHeaders() {
+            return this.columnSubHeaders.some(item => item);
+        },
+        tableHeightWithoutBody() {
+            let headerHeight = heightBaseControlHeader;
+            headerHeight += this.hasColumnSubHeaders ? heightColumnWithSubHeader : heightColumnHeader;
+            headerHeight += this.filterActive ? heightColumnFilters : 0;
+            const bodyBorderBottomHeight = 1;
+            return headerHeight + bodyBorderBottomHeight;
+        },
+        currentBodyWidth() {
+            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
+            return widthGroupWrapperMarginLeft + (this.tableConfig.showSelection ? widthColumnSelection : 0) +
+                widthContentColumns + (this.tableConfig.showColumnFilters ? widthColumnFilter : 0);
         }
     },
     watch: {
@@ -289,7 +314,11 @@ export default {
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
-      <div class="table-group-wrapper">
+      <div
+        class="table-group-wrapper"
+        :style="{ ...(shouldFixHeaders && { height: `calc(100% - ${tableHeightWithoutBody}px)`, width:
+          `${currentBodyWidth}px` }) }"
+      >
         <Group
           v-for="(dataGroup, groupInd) in data"
           :key="groupInd"
@@ -429,27 +458,18 @@ table >>> tr {
 
   & table {
     height: 100%;
-
-    & >>> thead {
-      &.base-controls {
-        position: sticky;
-        top: 2px;
-        background-color: white;
-      }
-
-      &.table-header {
-        position: sticky;
-        top: 40px;
-      }
-
-      &.column-filters {
-        position: sticky;
-        top: 79px;
-      }
-    }
+    overflow-y: hidden;
 
     & .table-group-wrapper {
-      overflow-y: auto;
+       display: block;
+       overflow-y: auto;
+       overflow-x: clip;
+
+      & >>> tbody {
+        display: block;
+        margin-left: 2px;
+      }
+     }
   }
 }
 
@@ -507,4 +527,4 @@ table >>> tr {
     }
   }
 }
-}</style>
+</style>
