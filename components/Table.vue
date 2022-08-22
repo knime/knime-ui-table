@@ -1,6 +1,6 @@
 <script>
 import Vue from 'vue';
-import TableUI from './TableUI';
+import TableUI from './TableUI.vue';
 
 import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
 import { defaultTimeFilter } from '../config/time.config';

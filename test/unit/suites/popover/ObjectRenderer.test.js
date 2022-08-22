@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import ObjectRenderer from '~/components/popover/ObjectRenderer';
+import ObjectRenderer from '~/components/popover/ObjectRenderer.vue';
 
 describe('ObjectRenderer.vue', () => {
     let wrapper;

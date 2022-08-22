@@ -1,6 +1,6 @@
 <script>
-import BaseControls from './BaseControls';
-import ControlDropdown from './ControlDropdown';
+import BaseControls from './BaseControls.vue';
+import ControlDropdown from './ControlDropdown.vue';
 
 /**
  * Table controls for the bottom of the table optionally consisting of page controls

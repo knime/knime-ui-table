@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import ColumnFilters from '~/components/filter/ColumnFilters';
-import FilterMultiselect from '~/components/filter/FilterMultiselect';
-import FilterInputField from '~/components/filter/FilterInputField';
-import FilterDropdown from '~/components/filter/FilterDropdown';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import ColumnFilters from '~/components/filter/ColumnFilters.vue';
+import FilterMultiselect from '~/components/filter/FilterMultiselect.vue';
+import FilterInputField from '~/components/filter/FilterInputField.vue';
+import FilterDropdown from '~/components/filter/FilterDropdown.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 describe('ColumnFilters.vue', () => {

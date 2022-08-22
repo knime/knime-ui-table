@@ -1,5 +1,5 @@
 <script>
-import Button from '~/webapps-common/ui/components/Button';
+import Button from '~/webapps-common/ui/components/Button.vue';
 
 /**
  * Button displayed at the bottom of the table instead of page size controls.

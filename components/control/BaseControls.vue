@@ -1,5 +1,5 @@
 <script>
-import PageControls from './PageControls';
+import PageControls from './PageControls.vue';
 
 /**
  * Base table header component with table page controls on the left of the table row

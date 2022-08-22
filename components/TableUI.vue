@@ -1,12 +1,12 @@
 <script>
-import TopControls from './control/TopControls';
-import BottomControls from './control/BottomControls';
-import ColumnFilters from './filter/ColumnFilters';
-import Header from './layout/Header';
-import Group from './layout/Group';
-import Row from './layout/Row';
-import ActionButton from './ui/ActionButton';
-import TablePopover from './popover/TablePopover';
+import TopControls from './control/TopControls.vue';
+import BottomControls from './control/BottomControls.vue';
+import ColumnFilters from './filter/ColumnFilters.vue';
+import Header from './layout/Header.vue';
+import Group from './layout/Group.vue';
+import Row from './layout/Row.vue';
+import ActionButton from './ui/ActionButton.vue';
+import TablePopover from './popover/TablePopover.vue';
 
 /**
  * @see README.md

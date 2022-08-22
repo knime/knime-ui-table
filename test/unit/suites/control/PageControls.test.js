@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import PageControls from '~/components/control/PageControls';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import PageControls from '~/components/control/PageControls.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import ArrowNextIcon from '~/webapps-common/ui/assets/img/icons/arrow-next.svg?inline';
 import ArrowPrevIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 

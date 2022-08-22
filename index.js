@@ -1,5 +1,5 @@
-import Table from './components/Table';
-import TableUI from './components/TableUI';
+import Table from './components/Table.vue';
+import TableUI from './components/TableUI.vue';
 
 export { Table, TableUI };
 export * from './config/table.config';

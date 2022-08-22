@@ -1,10 +1,10 @@
 import { shallowMount } from '@vue/test-utils';
-import TopControls from '~/components/control/TopControls';
-import BaseControls from '~/components/control/BaseControls';
-import ControlDropdown from '~/components/control/ControlDropdown';
-import ControlMultiselect from '~/components/control/ControlMultiselect';
-import FilterInputField from '~/components/filter/FilterInputField';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import TopControls from '~/components/control/TopControls.vue';
+import BaseControls from '~/components/control/BaseControls.vue';
+import ControlDropdown from '~/components/control/ControlDropdown.vue';
+import ControlMultiselect from '~/components/control/ControlMultiselect.vue';
+import FilterInputField from '~/components/filter/FilterInputField.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 
 describe('TopControls.vue', () => {
     let propsData = {
