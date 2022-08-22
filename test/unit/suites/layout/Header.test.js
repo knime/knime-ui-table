@@ -5,6 +5,13 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
+
 describe('Header.vue', () => {
     let wrapper;
 
@@ -55,6 +62,11 @@ describe('Header.vue', () => {
         expect(columns.at(4).text()).toContain(propsData.columnSubHeaders[4]);
     });
 
+    it('renders drag handles', () => {
+        wrapper = shallowMount(Header, { propsData });
+        let handles = wrapper.findAll('.drag-handle');
+        expect(handles.length).toBe(5);
+    });
 
     it('hides "tr" element if no headers provided', () => {
         wrapper = shallowMount(Header);
@@ -130,6 +142,81 @@ describe('Header.vue', () => {
         expect(wrapper.find(Header).emitted().toggleFilter).toBeFalsy();
         wrapper.find(FunctionButton).vm.$emit('click');
         expect(wrapper.find(Header).emitted().toggleFilter).toBeTruthy();
+    });
+
+    it('emits a showColumnBorder event on drag handle pointerdown', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const header = wrapper.find(Header);
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+
+        expect(wrapper.vm.dragIndex).toBe(null);
+        expect(header.emitted().showColumnBorder).toBeFalsy();
+        dragHandle.trigger('pointerdown', 0);
+        expect(wrapper.vm.dragIndex).toBe(0);
+        expect(header.emitted().showColumnBorder).toBeTruthy();
+    });
+
+    it('emits a columnResize event on pointermove during drag', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const header = wrapper.find(Header);
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+
+        dragHandle.trigger('pointermove');
+        expect(header.emitted().columnResize).toBeFalsy();
+        dragHandle.trigger('pointerdown', 0);
+        dragHandle.trigger('pointermove');
+        expect(header.emitted().columnResize).toBeTruthy();
+    });
+
+    it('emits a hideColumnBorder event on lostpointercapture', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const header = wrapper.find(Header);
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+
+        expect(header.emitted().hideColumnBorder).toBeFalsy();
+        dragHandle.trigger('lostpointercapture');
+        expect(header.emitted().hideColumnBorder).toBeTruthy();
+    });
+
+    it('sets hover index on drag handle pointerover', () => {
+        wrapper = shallowMount(Header, { propsData });
+
+        expect(wrapper.vm.hoverIndex).toBe(null);
+        wrapper.findAll('.drag-handle').at(0).trigger('pointerover', 0);
+        expect(wrapper.vm.hoverIndex).toBe(0);
+    });
+
+    it('does not set hover index on drag handle pointerover during drag', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+
+        dragHandle.trigger('pointerdown', 1);
+        dragHandle.trigger('pointerover', 0);
+        expect(wrapper.vm.hoverIndex).toBe(null);
+    });
+
+    it('unsets hover index on on drag handle pointerleave after pointerover', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+
+        dragHandle.trigger('pointerover', 0);
+        dragHandle.trigger('pointerleave');
+        expect(wrapper.vm.hoverIndex).toBe(null);
+    });
+
+    it('does not unset hover index on drag handle pointerleave after pointerover during drag', () => {
+        wrapper = shallowMount(Header, { propsData });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+
+        dragHandle.trigger('pointerover', 0);
+        dragHandle.trigger('pointerdown', 0);
+        dragHandle.trigger('pointerleave');
+        expect(wrapper.vm.hoverIndex).toBe(0);
     });
 
     it('disables sorting via config', () => {

@@ -13,6 +13,8 @@ import { filter } from '../util/transform/filter';
 import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
+import throttle from 'raf-throttle';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
 
 /**
  * @see README.md
@@ -125,6 +127,8 @@ export default {
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
+            clientWidth: 0,
+            currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -164,7 +168,6 @@ export default {
             let dataConfig = {
                 columnConfigs: []
             };
-            let defaultColumnSize = 100 / (this.currentColumns.length || 1);
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {
                     return;
@@ -174,7 +177,7 @@ export default {
                     key,
                     header: this.currentHeaders[ind],
                     type: columnType,
-                    size: defaultColumnSize,
+                    size: this.currentColumnSizes[ind],
                     filterConfig: this.currentFilterConfigs[ind],
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
@@ -261,6 +264,22 @@ export default {
         },
         currentColumnKeys() {
             return this.filterByColumn(this.allColumnKeys);
+        },
+        currentColumnSizes() {
+            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
+            if (this.showCollapser) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            if (this.showSelection) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            
+            const nColumns = this.currentColumns.length;
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
+                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
+            return this.filterByColumn(this.currentAllColumnSizes)
+                .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -421,6 +440,12 @@ export default {
             this.domains = this.getDomains();
             this.processedData = this.filterLevelUpdate();
         }
+        // determine default column size on mounted, since only then do we know the clientWidth of this element
+        this.updateClientWidth();
+        window.addEventListener('resize', this.updateClientWidth);
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.updateClientWidth);
     },
     methods: {
         /*
@@ -653,6 +678,10 @@ export default {
             consola.debug(`Table received: tableInput ${event}`);
             this.$emit('tableInput', event);
         },
+        onColumnResize(columnIndex, newColumnSize) {
+            consola.debug(`Table received: columnResize ${columnIndex} ${newColumnSize}`);
+            Vue.set(this.currentAllColumnSizes, this.currentColumns[columnIndex], newColumnSize);
+        },
         /*
          *
          * Table methods.
@@ -666,7 +695,17 @@ export default {
         clearSelection() {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(item => 0);
-        }
+        },
+        updateClientWidth: throttle(function () {
+            /* eslint-disable no-invalid-this */
+            const updatedClientWidth = this.$el.clientWidth;
+            // also update all non-default column widths according to the relative change in client width
+            const ratio = updatedClientWidth / this.clientWidth;
+            this.currentAllColumnSizes = this.currentAllColumnSizes
+                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+            this.clientWidth = updatedClientWidth;
+            /* eslint-enable no-invalid-this */
+        })
     }
 };
 </script>
@@ -692,6 +731,7 @@ export default {
     @selectAll="onSelectAll"
     @rowSelect="onRowSelect"
     @tableInput="onTableInput"
+    @columnResize="onColumnResize"
   >
     <template
       v-for="col in currentSlottedColumns"
