@@ -122,7 +122,7 @@ export default {
             filteredDataConfig: null,
             groupedDataConfig: null,
             sortedData: null,
-            processedData: null,
+            paginatedData: null,
             processLevel: null,
             // Control State
             // column selection
@@ -151,16 +151,14 @@ export default {
             showFilter: false,
             filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // Selection State
+            masterSelected: this.initMasterSelected(),
             processedIndicies: [],
-            masterSelected: this.initMasterSelected()
+            paginatedIndicies: [],
+            processedSelection: [],
+            paginatedSelection: []
         };
     },
     computed: {
-        currentSelection() {
-            return this.processedIndicies?.map((group, groupInd) => group.map(
-                rowInd => Boolean(this.masterSelected[this.getProcessedRowIndex(rowInd, groupInd)])
-            ));
-        },
         totalSelected() {
             return this.masterSelected?.reduce((count, isSelected) => count + isSelected, 0);
         },
@@ -355,9 +353,9 @@ export default {
                 this.onPageSizeUpdate(this.currentPageSize);
             }
         },
-        processedData(newProcessedData) {
-            consola.trace('New processed data (watcher called).');
-            this.pageRowCount = newProcessedData.reduce((count, groupData) => groupData.length + count, 0);
+        paginatedData(newPaginatedData) {
+            consola.trace('New paginated data (watcher called).');
+            this.pageRowCount = newPaginatedData.reduce((count, groupData) => groupData.length + count, 0);
         },
         /*
          * Managed reactivity watchers.
@@ -366,13 +364,6 @@ export default {
             handler(newData) {
                 consola.trace('New parent data (watcher called).');
                 this.onAllDataUpdate(newData);
-                if (this.processLevel === null || this.processLevel > 1) {
-                    this.processLevel = 1;
-                    Vue.set(this, 'processedData', this.filterLevelUpdate());
-                    this.processLevel = null;
-                } else {
-                    consola.trace('Blocked unnecessary filter reactivity.');
-                }
             },
             deep: true
         },
@@ -384,7 +375,7 @@ export default {
                 let isBlocked = this.processLevel !== null && this.processLevel <= 1;
                 if (shouldUpdate && !isBlocked) {
                     this.processLevel = 1;
-                    Vue.set(this, 'processedData', this.filterLevelUpdate());
+                    this.filterLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary filter reactivity.');
@@ -397,7 +388,7 @@ export default {
                 consola.trace('New group hash (watcher called).');
                 if (this.processLevel === null || this.processLevel > 2) {
                     this.processLevel = 2;
-                    this.processedData = this.groupLevelUpdate();
+                    this.groupLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary group reactivity.');
@@ -411,7 +402,7 @@ export default {
                 // eslint-disable-next-line no-magic-numbers
                 if (this.processLevel === null || this.processLevel > 3) {
                     this.processLevel = 3;
-                    this.processedData = this.sortLevelUpdate();
+                    this.sortLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary sort reactivity.');
@@ -425,20 +416,26 @@ export default {
                 // eslint-disable-next-line no-magic-numbers
                 if (this.processLevel === null || this.processLevel > 4) {
                     this.processLevel = 4;
-                    this.processedData = this.sortLevelUpdate();
+                    this.pageLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.debug('Blocked unnecessary page reactivity.');
                 }
             },
             deep: true
+        },
+        masterSelected: {
+            handler() {
+                consola.debug('New selection (watcher called).');
+                this.pageLevelUpdate();
+            },
+            deep: true
         }
     },
     mounted() {
         // If reactivity partially updates on the initial load, update the state manually.
-        if (this.allData?.length && this.processedData === null) {
-            this.domains = this.getDomains();
-            this.processedData = this.filterLevelUpdate();
+        if (this.allData?.length) {
+            this.onAllDataUpdate(this.allData);
         }
         // determine default column size on mounted, since only then do we know the clientWidth of this element
         this.updateClientWidth();
@@ -460,25 +457,33 @@ export default {
         },
         filterLevelUpdate() {
             consola.trace('Filter level update.');
-            return this.paginateData(this.sortData(this.groupData(this.filterData())));
+            this.paginateData(this.sortData(this.groupData(this.filterData())));
         },
         groupLevelUpdate() {
             consola.trace('Group level update.');
-            return this.paginateData(this.sortData(this.groupData(this.filteredDataConfig)));
+            this.paginateData(this.sortData(this.groupData(this.filteredDataConfig)));
         },
         sortLevelUpdate() {
             consola.trace('Sort level update.');
-            return this.paginateData(this.sortData(this.groupedDataConfig));
+            this.paginateData(this.sortData(this.groupedDataConfig));
         },
         pageLevelUpdate() {
             consola.trace('Page level update.');
-            return this.paginateData(this.sortedData);
+            this.paginateData(this.sortedData);
         },
         onAllDataUpdate(newData) {
+            // Update domains, size and masterSelection before filtering/processing.
             this.domains = this.getDomains();
             if (this.totalTableSize !== newData?.length) {
                 this.totalTableSize = this.allData.length;
-                this.masterSelected = this.initMasterSelected();
+                Vue.set(this, 'masterSelected', this.initMasterSelected());
+            }
+            if (this.paginatedData === null || this.processLevel === null || this.processLevel > 1) {
+                this.processLevel = 1;
+                this.filterLevelUpdate();
+                this.processLevel = null;
+            } else {
+                consola.trace('Blocked unnecessary filter reactivity.');
             }
         },
         /*
@@ -533,12 +538,20 @@ export default {
         },
         paginateData(sortedData) {
             consola.trace('Paginating data.');
-            return paginate({
+            this.processedSelection = this.processedIndicies?.map(group => group.map(
+                rowInd => Boolean(this.masterSelected[rowInd])
+            ));
+            const { paginatedData, paginatedSelection, paginatedIndicies } = paginate({
                 sortedData,
+                processedIndicies: this.processedIndicies,
+                processedSelection: this.processedSelection,
                 pageSize: this.currentPageSize,
                 pageStart: this.pageStart,
                 pageEnd: this.pageEnd
             });
+            Vue.set(this, 'paginatedData', paginatedData);
+            Vue.set(this, 'paginatedIndicies', paginatedIndicies);
+            Vue.set(this, 'paginatedSelection', paginatedSelection);
         },
         /*
          *
@@ -658,18 +671,19 @@ export default {
         },
         onSelectAll(selected) {
             consola.debug(`Table received: selectAll ${selected}`);
-            this.masterSelected = this.masterSelected.map(
+            const newSelection = this.masterSelected.map(
                 (_, i) => selected && this.processedIndicies.some(group => group.includes(i)) ? 1 : 0
             );
+            Vue.set(this, 'masterSelected', newSelection);
             this.$emit('tableSelect', this.totalSelected);
         },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(
-                `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.processedIndicies}`
+                `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.paginatedIndicies}`
             );
             Vue.set(
                 this.masterSelected,
-                this.processedIndicies[groupInd][this.getProcessedRowIndex(rowInd, groupInd)],
+                this.paginatedIndicies[groupInd][rowInd],
                 selected ? 1 : 0
             );
             this.$emit('tableSelect', this.totalSelected);
@@ -694,7 +708,7 @@ export default {
         },
         clearSelection() {
             consola.debug(`Table clearing selection.`);
-            this.masterSelected = this.allData.map(item => 0);
+            Vue.set(this, 'masterSelected', this.allData.map(_ => 0));
         },
         updateClientWidth: throttle(function () {
             /* eslint-disable no-invalid-this */
@@ -712,8 +726,8 @@ export default {
 
 <template>
   <TableUI
-    :data="processedData"
-    :current-selection="currentSelection"
+    :data="paginatedData"
+    :current-selection="paginatedSelection"
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
