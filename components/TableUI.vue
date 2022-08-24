@@ -130,6 +130,9 @@ export default {
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
         },
+        enableVirtualScrolling() {
+            return this.tableConfig.enableVirtualScrolling;
+        },
         mappedData() {
             return this.data.map(groupData => groupData.map(
                 (rowData, index) => ({ id: index, data: rowData })
@@ -296,6 +299,7 @@ export default {
         @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
       >
         <DynamicScroller
+          v-if="enableVirtualScrolling"
           :items="dataGroup"
           :min-item-size="54"
           class="scroller"
@@ -313,7 +317,6 @@ export default {
             >
               <Row
                 :key="item.id"
-                class="custom-row"
                 :row="columnKeys.map(column => item.data[column])"
                 :table-config="tableConfig"
                 :column-configs="dataConfig.columnConfigs"
@@ -347,6 +350,40 @@ export default {
             </DynamicScrollerItem>
           </template>
         </DynamicScroller>
+        <Row
+          v-for="(item, index) in dataGroup"
+          v-else
+          :key="item.id"
+          :row="columnKeys.map(column => item.data[column])"
+          :table-config="tableConfig"
+          :column-configs="dataConfig.columnConfigs"
+          :row-config="dataConfig.rowConfig"
+          :is-selected="currentSelection[0][index]"
+          @rowSelect="selected => onRowSelect(selected, index, 0)"
+          @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+          @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+        >
+          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+          <template
+            v-for="colInd in slottedColumns"
+            #[`cellContent-${columnKeys[colInd]}`]="cellData"
+          >
+            <!-- Vue requires key on real element for dynamic scoped slots
+                  to help Vue framework manage events. -->
+            <span :key="rowInd + '_' + colInd">
+              <slot
+                :name="`cellContent-${columnKeys[colInd]}`"
+                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+              />
+            </span>
+          </template>
+          <template slot="rowCollapserContent">
+            <slot
+              name="collapserContent"
+              :row="row"
+            />
+          </template>
+        </Row>
       </Group>
       <BottomControls
         v-if="tableConfig.showBottomControls"
