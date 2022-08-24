@@ -11,67 +11,73 @@ import TablePopover from '~/components/popover/TablePopover.vue';
 
 import { columnTypes } from '~/config/table.config';
 
+const getPropsData = (dynamicProps) => ({
+    data: [[{ a: 1, b: 2 }]],
+    currentSelection: [[false]],
+    dataConfig: {
+        columnConfigs: [{
+            key: 'a',
+            header: 'a',
+            ...dynamicProps?.includeSubHeaders && { subHeader: 'a' },
+            type: columnTypes.Number,
+            size: 50,
+            filterConfig: {
+                value: '',
+                is: 'FilterInputField'
+            },
+            formatter: (x) => x,
+            classGenerator: [],
+            popoverRenderer: {
+                type: 'MessageRenderer',
+                process: data => data
+            },
+            hasSlotContent: false
+        }, {
+            key: 'b',
+            header: 'b',
+            ...dynamicProps?.includeSubHeaders && { subHeader: 'b' },
+            type: columnTypes.Number,
+            size: 50,
+            filterConfig: {
+                value: '',
+                is: 'FilterInputField'
+            },
+            formatter: (x) => x,
+            classGenerator: [],
+            hasSlotContent: false
+        }],
+        rowConfig: { fixHeader: dynamicProps?.fixHeader }
+    },
+    tableConfig: {
+        pageConfig: {
+            currentSize: 1,
+            tableSize: 1,
+            pageSize: 5,
+            possiblePageSizes: [5, 10, 25],
+            currentPage: 1
+        },
+        showColumnFilters: dynamicProps?.showColumnFilters,
+        showSelection: dynamicProps?.showSelection,
+        showBottomControls: true,
+        searchConfig: {
+            searchQuery: ''
+        },
+        timeFilterConfig: {
+            currentTimeFilter: ''
+        },
+        columnSelectionConfig: {
+            possibleColumns: ['a', 'b'],
+            currentColumns: ['a', 'b']
+        }
+    }
+});
+
 describe('TableUI.vue', () => {
     let wrapper;
-
-    let propsData = {
-        data: [[{ a: 1, b: 2 }]],
-        currentSelection: [[false]],
-        dataConfig: {
-            columnConfigs: [{
-                key: 'a',
-                header: 'a',
-                subHeader: 'a',
-                type: columnTypes.Number,
-                size: 50,
-                filterConfig: {
-                    value: '',
-                    is: 'FilterInputField'
-                },
-                formatter: (x) => x,
-                classGenerator: [],
-                popoverRenderer: {
-                    type: 'MessageRenderer',
-                    process: data => data
-                },
-                hasSlotContent: false
-            }, {
-                key: 'b',
-                header: 'b',
-                subHeader: 'b',
-                type: columnTypes.Number,
-                size: 50,
-                filterConfig: {
-                    value: '',
-                    is: 'FilterInputField'
-                },
-                formatter: (x) => x,
-                classGenerator: [],
-                hasSlotContent: false
-            }]
-        },
-        tableConfig: {
-            pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 5,
-                possiblePageSizes: [5, 10, 25],
-                currentPage: 1
-            },
-            showColumnFilters: true,
-            showBottomControls: true,
-            searchConfig: {
-                searchQuery: ''
-            },
-            timeFilterConfig: {
-                currentTimeFilter: ''
-            },
-            columnSelectionConfig: {
-                possibleColumns: ['a', 'b'],
-                currentColumns: ['a', 'b']
-            }
-        }
-    };
+    let propsData = getPropsData({ includeSubHeaders: true,
+        fixHeader: false,
+        showSelection: true,
+        showColumnFilters: true });
 
     describe('configuration', () => {
         it('renders', () => {
@@ -320,6 +326,48 @@ describe('TableUI.vue', () => {
                 wrapper.find(Header).vm.$emit('hideColumnBorder');
                 expect(wrapper.vm.showBorderColumnIndex).toBe(null);
             });
+        });
+    });
+
+    describe('height and width of table-group-wrapper on sticky headers', () => {
+        it('gets the correct height of the headers when subHeaders & filters are disabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ includeSubHeaders: false, fixHeader: false }) });
+            expect(wrapper.vm.tableHeightWithoutBody).toEqual(80);
+        });
+
+        it('gets the correct height of the headers when subHeaders are enabled & filters are disabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ includeSubHeaders: true, fixHeader: false }) });
+            expect(wrapper.vm.tableHeightWithoutBody).toEqual(82);
+        });
+
+        it('gets the correct height of the headers when subHeaders disabled & filters enabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ includeSubHeaders: false, fixHeader: true }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.tableHeightWithoutBody).toEqual(120);
+        });
+
+        it('gets the correct height of the headers when subHeaders & filters are enabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ includeSubHeaders: true, fixHeader: true }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.tableHeightWithoutBody).toEqual(122);
+        });
+
+        it('gets the correct width of the table-body when selection & filtering are enabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ showSelection: true, showColumnFilters: true }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.currentBodyWidth).toEqual(182);
+        });
+
+        it('gets the correct width of the table-body when selection & filtering are disabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ showSelection: false, showColumnFilters: false }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.currentBodyWidth).toEqual(122);
         });
     });
 });
