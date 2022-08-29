@@ -329,45 +329,19 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('height and width of table-group-wrapper on sticky headers', () => {
-        it('gets the correct height of the headers when subHeaders & filters are disabled', () => {
-            wrapper = shallowMount(TableUI, { propsData:
-                getPropsData({ includeSubHeaders: false, fixHeader: false }) });
-            expect(wrapper.vm.tableHeightWithoutBody).toEqual(80);
-        });
-
-        it('gets the correct height of the headers when subHeaders are enabled & filters are disabled', () => {
-            wrapper = shallowMount(TableUI, { propsData:
-                getPropsData({ includeSubHeaders: true, fixHeader: false }) });
-            expect(wrapper.vm.tableHeightWithoutBody).toEqual(82);
-        });
-
-        it('gets the correct height of the headers when subHeaders disabled & filters enabled', () => {
-            wrapper = shallowMount(TableUI, { propsData:
-                getPropsData({ includeSubHeaders: false, fixHeader: true }) });
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.tableHeightWithoutBody).toEqual(120);
-        });
-
-        it('gets the correct height of the headers when subHeaders & filters are enabled', () => {
-            wrapper = shallowMount(TableUI, { propsData:
-                getPropsData({ includeSubHeaders: true, fixHeader: true }) });
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.tableHeightWithoutBody).toEqual(122);
-        });
-
+    describe('the width of the tabl, its header and its body (table-group-wrapper)', () => {
         it('gets the correct width of the table-body when selection & filtering are enabled', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ showSelection: true, showColumnFilters: true }) });
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(182);
+            expect(wrapper.vm.currentBodyWidth).toEqual(180);
         });
 
         it('gets the correct width of the table-body when selection & filtering are disabled', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ showSelection: false, showColumnFilters: false }) });
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(122);
+            expect(wrapper.vm.currentBodyWidth).toEqual(120);
         });
     });
 });

@@ -8,15 +8,9 @@ import Row from './layout/Row.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 
-const heightBaseControlHeader = 40;
-const heightColumnHeader = 39;
-const heightColumnWithSubHeader = 41;
-const heightColumnFilters = 40;
-
 const widthColumnMarginLeft = 10;
 const widthColumnSelection = 30;
 const widthColumnFilter = 30;
-const widthGroupWrapperMarginLeft = 2;
 
 /**
  * @see README.md
@@ -143,16 +137,9 @@ export default {
         hasColumnSubHeaders() {
             return this.columnSubHeaders.some(item => item);
         },
-        tableHeightWithoutBody() {
-            let headerHeight = heightBaseControlHeader;
-            headerHeight += this.hasColumnSubHeaders ? heightColumnWithSubHeader : heightColumnHeader;
-            headerHeight += this.filterActive ? heightColumnFilters : 0;
-            const bodyBorderBottomHeight = 1;
-            return headerHeight + bodyBorderBottomHeight;
-        },
         currentBodyWidth() {
             const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
-            return widthGroupWrapperMarginLeft + (this.tableConfig.showSelection ? widthColumnSelection : 0) +
+            return (this.tableConfig.showSelection ? widthColumnSelection : 0) +
                 widthContentColumns + (this.tableConfig.showColumnFilters ? widthColumnFilter : 0);
         }
     },
@@ -277,10 +264,12 @@ export default {
   >
     <table
       ref="table"
+      :style="{ width: `${currentBodyWidth}px` }"
     >
       <TopControls
         :table-config="tableConfig"
         :column-headers="columnHeaders"
+        :style="{ width: `${currentBodyWidth}px` }"
         @nextPage="onPageChange(1)"
         @prevPage="onPageChange(-1)"
         @columnUpdate="onColumnUpdate"
@@ -297,6 +286,7 @@ export default {
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
         :class="tableHeaderClass"
+        :style="{ width: `${currentBodyWidth}px` }"
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
@@ -311,13 +301,13 @@ export default {
         :column-sizes="columnSizes"
         :types="columnTypes"
         :show-collapser="tableConfig.showCollapser"
+        :style="{ width: `${currentBodyWidth}px` }"
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
       <div
         class="table-group-wrapper"
-        :style="{ ...(shouldFixHeaders && { height: `calc(100% - ${tableHeightWithoutBody}px)`, width:
-          `${currentBodyWidth}px` }) }"
+        :style="{ width: `${currentBodyWidth}px` }"
       >
         <Group
           v-for="(dataGroup, groupInd) in data"
@@ -365,6 +355,7 @@ export default {
       <BottomControls
         v-if="tableConfig.showBottomControls"
         :page-config="tableConfig.pageConfig"
+        :style="{ width: `${currentBodyWidth}px` }"
         @nextPage="onPageChange(1)"
         @prevPage="onPageChange(-1)"
         @pageSizeUpdate="onPageSizeUpdate"
@@ -405,11 +396,17 @@ table {
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
-  display: block;
+  display: flex;
+  flex-direction: column;
   overflow: auto;
+  margin: auto;
 
   & .table-group-wrapper {
-    display: contents;
+    display: block;
+
+    & >>> tbody {
+      display: block;
+    }
 
     & >>> td > a {
       text-decoration: none;
@@ -461,14 +458,8 @@ table >>> tr {
     overflow-y: hidden;
 
     & .table-group-wrapper {
-       display: block;
        overflow-y: auto;
        overflow-x: clip;
-
-      & >>> tbody {
-        display: block;
-        margin-left: 2px;
-      }
      }
   }
 }

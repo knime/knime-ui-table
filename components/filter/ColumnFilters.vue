@@ -4,6 +4,7 @@ import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import { MIN_COLUMN_SIZE } from '../../util/constants';
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -63,7 +64,7 @@ export default {
       <th
         v-for="(column, ind) in columnHeaders"
         :key="ind + 'filter'"
-        :style="{ width: `calc(${columnSizes[ind] || 100}% - 15px)` }"
+        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
         :cell-type="'th'"
         class="filter"
       >
@@ -89,6 +90,7 @@ export default {
 tr {
   margin-top: -2px;
   height: 40px;
+  overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-silver-sand-semi);
 
