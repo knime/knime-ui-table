@@ -46,6 +46,7 @@ export default {
         :current-items="pageConfig.currentSize"
         :page-size="pageConfig.pageSize"
         :current-page="pageConfig.currentPage"
+        :column-count="pageConfig.columnCount"
         @nextPage="onNextPage"
         @prevPage="onPrevPage"
       />
