@@ -134,9 +134,6 @@ export default {
         shouldFixHeaders() {
             return Boolean(this.dataConfig.rowConfig?.fixHeader);
         },
-        hasColumnSubHeaders() {
-            return this.columnSubHeaders.some(item => item);
-        },
         currentBodyWidth() {
             const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
             return (this.tableConfig.showSelection ? widthColumnSelection : 0) +

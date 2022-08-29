@@ -209,6 +209,7 @@ thead {
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
+
     & th {
       white-space: nowrap;
       overflow: hidden;
@@ -216,9 +217,11 @@ thead {
       line-height: 40px;
       padding: 0;
       text-align: left;
+
       &.with-subheaders {
         line-height: 42px;
       }
+
       &.collapser-cell-spacer {
         min-width: 30px;
       }
