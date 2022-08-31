@@ -16,7 +16,7 @@ describe('PageControls.vue', () => {
         expect(wrapper.find(ArrowPrevIcon).exists()).toBe(false);
     });
 
-    it('has dynamic range text', () => {
+    it('has dynamic range text without dimension information', () => {
         wrapper = shallowMount(PageControls, {
             propsData: {
                 totalItems: 100,
@@ -32,6 +32,27 @@ describe('PageControls.vue', () => {
         expect(wrapper.find('span').text()).toBe('Showing 26-50 of 50 (100 total)');
         wrapper.setProps({ currentItems: 0 });
         expect(wrapper.find('span').text()).toBe('No data (100 hidden)');
+    });
+
+    it('has dynamic range text with dimension information', () => {
+        wrapper = shallowMount(PageControls, {
+            propsData: {
+                totalItems: 100,
+                currentItems: 100,
+                pageSize: 25,
+                currentPage: 1,
+                columnCount: 10
+            }
+        });
+        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 100   |   Columns: 10');
+        wrapper.setProps({ currentItems: 50 });
+        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 50 (100 total)   |   Columns: 10');
+        wrapper.setProps({ currentPage: 2 });
+        expect(wrapper.find('span').text()).toBe('Showing 26-50 of 50 (100 total)   |   Columns: 10');
+        wrapper.setProps({ currentItems: 0 });
+        expect(wrapper.find('span').text()).toBe('No data (100 hidden)   |   Columns: 10');
+        wrapper.setProps({ pageSize: 10, totalItems: 10, currentItems: 10 });
+        expect(wrapper.find('span').text()).toBe('Rows: 10   |   Columns: 10');
     });
 
     it('hides "total" count if 0 rows', () => {
