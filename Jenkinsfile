@@ -22,7 +22,7 @@ try {
                     withMaven(options: [artifactsPublisher(disabled: true)]) {
                         def sonarArgs = knimetools.getSonarArgsForMaven(env.SONAR_CONFIG_NAME)
                         sh """
-                            mvn -Dknime.p2.repo=${P2_REPO} validate $sonarArgs
+                            mvn -Dknime.p2.repo=${P2_REPO} package $sonarArgs -DskipTests=true
                         """
                     }
                 }
