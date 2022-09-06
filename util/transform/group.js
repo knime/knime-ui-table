@@ -68,7 +68,7 @@ export const group = groupConfig => {
                         groupInd: indexTracker - 1
                     };
                 }
-                returnValue.groupedIndicies[map[rowGroup].groupInd].push(rowInd);
+                returnValue.groupedIndicies[map[rowGroup].groupInd].push(filteredIndicies[rowInd]);
                 map[rowGroup].data.push(row);
                 return map;
             }, {});
