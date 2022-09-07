@@ -118,6 +118,18 @@ export default {
     overflow: hidden;
   }
 
+  .sticky-headers h2 {
+    margin-bottom: 0;
+  }
+
+  .sticky-headers .wrapper {
+    flex-basis: content;
+  }
+
+  .sticky-headers button {
+    align-self: flex-start;
+  }
+
   .toggle-options > label.checkbox {
     padding-right: 12px;
   }
