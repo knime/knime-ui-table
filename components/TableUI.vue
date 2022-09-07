@@ -395,7 +395,6 @@ table {
   table-layout: fixed;
   display: flex;
   flex-direction: column;
-  overflow: auto;
   margin: auto;
 
   & .table-group-wrapper {

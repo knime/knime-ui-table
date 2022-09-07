@@ -68,7 +68,8 @@ describe('Table.vue', () => {
             popoverRenderer: expect.undefined,
             size: 30,
             type: columnTypes.Number
-        }] });
+        }],
+        rowConfig: { fixHeader: false } });
         expect(wrapper.vm.tableConfig).toStrictEqual({
             showBottomControls: true,
             showCollapser: false,

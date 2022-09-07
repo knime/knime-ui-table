@@ -110,6 +110,10 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
+        },
+        fixHeader: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -164,7 +168,8 @@ export default {
         },
         dataConfig() {
             let dataConfig = {
-                columnConfigs: []
+                columnConfigs: [],
+                rowConfig: { fixHeader: this.fixHeader }
             };
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {

@@ -1204,5 +1204,6 @@
     "actions": true,
     "configurationWithPasswords": true,
     "configuration": true
-  }
+  },
+  "fixHeader": false
 }
