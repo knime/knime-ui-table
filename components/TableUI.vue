@@ -1,12 +1,16 @@
 <script>
-import TopControls from './control/TopControls';
-import BottomControls from './control/BottomControls';
-import ColumnFilters from './filter/ColumnFilters';
-import Header from './layout/Header';
-import Group from './layout/Group';
-import Row from './layout/Row';
-import ActionButton from './ui/ActionButton';
-import TablePopover from './popover/TablePopover';
+import TopControls from './control/TopControls.vue';
+import BottomControls from './control/BottomControls.vue';
+import ColumnFilters from './filter/ColumnFilters.vue';
+import Header from './layout/Header.vue';
+import Group from './layout/Group.vue';
+import Row from './layout/Row.vue';
+import ActionButton from './ui/ActionButton.vue';
+import TablePopover from './popover/TablePopover.vue';
+
+const widthColumnMarginLeft = 10;
+const widthColumnSelection = 30;
+const widthColumnFilter = 30;
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 
@@ -87,6 +91,8 @@ export default {
             popoverData: null,
             popoverColumn: null,
             popoverRenderer: null,
+            // the index of the column that is currently being resized and for which a border should be shown
+            showBorderColumnIndex: null,
             lastScrollIndex: 0
         };
     },
@@ -129,6 +135,14 @@ export default {
             return `table-header${
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
+        },
+        shouldFixHeaders() {
+            return Boolean(this.dataConfig.rowConfig?.fixHeader);
+        },
+        currentBodyWidth() {
+            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
+            return (this.tableConfig.showSelection ? widthColumnSelection : 0) +
+                widthContentColumns + (this.tableConfig.showColumnFilters ? widthColumnFilter : 0);
         },
         enableVirtualScrolling() {
             return this.tableConfig.enableVirtualScrolling;
@@ -247,19 +261,33 @@ export default {
             this.popoverRenderer = null;
             this.popoverData = null;
             window.removeEventListener('resize', this.onPopoverClose);
+        },
+        onColumnResize(columnIndex, newColumnSize) {
+            this.$emit('columnResize', columnIndex, newColumnSize);
+        },
+        onShowColumnBorder(columnIndex) {
+            this.showBorderColumnIndex = columnIndex;
+        },
+        onHideColumnBorder() {
+            this.showBorderColumnIndex = null;
         }
     }
 };
 </script>
 
 <template>
-  <div class="wrapper">
+  <div
+    class="wrapper"
+    :class="{ 'sticky-header': shouldFixHeaders}"
+  >
     <table
       ref="table"
+      :style="{ width: `${currentBodyWidth}px` }"
     >
       <TopControls
         :table-config="tableConfig"
         :column-headers="columnHeaders"
+        :style="{ width: `${currentBodyWidth}px` }"
         @nextPage="onPageChange(1)"
         @prevPage="onPageChange(-1)"
         @columnUpdate="onColumnUpdate"
@@ -276,9 +304,13 @@ export default {
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
         :class="tableHeaderClass"
+        :style="{ width: `${currentBodyWidth}px` }"
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
+        @columnResize="onColumnResize"
+        @showColumnBorder="onShowColumnBorder"
+        @hideColumnBorder="onHideColumnBorder"
       />
       <ColumnFilters
         v-if="filterActive"
@@ -287,107 +319,116 @@ export default {
         :column-sizes="columnSizes"
         :types="columnTypes"
         :show-collapser="tableConfig.showCollapser"
+        :style="{ width: `${currentBodyWidth}px` }"
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
-      <Group
-        v-for="(dataGroup, groupInd) in mappedData"
-        :key="groupInd"
-        :title="getGroupName(groupInd)"
-        :group-sub-menu-items="tableConfig.groupSubMenuItems"
-        :show="data.length > 1 && dataGroup.length > 0"
-        @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
+      <div
+        class="table-group-wrapper"
+        :style="{ width: `${currentBodyWidth}px` }"
       >
-        <DynamicScroller
-          v-if="enableVirtualScrolling"
-          :items="dataGroup"
-          :min-item-size="54"
-          class="scroller"
-          :emit-update="true"
-          @update="onUpdate"
+        <Group
+          v-for="(dataGroup, groupInd) in mappedData"
+          :key="groupInd"
+          :title="getGroupName(groupInd)"
+          :group-sub-menu-items="tableConfig.groupSubMenuItems"
+          :show="data.length > 1 && dataGroup.length > 0"
+          @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
         >
-          <template #default="{ item, index, active }">
-            <DynamicScrollerItem
-              :item="item"
-              :active="active"
-              :data-index="index"
-              :size-dependencies="[
-                item.data,
-              ]"
-            >
-              <Row
-                :key="item.id"
-                :row="columnKeys.map(column => item.data[column])"
-                :table-config="tableConfig"
-                :column-configs="dataConfig.columnConfigs"
-                :row-config="dataConfig.rowConfig"
-                :is-selected="currentSelection[0][index]"
-                @rowSelect="selected => onRowSelect(selected, index, 0)"
-                @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
-                @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
-              >
-                <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-                <template
-                  v-for="colInd in slottedColumns"
-                  #[`cellContent-${columnKeys[colInd]}`]="cellData"
-                >
-                  <!-- Vue requires key on real element for dynamic scoped slots
-                       to help Vue framework manage events. -->
-                  <span :key="rowInd + '_' + colInd">
-                    <slot
-                      :name="`cellContent-${columnKeys[colInd]}`"
-                      :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
-                    />
-                  </span>
-                </template>
-                <template slot="rowCollapserContent">
-                  <slot
-                    name="collapserContent"
-                    :row="row"
-                  />
-                </template>
-              </Row>
-            </DynamicScrollerItem>
-          </template>
-        </DynamicScroller>
-        <Row
-          v-for="(item, index) in dataGroup"
-          v-else
-          :key="item.id"
-          :row="columnKeys.map(column => item.data[column])"
-          :table-config="tableConfig"
-          :column-configs="dataConfig.columnConfigs"
-          :row-config="dataConfig.rowConfig"
-          :is-selected="currentSelection[0][index]"
-          @rowSelect="selected => onRowSelect(selected, index, 0)"
-          @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
-          @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
-        >
-          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-          <template
-            v-for="colInd in slottedColumns"
-            #[`cellContent-${columnKeys[colInd]}`]="cellData"
+          <DynamicScroller
+            v-if="enableVirtualScrolling"
+            :items="dataGroup"
+            :min-item-size="54"
+            class="scroller"
+            :emit-update="true"
+            @update="onUpdate"
           >
-            <!-- Vue requires key on real element for dynamic scoped slots
+            <template #default="{ item, index, active }">
+              <DynamicScrollerItem
+                :item="item"
+                :active="active"
+                :data-index="index"
+                :size-dependencies="[
+                  item.data,
+                ]"
+              >
+                <Row
+                  :key="item.id"
+                  :row="columnKeys.map(column => item.data[column])"
+                  :table-config="tableConfig"
+                  :column-configs="dataConfig.columnConfigs"
+                  :row-config="dataConfig.rowConfig"
+                  :is-selected="currentSelection[0][index]"
+                  :show-border-column-index="showBorderColumnIndex"
+                  @rowSelect="selected => onRowSelect(selected, index, 0)"
+                  @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+                  @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+                >
+                  <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+                  <template
+                    v-for="colInd in slottedColumns"
+                    #[`cellContent-${columnKeys[colInd]}`]="cellData"
+                  >
+                    <!-- Vue requires key on real element for dynamic scoped slots
+                        to help Vue framework manage events. -->
+                    <span :key="rowInd + '_' + colInd">
+                      <slot
+                        :name="`cellContent-${columnKeys[colInd]}`"
+                        :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                      />
+                    </span>
+                  </template>
+                  <template slot="rowCollapserContent">
+                    <slot
+                      name="collapserContent"
+                      :row="row"
+                    />
+                  </template>
+                </Row>
+              </DynamicScrollerItem>
+            </template>
+          </DynamicScroller>
+          <Row
+            v-for="(item, index) in dataGroup"
+            v-else
+            :key="item.id"
+            :row="columnKeys.map(column => item.data[column])"
+            :table-config="tableConfig"
+            :column-configs="dataConfig.columnConfigs"
+            :row-config="dataConfig.rowConfig"
+            :is-selected="currentSelection[0][index]"
+            :show-border-column-index="showBorderColumnIndex"
+            @rowSelect="selected => onRowSelect(selected, index, 0)"
+            @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+            @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+          >
+            <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+            <template
+              v-for="colInd in slottedColumns"
+              #[`cellContent-${columnKeys[colInd]}`]="cellData"
+            >
+              <!-- Vue requires key on real element for dynamic scoped slots
                   to help Vue framework manage events. -->
-            <span :key="rowInd + '_' + colInd">
+              <span :key="rowInd + '_' + colInd">
+                <slot
+                  :name="`cellContent-${columnKeys[colInd]}`"
+                  :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                />
+              </span>
+            </template>
+            <template slot="rowCollapserContent">
               <slot
-                :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                name="collapserContent"
+                :row="row"
               />
-            </span>
-          </template>
-          <template slot="rowCollapserContent">
-            <slot
-              name="collapserContent"
-              :row="row"
-            />
-          </template>
-        </Row>
-      </Group>
+            </template>
+          </Row>
+        </Group>
+      </div>
       <BottomControls
         v-if="tableConfig.showBottomControls"
         :page-config="tableConfig.pageConfig"
+        :style="{ width: `${currentBodyWidth}px` }"
         @nextPage="onPageChange(1)"
         @prevPage="onPageChange(-1)"
         @pageSizeUpdate="onPageSizeUpdate"
@@ -431,18 +472,29 @@ table {
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
 
-  & >>> td > a {
-    text-decoration: none;
+  & .table-group-wrapper {
     display: block;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 100%;
-    padding-right: 15px;
-  }
 
-  & >>> td:first-child > a {
-    padding-left: 15px;
+    & >>> tbody {
+      display: block;
+    }
+
+    & >>> td > a {
+      text-decoration: none;
+      display: block;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 100%;
+      padding-right: 15px;
+    }
+
+    & >>> td:first-child > a {
+      padding-left: 15px;
+    }
   }
 }
 
@@ -469,6 +521,21 @@ table >>> tr {
   & button:focus {
     color: var(--knime-masala);
     background-color: var(--knime-silver-sand-semi);
+  }
+}
+
+.sticky-header {
+  height: 100%;
+  overflow-y: hidden;
+
+  & table {
+    height: 100%;
+    overflow-y: hidden;
+
+    & .table-group-wrapper {
+       overflow-y: auto;
+       overflow-x: clip;
+     }
   }
 }
 

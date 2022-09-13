@@ -1,8 +1,10 @@
 <script>
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
+import throttle from 'raf-throttle';
+import { MIN_COLUMN_SIZE } from '../../util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -49,12 +51,17 @@ export default {
     },
     data() {
         return {
-            height: 40
+            height: 40,
+            hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
+            dragIndex: null, // the index of the column that is currently being dragged / resized
+            columnSizeOnDragStart: null, // the original width of the column that is currently being resized
+            pageXOnDragStart: null // the x coordinate at which the mouse was clicked when starting the resize drag
         };
     },
     computed: {
         enableSorting() {
-            return Boolean(this.tableConfig?.sortConfig);
+            // do not enable sorting when currently resizing or hovering over a drag handle
+            return Boolean(this.tableConfig?.sortConfig) && this.hoverIndex === null && this.dragIndex === null;
         },
         sortColumn() {
             return this.tableConfig?.sortConfig?.sortColumn;
@@ -77,7 +84,53 @@ export default {
         },
         onToggleFilter() {
             this.$emit('toggleFilter');
-        }
+        },
+        onPointerOver(event, columnIndex) {
+            consola.debug('Begin hover over drag handle: ', event);
+            if (this.dragIndex === null) {
+                this.hoverIndex = columnIndex;
+            }
+        },
+        onPointerLeave(event) {
+            consola.debug('End hover over drag handle: ', event);
+            if (this.dragIndex === null) {
+                this.hoverIndex = null;
+            }
+        },
+        onPointerDown(event, columnIndex) {
+            consola.debug('Resize via drag triggered: ', event);
+            // prevent default browser behavior
+            event.preventDefault();
+            // stop the event from propagating up the DOM tree
+            event.stopPropagation();
+            // capture move events until the pointer is released
+            event.target.setPointerCapture(event.pointerId);
+            this.dragIndex = columnIndex;
+            this.columnSizeOnDragStart = this.columnSizes[columnIndex];
+            this.pageXOnDragStart = event.pageX;
+            this.$emit('showColumnBorder', this.dragIndex);
+        },
+        onPointerMove: throttle(function (event) {
+            /* eslint-disable no-invalid-this */
+            if (this.dragIndex !== null) {
+                consola.debug('Resize via drag ongoing: ', event);
+                const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+            }
+            /* eslint-enable no-invalid-this */
+        }),
+        /* The lostpointercapture event is triggered if the pointer capture is lost for any reason, including its
+        orderly release via a pointerup event. Because the onPointerMove function is throttled we also need to throttle
+        the onLostPointerCapture function to guarantee order of event handling. */
+        onLostPointerCapture: throttle(function (event) {
+            /* eslint-disable no-invalid-this */
+            consola.debug('Resize via drag finished: ', event);
+            this.dragIndex = null;
+            /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
+            this.hoverIndex = null;
+            this.$emit('hideColumnBorder');
+            /* eslint-enable no-invalid-this */
+        })
     }
 };
 </script>
@@ -102,25 +155,35 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || 100}%)`}"
+        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
         :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
         @click="onHeaderClick(ind)"
         @keydown.space="onHeaderClick(ind)"
       >
-        <div class="main-header">
-          <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-          <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
-            {{ header }}
+        <div class="column-header-content">
+          <div class="main-header">
+            <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
+            <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+              {{ header }}
+            </div>
+          </div>
+          <div
+            v-if="columnSubHeaders[ind]"
+            class="sub-header-text-container"
+          >
+            {{ columnSubHeaders[ind] }}
           </div>
         </div>
         <div
-          v-if="columnSubHeaders[ind]"
-          class="sub-header-text-container"
-        >
-          {{ columnSubHeaders[ind] }}
-        </div>
+          :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
+          @pointerover="onPointerOver($event, ind)"
+          @pointerleave="onPointerLeave"
+          @pointerdown="onPointerDown($event, ind)"
+          @pointermove="onPointerMove"
+          @lostpointercapture="onLostPointerCapture"
+        />
       </th>
       <th
         v-if="tableConfig.showColumnFilters"
@@ -146,6 +209,7 @@ thead {
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
+
     & th {
       white-space: nowrap;
       overflow: hidden;
@@ -153,9 +217,11 @@ thead {
       line-height: 40px;
       padding: 0;
       text-align: left;
+
       &.with-subheaders {
         line-height: 42px;
       }
+
       &.collapser-cell-spacer {
         min-width: 30px;
       }
@@ -174,57 +240,83 @@ thead {
       }
 
       &.column-header {
-        margin-left: 10px;
+        position: relative;
         display: flex;
-        justify-content: center;
-        flex-direction: column;
-
-        & .main-header {
-          position: relative;
-          display: flex;
-          flex-direction: row-reverse;
-          justify-content: flex-end;
-
-          & .header-text-container {
-            max-width: calc(100%);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 700;
-            line-height: 16px;
-            font-size: 14px;
-
-            &.with-icon {
-              max-width: calc(100% - 30px);
-            }
-          }
-
-          & .icon {
-            width: 13px;
-            height: 13px;
-            stroke-width: calc(32px / 13);
-            stroke: var(--knime-masala);
-            pointer-events: none;
-            transition: transform 0.2s ease-in-out;
-            margin: auto 5px;
-            display: none;
-
-            &.active {
-              display: unset;
-            }
-          }
-        }
-
-        & .sub-header-text-container {
-          font-weight: 400;
-          font-size: 10px;
-          line-height: 12px;
-          font-style: italic;
-          stroke-width: calc(32px / 13);
-          display: flex;
-        }
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        margin-left: 10px;
 
         &:not(.inverted) .icon.active {
           transform: scaleY(-1);
+        }
+
+        & .column-header-content {
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+          width: 100%;
+
+          & .main-header {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+
+            & .header-text-container {
+              max-width: calc(100%);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              font-weight: 700;
+              line-height: 16px;
+              font-size: 14px;
+
+              &.with-icon {
+                max-width: calc(100% - 30px);
+              }
+            }
+
+            & .icon {
+              width: 13px;
+              height: 13px;
+              stroke-width: calc(32px / 13);
+              stroke: var(--knime-masala);
+              pointer-events: none;
+              transition: transform 0.2s ease-in-out;
+              margin: auto 5px;
+              display: none;
+
+              &.active {
+                display: unset;
+              }
+            }
+          }
+
+          & .sub-header-text-container {
+            font-weight: 400;
+            font-size: 10px;
+            line-height: 12px;
+            font-style: italic;
+            stroke-width: calc(32px / 13);
+            display: flex;
+          }
+        }
+
+        & .drag-handle {
+          position: absolute;
+          background-color: var(--knime-dove-gray);
+          right: 0;
+          height: 100%;
+          width: 5px;
+          opacity: 0;
+          cursor: col-resize;
+
+          &.hover {
+            opacity: 1;
+          }
+
+          &.drag {
+            width: 1px;
+            opacity: 1;
+          }
         }
 
         &.sortable {

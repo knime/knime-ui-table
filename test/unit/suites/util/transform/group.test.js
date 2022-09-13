@@ -135,7 +135,7 @@ describe('group', () => {
             ],
             groupColumnKey: 'col3',
             groupColumn: 'Column 3',
-            filteredIndicies: indiciesMock
+            filteredIndicies: [0, 1, 2, 3, 4, 5, 6, 7, 8]
         };
         expect(group(groupConfig)).toStrictEqual({
             groupedData: [

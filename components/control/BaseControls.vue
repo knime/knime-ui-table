@@ -1,5 +1,5 @@
 <script>
-import PageControls from './PageControls';
+import PageControls from './PageControls.vue';
 
 /**
  * Base table header component with table page controls on the left of the table row
@@ -46,6 +46,7 @@ export default {
         :current-items="pageConfig.currentSize"
         :page-size="pageConfig.pageSize"
         :current-page="pageConfig.currentPage"
+        :column-count="pageConfig.columnCount"
         @nextPage="onNextPage"
         @prevPage="onPrevPage"
       />

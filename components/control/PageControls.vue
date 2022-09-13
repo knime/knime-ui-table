@@ -1,5 +1,5 @@
 <script>
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import ArrowNextIcon from '~/webapps-common/ui/assets/img/icons/arrow-next.svg?inline';
 import ArrowPrevIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
@@ -31,18 +31,33 @@ export default {
         currentPage: {
             type: Number,
             default: 0
+        },
+        columnCount: {
+            type: Number,
+            default: null
         }
     },
     computed: {
         rangeText() {
             if (this.currentItems) {
-                let baseInfo = `Showing ${this.pageRangeStart}-${this.pageRangeEnd} of ${this.currentItems}`;
-                if (this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0) {
-                    baseInfo += ` (${this.totalItems} total)`;
+                let baseInfo;
+                if (this.pageSize === this.totalItems) {
+                    baseInfo = `Rows: ${this.totalItems}`;
+                } else {
+                    baseInfo = `Showing ${this.pageRangeStart}-${this.pageRangeEnd} of ${this.currentItems}`;
+                    if (this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0) {
+                        baseInfo += ` (${this.totalItems} total)`;
+                    }
                 }
                 return baseInfo;
             }
             return `No data${this.totalItems ? ` (${this.totalItems} hidden)` : ''}`;
+        },
+        dimensionText() {
+            if (this.columnCount) {
+                return `   |   Columns: ${this.columnCount}`;
+            }
+            return '';
         },
         pageRangeStart() {
             return 1 + ((this.currentPage * this.pageSize) - this.pageSize);
@@ -73,7 +88,7 @@ export default {
 <template>
   <th class="left-controls">
     <span>
-      {{ rangeText }}
+      {{ rangeText + dimensionText }}
     </span>
     <FunctionButton
       v-if="hasNextPage || hasPreviousPage"
@@ -100,7 +115,7 @@ th.left-controls {
 
   & span {
     margin-right: 5px;
-    white-space: nowrap;
+    white-space: pre;
   }
 
   & >>> .function-button {

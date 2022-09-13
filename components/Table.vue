@@ -1,6 +1,6 @@
 <script>
 import Vue from 'vue';
-import TableUI from './TableUI';
+import TableUI from './TableUI.vue';
 
 import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
 import { defaultTimeFilter } from '../config/time.config';
@@ -13,6 +13,8 @@ import { filter } from '../util/transform/filter';
 import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
+import throttle from 'raf-throttle';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
 
 /**
  * @see README.md
@@ -108,6 +110,10 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
+        },
+        fixHeader: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -120,11 +126,13 @@ export default {
             filteredDataConfig: null,
             groupedDataConfig: null,
             sortedData: null,
-            processedData: null,
+            paginatedData: null,
             processLevel: null,
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
+            clientWidth: 0,
+            currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -147,32 +155,22 @@ export default {
             showFilter: false,
             filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // Selection State
+            masterSelected: this.initMasterSelected(),
             processedIndicies: [],
-            masterSelected: (() => {
-                let initSelected = this.allData.map(item => 0);
-                if (this.parentSelected?.length) {
-                    this.parentSelected.forEach(rowInd => {
-                        initSelected[rowInd] = 1;
-                    });
-                }
-                return initSelected;
-            })()
+            paginatedIndicies: [],
+            processedSelection: [],
+            paginatedSelection: []
         };
     },
     computed: {
-        currentSelection() {
-            return this.processedIndicies?.map((group, groupInd) => group.map(
-                rowInd => Boolean(this.masterSelected[this.getProcessedRowIndex(rowInd, groupInd)])
-            ));
-        },
         totalSelected() {
             return this.masterSelected?.reduce((count, isSelected) => count + isSelected, 0);
         },
         dataConfig() {
             let dataConfig = {
-                columnConfigs: []
+                columnConfigs: [],
+                rowConfig: { fixHeader: this.fixHeader }
             };
-            let defaultColumnSize = 100 / (this.currentColumns.length || 1);
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {
                     return;
@@ -182,7 +180,7 @@ export default {
                     key,
                     header: this.currentHeaders[ind],
                     type: columnType,
-                    size: defaultColumnSize,
+                    size: this.currentColumnSizes[ind],
                     filterConfig: this.currentFilterConfigs[ind],
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
@@ -270,6 +268,22 @@ export default {
         currentColumnKeys() {
             return this.filterByColumn(this.allColumnKeys);
         },
+        currentColumnSizes() {
+            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
+            if (this.showCollapser) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            if (this.showSelection) {
+                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            }
+            
+            const nColumns = this.currentColumns.length;
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
+                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
+            return this.filterByColumn(this.currentAllColumnSizes)
+                .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
+        },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
         },
@@ -344,9 +358,9 @@ export default {
                 this.onPageSizeUpdate(this.currentPageSize);
             }
         },
-        processedData(newProcessedData) {
-            consola.trace('New processed data (watcher called).');
-            this.pageRowCount = newProcessedData.reduce((count, groupData) => groupData.length + count, 0);
+        paginatedData(newPaginatedData) {
+            consola.trace('New paginated data (watcher called).');
+            this.pageRowCount = newPaginatedData.reduce((count, groupData) => groupData.length + count, 0);
         },
         /*
          * Managed reactivity watchers.
@@ -355,13 +369,6 @@ export default {
             handler(newData) {
                 consola.trace('New parent data (watcher called).');
                 this.onAllDataUpdate(newData);
-                if (this.processLevel === null || this.processLevel > 1) {
-                    this.processLevel = 1;
-                    Vue.set(this, 'processedData', this.filterLevelUpdate());
-                    this.processLevel = null;
-                } else {
-                    consola.trace('Blocked unnecessary filter reactivity.');
-                }
             },
             deep: true
         },
@@ -373,7 +380,7 @@ export default {
                 let isBlocked = this.processLevel !== null && this.processLevel <= 1;
                 if (shouldUpdate && !isBlocked) {
                     this.processLevel = 1;
-                    Vue.set(this, 'processedData', this.filterLevelUpdate());
+                    this.filterLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary filter reactivity.');
@@ -386,7 +393,7 @@ export default {
                 consola.trace('New group hash (watcher called).');
                 if (this.processLevel === null || this.processLevel > 2) {
                     this.processLevel = 2;
-                    this.processedData = this.groupLevelUpdate();
+                    this.groupLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary group reactivity.');
@@ -400,7 +407,7 @@ export default {
                 // eslint-disable-next-line no-magic-numbers
                 if (this.processLevel === null || this.processLevel > 3) {
                     this.processLevel = 3;
-                    this.processedData = this.sortLevelUpdate();
+                    this.sortLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.trace('Blocked unnecessary sort reactivity.');
@@ -414,21 +421,33 @@ export default {
                 // eslint-disable-next-line no-magic-numbers
                 if (this.processLevel === null || this.processLevel > 4) {
                     this.processLevel = 4;
-                    this.processedData = this.sortLevelUpdate();
+                    this.pageLevelUpdate();
                     this.processLevel = null;
                 } else {
                     consola.debug('Blocked unnecessary page reactivity.');
                 }
             },
             deep: true
+        },
+        masterSelected: {
+            handler() {
+                consola.debug('New selection (watcher called).');
+                this.pageLevelUpdate();
+            },
+            deep: true
         }
     },
     mounted() {
         // If reactivity partially updates on the initial load, update the state manually.
-        if (this.allData?.length && this.processedData === null) {
-            this.domains = this.getDomains();
-            this.processedData = this.filterLevelUpdate();
+        if (this.allData?.length) {
+            this.onAllDataUpdate(this.allData);
         }
+        // determine default column size on mounted, since only then do we know the clientWidth of this element
+        this.updateClientWidth();
+        window.addEventListener('resize', this.updateClientWidth);
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.updateClientWidth);
     },
     methods: {
         /*
@@ -443,24 +462,33 @@ export default {
         },
         filterLevelUpdate() {
             consola.trace('Filter level update.');
-            return this.paginateData(this.sortData(this.groupData(this.filterData())));
+            this.paginateData(this.sortData(this.groupData(this.filterData())));
         },
         groupLevelUpdate() {
             consola.trace('Group level update.');
-            return this.paginateData(this.sortData(this.groupData(this.filteredDataConfig)));
+            this.paginateData(this.sortData(this.groupData(this.filteredDataConfig)));
         },
         sortLevelUpdate() {
             consola.trace('Sort level update.');
-            return this.paginateData(this.sortData(this.groupedDataConfig));
+            this.paginateData(this.sortData(this.groupedDataConfig));
         },
         pageLevelUpdate() {
             consola.trace('Page level update.');
-            return this.paginateData(this.sortedData);
+            this.paginateData(this.sortedData);
         },
         onAllDataUpdate(newData) {
+            // Update domains, size and masterSelection before filtering/processing.
             this.domains = this.getDomains();
             if (this.totalTableSize !== newData?.length) {
                 this.totalTableSize = this.allData.length;
+                Vue.set(this, 'masterSelected', this.initMasterSelected());
+            }
+            if (this.paginatedData === null || this.processLevel === null || this.processLevel > 1) {
+                this.processLevel = 1;
+                this.filterLevelUpdate();
+                this.processLevel = null;
+            } else {
+                consola.trace('Blocked unnecessary filter reactivity.');
             }
         },
         /*
@@ -515,12 +543,20 @@ export default {
         },
         paginateData(sortedData) {
             consola.trace('Paginating data.');
-            return paginate({
+            this.processedSelection = this.processedIndicies?.map(group => group.map(
+                rowInd => Boolean(this.masterSelected[rowInd])
+            ));
+            const { paginatedData, paginatedSelection, paginatedIndicies } = paginate({
                 sortedData,
+                processedIndicies: this.processedIndicies,
+                processedSelection: this.processedSelection,
                 pageSize: this.currentPageSize,
                 pageStart: this.pageStart,
                 pageEnd: this.pageEnd
             });
+            Vue.set(this, 'paginatedData', paginatedData);
+            Vue.set(this, 'paginatedIndicies', paginatedIndicies);
+            Vue.set(this, 'paginatedSelection', paginatedSelection);
         },
         /*
          *
@@ -539,6 +575,15 @@ export default {
                 currentGroup: this.currentGroup,
                 processedIndicies: this.processedIndicies
             });
+        },
+        initMasterSelected() {
+            let initSelected = this.allData.map(_ => 0);
+            if (this.parentSelected?.length) {
+                this.parentSelected.forEach(rowInd => {
+                    initSelected[rowInd] = 1;
+                });
+            }
+            return initSelected;
         },
         /*
          *
@@ -631,16 +676,19 @@ export default {
         },
         onSelectAll(selected) {
             consola.debug(`Table received: selectAll ${selected}`);
-            this.masterSelected = this.masterSelected.map(item => selected ? 1 : 0);
+            const newSelection = this.masterSelected.map(
+                (_, i) => selected && this.processedIndicies.some(group => group.includes(i)) ? 1 : 0
+            );
+            Vue.set(this, 'masterSelected', newSelection);
             this.$emit('tableSelect', this.totalSelected);
         },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(
-                `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.processedIndicies}`
+                `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.paginatedIndicies}`
             );
             Vue.set(
                 this.masterSelected,
-                this.processedIndicies[groupInd][this.getProcessedRowIndex(rowInd, groupInd)],
+                this.paginatedIndicies[groupInd][rowInd],
                 selected ? 1 : 0
             );
             this.$emit('tableSelect', this.totalSelected);
@@ -648,6 +696,10 @@ export default {
         onTableInput(event) {
             consola.debug(`Table received: tableInput ${event}`);
             this.$emit('tableInput', event);
+        },
+        onColumnResize(columnIndex, newColumnSize) {
+            consola.debug(`Table received: columnResize ${columnIndex} ${newColumnSize}`);
+            Vue.set(this.currentAllColumnSizes, this.currentColumns[columnIndex], newColumnSize);
         },
         /*
          *
@@ -661,16 +713,26 @@ export default {
         },
         clearSelection() {
             consola.debug(`Table clearing selection.`);
-            this.masterSelected = this.allData.map(item => 0);
-        }
+            Vue.set(this, 'masterSelected', this.allData.map(_ => 0));
+        },
+        updateClientWidth: throttle(function () {
+            /* eslint-disable no-invalid-this */
+            const updatedClientWidth = this.$el.clientWidth;
+            // also update all non-default column widths according to the relative change in client width
+            const ratio = updatedClientWidth / this.clientWidth;
+            this.currentAllColumnSizes = this.currentAllColumnSizes
+                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+            this.clientWidth = updatedClientWidth;
+            /* eslint-enable no-invalid-this */
+        })
     }
 };
 </script>
 
 <template>
   <TableUI
-    :data="processedData"
-    :current-selection="currentSelection"
+    :data="paginatedData"
+    :current-selection="paginatedSelection"
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
@@ -688,6 +750,7 @@ export default {
     @selectAll="onSelectAll"
     @rowSelect="onRowSelect"
     @tableInput="onTableInput"
+    @columnResize="onColumnResize"
   >
     <template
       v-for="col in currentSlottedColumns"

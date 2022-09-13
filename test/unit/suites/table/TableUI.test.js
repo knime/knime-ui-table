@@ -1,77 +1,83 @@
 import { shallowMount } from '@vue/test-utils';
-import TableUI from '~/components/TableUI';
-import TopControls from '~/components/control/TopControls';
-import BottomControls from '~/components/control/BottomControls';
-import ColumnFilters from '~/components/filter/ColumnFilters';
-import Header from '~/components/layout/Header';
-import Group from '~/components/layout/Group';
-import Row from '~/components/layout/Row';
-import ActionButton from '~/components/ui/ActionButton';
-import TablePopover from '~/components/popover/TablePopover';
+import TableUI from '~/components/TableUI.vue';
+import TopControls from '~/components/control/TopControls.vue';
+import BottomControls from '~/components/control/BottomControls.vue';
+import ColumnFilters from '~/components/filter/ColumnFilters.vue';
+import Header from '~/components/layout/Header.vue';
+import Group from '~/components/layout/Group.vue';
+import Row from '~/components/layout/Row.vue';
+import ActionButton from '~/components/ui/ActionButton.vue';
+import TablePopover from '~/components/popover/TablePopover.vue';
 
 import { columnTypes } from '~/config/table.config';
 
+const getPropsData = (dynamicProps) => ({
+    data: [[{ a: 1, b: 2 }]],
+    currentSelection: [[false]],
+    dataConfig: {
+        columnConfigs: [{
+            key: 'a',
+            header: 'a',
+            ...dynamicProps?.includeSubHeaders && { subHeader: 'a' },
+            type: columnTypes.Number,
+            size: 50,
+            filterConfig: {
+                value: '',
+                is: 'FilterInputField'
+            },
+            formatter: (x) => x,
+            classGenerator: [],
+            popoverRenderer: {
+                type: 'MessageRenderer',
+                process: data => data
+            },
+            hasSlotContent: false
+        }, {
+            key: 'b',
+            header: 'b',
+            ...dynamicProps?.includeSubHeaders && { subHeader: 'b' },
+            type: columnTypes.Number,
+            size: 50,
+            filterConfig: {
+                value: '',
+                is: 'FilterInputField'
+            },
+            formatter: (x) => x,
+            classGenerator: [],
+            hasSlotContent: false
+        }],
+        rowConfig: { fixHeader: dynamicProps?.fixHeader }
+    },
+    tableConfig: {
+        pageConfig: {
+            currentSize: 1,
+            tableSize: 1,
+            pageSize: 5,
+            possiblePageSizes: [5, 10, 25],
+            currentPage: 1
+        },
+        showColumnFilters: dynamicProps?.showColumnFilters,
+        showSelection: dynamicProps?.showSelection,
+        showBottomControls: true,
+        searchConfig: {
+            searchQuery: ''
+        },
+        timeFilterConfig: {
+            currentTimeFilter: ''
+        },
+        columnSelectionConfig: {
+            possibleColumns: ['a', 'b'],
+            currentColumns: ['a', 'b']
+        }
+    }
+});
+
 describe('TableUI.vue', () => {
     let wrapper;
-
-    let propsData = {
-        data: [[{ a: 1, b: 2 }]],
-        currentSelection: [[false]],
-        dataConfig: {
-            columnConfigs: [{
-                key: 'a',
-                header: 'a',
-                subHeader: 'a',
-                type: columnTypes.Number,
-                size: 50,
-                filterConfig: {
-                    value: '',
-                    is: 'FilterInputField'
-                },
-                formatter: (x) => x,
-                classGenerator: [],
-                popoverRenderer: {
-                    type: 'MessageRenderer',
-                    process: data => data
-                },
-                hasSlotContent: false
-            }, {
-                key: 'b',
-                header: 'b',
-                subHeader: 'b',
-                type: columnTypes.Number,
-                size: 50,
-                filterConfig: {
-                    value: '',
-                    is: 'FilterInputField'
-                },
-                formatter: (x) => x,
-                classGenerator: [],
-                hasSlotContent: false
-            }]
-        },
-        tableConfig: {
-            pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 5,
-                possiblePageSizes: [5, 10, 25],
-                currentPage: 1
-            },
-            showColumnFilters: true,
-            showBottomControls: true,
-            searchConfig: {
-                searchQuery: ''
-            },
-            timeFilterConfig: {
-                currentTimeFilter: ''
-            },
-            columnSelectionConfig: {
-                possibleColumns: ['a', 'b'],
-                currentColumns: ['a', 'b']
-            }
-        }
-    };
+    let propsData = getPropsData({ includeSubHeaders: true,
+        fixHeader: false,
+        showSelection: true,
+        showColumnFilters: true });
 
     describe('configuration', () => {
         it('renders', () => {
@@ -293,6 +299,49 @@ describe('TableUI.vue', () => {
                     type: 'MessageRenderer'
                 });
             });
+        });
+
+        describe('table popover', () => {
+            it('emits a columnResize event on columnResize', () => {
+                wrapper = shallowMount(TableUI, { propsData });
+
+                expect(wrapper.emitted().columnResize).toBeFalsy();
+                wrapper.find(Header).vm.$emit('columnResize', 0, 30);
+                expect(wrapper.emitted().columnResize).toBeTruthy();
+            });
+
+            it('sets showBorderColumnIndex on showColumnBorder', () => {
+                wrapper = shallowMount(TableUI, { propsData });
+
+                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
+                wrapper.find(Header).vm.$emit('showColumnBorder', 0);
+                expect(wrapper.vm.showBorderColumnIndex).toBe(0);
+            });
+
+            it('unsets showBorderColumnIndex on hideColumnBorder', () => {
+                wrapper = shallowMount(TableUI, { propsData });
+
+                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
+                wrapper.find(Header).vm.$emit('showColumnBorder', 0);
+                wrapper.find(Header).vm.$emit('hideColumnBorder');
+                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
+            });
+        });
+    });
+
+    describe('the width of the tabl, its header and its body (table-group-wrapper)', () => {
+        it('gets the correct width of the table-body when selection & filtering are enabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ showSelection: true, showColumnFilters: true }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.currentBodyWidth).toEqual(180);
+        });
+
+        it('gets the correct width of the table-body when selection & filtering are disabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ showSelection: false, showColumnFilters: false }) });
+            wrapper.vm.onToggleFilter();
+            expect(wrapper.vm.currentBodyWidth).toEqual(120);
         });
     });
 });

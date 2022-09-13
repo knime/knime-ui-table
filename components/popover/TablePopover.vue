@@ -1,11 +1,11 @@
 <script>
 import { columnTypes } from '../../config/table.config';
 import { mixin as clickaway } from 'vue-clickaway2';
-import StringRenderer from './StringRenderer';
-import ObjectRenderer from './ObjectRenderer';
-import ArrayRenderer from './ArrayRenderer';
-import MessageRenderer from './MessageRenderer';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import StringRenderer from './StringRenderer.vue';
+import ObjectRenderer from './ObjectRenderer.vue';
+import ArrayRenderer from './ArrayRenderer.vue';
+import MessageRenderer from './MessageRenderer.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 const PARENT_RATIO = .5;

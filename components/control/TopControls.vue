@@ -1,10 +1,10 @@
 <script>
-import BaseControls from './BaseControls';
-import ControlDropdown from './ControlDropdown';
-import ControlMultiselect from './ControlMultiselect';
-import FilterInputField from '../filter/FilterInputField';
+import BaseControls from './BaseControls.vue';
+import ControlDropdown from './ControlDropdown.vue';
+import ControlMultiselect from './ControlMultiselect.vue';
+import FilterInputField from '../filter/FilterInputField.vue';
 
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import SearchIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 
 import { tableTimeFilters } from '../../config/time.config';

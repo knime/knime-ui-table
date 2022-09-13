@@ -1,7 +1,7 @@
 <script>
 import Table from '../components/Table.vue';
 import demoProps from './props.json';
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
+import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
 import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg?inline';
 
@@ -66,7 +66,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div :class="{ 'sticky-headers': fixHeader }">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -84,6 +84,7 @@ export default {
       <Checkbox v-model="showSelection">selection</Checkbox>
       <Checkbox v-model="showSorting">sort</Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
+      <Checkbox v-model="fixHeader">fix header</Checkbox>
     </div>
     <br>
     <Table
@@ -108,6 +109,25 @@ export default {
   body {
     background-color: var(--knime-silver-sand-semi);
     padding: 12px;
+  }
+
+  .sticky-headers {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
+    overflow: hidden;
+  }
+
+  .sticky-headers h2 {
+    margin-bottom: 0;
+  }
+
+  .sticky-headers .wrapper {
+    flex-basis: content;
+  }
+
+  .sticky-headers button {
+    align-self: flex-start;
   }
 
   .toggle-options > label.checkbox {

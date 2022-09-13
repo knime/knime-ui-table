@@ -1,6 +1,6 @@
 {
   "name": "@knime/knime-ui-table",
-  "version": "0.1.35",
+  "version": "0.1.42",
   "description": "JS Data Table for KNIME",
   "scripts": {
     "audit": "check-audit --production --json > target/audit.json || true",
@@ -21,13 +21,17 @@
   "author": "KNIME AG, Zurich, Switzerland",
   "main": "dist/KNIME-Table.common.js",
   "files": [
+    "util/constants.js",
     "dist/KNIME-Table.*",
     "package.json",
     "LICENSE",
     "README.md"
   ],
   "dependencies": {
-    "vue-clickaway2": "2.3.2"
+    "raf-throttle": "2.0.5",
+    "vue-clickaway2": "2.3.2",
+    "@fontsource/roboto": "4.5.7",
+    "@fontsource/roboto-mono": "4.5.7"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.5.4",
@@ -41,12 +45,12 @@
     "core-js": "3.6.5",
     "cross-var": "1.1.0",
     "eslint": "7.32.0",
+    "eslint-import-resolver-alias": "1.1.2",
+    "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jest": "25.2.4",
     "eslint-plugin-jest-formatting": "3.0.0",
     "eslint-plugin-jsonc": "2.0.0",
     "eslint-plugin-vue": "7.10.0",
-    "fontsource-roboto": "3.0.3",
-    "fontsource-roboto-mono": "3.0.3",
     "jest": "24.9.0",
     "jest-junit": "7.0.0",
     "jest-transform-stub": "2.0.0",

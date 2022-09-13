@@ -1,5 +1,5 @@
 <script>
-import PopoverPageControls from './PopoverPageControls';
+import PopoverPageControls from './PopoverPageControls.vue';
 
 /**
  * This popover rendering component is used to display the content from arrays.
