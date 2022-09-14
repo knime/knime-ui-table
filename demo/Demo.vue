@@ -52,6 +52,7 @@ export default {
             showSelection: true,
             showSorting: true,
             showPopovers: true,
+            compactMode: true,
             showActionButton: false,
             ...demoProps
         };
@@ -84,6 +85,7 @@ export default {
       <Checkbox v-model="showSelection">selection</Checkbox>
       <Checkbox v-model="showSorting">sort</Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
+      <Checkbox v-model="compactMode">compact mode</Checkbox>
       <Checkbox v-model="fixHeader">fix header</Checkbox>
     </div>
     <br>

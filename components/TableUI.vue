@@ -60,7 +60,7 @@ export default {
                     return false;
                 }
                 const requiredProperties = ['showSelection', 'showCollapser', 'showPopovers', 'showColumnFilters',
-                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems'];
+                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems', 'compactMode'];
                 let isValid = requiredProperties.every(key => tableConfig.hasOwnProperty(key));
                 const requiredConfigs = {
                     pageConfig: ['currentSize', 'tableSize', 'pageSize', 'possiblePageSizes', 'currentPage'],

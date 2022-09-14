@@ -101,7 +101,9 @@ export default {
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
         },
         rowHeightStyle() {
-            const defaultRowHeight = 40;
+            const standardDefaultRowHeight = 40;
+            const compactDefaultRowHeight = 24;
+            const defaultRowHeight = this.tableConfig.compactMode ? compactDefaultRowHeight : standardDefaultRowHeight;
             return `height: ${this.rowConfig?.rowHeight || defaultRowHeight}px;`;
         },
         classes() {
@@ -158,12 +160,16 @@ export default {
   <span>
     <tr
       v-if="row.length > 0"
-      :class="['row', { 'no-sub-menu': !tableConfig.subMenuItems.length}]"
+      :class="['row', {
+        'no-sub-menu': !tableConfig.subMenuItems.length,
+        'compact-mode': tableConfig.compactMode
+      }]"
       :style="rowHeightStyle"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
         :expanded="showContent"
+        :compact-mode="tableConfig.compactMode"
         class="collapser-cell"
         @collapserExpand="onRowExpand"
       />
@@ -253,6 +259,22 @@ tr.row {
 
   &.no-sub-menu {
     padding-right: 10px;
+  }
+
+  &.compact-mode {
+    & td {
+      line-height: 24px;
+
+      & >>> label {
+        bottom: 5px;
+      }
+
+      &.action {
+        & >>> .submenu-toggle {
+          height: 24px;
+        }
+      }
+    }
   }
 
   & td {

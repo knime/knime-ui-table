@@ -16,6 +16,10 @@ export default {
         expanded: {
             type: Boolean,
             default: false
+        },
+        compactMode: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -28,7 +32,7 @@ export default {
 
 <template>
   <td class="collapser-cell">
-    <div class="row-collapser-toggle">
+    <div :class="['row-collapser-toggle', {compactMode}]">
       <BaseButton
         class="button"
         :aria-expanded="String(expanded)"
@@ -90,5 +94,20 @@ export default {
       background-color: var(--theme-button-function-background-color-focus);
     }
   }
+
+  &.compactMode {
+    height: 24px;
+    
+    & .button {
+      min-height: 24px;
+    }
+
+    & .dropdown {
+      & .dropdown-icon {
+        stroke-width: calc(14px / 14);
+      }
+    }
+  }
+
 }
 </style>

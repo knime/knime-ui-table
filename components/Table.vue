@@ -84,6 +84,7 @@ export default {
         showSelection: Boolean,
         showActionButton: Boolean,
         showPopovers: Boolean,
+        compactMode: Boolean,
         /**
          * Additional configuration options.
          */
@@ -200,6 +201,7 @@ export default {
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
+                compactMode: this.compactMode,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,
