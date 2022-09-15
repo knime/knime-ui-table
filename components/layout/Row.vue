@@ -101,10 +101,12 @@ export default {
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
         },
         rowHeightStyle() {
-            const standardDefaultRowHeight = 40;
-            const compactDefaultRowHeight = 24;
-            const defaultRowHeight = this.tableConfig.compactMode ? compactDefaultRowHeight : standardDefaultRowHeight;
-            return `height: ${this.rowConfig?.rowHeight || defaultRowHeight}px;`;
+            const defaultRowHeight = 40;
+            const compactRowHeight = 24;
+            const height = this.rowConfig.compactMode
+                ? compactRowHeight
+                : this.rowConfig?.rowHeight || defaultRowHeight;
+            return `height: ${height}px;`;
         },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
@@ -162,7 +164,7 @@ export default {
       v-if="row.length > 0"
       :class="['row', {
         'no-sub-menu': !tableConfig.subMenuItems.length,
-        'compact-mode': tableConfig.compactMode
+        'compact-mode': rowConfig.compactMode
       }]"
       :style="rowHeightStyle"
     >

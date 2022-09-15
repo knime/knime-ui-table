@@ -170,7 +170,10 @@ export default {
         dataConfig() {
             let dataConfig = {
                 columnConfigs: [],
-                rowConfig: { fixHeader: this.fixHeader }
+                rowConfig: {
+                    fixHeader: this.fixHeader,
+                    compactMode: this.compactMode
+                }
             };
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {
@@ -201,7 +204,6 @@ export default {
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
-                compactMode: this.compactMode,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,
