@@ -151,6 +151,15 @@ export default {
             return this.data.map(groupData => groupData.map(
                 (rowData, index) => ({ id: index, data: rowData })
             ));
+        },
+        tableHeight() {
+            const defaultRowHeight = 40;
+            const offset = this.tableConfig.showColumnFilters ? 2 * defaultRowHeight : defaultRowHeight;
+            if (this.$refs.table) {
+                return `${this.$refs.table.clientHeight - offset}px`;
+            } else {
+                return window.height - offset;
+            }
         }
     },
     watch: {
@@ -336,10 +345,11 @@ export default {
           @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
         >
           <DynamicScroller
-            v-if="enableVirtualScrolling"
+            v-if="enableVirtualScrolling && mappedData.length === 1"
             :items="dataGroup"
             :min-item-size="54"
             class="scroller"
+            :style="{ height: tableHeight }"
             :emit-update="true"
             @update="onUpdate"
           >
@@ -461,9 +471,9 @@ export default {
 
 <style lang="postcss" scoped>
 .scroller {
-  height: 83vh;
   overflow-y: auto;
 }
+
 .wrapper {
   position: relative;
 }
