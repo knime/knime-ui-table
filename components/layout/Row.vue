@@ -263,22 +263,6 @@ tr.row {
     padding-right: 10px;
   }
 
-  &.compact-mode {
-    & td {
-      line-height: 24px;
-
-      & >>> label {
-        bottom: 5px;
-      }
-
-      &.action {
-        & >>> .submenu-toggle {
-          height: 24px;
-        }
-      }
-    }
-  }
-
   & td {
     white-space: nowrap;
     overflow: hidden;
@@ -356,6 +340,20 @@ tr.row {
 
     &.showColumnBorder {
       border-right: 1px solid var(--knime-dove-gray);
+    }
+  }
+  
+  &.compact-mode {
+    & td {
+      line-height: 24px;
+
+      & >>> label {
+        bottom: 5px;
+      }
+
+      &.action >>> .submenu-toggle {
+        height: 24px;
+      }
     }
   }
 

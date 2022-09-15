@@ -32,7 +32,7 @@ export default {
 
 <template>
   <td class="collapser-cell">
-    <div :class="['row-collapser-toggle', {compactMode}]">
+    <div :class="['row-collapser-toggle', {'compact-mode': compactMode}]">
       <BaseButton
         class="button"
         :aria-expanded="String(expanded)"
@@ -95,17 +95,15 @@ export default {
     }
   }
 
-  &.compactMode {
+  &.compact-mode {
     height: 24px;
     
     & .button {
       min-height: 24px;
     }
 
-    & .dropdown {
-      & .dropdown-icon {
-        stroke-width: calc(14px / 14);
-      }
+    & .dropdown .dropdown-icon {
+      stroke-width: calc(14px / 14);
     }
   }
 
