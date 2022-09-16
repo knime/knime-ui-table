@@ -84,6 +84,7 @@ export default {
         showSelection: Boolean,
         showActionButton: Boolean,
         showPopovers: Boolean,
+        compactMode: Boolean,
         /**
          * Additional configuration options.
          */
@@ -169,7 +170,10 @@ export default {
         dataConfig() {
             let dataConfig = {
                 columnConfigs: [],
-                rowConfig: { fixHeader: this.fixHeader }
+                rowConfig: {
+                    fixHeader: this.fixHeader,
+                    compactMode: this.compactMode
+                }
             };
             this.currentColumnKeys.forEach((key, ind) => {
                 if (!key) {

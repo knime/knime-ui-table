@@ -102,7 +102,11 @@ export default {
         },
         rowHeightStyle() {
             const defaultRowHeight = 40;
-            return `height: ${this.rowConfig?.rowHeight || defaultRowHeight}px;`;
+            const compactRowHeight = 24;
+            const height = this.rowConfig.compactMode
+                ? compactRowHeight
+                : this.rowConfig?.rowHeight || defaultRowHeight;
+            return `height: ${height}px;`;
         },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
@@ -158,12 +162,16 @@ export default {
   <span>
     <tr
       v-if="row.length > 0"
-      :class="['row', { 'no-sub-menu': !tableConfig.subMenuItems.length}]"
+      :class="['row', {
+        'no-sub-menu': !tableConfig.subMenuItems.length,
+        'compact-mode': rowConfig.compactMode
+      }]"
       :style="rowHeightStyle"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
         :expanded="showContent"
+        :compact-mode="tableConfig.compactMode"
         class="collapser-cell"
         @collapserExpand="onRowExpand"
       />
@@ -332,6 +340,20 @@ tr.row {
 
     &.showColumnBorder {
       border-right: 1px solid var(--knime-dove-gray);
+    }
+  }
+  
+  &.compact-mode {
+    & td {
+      line-height: 24px;
+
+      & >>> label {
+        bottom: 5px;
+      }
+
+      &.action >>> .submenu-toggle {
+        height: 24px;
+      }
     }
   }
 

@@ -69,7 +69,7 @@ describe('Table.vue', () => {
             size: 30,
             type: columnTypes.Number
         }],
-        rowConfig: { fixHeader: false } });
+        rowConfig: { fixHeader: false, compactMode: false } });
         expect(wrapper.vm.tableConfig).toStrictEqual({
             showBottomControls: true,
             showCollapser: false,

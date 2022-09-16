@@ -47,7 +47,7 @@ const getPropsData = (dynamicProps) => ({
             classGenerator: [],
             hasSlotContent: false
         }],
-        rowConfig: { fixHeader: dynamicProps?.fixHeader }
+        rowConfig: { fixHeader: dynamicProps?.fixHeader, compactMode: dynamicProps?.compactMode }
     },
     tableConfig: {
         pageConfig: {
@@ -78,6 +78,7 @@ describe('TableUI.vue', () => {
     let wrapper;
     let propsData = getPropsData({ includeSubHeaders: true,
         fixHeader: false,
+        compactMode: false,
         showSelection: true,
         showColumnFilters: true });
 
