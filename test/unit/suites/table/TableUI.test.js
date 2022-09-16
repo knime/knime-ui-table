@@ -216,7 +216,7 @@ describe('TableUI.vue', () => {
             wrapper = shallowMount(TableUI, { propsData });
             let callbackMock = jest.fn();
             wrapper.find(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
-            expect(callbackMock).toHaveBeenCalledWith(propsData.data[0], expect.anything());
+            expect(callbackMock).toHaveBeenCalledWith([{ data: { a: 1, b: 2 }, id: 0 }], expect.anything());
         });
 
         describe('rows', () => {
@@ -232,7 +232,7 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(Row).vm.$emit('rowInput', { cell: true });
                 expect(wrapper.emitted().tableInput).toStrictEqual(
-                    [[{ cell: true, rowInd: 0, groupInd: 0, id: expect.undefined }]]
+                    [[{ cell: true, rowInd: 0, groupInd: 0, id: 0 }]]
                 );
             });
 

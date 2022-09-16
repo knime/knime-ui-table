@@ -148,7 +148,7 @@ export default {
             return this.tableConfig.enableVirtualScrolling;
         },
         mappedData() {
-            return this.data.map(groupData => groupData.map(
+            return this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({ id: index, data: rowData })
             ));
         },
@@ -399,17 +399,17 @@ export default {
             </template>
           </DynamicScroller>
           <Row
-            v-for="(item, index) in dataGroup"
+            v-for="(item, rowInd) in dataGroup"
             v-else
             :key="item.id"
             :row="columnKeys.map(column => item.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
-            :is-selected="currentSelection[0][index]"
+            :is-selected="currentSelection[0][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
-            @rowSelect="selected => onRowSelect(selected, index, 0)"
-            @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+            @rowSelect="selected => onRowSelect(selected, rowInd, 0)"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: item.id, groupInd: 0})"
             @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
