@@ -8,6 +8,7 @@ import Group from '~/components/layout/Group.vue';
 import Row from '~/components/layout/Row.vue';
 import ActionButton from '~/components/ui/ActionButton.vue';
 import TablePopover from '~/components/popover/TablePopover.vue';
+import { DynamicScroller } from 'vue-virtual-scroller';
 
 import { columnTypes } from '~/config/table.config';
 
@@ -65,6 +66,7 @@ const getPropsData = (dynamicProps) => ({
         timeFilterConfig: {
             currentTimeFilter: ''
         },
+        enableVirtualScrolling: dynamicProps?.enableVirtualScrolling,
         columnSelectionConfig: {
             possibleColumns: ['a', 'b'],
             currentColumns: ['a', 'b']
@@ -342,6 +344,38 @@ describe('TableUI.vue', () => {
                 getPropsData({ showSelection: false, showColumnFilters: false }) });
             wrapper.vm.onToggleFilter();
             expect(wrapper.vm.currentBodyWidth).toEqual(120);
+        });
+    });
+
+    describe('virtual scrolling', () => {
+        it('renders dynamic scroller when virtual scrolling is enabled', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ enableVirtualScrolling: true }) });
+            expect(wrapper.find(DynamicScroller).exists()).toBeTruthy();
+        });
+
+        it('emits lazyloading event onUpdate', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ enableVirtualScrolling: true }) });
+
+            wrapper.vm.onUpdate(0, 0);
+            expect(wrapper.emitted().lazyload).toBeFalsy();
+            wrapper.vm.onUpdate(0, 10);
+            expect(wrapper.emitted().lazyload).toBeTruthy();
+        });
+
+        it('returns table height when table ref is undefined', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ enableVirtualScrolling: true }) });
+
+            expect(wrapper.vm.tableHeight).toBe('NaNpx');
+        });
+
+        it('correctly mapps data', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ enableVirtualScrolling: true }) });
+
+            expect(wrapper.vm.mappedData).toStrictEqual([[{ data: { a: 1, b: 2 }, id: 0 }]]);
         });
     });
 });

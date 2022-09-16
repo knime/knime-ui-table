@@ -158,7 +158,7 @@ export default {
             if (this.$refs.table) {
                 return `${this.$refs.table.clientHeight - offset}px`;
             } else {
-                return window.height - offset;
+                return `${window.height - offset}px`;
             }
         }
     },
