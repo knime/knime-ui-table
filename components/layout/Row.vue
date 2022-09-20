@@ -173,7 +173,7 @@ export default {
       <CollapserToggle
         v-if="tableConfig.showCollapser"
         :expanded="showContent"
-        :compact-mode="tableConfig.compactMode"
+        :compact-mode="rowConfig.compactMode"
         class="collapser-cell"
         @collapserExpand="onRowExpand"
       />
