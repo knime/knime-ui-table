@@ -126,6 +126,7 @@ export default {
         },
         onRowExpand() {
             this.showContent = !this.showContent;
+            this.$emit('rowExpand', this.showContent);
         },
         onSelect(value) {
             this.$emit('rowSelect', value);

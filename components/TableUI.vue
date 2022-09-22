@@ -93,7 +93,12 @@ export default {
             popoverRenderer: null,
             // the index of the column that is currently being resized and for which a border should be shown
             showBorderColumnIndex: null,
-            lastScrollIndex: 0
+            lastScrollIndex: 0,
+            newVal: null,
+            scrollerKey: 0,
+            resizeCount: 0,
+            updatedBefore: false,
+            currentExpanded: new Map()
         };
     },
     computed: {
@@ -136,9 +141,6 @@ export default {
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
         },
-        shouldFixHeaders() {
-            return Boolean(this.dataConfig.rowConfig?.fixHeader);
-        },
         currentBodyWidth() {
             const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
             return (this.tableConfig.showSelection ? widthColumnSelection : 0) +
@@ -147,18 +149,44 @@ export default {
         enableVirtualScrolling() {
             return this.tableConfig.enableVirtualScrolling;
         },
-        mappedData() {
+        dataWithId() {
             return this.data?.map(groupData => groupData.map(
-                (rowData, index) => ({ id: index, data: rowData })
+                (rowData, index) => ({ id: index.toString(), data: rowData })
             ));
         },
         tableHeight() {
-            const defaultRowHeight = 40;
-            const offset = this.tableConfig.showColumnFilters ? 2 * defaultRowHeight : defaultRowHeight;
-            if (this.$refs.table) {
-                return `${this.$refs.table.clientHeight - offset}px`;
+            // This is a workaround for making tableHeight react to changes in table.clientHeight
+            // (see also https://logaretm.com/blog/forcing-recomputation-of-computed-properties/)
+            // eslint-disable-next-line no-unused-expressions
+            this.resizeCount;
+            const table = this.$refs.table;
+            if (table) {
+                return table.clientHeight;
             } else {
-                return `${window.height - offset}px`;
+                return null;
+            }
+        },
+        bodyHeight() {
+            // we cannot reference the body div directly in order to get its height since the body height depends
+            // on its content and not on the size of the screen. Instead, we take the height of the table, which is a
+            // flexbox filling the screen down to the bottom and substract the heights of its children which are not
+            // part of the scroller.
+            const tableHeight = this.tableHeight;
+            if (tableHeight === null) {
+                // This default body height has to be set in order for the dynamic scroller to be inintialized
+                // correctly. After that the table is available and the updated() lifecycle method below ensures that
+                // the body height is recomputed.
+                return '0px';
+            } else {
+                const TOP_CONTROLS_HEIGHT = 35;
+                const HEADER_HEIGHT = 39;
+                const COLUMN_FILTER_ROW_HEIGHT = 38;
+                let offset = this.filterActive
+                    ? TOP_CONTROLS_HEIGHT + HEADER_HEIGHT + COLUMN_FILTER_ROW_HEIGHT
+                    : TOP_CONTROLS_HEIGHT + HEADER_HEIGHT;
+                // finally one more pixel is substracted to account for rounding errors in the clinet height.
+                offset += 1;
+                return `${tableHeight - offset}px`;
             }
         }
     },
@@ -172,6 +200,22 @@ export default {
             }
         }
     },
+    created() {
+        window.addEventListener('resize', this.onResize);
+    },
+    destroyed() {
+        window.removeEventListener('resize', this.onResize);
+    },
+    updated() {
+        // this hook on updated ensures that the table size is adjusted once more after an initial size is set
+        if (this.updatedBefore) {
+            // if this is not set to false again, refreshing the view will yield the original (wrong) default body height
+            this.updatedBefore = false;
+        } else {
+            this.updatedBefore = true;
+            this.onResize();
+        }
+    },
     methods: {
         // Utilities
         getPropertiesFromColumns(key) {
@@ -180,6 +224,9 @@ export default {
         getGroupName(ind) {
             return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || '';
         },
+        refreshScroller() {
+            this.scrollerKey++;
+        },
         // Event handling
         onUpdate(startIndex, endIndex) {
             if (this.lastScrollIndex === endIndex) {
@@ -187,7 +234,20 @@ export default {
             }
             const direction = this.lastScrollIndex < endIndex ? 1 : -1;
             this.lastScrollIndex = endIndex;
+            this.collapseAllUnusedRows(startIndex, endIndex);
             this.$emit('lazyload', { direction, startIndex, endIndex });
+        },
+        collapseAllUnusedRows(startIndex, endIndex) {
+            [...this.currentExpanded].filter(([index, _]) => index >= endIndex || index < startIndex)
+                .forEach(([index, item]) => {
+                    this.getVscrollData().sizes[item.id] = item.size;
+                    this.currentExpanded.delete(index);
+                });
+        },
+        onResize() {
+            // This is a workaround for making tableHeight react to changes in table.clientHeight
+            // (see also https://logaretm.com/blog/forcing-recomputation-of-computed-properties/)
+            this.resizeCount++;
         },
         onTimeFilterUpdate(newTimeFilter) {
             consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
@@ -242,6 +302,17 @@ export default {
             consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd}`);
             this.$emit('rowSelect', selected, rowInd, groupInd);
         },
+        onRowExpand(expanded, index) {
+            if (expanded) {
+                const id = index.toString();
+                this.currentExpanded.set(index, { id, size: this.getVscrollData().sizes[id] });
+            } else {
+                this.currentExpanded.delete(index);
+            }
+        },
+        getVscrollData() {
+            return this.$refs.dynamicScroller[0].vscrollData;
+        },
         onRowInput(event) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
             this.$emit('tableInput', event);
@@ -285,10 +356,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="wrapper"
-    :class="{ 'sticky-header': shouldFixHeaders}"
-  >
+  <div class="wrapper">
     <table
       ref="table"
       :style="{ width: `${currentBodyWidth}px` }"
@@ -333,11 +401,11 @@ export default {
         @clearFilter="onClearFilter"
       />
       <div
-        class="table-group-wrapper"
+        class="body"
         :style="{ width: `${currentBodyWidth}px` }"
       >
         <Group
-          v-for="(dataGroup, groupInd) in mappedData"
+          v-for="(dataGroup, groupInd) in dataWithId"
           :key="groupInd"
           :title="getGroupName(groupInd)"
           :group-sub-menu-items="tableConfig.groupSubMenuItems"
@@ -345,11 +413,13 @@ export default {
           @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
         >
           <DynamicScroller
-            v-if="enableVirtualScrolling && mappedData.length === 1"
+            v-if="enableVirtualScrolling && dataWithId.length === 1"
+            :key="scrollerKey"
+            ref="dynamicScroller"
             :items="dataGroup"
-            :min-item-size="54"
+            :min-item-size="40"
             class="scroller"
-            :style="{ height: tableHeight }"
+            :style="{ height: bodyHeight}"
             :emit-update="true"
             @update="onUpdate"
           >
@@ -358,9 +428,6 @@ export default {
                 :item="item"
                 :active="active"
                 :data-index="index"
-                :size-dependencies="[
-                  item.data,
-                ]"
               >
                 <Row
                   :key="item.id"
@@ -371,6 +438,7 @@ export default {
                   :is-selected="currentSelection[0][index]"
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
+                  @rowExpand="(expanded) => onRowExpand(expanded, index)"
                   @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
                   @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
                 >
@@ -381,10 +449,10 @@ export default {
                   >
                     <!-- Vue requires key on real element for dynamic scoped slots
                         to help Vue framework manage events. -->
-                    <span :key="rowInd + '_' + colInd">
+                    <span :key="index + '_' + colInd">
                       <slot
                         :name="`cellContent-${columnKeys[colInd]}`"
-                        :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                        :data="{ ...cellData, key: columnKeys[colInd], rowInd: index, colInd }"
                       />
                     </span>
                   </template>
@@ -406,10 +474,10 @@ export default {
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
-            :is-selected="currentSelection[0][rowInd]"
+            :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
-            @rowSelect="selected => onRowSelect(selected, rowInd, 0)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: item.id, groupInd: 0})"
+            @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: item.id, groupInd})"
             @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -476,9 +544,13 @@ export default {
 
 .wrapper {
   position: relative;
+  height: 100%;
+  overflow-y: hidden;
 }
 
 table {
+  height: 100%;
+  overflow-y: hidden;
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
@@ -486,7 +558,9 @@ table {
   flex-direction: column;
   margin: auto;
 
-  & .table-group-wrapper {
+  & .body {
+    overflow-y: auto;
+    overflow-x: clip;
     display: block;
 
     & >>> tbody {
@@ -531,21 +605,6 @@ table >>> tr {
   & button:focus {
     color: var(--knime-masala);
     background-color: var(--knime-silver-sand-semi);
-  }
-}
-
-.sticky-header {
-  height: 100%;
-  overflow-y: hidden;
-
-  & table {
-    height: 100%;
-    overflow-y: hidden;
-
-    & .table-group-wrapper {
-       overflow-y: auto;
-       overflow-x: clip;
-     }
   }
 }
 

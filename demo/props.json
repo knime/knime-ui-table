@@ -1205,6 +1205,5 @@
     "configurationWithPasswords": true,
     "configuration": true
   },
-  "fixHeader": false,
   "compactMode": false
 }

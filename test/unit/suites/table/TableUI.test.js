@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import TableUI from '~/components/TableUI.vue';
 import TopControls from '~/components/control/TopControls.vue';
 import BottomControls from '~/components/control/BottomControls.vue';
@@ -13,7 +13,7 @@ import { DynamicScroller } from 'vue-virtual-scroller';
 import { columnTypes } from '~/config/table.config';
 
 const getPropsData = (dynamicProps) => ({
-    data: [[{ a: 1, b: 2 }]],
+    data: [[['cellA', 'cellB']]],
     currentSelection: [[false]],
     dataConfig: {
         columnConfigs: [{
@@ -47,7 +47,7 @@ const getPropsData = (dynamicProps) => ({
             classGenerator: [],
             hasSlotContent: false
         }],
-        rowConfig: { fixHeader: dynamicProps?.fixHeader, compactMode: dynamicProps?.compactMode }
+        rowConfig: { compactMode: dynamicProps?.compactMode }
     },
     tableConfig: {
         pageConfig: {
@@ -67,6 +67,7 @@ const getPropsData = (dynamicProps) => ({
             currentTimeFilter: ''
         },
         enableVirtualScrolling: dynamicProps?.enableVirtualScrolling,
+        subMenuItems: [],
         columnSelectionConfig: {
             possibleColumns: ['a', 'b'],
             currentColumns: ['a', 'b']
@@ -77,7 +78,6 @@ const getPropsData = (dynamicProps) => ({
 describe('TableUI.vue', () => {
     let wrapper;
     let propsData = getPropsData({ includeSubHeaders: true,
-        fixHeader: false,
         compactMode: false,
         showSelection: true,
         showColumnFilters: true });
@@ -216,7 +216,9 @@ describe('TableUI.vue', () => {
             wrapper = shallowMount(TableUI, { propsData });
             let callbackMock = jest.fn();
             wrapper.find(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
-            expect(callbackMock).toHaveBeenCalledWith([{ data: { a: 1, b: 2 }, id: 0 }], expect.anything());
+            expect(callbackMock).toHaveBeenCalledWith(
+                [{ data: { a: 'cellA', b: 'cellB' }, id: '0' }], expect.anything()
+            );
         });
 
         describe('rows', () => {
@@ -232,7 +234,7 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(Row).vm.$emit('rowInput', { cell: true });
                 expect(wrapper.emitted().tableInput).toStrictEqual(
-                    [[{ cell: true, rowInd: 0, groupInd: 0, id: 0 }]]
+                    [[{ cell: true, rowInd: 0, groupInd: 0, id: '0' }]]
                 );
             });
 
@@ -281,7 +283,7 @@ describe('TableUI.vue', () => {
                 });
                 expect(wrapper.find(TablePopover).exists()).toBeTruthy();
                 expect(wrapper.vm.popoverColumn).toStrictEqual('b');
-                expect(wrapper.vm.popoverData).toStrictEqual(2);
+                expect(wrapper.vm.popoverData).toStrictEqual('cellB');
                 expect(wrapper.vm.popoverRenderer).toStrictEqual(columnTypes.Number);
                 expect(wrapper.vm.popoverTarget).toStrictEqual('<td>1</td>');
                 wrapper.find(TablePopover).vm.$emit('close');
@@ -295,7 +297,7 @@ describe('TableUI.vue', () => {
             it('uses configured popover renderer', () => {
                 wrapper.findAll(Row).at(0).vm.$emit('rowInput', {
                     colInd: 0,
-                    cell: '<td>1</td>'
+                    cell: '<td>cellA</td>'
                 });
                 expect(wrapper.vm.popoverRenderer).toStrictEqual({
                     process: expect.any(Function),
@@ -332,7 +334,7 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('the width of the tabl, its header and its body (table-group-wrapper)', () => {
+    describe('the width of the table, its header and its body', () => {
         it('gets the correct width of the table-body when selection & filtering are enabled', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ showSelection: true, showColumnFilters: true }) });
@@ -345,6 +347,46 @@ describe('TableUI.vue', () => {
                 getPropsData({ showSelection: false, showColumnFilters: false }) });
             wrapper.vm.onToggleFilter();
             expect(wrapper.vm.currentBodyWidth).toEqual(120);
+        });
+    });
+
+    describe('the height of the table and its body', () => {
+        it('returns table height when table ref is undefined', () => {
+            wrapper = mount(TableUI, { propsData: getPropsData({ enableVirtualScrolling: true }) });
+
+            expect(wrapper.vm.tableHeight).toBe(null);
+            expect(wrapper.vm.bodyHeight).toBe('0px');
+        });
+
+        it('computes correct body height once the table exists', async () => {
+            wrapper = mount(TableUI, { propsData: getPropsData({ enableVirtualScrolling: true }) });
+
+            await wrapper.vm.$nextTick();
+            wrapper.vm.onResize();
+
+            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
+            expect(wrapper.vm.bodyHeight).toBe('-75px');
+        });
+
+        
+        it('computes correct body height with toggled filters', () => {
+            wrapper = shallowMount(TableUI, { propsData });
+
+            wrapper.vm.onToggleFilter();
+            wrapper.vm.onResize();
+
+            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
+            expect(wrapper.vm.bodyHeight).toBe('-113px');
+        });
+
+        
+        it('recalculates body height on window resize', () => {
+            wrapper = shallowMount(TableUI, { propsData });
+
+            window.dispatchEvent(new Event('resize'));
+
+            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
+            expect(wrapper.vm.bodyHeight).toBe('-75px');
         });
     });
 
@@ -365,18 +407,38 @@ describe('TableUI.vue', () => {
             expect(wrapper.emitted().lazyload).toBeTruthy();
         });
 
-        it('returns table height when table ref is undefined', () => {
-            wrapper = shallowMount(TableUI, { propsData:
-                getPropsData({ enableVirtualScrolling: true }) });
-
-            expect(wrapper.vm.tableHeight).toBe('NaNpx');
+        it('collapses expanded cells as soon as they are no longer rendered', async () => {
+            wrapper = mount(TableUI, { propsData: getPropsData({ enableVirtualScrolling: true }) });
+            const mockedSizes = { '0': 40 };
+            jest.spyOn(wrapper.vm, 'getVscrollData').mockReturnValue({ sizes: mockedSizes });
+            await wrapper.vm.$nextTick();
+            wrapper.find(Row).vm.$emit('rowExpand', true);
+            wrapper.vm.getVscrollData().sizes['0'] = 70;
+            wrapper.vm.onUpdate(10, 20);
+            expect(mockedSizes['0']).toBe(40);
         });
 
-        it('correctly mapps data', () => {
+        it('correctly maps data', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ enableVirtualScrolling: true }) });
 
-            expect(wrapper.vm.mappedData).toStrictEqual([[{ data: { a: 1, b: 2 }, id: 0 }]]);
+            expect(wrapper.vm.mappedData).toStrictEqual([[{ data: { a: 'cellA', b: 'cellB' }, id: '0' }]]);
+        });
+
+        
+        it('refreshes scroller', async () => {
+            wrapper = mount(TableUI, { propsData:
+                getPropsData({ enableVirtualScrolling: true }) });
+            let isUnmounted = false;
+            wrapper.find(DynamicScroller).vm.$once('hook:beforeDestroy', () => {
+                isUnmounted = true;
+            });
+            await wrapper.vm.$nextTick();
+            wrapper.vm.refreshScroller();
+            await wrapper.vm.$nextTick();
+            expect(isUnmounted).toBeTruthy();
+            const scroller = wrapper.find(DynamicScroller);
+            expect(scroller.vm._isMounted).toBeTruthy();
         });
     });
 });

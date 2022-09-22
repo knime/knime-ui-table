@@ -111,10 +111,6 @@ export default {
         groupSubMenuItems: {
             type: Array,
             default: () => []
-        },
-        fixHeader: {
-            type: Boolean,
-            default: false
         }
     },
     data() {
@@ -171,7 +167,6 @@ export default {
             let dataConfig = {
                 columnConfigs: [],
                 rowConfig: {
-                    fixHeader: this.fixHeader,
                     compactMode: this.compactMode
                 }
             };

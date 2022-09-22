@@ -67,7 +67,7 @@ export default {
 </script>
 
 <template>
-  <div :class="{ 'sticky-headers': fixHeader }">
+  <div class="flex-wrapper">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -86,7 +86,6 @@ export default {
       <Checkbox v-model="showSorting">sort</Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
-      <Checkbox v-model="fixHeader">fix header</Checkbox>
     </div>
     <br>
     <Table
@@ -113,22 +112,22 @@ export default {
     padding: 12px;
   }
 
-  .sticky-headers {
+  .flex-wrapper {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
     overflow: hidden;
   }
 
-  .sticky-headers h2 {
+  .flex-wrapper h2 {
     margin-bottom: 0;
   }
 
-  .sticky-headers .wrapper {
+  .flex-wrapper .wrapper {
     flex-basis: content;
   }
 
-  .sticky-headers button {
+  .flex-wrapper button {
     align-self: flex-start;
   }
 
