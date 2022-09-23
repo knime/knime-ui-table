@@ -3,7 +3,7 @@ import Table from '~/components/Table.vue';
 import TableUI from '~/components/TableUI.vue';
 
 import { columnTypes } from '~/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '~/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '~/util/constants';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -334,8 +334,8 @@ describe('Table.vue', () => {
         });
 
         it('computes currentColumnSizes correctly', () => {
-            let checkCurrentColumnSizes = (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
-                wrapper = shallowMount(Table, { propsData: { ...propsData, showCollapser, showSelection } });
+            let checkCurrentColumnSizes = (clientWidth, showSelection, showCollapser, columnSizeOverride) => {
+                wrapper = shallowMount(Table, { propsData: { ...propsData, showSelection, showCollapser } });
                 wrapper.setData({ clientWidth });
                 const nColumns = wrapper.vm.currentColumns.length;
                 let currentColumnSizes;
@@ -345,14 +345,11 @@ describe('Table.vue', () => {
                     }
                     currentColumnSizes = Array(nColumns).fill(columnSizeOverride);
                 } else {
-                    let reservedSize = SPECIAL_COLUMNS_SIZE + nColumns * DATA_COLUMNS_MARGIN + 2 * TABLE_BORDER_SPACING;
-                    if (showCollapser) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    } if (showSelection) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    }
-                    const defaultColumnWidth = Math.max((clientWidth - reservedSize) / nColumns, MIN_COLUMN_SIZE);
-                    currentColumnSizes = Array(nColumns).fill(defaultColumnWidth);
+                    const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                        (showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+                    const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+                    currentColumnSizes = Array(nColumns).fill(defaultColumnSize);
                 }
                 expect(wrapper.vm.currentColumnSizes).toStrictEqual(currentColumnSizes);
             };
@@ -363,6 +360,12 @@ describe('Table.vue', () => {
             checkCurrentColumnSizes(200, true, false, null);
             checkCurrentColumnSizes(200, true, true, null);
             checkCurrentColumnSizes(200, true, true, 100);
+        });
+
+        it('can deal with empty tables when computing currentColumnSizes', () => {
+            wrapper = shallowMount(Table, { propsData });
+            wrapper.setData({ currentColumns: [] });
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([]);
         });
     });
 });

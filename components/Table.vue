@@ -14,7 +14,7 @@ import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '../util/constants';
 
 /**
  * @see README.md
@@ -274,20 +274,23 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
-            if (this.showCollapser) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
-            }
-            if (this.showSelection) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
-            }
-            
             const nColumns = this.currentColumns.length;
-            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
-                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
-            return this.filterByColumn(this.currentAllColumnSizes)
+            if (nColumns < 1) {
+                return [];
+            }
+
+            // the first SPECIAL_COLUMNS_SIZE is for the per-row actions sub-menu button
+            const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+
+            const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
+            const lastColumnMinSize = dataColumnsSizeTotal -
+                currentColumnSizes.slice(0, nColumns - 1).reduce((partialSum, size) => partialSum + size, 0);
+            currentColumnSizes[nColumns - 1] = Math.max(lastColumnMinSize, currentColumnSizes[nColumns - 1]);
+            return currentColumnSizes;
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));

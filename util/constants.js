@@ -8,6 +8,3 @@ export const SPECIAL_COLUMNS_SIZE = 30;
 
 // the margin for each data column
 export const DATA_COLUMNS_MARGIN = 10;
-
-// the border spacing of the table
-export const TABLE_BORDER_SPACING = 2;
