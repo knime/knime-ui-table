@@ -76,6 +76,9 @@ const getPropsData = (dynamicProps) => ({
         columnSelectionConfig: {
             possibleColumns: ['a', 'b'],
             currentColumns: ['a', 'b']
+        },
+        groupByConfig: {
+            currentGroup: null
         }
     }
 });
@@ -311,30 +314,13 @@ describe('TableUI.vue', () => {
             });
         });
 
-        describe('table popover', () => {
+        describe('column resize', () => {
             it('emits a columnResize event on columnResize', () => {
                 wrapper = shallowMount(TableUI, { propsData });
 
                 expect(wrapper.emitted().columnResize).toBeFalsy();
                 wrapper.find(Header).vm.$emit('columnResize', 0, 30);
                 expect(wrapper.emitted().columnResize).toBeTruthy();
-            });
-
-            it('sets showBorderColumnIndex on showColumnBorder', () => {
-                wrapper = shallowMount(TableUI, { propsData });
-
-                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
-                wrapper.find(Header).vm.$emit('showColumnBorder', 0);
-                expect(wrapper.vm.showBorderColumnIndex).toBe(0);
-            });
-
-            it('unsets showBorderColumnIndex on hideColumnBorder', () => {
-                wrapper = shallowMount(TableUI, { propsData });
-
-                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
-                wrapper.find(Header).vm.$emit('showColumnBorder', 0);
-                wrapper.find(Header).vm.$emit('hideColumnBorder');
-                expect(wrapper.vm.showBorderColumnIndex).toBe(null);
             });
         });
     });
@@ -387,7 +373,7 @@ describe('TableUI.vue', () => {
 
         it('computes height of body from the pageSize and rowHeight', () => {
             wrapper = shallowMount(TableUI, { propsData });
-            expect(wrapper.vm.currentBodyHeight).toEqual(205);
+            expect(wrapper.vm.currentBodyHeight).toEqual(41);
         });
     });
 

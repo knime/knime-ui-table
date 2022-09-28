@@ -6,6 +6,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import CircleHelpIcon from '~/webapps-common/ui/assets/img/icons/circle-help.svg?inline';
+import DEFAULT_ROW_HEIGHT from '../../util/constants';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -68,7 +69,7 @@ export default {
         },
         rowHeight: {
             type: Number,
-            default: 40
+            default: DEFAULT_ROW_HEIGHT
         },
         isSelected: {
             type: Boolean,
@@ -190,7 +191,7 @@ export default {
         ref="dataCell"
         :key="ind"
         :class="[classes[ind], 'data-cell',
-                 { clickable: isClickable(data, ind), showColumnBorder: showBorderColumnIndex === ind}]"
+                 { clickable: isClickable(data, ind) }]"
         :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
         :title="!isClickable(data, ind) ? data : null"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
@@ -336,10 +337,6 @@ tr.row {
       &:hover {
         color: var(--knime-masala);
       }
-    }
-
-    &.showColumnBorder {
-      border-right: 1px solid var(--knime-dove-gray);
     }
   }
   

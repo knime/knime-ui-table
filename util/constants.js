@@ -8,3 +8,12 @@ export const SPECIAL_COLUMNS_SIZE = 30;
 
 // the margin for each data column
 export const DATA_COLUMNS_MARGIN = 10;
+
+// the default height of a row
+export const DEFAULT_ROW_HEIGHT = 40;
+
+// the compact height of a row
+export const COMPACT_ROW_HEIGHT = 24;
+
+// the height of the table header and group headers
+export const HEADER_HEIGHT = 37;
