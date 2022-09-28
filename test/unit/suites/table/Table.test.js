@@ -56,7 +56,7 @@ describe('Table.vue', () => {
             header: 'A',
             key: 'a',
             popoverRenderer: expect.undefined,
-            size: 30,
+            size: 50,
             type: columnTypes.Number
         }, {
             classGenerator: [],
@@ -66,7 +66,7 @@ describe('Table.vue', () => {
             header: 'B',
             key: 'b',
             popoverRenderer: expect.undefined,
-            size: 30,
+            size: 50,
             type: columnTypes.Number
         }],
         rowConfig: { compactMode: false } });
