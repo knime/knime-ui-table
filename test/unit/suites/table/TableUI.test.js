@@ -13,7 +13,7 @@ import { DynamicScroller } from 'vue-virtual-scroller';
 import { columnTypes } from '~/config/table.config';
 
 const getPropsData = (dynamicProps) => ({
-    data: [[['cellA', 'cellB']]],
+    data: [[{ a: 'cellA', b: 'cellB' }]],
     currentSelection: [[false]],
     dataConfig: {
         columnConfigs: [{
@@ -47,7 +47,10 @@ const getPropsData = (dynamicProps) => ({
             classGenerator: [],
             hasSlotContent: false
         }],
-        rowConfig: { compactMode: dynamicProps?.compactMode }
+        rowConfig: {
+            compactMode: dynamicProps?.compactMode,
+            ...typeof dynamicProps?.rowHeight === 'undefined' ? {} : { rowHeight: dynamicProps.rowHeight }
+        }
     },
     tableConfig: {
         pageConfig: {
@@ -350,43 +353,26 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('the height of the table and its body', () => {
-        it('returns table height when table ref is undefined', () => {
-            wrapper = mount(TableUI, { propsData: getPropsData({ enableVirtualScrolling: true }) });
-
-            expect(wrapper.vm.tableHeight).toBe(null);
-            expect(wrapper.vm.bodyHeight).toBe('0px');
-        });
-
-        it('computes correct body height once the table exists', async () => {
-            wrapper = mount(TableUI, { propsData: getPropsData({ enableVirtualScrolling: true }) });
-
-            await wrapper.vm.$nextTick();
-            wrapper.vm.onResize();
-
-            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
-            expect(wrapper.vm.bodyHeight).toBe('-75px');
-        });
-
-        
-        it('computes correct body height with toggled filters', () => {
+    describe('the height of the rows and of the body', () => {
+        it('sets default height of rows if no height is given', () => {
             wrapper = shallowMount(TableUI, { propsData });
-
-            wrapper.vm.onToggleFilter();
-            wrapper.vm.onResize();
-
-            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
-            expect(wrapper.vm.bodyHeight).toBe('-113px');
+            expect(wrapper.vm.rowHeight).toEqual(40);
         });
 
-        
-        it('recalculates body height on window resize', () => {
+        it('sets given rowHeight', () => {
+            const rowHeight = 35;
+            wrapper = shallowMount(TableUI, { propsData: getPropsData({ rowHeight }) });
+            expect(wrapper.vm.rowHeight).toEqual(rowHeight);
+        });
+
+        it('sets small height of rows on compact mode', () => {
+            wrapper = shallowMount(TableUI, { propsData: getPropsData({ compactMode: true }) });
+            expect(wrapper.vm.rowHeight).toEqual(24);
+        });
+
+        it('computes height of body from the pageSize and rowHeight', () => {
             wrapper = shallowMount(TableUI, { propsData });
-
-            window.dispatchEvent(new Event('resize'));
-
-            expect(wrapper.vm.tableHeight).toBe(0); // TODO: get this to be greater than 0
-            expect(wrapper.vm.bodyHeight).toBe('-75px');
+            expect(wrapper.vm.currentBodyHeight).toEqual(205);
         });
     });
 
@@ -397,13 +383,13 @@ describe('TableUI.vue', () => {
             expect(wrapper.find(DynamicScroller).exists()).toBeTruthy();
         });
 
-        it('emits lazyloading event onUpdate', () => {
+        it('emits lazyloading event onScroll', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ enableVirtualScrolling: true }) });
 
-            wrapper.vm.onUpdate(0, 0);
+            wrapper.vm.onScroll(0, 0);
             expect(wrapper.emitted().lazyload).toBeFalsy();
-            wrapper.vm.onUpdate(0, 10);
+            wrapper.vm.onScroll(0, 10);
             expect(wrapper.emitted().lazyload).toBeTruthy();
         });
 
@@ -414,15 +400,15 @@ describe('TableUI.vue', () => {
             await wrapper.vm.$nextTick();
             wrapper.find(Row).vm.$emit('rowExpand', true);
             wrapper.vm.getVscrollData().sizes['0'] = 70;
-            wrapper.vm.onUpdate(10, 20);
+            wrapper.vm.onScroll(10, 20);
             expect(mockedSizes['0']).toBe(40);
         });
 
-        it('correctly maps data', () => {
+        it('supplies data with ids', () => {
             wrapper = shallowMount(TableUI, { propsData:
                 getPropsData({ enableVirtualScrolling: true }) });
 
-            expect(wrapper.vm.mappedData).toStrictEqual([[{ data: { a: 'cellA', b: 'cellB' }, id: '0' }]]);
+            expect(wrapper.vm.dataWithId).toStrictEqual([[{ data: { a: 'cellA', b: 'cellB' }, id: '0' }]]);
         });
 
         

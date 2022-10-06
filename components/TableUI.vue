@@ -154,40 +154,22 @@ export default {
                 (rowData, index) => ({ id: index.toString(), data: rowData })
             ));
         },
-        tableHeight() {
-            // This is a workaround for making tableHeight react to changes in table.clientHeight
-            // (see also https://logaretm.com/blog/forcing-recomputation-of-computed-properties/)
-            // eslint-disable-next-line no-unused-expressions
-            this.resizeCount;
-            const table = this.$refs.table;
-            if (table) {
-                return table.clientHeight;
-            } else {
-                return null;
-            }
+        rowHeight() {
+            const defaultRowHeight = 40;
+            const compactRowHeight = 24;
+            return this.dataConfig.rowConfig.compactMode
+                ? compactRowHeight
+                : this.dataConfig.rowConfig?.rowHeight || defaultRowHeight;
         },
-        bodyHeight() {
-            // we cannot reference the body div directly in order to get its height since the body height depends
-            // on its content and not on the size of the screen. Instead, we take the height of the table, which is a
-            // flexbox filling the screen down to the bottom and substract the heights of its children which are not
-            // part of the scroller.
-            const tableHeight = this.tableHeight;
-            if (tableHeight === null) {
-                // This default body height has to be set in order for the dynamic scroller to be inintialized
-                // correctly. After that the table is available and the updated() lifecycle method below ensures that
-                // the body height is recomputed.
-                return '0px';
-            } else {
-                const TOP_CONTROLS_HEIGHT = 35;
-                const HEADER_HEIGHT = 39;
-                const COLUMN_FILTER_ROW_HEIGHT = 38;
-                let offset = this.filterActive
-                    ? TOP_CONTROLS_HEIGHT + HEADER_HEIGHT + COLUMN_FILTER_ROW_HEIGHT
-                    : TOP_CONTROLS_HEIGHT + HEADER_HEIGHT;
-                // finally one more pixel is substracted to account for rounding errors in the clinet height.
-                offset += 1;
-                return `${tableHeight - offset}px`;
-            }
+        rowMarginBottom() {
+            return 1;
+        },
+        scrollerItemSize() {
+            return this.rowHeight + this.rowMarginBottom;
+        },
+        currentBodyHeight() {
+            const numberOfRows = this.tableConfig.pageConfig.pageSize;
+            return this.scrollerItemSize * numberOfRows;
         }
     },
     watch: {
@@ -198,22 +180,6 @@ export default {
                     this.onClearFilter();
                 }
             }
-        }
-    },
-    created() {
-        window.addEventListener('resize', this.onResize);
-    },
-    destroyed() {
-        window.removeEventListener('resize', this.onResize);
-    },
-    updated() {
-        // this hook on updated ensures that the table size is adjusted once more after an initial size is set
-        if (this.updatedBefore) {
-            // if this is not set to false again, refreshing the view will yield the original (wrong) default body height
-            this.updatedBefore = false;
-        } else {
-            this.updatedBefore = true;
-            this.onResize();
         }
     },
     methods: {
@@ -228,7 +194,7 @@ export default {
             this.scrollerKey++;
         },
         // Event handling
-        onUpdate(startIndex, endIndex) {
+        onScroll(startIndex, endIndex) {
             if (this.lastScrollIndex === endIndex) {
                 return;
             }
@@ -243,11 +209,6 @@ export default {
                     this.getVscrollData().sizes[item.id] = item.size;
                     this.currentExpanded.delete(index);
                 });
-        },
-        onResize() {
-            // This is a workaround for making tableHeight react to changes in table.clientHeight
-            // (see also https://logaretm.com/blog/forcing-recomputation-of-computed-properties/)
-            this.resizeCount++;
         },
         onTimeFilterUpdate(newTimeFilter) {
             consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
@@ -359,6 +320,7 @@ export default {
   <div class="wrapper">
     <table
       ref="table"
+      class="table"
       :style="{ width: `${currentBodyWidth}px` }"
     >
       <TopControls
@@ -402,7 +364,7 @@ export default {
       />
       <div
         class="body"
-        :style="{ width: `${currentBodyWidth}px` }"
+        :style="{ width: `${currentBodyWidth}px`, height: `${currentBodyHeight}px` }"
       >
         <Group
           v-for="(dataGroup, groupInd) in dataWithId"
@@ -417,11 +379,11 @@ export default {
             :key="scrollerKey"
             ref="dynamicScroller"
             :items="dataGroup"
-            :min-item-size="40"
+            :min-item-size="scrollerItemSize"
             class="scroller"
-            :style="{ height: bodyHeight}"
+            :style="{ height: `${currentBodyHeight}px` }"
             :emit-update="true"
-            @update="onUpdate"
+            @update="onScroll"
           >
             <template #default="{ item, index, active }">
               <DynamicScrollerItem
@@ -435,6 +397,8 @@ export default {
                   :table-config="tableConfig"
                   :column-configs="dataConfig.columnConfigs"
                   :row-config="dataConfig.rowConfig"
+                  :row-height="scrollerItemSize"
+                  :margin-bottom="0"
                   :is-selected="currentSelection[0][index]"
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
@@ -474,6 +438,8 @@ export default {
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
+            :row-height="rowHeight"
+            :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
             @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"

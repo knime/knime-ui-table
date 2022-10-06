@@ -66,6 +66,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        rowHeight: {
+            type: Number,
+            default: 40
+        },
         isSelected: {
             type: Boolean,
             default: false
@@ -73,6 +77,10 @@ export default {
         showBorderColumnIndex: {
             type: Number,
             default: null
+        },
+        marginBottom: {
+            type: Number,
+            default: 0
         }
     },
     data() {
@@ -99,14 +107,6 @@ export default {
         clickableColumns() {
             // enforce boolean to reduce reactivity
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
-        },
-        rowHeightStyle() {
-            const defaultRowHeight = 40;
-            const compactRowHeight = 24;
-            const height = this.rowConfig.compactMode
-                ? compactRowHeight
-                : this.rowConfig?.rowHeight || defaultRowHeight;
-            return `height: ${height}px;`;
         },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
@@ -167,7 +167,7 @@ export default {
         'no-sub-menu': !tableConfig.subMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
-      :style="rowHeightStyle"
+      :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
@@ -252,7 +252,6 @@ export default {
 <style lang="postcss" scoped>
 
 tr.row {
-  margin-bottom: 1px;
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);
 
