@@ -33,6 +33,8 @@
     "@vue/cli-plugin-babel": "4.5.4",
     "@vue/cli-service": "4.5.4",
     "@vue/test-utils": "1.0.0-beta.29",
+    "@fontsource/roboto": "4.5.7",
+    "@fontsource/roboto-mono": "4.5.7",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.3",
     "babel-jest": "24.9.0",
@@ -47,8 +49,6 @@
     "eslint-plugin-jest-formatting": "3.0.0",
     "eslint-plugin-jsonc": "2.0.0",
     "eslint-plugin-vue": "7.10.0",
-    "fontsource-roboto": "3.0.3",
-    "fontsource-roboto-mono": "3.0.3",
     "jest": "24.9.0",
     "jest-junit": "7.0.0",
     "jest-transform-stub": "2.0.0",
@@ -69,8 +69,6 @@
   },
   "peerDependencies": {
     "consola": "2.*",
-    "fontsource-roboto": "~3.*",
-    "fontsource-roboto-mono": "~3.*",
     "vue": "2.6.*"
   },
   "engines": {
