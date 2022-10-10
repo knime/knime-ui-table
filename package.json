@@ -1,6 +1,6 @@
 {
   "name": "@knime/knime-ui-table",
-  "version": "0.1.32",
+  "version": "0.1.36",
   "description": "JS Data Table for KNIME",
   "scripts": {
     "audit": "check-audit --production --json > target/audit.json || true",
