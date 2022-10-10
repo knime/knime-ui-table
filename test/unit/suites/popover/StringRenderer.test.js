@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import StringRenderer from '~/components/popover/StringRenderer';
+import StringRenderer from '~/components/popover/StringRenderer.vue';
 
 describe('StringRenderer.vue', () => {
     let wrapper;

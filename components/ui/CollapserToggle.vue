@@ -1,6 +1,6 @@
 <script>
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-next.svg?inline';
-import BaseButton from '~/webapps-common/ui/components/BaseButton';
+import BaseButton from '~/webapps-common/ui/components/BaseButton.vue';
 
 /**
  * Table data element wrapper for the animated collapser icon and it's animation.

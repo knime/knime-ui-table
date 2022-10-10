@@ -1,5 +1,5 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import FilterDropdown from '~/components/filter/FilterDropdown';
+import FilterDropdown from '~/components/filter/FilterDropdown.vue';
 
 jest.mock('vue-clickaway2', () => ({
     mixin: {}

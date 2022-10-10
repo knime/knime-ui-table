@@ -1,8 +1,8 @@
 <script>
-import FilterMultiselect from './FilterMultiselect';
-import FilterInputField from './FilterInputField';
-import FilterDropdown from './FilterDropdown';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import FilterMultiselect from './FilterMultiselect.vue';
+import FilterInputField from './FilterInputField.vue';
+import FilterDropdown from './FilterDropdown.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 /**

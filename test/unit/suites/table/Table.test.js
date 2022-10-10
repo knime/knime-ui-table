@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import Table from '~/components/Table';
-import TableUI from '~/components/TableUI';
+import Table from '~/components/Table.vue';
+import TableUI from '~/components/TableUI.vue';
 
 import { columnTypes } from '~/config/table.config';
 

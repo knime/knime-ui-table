@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import Header from '~/components/layout/Header';
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import Header from '~/components/layout/Header.vue';
+import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 
