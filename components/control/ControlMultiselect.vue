@@ -1,8 +1,8 @@
 <script>
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
-import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
-import MenuOptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
-import { mixin as clickaway } from 'vue-clickaway2';
+import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
+import { mixin as VueClickAway } from 'vue3-click-away';
 
 const BLUR_TIMEOUT = 1;
 
@@ -19,7 +19,7 @@ export default {
         DropdownIcon,
         MenuOptionsIcon
     },
-    mixins: [clickaway],
+    mixins: [VueClickAway],
     props: {
         /**
          * List of possible values. Each item must have an `id` and a `text` property, and optionally a `selectedText`
@@ -200,7 +200,7 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="closeOptions"
+    v-click-away="closeOptions"
     :class="['multiselect', { collapsed }]"
     @keydown.esc.stop.prevent="closeOptions(true)"
     @keydown.up.stop.prevent="onUp"

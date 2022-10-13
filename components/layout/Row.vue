@@ -1,11 +1,11 @@
 <script>
 import CollapserToggle from '../ui/CollapserToggle.vue';
-import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import CircleHelpIcon from '~/webapps-common/ui/assets/img/icons/circle-help.svg?inline';
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
+import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
+import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a

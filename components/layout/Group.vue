@@ -1,6 +1,6 @@
 <script>
-import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
-import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
+import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 
 /**
  * This component is a wrapper for groups of table rows. It can display a "group" row

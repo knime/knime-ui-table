@@ -1,6 +1,6 @@
 <script>
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
-import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
+import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 
 const BLUR_TIMEOUT = 1;
 

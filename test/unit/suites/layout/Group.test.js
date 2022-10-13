@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import Group from '~/components/layout/Group.vue';
-import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
+import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg';
 import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 
 describe('Group.vue', () => {

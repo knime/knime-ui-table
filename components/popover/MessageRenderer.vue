@@ -1,9 +1,9 @@
 <script>
 import PopoverPageControls from './PopoverPageControls.vue';
-import ErrorIcon from '~/webapps-common/ui/assets/img/icons/sign-warning.svg?inline';
-import WarnIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
+import ErrorIcon from 'webapps-common/ui/assets/img/icons/sign-warning.svg';
+import WarnIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 
-import { capitalize } from '~/webapps-common/util/capitalize';
+import { capitalize } from 'webapps-common/util/capitalize';
 
 /**
  * This popover rendering component is used to display message content when provided

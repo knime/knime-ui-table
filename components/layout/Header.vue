@@ -1,8 +1,8 @@
 <script>
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
-import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
+import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
+import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 import throttle from 'raf-throttle';
 import { MIN_COLUMN_SIZE } from '../../util/constants';
 

@@ -1,84 +1,53 @@
 {
-  "name": "@knime/knime-ui-table",
+  "name": "@knime/ui-table",
   "version": "0.2.0",
-  "description": "JS Data Table for KNIME",
-  "scripts": {
-    "audit": "check-audit --production --json > target/audit.json || true",
-    "build": "vue-cli-service build --target lib --name KNIME-Table index.js",
-    "build:report": "npm run build -- --report",
-    "coverage": "jest --coverage",
-    "demo": "concurrently -n server,app -c yellow,blue \"http-server -c-1 --cors -p 4000 dist http-server\" \"vue-cli-service serve demo/demo.js\"",
-    "inspect": "vue inspect",
-    "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
-    "lint:ci": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
-    "lint:js": "eslint --ext .js,.vue .",
-    "lint:json": "eslint --ext .json .",
-    "lint:css": "stylelint '**/*.{css,vue}'",
-    "opensourcecredits": "npm run --prefix webapps-common/ opensourcecredits",
-    "test:unit": "jest"
-  },
-  "license": "See the file LICENSE",
+  "description": "Data Table for KNIME",
   "author": "KNIME AG, Zurich, Switzerland",
-  "main": "dist/KNIME-Table.common.js",
-  "files": [
-    "util/constants.js",
-    "dist/KNIME-Table.*",
-    "package.json",
-    "LICENSE",
-    "README.md"
-  ],
-  "dependencies": {
-    "raf-throttle": "2.0.5",
-    "vue-clickaway2": "2.3.2",
-    "@fontsource/roboto": "4.5.7",
-    "@fontsource/roboto-mono": "4.5.7"
+  "license": "See the file LICENSE",
+  "scripts": {
+    "dev": "vite --port 4000",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview --port 4173",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "run-p lint:*",
+    "lint:js": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "lint:css": "stylelint '**/*.{css,vue}'"
   },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "4.5.4",
-    "@vue/cli-service": "4.5.4",
-    "@vue/test-utils": "1.0.0-beta.29",
-    "babel-core": "7.0.0-bridge.0",
-    "babel-eslint": "10.0.3",
-    "babel-jest": "24.9.0",
-    "concurrently": "5.3.0",
-    "consola": "2.10.1",
-    "core-js": "3.6.5",
-    "cross-var": "1.1.0",
-    "eslint": "7.32.0",
-    "eslint-import-resolver-alias": "1.1.2",
-    "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-jest": "25.2.4",
-    "eslint-plugin-jest-formatting": "3.0.0",
-    "eslint-plugin-jsonc": "2.0.0",
-    "eslint-plugin-vue": "7.10.0",
-    "jest": "24.9.0",
-    "jest-junit": "7.0.0",
-    "jest-transform-stub": "2.0.0",
-    "modern-normalize": "1.1.0",
-    "npm-audit-resolver": "2.3.1",
-    "postcss-import": "12.0.1",
-    "postcss-preset-env": "6.7.0",
-    "postcss-url": "8.0.0",
-    "raw-loader": "3.1.0",
-    "stylelint": "13.13.1",
-    "stylelint-config-standard": "20.0.0",
-    "svgo-loader": "2.2.1",
-    "vue": "2.6.*",
-    "vue-jest": "3.0.4",
-    "vue-svg-loader": "0.16.0",
-    "vue-template-compiler": "2.6.14",
+  "dependencies": {
+    "@vue/compat": "^3.2.40",
+    "raf-throttle": "2.0.5",
     "webapps-common": "file:webapps-common"
   },
-  "peerDependencies": {
-    "consola": "2.*",
-    "fontsource-roboto": "~3.*",
-    "fontsource-roboto-mono": "~3.*",
-    "vue": "2.6.*"
+  "devDependencies": {
+    "@knime/eslint-config": "7.0.5",
+    "@types/node": "^18.8.5",
+    "@vitejs/plugin-vue": "^3.0.1",
+    "@vue/tsconfig": "^0.1.3",
+    "eslint": "8.23.0",
+    "npm-run-all": "^4.1.5",
+    "postcss-import": "15.0.0",
+    "postcss-preset-env": "7.8.2",
+    "postcss-url": "10.1.3",
+    "stylelint": "^14.11.0",
+    "typescript": "~4.7.4",
+    "vite": "^3.0.4",
+    "vite-svg-loader": "3.5.1",
+    "vue-tsc": "^0.39.5"
+  },
+  "files": ["dist"],
+  "main": "./dist/KNIME-Table.umd.cjs",
+  "module": "./dist/KNIME-Table.js",
+  "exports": {
+    ".": {
+      "import": "./dist/KNIME-Table.js",
+      "require": "./dist/KNIME-Table.umd.cjs"
+    }
   },
   "engines": {
-    "node": "14.x"
+    "node": "18.x"
   },
   "volta": {
-    "node": "14.19.0"
+    "node": "18.10.0"
   }
 }

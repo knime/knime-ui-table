@@ -4,8 +4,8 @@ import ControlDropdown from './ControlDropdown.vue';
 import ControlMultiselect from './ControlMultiselect.vue';
 import FilterInputField from '../filter/FilterInputField.vue';
 
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import SearchIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import SearchIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 
 import { tableTimeFilters } from '../../config/time.config';
 

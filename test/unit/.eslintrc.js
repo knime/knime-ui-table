@@ -1,8 +1,5 @@
 module.exports = {
-    extends: ['../../webapps-common/lint/.eslintrc-jest.js'],
-    env: {
-        node: true
-    },
+    extends: ['@knime/eslint-config/jest'],
     rules: {
         'no-magic-numbers': 'off'
     }

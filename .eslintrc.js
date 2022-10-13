@@ -1,18 +1,19 @@
+// This is a workaround for https://github.com/eslint/eslint/issues/3458
+require('@rushstack/eslint-patch/modern-module-resolution');
+
 module.exports = {
-    extends: ['./webapps-common/lint/.eslintrc-vue.js'],
+    extends: ['@knime/eslint-config/vue3-typescript'],
     globals: {
         consola: true
     },
-    rules: {
-        'no-global-assign': ['error', {
-            // `require` is needed for the esm module
-            exceptions: ['require']
-        }]
-    },
-    overrides: [{
-        files: ['{service-mock,modules,plugins,server,config}/**', '*.config.js'],
-        env: {
-            node: true
+    settings: {
+        'import/resolver': {
+            alias: {
+                map: [
+                    ['@', './src'],
+                    ['@@', '.']
+                ]
+            }
         }
-    }]
+    }
 };

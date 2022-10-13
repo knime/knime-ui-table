@@ -249,6 +249,10 @@ export default {
         },
         onHideColumnBorder() {
             this.showBorderColumnIndex = null;
+        },
+        getCellContentSlotName(columnId) {
+            // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
+            return `cellContent-${columnId}`;
         }
     }
 };
@@ -328,9 +332,10 @@ export default {
             @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+            <!-- eslint-disable vue/valid-v-slot -->
             <template
               v-for="colInd in slottedColumns"
-              #[`cellContent-${columnKeys[colInd]}`]="cellData"
+              #[getCellContentSlotName(columnKeys,colInd)]="cellData"
             >
               <!-- Vue requires key on real element for dynamic scoped slots to help Vue framework manage events. -->
               <span :key="rowInd + '_' + colInd">
@@ -340,7 +345,7 @@ export default {
                 />
               </span>
             </template>
-            <template slot="rowCollapserContent">
+            <template #rowCollapserContent>
               <slot
                 name="collapserContent"
                 :row="row"

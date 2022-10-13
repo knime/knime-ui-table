@@ -4,8 +4,8 @@ import CollapserToggle from '~/components/ui/CollapserToggle.vue';
 import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg';
+import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg';
 
 describe('Row.vue', () => {
     let wrapper;

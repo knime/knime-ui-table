@@ -1,12 +1,12 @@
 <script>
 import { columnTypes } from '../../config/table.config';
-import { mixin as clickaway } from 'vue-clickaway2';
+import { mixin as VueClickAway } from 'vue3-click-away';
 import StringRenderer from './StringRenderer.vue';
 import ObjectRenderer from './ObjectRenderer.vue';
 import ArrayRenderer from './ArrayRenderer.vue';
 import MessageRenderer from './MessageRenderer.vue';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 
 const PARENT_RATIO = .5;
 const MAX_TOTAL_HEIGHT = 300;
@@ -31,7 +31,7 @@ export default {
         FunctionButton,
         CloseIcon
     },
-    mixins: [clickaway],
+    mixins: [VueClickAway],
     props: {
         initiallyExpanded: {
             type: Boolean,
@@ -142,7 +142,7 @@ export default {
 <template>
   <div
     ref="wrapper"
-    v-on-clickaway="closeMenu"
+    v-click-away="closeMenu"
     :class="['popover', { expanded }, { top: displayTop }]"
     :style="style"
     :expanded="expanded"

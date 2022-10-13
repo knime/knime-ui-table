@@ -450,7 +450,7 @@ export default {
         this.updateClientWidth();
         window.addEventListener('resize', this.updateClientWidth);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         window.removeEventListener('resize', this.updateClientWidth);
     },
     methods: {
@@ -728,7 +728,11 @@ export default {
                 .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
             this.clientWidth = updatedClientWidth;
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        getCellContentSlotName(columnId) {
+            // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
+            return `cellContent-${columnId}`;
+        }
     }
 };
 </script>
@@ -756,9 +760,10 @@ export default {
     @tableInput="onTableInput"
     @columnResize="onColumnResize"
   >
+    <!-- eslint-disable vue/valid-v-slot -->
     <template
       v-for="col in currentSlottedColumns"
-      #[`cellContent-${col}`]="{ data: { row, key, colInd, rowInd } } = { data: {} }"
+      #[getCellContentSlotName(col)]="{ data: { row, key, colInd, rowInd } } = { data: {} }"
     >
       <span :key="rowInd + '_' + colInd + '_' + col">
         <slot
@@ -777,7 +782,7 @@ export default {
       <slot
         name="popoverContent"
         :data="data"
-        :popoverColumn="popoverColumn"
+        :popover-column="popoverColumn"
       />
     </template>
   </TableUI>
