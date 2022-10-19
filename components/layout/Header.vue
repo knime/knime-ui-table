@@ -40,6 +40,10 @@ export default {
             type: Array,
             default: () => []
         },
+        columnSortConfigs: {
+            type: Array,
+            default: () => []
+        },
         isSelected: {
             type: Boolean,
             default: false
@@ -71,6 +75,11 @@ export default {
         },
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
+        },
+        columnSortEnabled() {
+            return this.columnSortConfigs.length === 0
+                ? new Array(this.columnHeaders.length).fill(true)
+                : this.columnSortConfigs;
         }
     },
     methods: {
@@ -78,7 +87,7 @@ export default {
             this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            if (this.enableSorting) {
+            if (this.enableSorting && this.columnSortEnabled[ind]) {
                 this.$emit('columnSort', ind, this.columnHeaders[ind]);
             }
         },
@@ -156,7 +165,7 @@ export default {
         v-for="(header, ind) in columnHeaders"
         :key="ind"
         :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
-        :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
+        :class="['column-header', { sortable: enableSorting && columnSortEnabled[ind], inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
         @click="onHeaderClick(ind)"

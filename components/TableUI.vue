@@ -124,6 +124,9 @@ export default {
         columnKeys() {
             return this.getPropertiesFromColumns('key');
         },
+        columnSortConfigs() {
+            return this.getPropertiesFromColumns('isSortable');
+        },
         slottedColumns() {
             return this.getPropertiesFromColumns('hasSlotContent')
                 .map((hasSlotContent, colInd) => hasSlotContent ? colInd : null)
@@ -340,6 +343,7 @@ export default {
         :column-headers="columnHeaders"
         :column-sub-headers="columnSubHeaders"
         :column-sizes="columnSizes"
+        :column-sort-configs="columnSortConfigs"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
         :class="tableHeaderClass"
