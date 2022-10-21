@@ -7,12 +7,13 @@ import Group from './layout/Group.vue';
 import Row from './layout/Row.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 
 const widthColumnMarginLeft = 10;
 const widthColumnSelection = 30;
 const widthColumnFilter = 30;
-import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+const rowMarginBottom = 1;
 
 /**
  * @see README.md
@@ -161,11 +162,10 @@ export default {
                 ? compactRowHeight
                 : this.dataConfig.rowConfig?.rowHeight || defaultRowHeight;
         },
-        rowMarginBottom() {
-            return 1;
-        },
         scrollerItemSize() {
-            return this.rowHeight + this.rowMarginBottom;
+            // The virtual scroller does not support margins, since the height of an element is measured inpdependent
+            // from its siblings, hence we need to set a different height for the rows instead
+            return this.rowHeight + rowMarginBottom;
         },
         currentBodyHeight() {
             const numberOfRows = this.tableConfig.pageConfig.pageSize;
@@ -398,7 +398,6 @@ export default {
                   :column-configs="dataConfig.columnConfigs"
                   :row-config="dataConfig.rowConfig"
                   :row-height="scrollerItemSize"
-                  :margin-bottom="0"
                   :is-selected="currentSelection[0][index]"
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
