@@ -108,7 +108,7 @@ export default {
 </template>
 
 <style>
-  @import './index.css';
+  @import "./index.css";
 
   body {
     background-color: var(--knime-silver-sand-semi);

@@ -202,7 +202,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 thead {
   height: 39px;
 

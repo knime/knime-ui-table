@@ -65,7 +65,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .base-controls {
   & span {
     line-height: 50px;
@@ -87,7 +86,7 @@ export default {
     }
   }
 
-  & >>> .dropdown [role=button] {
+  & >>> .dropdown [role="button"] {
     border: none;
   }
 

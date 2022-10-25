@@ -68,7 +68,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr.table-group {
   font-weight: 500;
   font-size: 13px;

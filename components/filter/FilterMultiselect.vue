@@ -207,13 +207,12 @@ export default {
 </template>
 
 <style scoped lang="postcss">
-
 .multiselect {
   position: relative;
   background-color: var(--knime-white);
   max-width: calc(100% - 20px);
 
-  & [role=button] {
+  & [role="button"] {
     margin: 0;
     border: 1px solid var(--knime-stone-gray);
     padding: 0 24px 0 10px;
@@ -236,7 +235,7 @@ export default {
     }
   }
 
-  &:not(.collapsed) [role=button] {
+  &:not(.collapsed) [role="button"] {
     border-color: var(--knime-masala);
   }
 

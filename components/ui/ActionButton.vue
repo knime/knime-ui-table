@@ -46,7 +46,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr {
   display: flex;
   flex-direction: row-reverse;

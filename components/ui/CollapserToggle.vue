@@ -48,7 +48,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .row-collapser-toggle {
   height: 40px;
 
@@ -61,7 +60,7 @@ export default {
     background-color: transparent;
     border: 0;
     outline: none;
-    -webkit-appearance: none;
+    appearance: none;
     color: inherit; /* Safari needs this */
     text-align: left;
     cursor: pointer;
@@ -98,7 +97,7 @@ export default {
 
   &.compact-mode {
     height: 24px;
-    
+
     & .button {
       min-height: 24px;
     }
@@ -107,6 +106,5 @@ export default {
       stroke-width: calc(14px / 14);
     }
   }
-
 }
 </style>

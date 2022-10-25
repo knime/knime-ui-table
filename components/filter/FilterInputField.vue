@@ -54,7 +54,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 div {
   /* icon and marker need pos 0,0 to be the wrapper */
   position: relative;
@@ -86,7 +85,7 @@ input {
     border-color: var(--knime-masala);
   }
 
-  &:hover:not(:focus):not(:disabled) {
+  &:hover:not(:focus, :disabled) {
     background-color: var(--knime-silver-sand-semi);
   }
 }

@@ -109,7 +109,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 th.left-controls {
   display: flex;
   align-items: center;

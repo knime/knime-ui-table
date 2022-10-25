@@ -262,11 +262,10 @@ export default {
 </template>
 
 <style scoped lang="postcss">
-
 .multiselect {
   position: relative;
 
-  & [role=button] {
+  & [role="button"] {
     margin: 0;
     padding: 0 38px 0 10px;
     font-size: 13px;
@@ -321,7 +320,7 @@ export default {
 
     & span {
       position: relative;
-      padding: 5px 10px 0 10px;
+      padding: 5px 10px 0;
       display: block;
 
       &.drag-item {

@@ -189,8 +189,11 @@ export default {
         v-for="(data, ind) in row"
         ref="dataCell"
         :key="ind"
-        :class="[classes[ind], 'data-cell',
-                 { clickable: isClickable(data, ind), showColumnBorder: showBorderColumnIndex === ind}]"
+        :class="[
+          classes[ind],
+          'data-cell',
+          { clickable: isClickable(data, ind), 'show-column-border': showBorderColumnIndex === ind}
+        ]"
         :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
         :title="!isClickable(data, ind) ? data : null"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
@@ -250,7 +253,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr.row {
   margin-bottom: 1px;
   transition: height 0.3s, box-shadow 0.15s;
@@ -339,11 +341,11 @@ tr.row {
       }
     }
 
-    &.showColumnBorder {
+    &.show-column-border {
       border-right: 1px solid var(--knime-dove-gray);
     }
   }
-  
+
   &.compact-mode {
     & td {
       line-height: 24px;
@@ -370,7 +372,7 @@ tr.row {
 
 tr.collapser-row {
   background-color: var(--knime-gray-ultra-light);
-  padding: 30px 50px 20px 50px;
+  padding: 30px 50px 20px;
   margin-bottom: 2px;
   position: relative;
 

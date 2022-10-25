@@ -59,7 +59,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 thead {
   & tr {
     padding: 0;

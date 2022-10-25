@@ -52,8 +52,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
-
 .controls {
   display: flex;
   align-items: center;

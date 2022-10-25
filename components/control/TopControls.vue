@@ -174,7 +174,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .base-controls {
   line-height: 40px;
   border-spacing: unset;

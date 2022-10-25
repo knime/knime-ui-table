@@ -90,7 +90,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr {
   margin-top: -2px;
   height: 40px;

@@ -293,7 +293,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .dropdown {
   position: relative;
 
@@ -301,7 +300,7 @@ export default {
     color: var(--knime-stone-gray);
   }
 
-  & [role=button] {
+  & [role="button"] {
     margin: 0;
     padding: 0 38px 0 10px;
     font-size: 13px;
@@ -362,7 +361,7 @@ export default {
     min-width: 100%;
     width: fit-content;
     padding: 0;
-    margin: -1px 0 1px 0;
+    margin: -1px 0 1px;
     background: var(--knime-white);
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
     cursor: pointer;
@@ -370,7 +369,7 @@ export default {
     & [role="option"] {
       display: block;
       width: 100%;
-      padding: 0 10px 0 10px;
+      padding: 0 10px;
       line-height: 22px;
       position: relative;
       text-overflow: ellipsis;

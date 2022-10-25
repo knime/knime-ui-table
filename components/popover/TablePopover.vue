@@ -177,51 +177,49 @@ export default {
 
 
 <style lang="postcss" scoped>
-
 .popover {
   position: absolute;
-  --popoverTopMargin: 18px;
-  --popoverArrowSize: 15px;
+  --popover-arrow-size: 15px;
 
   &.expanded {
     &::before {
       position: absolute;
       top: calc(100% + 7px);
       right: 20px;
-      content: '';
+      content: "";
       z-index: 5;
       width: 0;
       height: 0;
-      border-left: var(--popoverArrowSize) solid transparent;
-      border-right: var(--popoverArrowSize) solid transparent;
-      border-bottom: var(--popoverArrowSize) solid var(--knime-white);
+      border-left: var(--popover-arrow-size) solid transparent;
+      border-right: var(--popover-arrow-size) solid transparent;
+      border-bottom: var(--popover-arrow-size) solid var(--knime-white);
     }
 
     &::after {
       position: absolute;
       top: calc(100% + 6px);
       right: 19px;
-      content: '';
+      content: "";
       z-index: 4;
       width: 0;
       height: 0;
-      border-left: calc(var(--popoverArrowSize) + 1px) solid transparent;
-      border-right: calc(var(--popoverArrowSize) + 1px) solid transparent;
-      border-bottom: calc(var(--popoverArrowSize) + 1px) solid var(--knime-silver-sand-semi);
+      border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
+      border-right: calc(var(--popover-arrow-size) + 1px) solid transparent;
+      border-bottom: calc(var(--popover-arrow-size) + 1px) solid var(--knime-silver-sand-semi);
     }
 
     &.top::before {
       bottom: calc(100% + 7px);
       top: unset;
       border-bottom: none;
-      border-top: var(--popoverArrowSize) solid var(--knime-white);
+      border-top: var(--popover-arrow-size) solid var(--knime-white);
     }
 
     &.top::after {
       bottom: calc(100% + 6px);
       top: unset;
       border-bottom: none;
-      border-top: calc(var(--popoverArrowSize) + 1px) solid var(--knime-silver-sand-semi);
+      border-top: calc(var(--popover-arrow-size) + 1px) solid var(--knime-silver-sand-semi);
     }
   }
 
@@ -233,7 +231,7 @@ export default {
     background: var(--knime-white);
     width: fit-content;
     font-size: 12px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 8px rgb(0 0 0 / 25%);
 
     & div.content-container {
       padding: 23px;

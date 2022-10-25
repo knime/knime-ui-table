@@ -98,7 +98,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .wrapper {
   position: relative;
   line-height: normal;

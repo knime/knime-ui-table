@@ -406,9 +406,14 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .wrapper {
   position: relative;
+}
+
+table,
+thead,
+tbody {
+  width: 100%;
 }
 
 table {
@@ -441,16 +446,10 @@ table {
   }
 }
 
-table,
-thead,
-tbody {
-  width: 100%;
-}
-
 table >>> tr {
   display: flex;
 
-  &:not(:first-child):not(:last-child) {
+  &:not(:first-child, :last-child) {
     padding: 0 5px;
   }
 }
@@ -476,9 +475,9 @@ table >>> tr {
     overflow-y: hidden;
 
     & .table-group-wrapper {
-       overflow-y: auto;
-       overflow-x: clip;
-     }
+      overflow-y: auto;
+      overflow-x: clip;
+    }
   }
 }
 
@@ -508,7 +507,7 @@ table >>> tr {
       white-space: pre-wrap;
 
       & a {
-        display: -webkit-box;
+        display: box;
         -webkit-line-clamp: 2; /* number of lines to show */
         -webkit-box-orient: vertical;
       }

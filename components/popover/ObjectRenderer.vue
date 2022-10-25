@@ -41,7 +41,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 pre {
   margin: 0;
   font-size: 13px;

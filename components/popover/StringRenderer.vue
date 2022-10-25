@@ -18,7 +18,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 div {
   word-break: break-all;
   min-width: 200px;
