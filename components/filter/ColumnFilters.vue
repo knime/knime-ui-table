@@ -40,6 +40,10 @@ export default {
             default: false
         }
     },
+    emits: ['columnFilter', 'clearFilter'],
+    data() {
+        return { MIN_COLUMN_SIZE };
+    },
     methods: {
         onInput(colInd, value) {
             consola.debug('Updated table column filter: ', value);
@@ -73,7 +77,7 @@ export default {
           v-bind="filterConfigs[ind]"
           :placeholder="column"
           :aria-label="`filter-${column}`"
-          @input="value => onInput(ind, value)"
+          @input="onInput(ind, $event)"
         />
       </th>
       <th class="action">

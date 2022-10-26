@@ -75,6 +75,7 @@ export default {
             default: null
         }
     },
+    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick'],
     data() {
         return {
             showContent: false
@@ -173,15 +174,15 @@ export default {
         :expanded="showContent"
         :compact-mode="tableConfig.compactMode"
         class="collapser-cell"
-        @collapserExpand="onRowExpand"
+        @collapser-expand="onRowExpand"
       />
       <td
         v-if="tableConfig.showSelection"
         class="select-cell"
       >
         <Checkbox
-          :value="isSelected"
-          @input="onSelect"
+          :model-value="isSelected"
+          @update:model-value="onSelect"
         />
       </td>
       <td

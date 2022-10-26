@@ -1,8 +1,9 @@
 <script>
+import { mixin as VueClickAway } from 'vue3-click-away';
+
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import { mixin as VueClickAway } from 'vue3-click-away';
 
 const BLUR_TIMEOUT = 1;
 
@@ -47,7 +48,7 @@ export default {
         /**
          * Selected value (which is a list of ids of entries).
          */
-        value: {
+        modelValue: {
             type: Array,
             default: () => []
         },
@@ -66,9 +67,10 @@ export default {
             default: false
         }
     },
+    emits: ['update:modelValue', 'columnReorder'],
     data() {
         return {
-            checkedValue: this.value,
+            checkedValue: this.modelValue,
             collapsed: true,
             dragGhost: null,
             dragInd: null,
@@ -121,13 +123,8 @@ export default {
                 this.checkedValue = this.checkedValue.filter(x => x !== value);
             }
             consola.trace('Multiselect value changed to', this.checkedValue);
-            /**
-             * Fired when the selection changes.
-             *
-             * @event input
-             * @type {Array}
-             */
-            this.$emit('input', this.checkedValue);
+
+            this.$emit('update:modelValue', this.checkedValue);
         },
         toggle() {
             this.collapsed = !this.collapsed;
@@ -170,7 +167,7 @@ export default {
             this.dragGhost = this.$refs.item[ind].querySelector('label').cloneNode(true);
             document.body.appendChild(this.dragGhost);
         },
-        onDragEnd(event) {
+        onDragEnd() {
             let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
@@ -246,9 +243,9 @@ export default {
         </div>
         <Checkbox
           ref="option"
-          :value="isChecked(item.id)"
+          :model-value="isChecked(item.id)"
           :class="['boxes']"
-          @input="onInput(item.id, $event)"
+          @update:model-value="onInput(item.id, $event)"
           @keydown.esc.stop.prevent="closeOptions(true)"
         >
           {{ item.text }}

@@ -54,6 +54,7 @@ export default {
             default: null
         }
     },
+    emits: ['input'],
     data() {
         return {
             checkedValue: this.value,
@@ -195,9 +196,9 @@ export default {
         v-for="item of possibleValues"
         ref="option"
         :key="`multiselect-${item.id}`"
-        :value="isChecked(item.id)"
+        :model-value="isChecked(item.id)"
         class="boxes"
-        @input="onInput(item.id, $event)"
+        @update:model-value="onInput(item.id, $event)"
       >
         {{ item.text }}
       </Checkbox>

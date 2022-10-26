@@ -27,6 +27,7 @@ export default {
             }
         }
     },
+    emits: ['pageSizeUpdate'],
     methods: {
         createText(size) {
             return `${size.toString()} per page`;
@@ -49,17 +50,16 @@ export default {
 <template>
   <BaseControls
     class="base-controls"
-    v-bind="$props"
-    v-on="$listeners"
+    v-bind="$attrs"
   >
     <ControlDropdown
       open-up
-      :value="createText(pageConfig.pageSize)"
+      :model-value="createText(pageConfig.pageSize)"
       :aria-label="'Choose page size'"
       :possible-values="getSelectItems(pageConfig.possiblePageSizes.map(num => createText(num)))"
       class="dropdown-controls"
       placeholder="Items per page"
-      @input="onPageSizeSelect"
+      @update:model-value="onPageSizeSelect"
     />
   </BaseControls>
 </template>

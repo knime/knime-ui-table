@@ -15,8 +15,8 @@
     "lint:css": "stylelint '**/*.{css,vue}'"
   },
   "dependencies": {
-    "@vue/compat": "^3.2.40",
     "raf-throttle": "2.0.5",
+    "vue": "3.2.41",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {

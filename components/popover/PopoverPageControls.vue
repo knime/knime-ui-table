@@ -25,6 +25,7 @@ export default {
             default: 0
         }
     },
+    emits: ['nextPage', 'prevPage'],
     methods: {
         onNextPage() {
             consola.debug('Next Page');

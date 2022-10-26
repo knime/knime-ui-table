@@ -24,7 +24,7 @@ export default {
         };
     },
     methods: {
-        onClick(e) {
+        onClick() {
             consola.debug('Table action triggered.');
             this.config.callback();
         }

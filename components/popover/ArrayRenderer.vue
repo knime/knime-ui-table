@@ -72,8 +72,8 @@ export default {
       :total-pages="numberItems"
       :current-page="currentItemNumber"
       class="controls"
-      @nextPage="onPageChange(1)"
-      @prevPage="onPageChange(-1)"
+      @next-page="onPageChange(1)"
+      @prev-page="onPageChange(-1)"
     />
   </div>
 </template>

@@ -56,6 +56,7 @@ export default {
             default: 40
         }
     },
+    emits: ['close'],
     data() {
         return {
             expanded: this.initiallyExpanded,

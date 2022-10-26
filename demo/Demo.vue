@@ -1,15 +1,17 @@
 <script>
-import Table from '../components/Table.vue';
-import demoProps from './props.json';
+import { markRaw } from 'vue';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg';
 import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg';
+
+import Table from '../components/Table.vue';
+import demoProps from './props.json';
 
 const subMenuItems = [
     {
         name: 'delete',
         text: 'Delete',
-        icon: DeleteIcon,
+        icon: markRaw(DeleteIcon),
         callback: (row, context) => {
             consola.debug(`Delete called with row ${row}`, context);
         }
@@ -17,7 +19,7 @@ const subMenuItems = [
     {
         name: 'copy',
         text: 'Copy link',
-        icon: LinkIcon,
+        icon: markRaw(LinkIcon),
         callback: (row, context) => {
             consola.debug(`Copy link called with row ${row}`, context);
         }
@@ -27,7 +29,7 @@ const subMenuItems = [
 const groupSubMenuItems = [{
     name: 'delete',
     text: 'Delete all',
-    icon: DeleteIcon,
+    icon: markRaw(DeleteIcon),
     callback: (row, context) => {
         consola.debug(`Group delete all called with row ${row}`, context);
     }
@@ -91,7 +93,7 @@ export default {
     <br>
     <Table
       ref="knimeTable"
-      v-bind="_data"
+      v-bind="$data"
     >
       <template #collapserContent="{ row }">
         <h6>Example collapser slot:</h6>

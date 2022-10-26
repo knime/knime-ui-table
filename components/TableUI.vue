@@ -80,6 +80,23 @@ export default {
             }
         }
     },
+    emits: [
+        'timeFilterUpdate',
+        'columnUpdate',
+        'columnReorder',
+        'groupUpdate',
+        'search',
+        'pageChange',
+        'pageSizeUpdate',
+        'columnSort',
+        'columnFilter',
+        'clearFilter',
+        'toggleFilter',
+        'selectAll',
+        'rowSelect',
+        'tableInput',
+        'columnResize'
+    ],
     data() {
         return {
             filterActive: false,
@@ -271,13 +288,13 @@ export default {
         :table-config="tableConfig"
         :column-headers="columnHeaders"
         :style="{ width: `${currentBodyWidth}px` }"
-        @nextPage="onPageChange(1)"
-        @prevPage="onPageChange(-1)"
-        @columnUpdate="onColumnUpdate"
-        @columnReorder="onColumnReorder"
-        @groupUpdate="onGroupUpdate"
-        @searchUpdate="onSearch"
-        @timeFilterUpdate="onTimeFilterUpdate"
+        @next-page="onPageChange(1)"
+        @prev-page="onPageChange(-1)"
+        @column-update="onColumnUpdate"
+        @column-reorder="onColumnReorder"
+        @group-update="onGroupUpdate"
+        @search-pdate="onSearch"
+        @time-filter-update="onTimeFilterUpdate"
       />
       <Header
         :table-config="tableConfig"
@@ -288,12 +305,12 @@ export default {
         :filters-active="filterActive"
         :class="tableHeaderClass"
         :style="{ width: `${currentBodyWidth}px` }"
-        @headerSelect="onSelectAll"
-        @columnSort="onColumnSort"
-        @toggleFilter="onToggleFilter"
-        @columnResize="onColumnResize"
-        @showColumnBorder="onShowColumnBorder"
-        @hideColumnBorder="onHideColumnBorder"
+        @header-select="onSelectAll"
+        @column-sort="onColumnSort"
+        @toggle-filter="onToggleFilter"
+        @column-resize="onColumnResize"
+        @show-column-border="onShowColumnBorder"
+        @hide-column-border="onHideColumnBorder"
       />
       <ColumnFilters
         v-if="filterActive"
@@ -303,8 +320,8 @@ export default {
         :types="columnTypes"
         :show-collapser="tableConfig.showCollapser"
         :style="{ width: `${currentBodyWidth}px` }"
-        @columnFilter="onColumnFilter"
-        @clearFilter="onClearFilter"
+        @column-filter="onColumnFilter"
+        @clear-filter="onClearFilter"
       />
       <div
         class="table-group-wrapper"
@@ -316,7 +333,7 @@ export default {
           :title="getGroupName(groupInd)"
           :group-sub-menu-items="tableConfig.groupSubMenuItems"
           :show="data.length > 1 && dataGroup.length > 0"
-          @groupSubMenuClick="event => onGroupSubMenuClick(event, dataGroup)"
+          @group-sub-menu-click="onGroupSubMenuClick($event, dataGroup)"
         >
           <Row
             v-for="(row, rowInd) in dataGroup"
@@ -327,18 +344,18 @@ export default {
             :row-config="dataConfig.rowConfig"
             :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
-            @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd })"
-            @rowSubMenuClick="event => onRowSubMenuClick(event, row)"
+            @row-select="onRowSelect($event, rowInd, groupInd)"
+            @row-input="onRowInput({ ...$event, rowInd, id: row.id, groupInd })"
+            @row-sub-menu-click="onRowSubMenuClick($event, row)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
             <!-- eslint-disable vue/valid-v-slot -->
             <template
               v-for="colInd in slottedColumns"
               #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+              :key="rowInd + '_' + colInd"
             >
-              <!-- Vue requires key on real element for dynamic scoped slots to help Vue framework manage events. -->
-              <span :key="rowInd + '_' + colInd">
+              <span>
                 <slot
                   :name="`cellContent-${columnKeys[colInd]}`"
                   :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
@@ -358,9 +375,9 @@ export default {
         v-if="tableConfig.showBottomControls"
         :page-config="tableConfig.pageConfig"
         :style="{ width: `${currentBodyWidth}px` }"
-        @nextPage="onPageChange(1)"
-        @prevPage="onPageChange(-1)"
-        @pageSizeUpdate="onPageSizeUpdate"
+        @next-page="onPageChange(1)"
+        @prev-page="onPageChange(-1)"
+        @page-size-update="onPageSizeUpdate"
       />
       <ActionButton
         v-else-if="tableConfig.actionButtonConfig"

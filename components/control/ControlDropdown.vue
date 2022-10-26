@@ -1,7 +1,7 @@
 <script>
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import Vue from 'vue';
 import { mixin as VueClickAway } from 'vue3-click-away';
+
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 
 const KEY_DOWN = 40;
 const KEY_UP = 38;
@@ -24,7 +24,7 @@ export default {
     },
     mixins: [VueClickAway],
     props: {
-        value: {
+        modelValue: {
             type: String,
             default: ''
         },
@@ -70,6 +70,7 @@ export default {
             default: false
         }
     },
+    emits: ['update:modelValue'],
     data() {
         return {
             isExpanded: false,
@@ -88,10 +89,10 @@ export default {
     },
     computed: {
         selectedIndex() {
-            return this.localValues.map(x => x.id).indexOf(this.value);
+            return this.localValues.map(x => x.id).indexOf(this.modelValue);
         },
         showPlaceholder() {
-            return !this.value || this.value === this.placeholder;
+            return !this.modelValue || this.modelValue === this.placeholder;
         },
         displayTextMap() {
             let map = {};
@@ -103,16 +104,16 @@ export default {
         displayText() {
             if (this.showPlaceholder) {
                 return this.placeholder;
-            } else if (this.displayTextMap.hasOwnProperty(this.value)) {
-                return this.formatter(this.displayTextMap[this.value]);
+            } else if (this.displayTextMap.hasOwnProperty(this.modelValue)) {
+                return this.formatter(this.displayTextMap[this.modelValue]);
             } else {
-                return `(MISSING) ${this.value}`;
+                return `(MISSING) ${this.modelValue}`;
             }
         }
     },
     methods: {
         isCurrentValue(candidate) {
-            return this.value === candidate;
+            return this.modelValue === candidate;
         },
         setSelected(value) {
             consola.trace('ListBox setSelected on', value);
@@ -125,7 +126,7 @@ export default {
              * @event input
              * @type {String}
              */
-            this.$emit('input', value);
+            this.$emit('update:modelValue', value);
         },
         onOptionClick(value) {
             this.setSelected(value);
@@ -174,7 +175,7 @@ export default {
         toggleExpanded() {
             this.isExpanded = !this.isExpanded;
             if (this.isExpanded) {
-                Vue.nextTick(() => this.$refs.ul.focus());
+                this.$nextTick(() => this.$refs.ul.focus());
             }
         },
         handleKeyDownList(e) {

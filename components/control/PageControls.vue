@@ -37,6 +37,7 @@ export default {
             default: null
         }
     },
+    emits: ['nextPage', 'prevPage'],
     computed: {
         rangeText() {
             if (this.currentItems) {

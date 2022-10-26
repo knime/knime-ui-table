@@ -25,6 +25,7 @@ export default {
             }
         }
     },
+    emits: ['nextPage', 'prevPage'],
     methods: {
         onNextPage() {
             consola.debug('Next Page');
@@ -47,8 +48,8 @@ export default {
         :page-size="pageConfig.pageSize"
         :current-page="pageConfig.currentPage"
         :column-count="pageConfig.columnCount"
-        @nextPage="onNextPage"
-        @prevPage="onPrevPage"
+        @next-page="onNextPage"
+        @prev-page="onPrevPage"
       />
       <th class="right-controls">
         <slot />

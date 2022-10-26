@@ -41,6 +41,7 @@ export default {
             default: () => []
         }
     },
+    emits: ['timeFilterUpdate', 'columnReorder', 'columnUpdate', 'groupUpdate', 'searchUpdate'],
     data() {
         return {
             searchActive: false,
@@ -123,36 +124,35 @@ export default {
 <template>
   <BaseControls
     class="base-controls"
-    v-bind="$props"
+    v-bind="$attrs"
     :page-config="tableConfig.pageConfig"
-    v-on="$listeners"
   >
     <ControlDropdown
       v-if="showTimeFilter"
-      :value="timeFilter"
+      :model-value="timeFilter"
       :possible-values="getSelectItems(timeFilters)"
       :placeholder="timeFilter"
       :aria-label="'Filter by time'"
-      @input="onTimeFilterSelect"
+      @update:model-value="onTimeFilterSelect"
     />
     <ControlMultiselect
       v-if="showColumnSelection"
       lock-placeholder
-      :value="columnHeaders"
+      :model-value="columnHeaders"
       :possible-values="getSelectItems(possibleColumns)"
       placeholder="Select columns"
-      @input="onColumnSelect"
-      @columnReorder="onColumnReorder"
+      @update:model-value="onColumnSelect"
+      @column-reorder="onColumnReorder"
     />
     <ControlDropdown
       v-if="showGroupBy"
       include-placeholder
-      :value="currentGroup || ''"
+      :model-value="currentGroup || ''"
       :possible-values="getSelectItems(possibleGroups)"
       :placeholder="'Group by…'"
       :aria-label="'Group by category'"
       :formatter="group => `Grouped by '${group}'`"
-      @input="onGroupSelect"
+      @update:model-value="onGroupSelect"
     />
     <FilterInputField
       v-if="showSearch && searchActive"

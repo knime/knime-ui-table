@@ -22,8 +22,9 @@ export default {
             default: false
         }
     },
+    emits: ['collapserExpand'],
     methods: {
-        onTrigger(e) {
+        onTrigger() {
             this.$emit('collapserExpand', !this.expanded);
         }
     }

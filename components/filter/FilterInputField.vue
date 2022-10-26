@@ -21,11 +21,12 @@ export default {
             type: Boolean
         }
     },
+    emits: ['input', 'blur'],
     methods: {
         getValue() {
             return this.$refs.input.value;
         },
-        onInput(e) {
+        onInput() {
             this.$emit('input', this.getValue());
         },
         onBlur(e) {

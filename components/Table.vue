@@ -1,5 +1,5 @@
+<!-- eslint-disable max-lines -->
 <script>
-import Vue from 'vue';
 import TableUI from './TableUI.vue';
 
 import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
@@ -117,6 +117,7 @@ export default {
             default: false
         }
     },
+    emits: ['tableSelect', 'tableInput'],
     data() {
         return {
             // Reference State
@@ -485,7 +486,7 @@ export default {
             this.domains = this.getDomains();
             if (this.totalTableSize !== newData?.length) {
                 this.totalTableSize = this.allData.length;
-                Vue.set(this, 'masterSelected', this.initMasterSelected());
+                this.masterSelected = this.initMasterSelected();
             }
             if (this.paginatedData === null || this.processLevel === null || this.processLevel > 1) {
                 this.processLevel = 1;
@@ -558,9 +559,10 @@ export default {
                 pageStart: this.pageStart,
                 pageEnd: this.pageEnd
             });
-            Vue.set(this, 'paginatedData', paginatedData);
-            Vue.set(this, 'paginatedIndicies', paginatedIndicies);
-            Vue.set(this, 'paginatedSelection', paginatedSelection);
+
+            this.paginatedData = paginatedData;
+            this.paginatedIndicies = paginatedIndicies;
+            this.paginatedSelection = paginatedSelection;
         },
         /*
          *
@@ -581,7 +583,7 @@ export default {
             });
         },
         initMasterSelected() {
-            let initSelected = this.allData.map(_ => 0);
+            let initSelected = this.allData.map(() => 0);
             if (this.parentSelected?.length) {
                 this.parentSelected.forEach(rowInd => {
                     initSelected[rowInd] = 1;
@@ -668,7 +670,7 @@ export default {
         onColumnFilter(colInd, value) {
             consola.debug(`Table received: columnFilter ${colInd} ${value}`);
             let colKey = this.currentColumnKeys[colInd];
-            Vue.set(this.filterValues, colKey, value);
+            this.filterValues[colKey] = value;
         },
         onClearFilter() {
             consola.debug(`Table received: clearFilter`);
@@ -683,18 +685,15 @@ export default {
             const newSelection = this.masterSelected.map(
                 (_, i) => selected && this.processedIndicies.some(group => group.includes(i)) ? 1 : 0
             );
-            Vue.set(this, 'masterSelected', newSelection);
+            this.masterSelected = newSelection;
             this.$emit('tableSelect', this.totalSelected);
         },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(
                 `Table received: rowSelect ${selected} ${rowInd} ${groupInd} ${this.paginatedIndicies}`
             );
-            Vue.set(
-                this.masterSelected,
-                this.paginatedIndicies[groupInd][rowInd],
-                selected ? 1 : 0
-            );
+            const masterSelectedIndex = this.paginatedIndicies[groupInd][rowInd];
+            this.masterSelected[masterSelectedIndex] = selected ? 1 : 0;
             this.$emit('tableSelect', this.totalSelected);
         },
         onTableInput(event) {
@@ -703,7 +702,8 @@ export default {
         },
         onColumnResize(columnIndex, newColumnSize) {
             consola.debug(`Table received: columnResize ${columnIndex} ${newColumnSize}`);
-            Vue.set(this.currentAllColumnSizes, this.currentColumns[columnIndex], newColumnSize);
+            const resizedColumnIndex = this.currentColumns[columnIndex];
+            this.currentAllColumnSizes[resizedColumnIndex] = newColumnSize;
         },
         /*
          *
@@ -717,7 +717,7 @@ export default {
         },
         clearSelection() {
             consola.debug(`Table clearing selection.`);
-            Vue.set(this, 'masterSelected', this.allData.map(_ => 0));
+            this.masterSelected = this.allData.map(() => 0);
         },
         updateClientWidth: throttle(function () {
             /* eslint-disable no-invalid-this */
@@ -744,28 +744,29 @@ export default {
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
-    @timeFilterUpdate="onTimeFilterUpdate"
-    @columnUpdate="onColumnUpdate"
-    @columnReorder="onColumnReorder"
-    @groupUpdate="onGroupUpdate"
+    @time-filter-update="onTimeFilterUpdate"
+    @column-update="onColumnUpdate"
+    @column-reorder="onColumnReorder"
+    @group-update="onGroupUpdate"
     @search="onSearch"
-    @pageChange="onPageChange"
-    @pageSizeUpdate="onPageSizeUpdate"
-    @columnSort="onColumnSort"
-    @columnFilter="onColumnFilter"
-    @clearFilter="onClearFilter"
-    @toggleFilter="onToggleFilter"
-    @selectAll="onSelectAll"
-    @rowSelect="onRowSelect"
-    @tableInput="onTableInput"
-    @columnResize="onColumnResize"
+    @page-change="onPageChange"
+    @page-size-update="onPageSizeUpdate"
+    @column-sort="onColumnSort"
+    @column-filter="onColumnFilter"
+    @clear-filter="onClearFilter"
+    @toggle-filter="onToggleFilter"
+    @select-all="onSelectAll"
+    @row-select="onRowSelect"
+    @table-input="onTableInput"
+    @column-resize="onColumnResize"
   >
     <!-- eslint-disable vue/valid-v-slot -->
     <template
       v-for="col in currentSlottedColumns"
+      :key="rowInd + '_' + colInd + '_' + col"
       #[getCellContentSlotName(col)]="{ data: { row, key, colInd, rowInd } } = { data: {} }"
     >
-      <span :key="rowInd + '_' + colInd + '_' + col">
+      <span>
         <slot
           :name="`cellContent-${key}`"
           :data="{ row, key, colInd, rowInd }"

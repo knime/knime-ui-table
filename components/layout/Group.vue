@@ -29,6 +29,7 @@ export default {
             default: () => []
         }
     },
+    emits: ['groupSubMenuClick'],
     methods: {
         onSubMenuItemClick(event, clickedItem) {
             this.$emit('groupSubMenuClick', clickedItem);

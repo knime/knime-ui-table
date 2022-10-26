@@ -1,7 +1,7 @@
 <script>
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import Vue from 'vue';
 import { mixin as VueClickAway } from 'vue3-click-away';
+
+import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 
 const KEY_DOWN = 40;
 const KEY_UP = 38;
@@ -23,6 +23,10 @@ export default {
     },
     mixins: [VueClickAway],
     props: {
+        id: {
+            type: String,
+            default: ''
+        },
         value: {
             type: [String, Array],
             default: ''
@@ -57,6 +61,7 @@ export default {
             }
         }
     },
+    emits: ['input'],
     data() {
         return {
             isExpanded: false
@@ -153,7 +158,7 @@ export default {
         toggleExpanded() {
             this.isExpanded = !this.isExpanded;
             if (this.isExpanded) {
-                Vue.nextTick(() => this.$refs.ul.focus());
+                this.$nextTick(() => this.$refs.ul.focus());
             }
         },
         handleKeyDownList(e) {

@@ -49,6 +49,7 @@ export default {
             default: false
         }
     },
+    emits: ['headerSelect', 'columnSort', 'toggleFilter', 'showColumnBorder', 'columnResize', 'hideColumnBorder'],
     data() {
         return {
             height: 40,
@@ -148,8 +149,8 @@ export default {
         :class="['select-cell', {'with-subheaders': hasSubHeaders}]"
       >
         <Checkbox
-          :value="isSelected"
-          @input="onSelect"
+          :model-value="isSelected"
+          @update:model-value="onSelect"
         />
       </th>
       <th
