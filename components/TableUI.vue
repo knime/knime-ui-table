@@ -527,7 +527,8 @@ table {
   table-layout: fixed;
   display: flex;
   flex-direction: column;
-  margin: auto;
+  margin-left: 0;
+  margin-right: auto;
 
   & .body {
     overflow-y: auto;
