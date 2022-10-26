@@ -75,19 +75,17 @@ export default {
         },
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
-        },
-        columnSortEnabled() {
-            return this.columnSortConfigs.length === 0
-                ? new Array(this.columnHeaders.length).fill(true)
-                : this.columnSortConfigs;
         }
     },
     methods: {
+        isColumnSortable(index) {
+            return this.enableSorting && this.columnSortConfigs[index];
+        },
         onSelect() {
             this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            if (this.enableSorting && this.columnSortEnabled[ind]) {
+            if (this.isColumnSortable(ind)) {
                 this.$emit('columnSort', ind, this.columnHeaders[ind]);
             }
         },
@@ -165,7 +163,7 @@ export default {
         v-for="(header, ind) in columnHeaders"
         :key="ind"
         :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
-        :class="['column-header', { sortable: enableSorting && columnSortEnabled[ind], inverted: sortDirection === -1},
+        :class="['column-header', { sortable: isColumnSortable(ind), inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
         @click="onHeaderClick(ind)"

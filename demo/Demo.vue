@@ -5,6 +5,9 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
 import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg?inline';
 
+const allColumnSpecificSortConfigs = [true, true, false, false, true, true, true, true, true, true, true, true, true,
+    true, true, true, true, true, true];
+
 const subMenuItems = [
     {
         name: 'delete',
@@ -54,6 +57,7 @@ export default {
             showPopovers: true,
             compactMode: true,
             showActionButton: false,
+            allColumnSpecificSortConfigs: [],
             ...demoProps
         };
     },
@@ -61,6 +65,9 @@ export default {
         printConfig() {
             consola.log('TableUI DataConfig prop:', this.$refs?.knimeTable.dataConfig);
             consola.log('TableUI TableConfig prop:', this.$refs?.knimeTable.tableConfig);
+        },
+        onDisableSortOfSpecificColumns(checked) {
+            this.allColumnSpecificSortConfigs = checked ? allColumnSpecificSortConfigs : [];
         }
     }
 };
@@ -86,6 +93,9 @@ export default {
       <Checkbox v-model="showSorting">sort</Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
+      <Checkbox @input="onDisableSortOfSpecificColumns">
+        disable sort of specific columns (here: columns starting with workflow)
+      </Checkbox>
     </div>
     <br>
     <Table

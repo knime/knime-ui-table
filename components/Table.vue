@@ -62,6 +62,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        allColumnSpecificSortConfigs: {
+            type: Array,
+            default: () => []
+        },
         timeFilterKey: {
             type: String,
             default: null
@@ -184,7 +188,9 @@ export default {
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
                     popoverRenderer: this.allPopoverRenderers[key],
-                    hasSlotContent: this.currentSlottedColumns?.includes(key)
+                    hasSlotContent: this.currentSlottedColumns?.includes(key),
+                    ...this.currentColumnSpecificSortConfigs.length !== 0 &&
+                        { isSortable: this.currentColumnSpecificSortConfigs[ind] }
                 };
                 dataConfig.columnConfigs.push(columnConfig);
             });
@@ -304,6 +310,9 @@ export default {
                 types: this.allColumnTypes,
                 values: this.filterValues
             });
+        },
+        currentColumnSpecificSortConfigs() {
+            return this.getDataOfCurrentlyShownColumns(this.allColumnSpecificSortConfigs);
         },
         /*
          * Column key of the current group-by column.
@@ -562,8 +571,11 @@ export default {
          * Utilities.
          *
          */
+        getDataOfCurrentlyShownColumns(localData) {
+            return localData?.length ? this.currentColumns.map(colInd => localData[colInd]) : [];
+        },
         filterByColumn(localData) {
-            return localData?.length ? this.currentColumns.map(colInd => localData[colInd]).filter(item => item) : [];
+            return this.getDataOfCurrentlyShownColumns(localData).filter(item => item);
         },
         getProcessedRowIndex(relativeInd, groupInd) {
             return getProcessedRowInd({

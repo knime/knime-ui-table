@@ -125,7 +125,9 @@ export default {
             return this.getPropertiesFromColumns('key');
         },
         columnSortConfigs() {
-            return this.getPropertiesFromColumns('isSortable');
+            return this.dataConfig.columnConfigs.map(columnConfig => columnConfig.hasOwnProperty('isSortable')
+                ? columnConfig.isSortable
+                : true);
         },
         slottedColumns() {
             return this.getPropertiesFromColumns('hasSlotContent')

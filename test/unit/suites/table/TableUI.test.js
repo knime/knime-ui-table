@@ -32,7 +32,8 @@ const getPropsData = (dynamicProps) => ({
                 type: 'MessageRenderer',
                 process: data => data
             },
-            hasSlotContent: false
+            hasSlotContent: false,
+            ...dynamicProps?.enableIsSortable && { isSortable: false }
         }, {
             key: 'b',
             header: 'b',
@@ -45,7 +46,8 @@ const getPropsData = (dynamicProps) => ({
             },
             formatter: (x) => x,
             classGenerator: [],
-            hasSlotContent: false
+            hasSlotContent: false,
+            ...dynamicProps?.enableIsSortable && { isSortable: true }
         }],
         rowConfig: {
             compactMode: dynamicProps?.compactMode,
@@ -350,6 +352,19 @@ describe('TableUI.vue', () => {
                 getPropsData({ showSelection: false, showColumnFilters: false }) });
             wrapper.vm.onToggleFilter();
             expect(wrapper.vm.currentBodyWidth).toEqual(120);
+        });
+    });
+
+    describe('column specific sort config', () => {
+        it('adds true to the columnSortConfigs for column configs that do not have the isSortable key', () => {
+            wrapper = shallowMount(TableUI, { propsData });
+            expect(wrapper.vm.columnSortConfigs).toEqual([true, true]);
+        });
+
+        it('adds the corresponding isSortable value to the columnSortConfigs if specified', () => {
+            wrapper = shallowMount(TableUI, { propsData:
+                getPropsData({ enableIsSortable: true }) });
+            expect(wrapper.vm.columnSortConfigs).toEqual([false, true]);
         });
     });
 

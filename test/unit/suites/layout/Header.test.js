@@ -28,6 +28,7 @@ describe('Header.vue', () => {
         columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
         columnSubHeaders: [],
         columnSizes: [20, 20, 20, 20, 20],
+        columnSortConfigs: [true, true, true, true, true],
         isSelected: false,
         filtersActive: false
     };
