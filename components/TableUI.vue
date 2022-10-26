@@ -293,7 +293,7 @@ export default {
         @column-update="onColumnUpdate"
         @column-reorder="onColumnReorder"
         @group-update="onGroupUpdate"
-        @search-pdate="onSearch"
+        @search-update="onSearch"
         @time-filter-update="onTimeFilterUpdate"
       />
       <Header
@@ -507,7 +507,7 @@ table :deep(tr) {
       white-space: pre-wrap;
 
       & a {
-        display: flex;
+        display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
         -webkit-line-clamp: 2; /* number of lines to show */
         -webkit-box-orient: vertical;
       }
