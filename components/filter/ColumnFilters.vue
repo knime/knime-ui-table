@@ -140,7 +140,7 @@ tr {
       }
     }
 
-    & >>> .function-button {
+    & :deep(.function-button) {
       display: flex;
       align-self: stretch;
       align-items: center;

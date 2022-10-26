@@ -70,7 +70,7 @@ export default {
     line-height: 50px;
   }
 
-  & >>> .function-button {
+  & :deep(.function-button) {
     position: relative;
     margin: none;
     height: 28px;
@@ -86,11 +86,11 @@ export default {
     }
   }
 
-  & >>> .dropdown [role="button"] {
+  & :deep(.dropdown [role="button"]) {
     border: none;
   }
 
-  & >>> .dropdown ul {
+  & :deep(.dropdown ul) {
     width: fit-content;
   }
 }

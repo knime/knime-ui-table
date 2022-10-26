@@ -286,7 +286,7 @@ export default {
       outline: none;
       color: var(--knime-masala);
 
-      & >>> svg {
+      & :deep(svg) {
         stroke: var(--knime-masala);
       }
     }

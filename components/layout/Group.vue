@@ -92,12 +92,12 @@ tr.table-group {
       stroke: var(--knime-dove-gray);
     }
 
-    & >>> ul {
+    & :deep(ul) {
       margin-top: -10px;
       right: 10px;
     }
 
-    & >>> .submenu-toggle {
+    & :deep(.submenu-toggle) {
       display: flex;
       align-self: stretch;
       align-items: center;

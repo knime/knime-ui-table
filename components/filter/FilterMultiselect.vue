@@ -272,7 +272,7 @@ export default {
     & .boxes {
       display: block;
 
-      & >>> span {
+      & :deep(span) {
         width: 100%;
       }
     }

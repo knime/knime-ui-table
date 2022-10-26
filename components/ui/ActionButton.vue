@@ -54,7 +54,7 @@ tr {
   & td {
     margin-top: 10px;
 
-    & >>> button.button.with-border {
+    & :deep(button.button.with-border) {
       height: 20px;
       font-size: 13px;
       line-height: 0;

@@ -230,7 +230,7 @@ thead {
         min-width: 30px;
         width: 30px;
 
-        & >>> label {
+        & :deep(label) {
           padding: 0;
           display: inline;
           max-width: unset;
@@ -343,7 +343,7 @@ thead {
         overflow: visible;
         min-width: 30px;
 
-        & >>> .function-button {
+        & :deep(.function-button) {
           display: flex;
           align-self: stretch;
           align-items: center;
@@ -360,7 +360,7 @@ thead {
         &.filter-active {
           background-color: var(--theme-button-function-background-color-hover);
 
-          & >>> .function-button {
+          & :deep(.function-button) {
             & svg {
               fill: var(--knime-masala);
               stroke: var(--knime-masala);

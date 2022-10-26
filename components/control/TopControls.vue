@@ -185,7 +185,7 @@ export default {
     line-height: 50px;
   }
 
-  & >>> .function-button {
+  & :deep(.function-button) {
     position: relative;
     margin: none;
     height: 28px;
@@ -200,7 +200,7 @@ export default {
     }
   }
 
-  & >>> .search-toggle.function-button {
+  & :deep(.search-toggle.function-button) {
     display: flex;
     align-self: stretch;
     align-items: center;

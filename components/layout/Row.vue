@@ -281,7 +281,7 @@ tr.row {
       min-width: 30px;
       width: 30px;
 
-      & >>> label {
+      & :deep(label) {
         padding: 0;
         display: inline;
         max-width: unset;
@@ -316,12 +316,12 @@ tr.row {
         stroke: var(--knime-dove-gray);
       }
 
-      & >>> ul {
+      & :deep(ul) {
         margin-top: -10px;
         right: 10px;
       }
 
-      & >>> .submenu-toggle {
+      & :deep(.submenu-toggle) {
         display: flex;
         align-self: stretch;
         align-items: center;
@@ -350,11 +350,11 @@ tr.row {
     & td {
       line-height: 24px;
 
-      & >>> label {
+      & :deep(label) {
         bottom: 5px;
       }
 
-      &.action >>> .submenu-toggle {
+      &.action :deep(.submenu-toggle) {
         height: 24px;
       }
     }

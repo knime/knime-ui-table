@@ -67,7 +67,7 @@ export default {
     top: 0;
   }
 
-  & >>> button {
+  & :deep(button) {
     width: 20px;
     height: 20px;
     padding: 3px !important;

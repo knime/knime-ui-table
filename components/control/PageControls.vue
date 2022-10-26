@@ -118,7 +118,7 @@ th.left-controls {
     white-space: pre;
   }
 
-  & >>> .function-button {
+  & :deep(.function-button) {
     display: flex;
     align-self: stretch;
     align-items: center;

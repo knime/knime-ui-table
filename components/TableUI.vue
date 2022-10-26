@@ -427,11 +427,11 @@ table {
   & .table-group-wrapper {
     display: block;
 
-    & >>> tbody {
+    & :deep(tbody) {
       display: block;
     }
 
-    & >>> td > a {
+    & :deep(td > a) {
       text-decoration: none;
       display: block;
       text-overflow: ellipsis;
@@ -440,13 +440,13 @@ table {
       padding-right: 15px;
     }
 
-    & >>> td:first-child > a {
+    & :deep(td:first-child > a) {
       padding-left: 15px;
     }
   }
 }
 
-table >>> tr {
+table :deep(tr) {
   display: flex;
 
   &:not(:first-child, :last-child) {
@@ -459,7 +459,7 @@ table >>> tr {
   line-height: 18px;
 }
 
->>> .more-button { /* standard focus on button interferes when clicked */
+:deep(.more-button) { /* standard focus on button interferes when clicked */
   & button:focus {
     color: var(--knime-masala);
     background-color: var(--knime-silver-sand-semi);
@@ -487,7 +487,7 @@ table >>> tr {
     width: 100%;
 
     & th,
-    & >>> td > a {
+    & :deep(td > a) {
       padding-right: 0;
       padding-left: 5px;
       margin-left: 0;
@@ -497,31 +497,31 @@ table >>> tr {
 
 @media only screen and (max-width: 750px) {
   table {
-    & >>> .name {
+    & :deep(.name) {
       width: 40%;
       align-items: center;
     }
 
-    & >>> td.name {
+    & :deep(td.name) {
       line-height: unset;
       white-space: pre-wrap;
 
       & a {
-        display: box;
+        display: flex;
         -webkit-line-clamp: 2; /* number of lines to show */
         -webkit-box-orient: vertical;
       }
     }
 
-    & >>> .owner {
+    & :deep(.owner) {
       width: 30%;
     }
 
-    & >>> .start-date {
+    & :deep(.start-date) {
       width: 25%;
     }
 
-    & >>> .state {
+    & :deep(.state) {
       width: 5%;
 
       &::before {
@@ -529,7 +529,7 @@ table >>> tr {
       }
     }
 
-    & >>> th.state {
+    & :deep(th.state) {
       overflow: visible;
       padding-left: 0;
     }
