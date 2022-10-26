@@ -74,9 +74,6 @@ export default {
       KNIME UI TABLE
     </h2>
     <div class="toggle-options">
-      <h6>
-        Enable:
-      </h6>
       <Checkbox v-model="showTimeFilter">time filter</Checkbox>
       <Checkbox v-model="showColumnSelection">column selection</Checkbox>
       <Checkbox v-model="showGroupBy">group by</Checkbox>
@@ -108,7 +105,12 @@ export default {
 </template>
 
 <style>
-  @import "./index.css";
+  @import "webapps-common/ui/css";
+
+  :root {
+    font-size: 16px;
+    line-height: 1.44;
+  }
 
   body {
     background-color: var(--knime-silver-sand-semi);

@@ -2,10 +2,15 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue(), svgLoader()],
+    plugins: [
+        vue(),
+        svgLoader(),
+        cssInjectedByJsPlugin() // not supported natively in Vite yet, see https://github.com/vitejs/vite/issues/1579]
+    ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -15,18 +20,12 @@ export default defineConfig({
     envPrefix: 'KNIME_',
     build: {
         lib: {
-            // Could also be a dictionary or array of multiple entry points
             entry: fileURLToPath(new URL('lib/main.js', import.meta.url)),
-            name: 'KNIME-Table',
-            fileName: 'KNIME-Table'
+            fileName: 'knime-ui-table',
+            formats: ['es']
         },
         rollupOptions: {
-            external: ['vue'],
-            output: {
-                globals: {
-                    vue: 'Vue'
-                }
-            }
+            external: ['vue']
         }
     }
 });
