@@ -1,5 +1,5 @@
-import { columnTypes } from '~/config/table.config';
-import { getFilterConfigs, getDefaultFilterValues } from '~/util/getFilterConfigs';
+import { columnTypes } from '@/config/table.config';
+import { getFilterConfigs, getDefaultFilterValues } from '@/util/getFilterConfigs';
 
 describe('getFilterConfigs', () => {
     let mockColumns = [];

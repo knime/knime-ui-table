@@ -1,5 +1,5 @@
-import { searchCell } from '~/util/transform/search';
-import { columnTypes } from '~/config/table.config';
+import { searchCell } from '@/util/transform/search';
+import { columnTypes } from '@/config/table.config';
 
 describe('searchData', () => {
     let cb = x => x;

@@ -1,4 +1,4 @@
-import { getProcessedRowInd } from '~/util/processSelection';
+import { getProcessedRowInd } from '@/util/processSelection';
 
 describe('getProcessedRowInd', () => {
     it('returns the index of a row on the first page with no groups', () => {

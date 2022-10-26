@@ -1,9 +1,9 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import Table from '~/components/Table.vue';
-import TableUI from '~/components/TableUI.vue';
+import Table from '@/components/Table.vue';
+import TableUI from '@/components/TableUI.vue';
 
-import { columnTypes } from '~/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '~/util/constants';
+import { columnTypes } from '@/config/table.config';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '@/util/constants';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

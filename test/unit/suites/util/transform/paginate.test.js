@@ -1,4 +1,4 @@
-import { paginate } from '~/util/transform/paginate';
+import { paginate } from '@/util/transform/paginate';
 
 describe('paginate', () => {
     it('returns an empty page if no data', () => {

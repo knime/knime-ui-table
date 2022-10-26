@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import ActionButton from '~/components/ui/ActionButton.vue';
-import Button from '~/webapps-common/ui/components/Button.vue';
+import ActionButton from '@/components/ui/ActionButton.vue';
+import Button from 'webapps-common/ui/components/Button.vue';
 
 describe('ActionButton.vue', () => {
     let wrapper;

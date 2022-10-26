@@ -17,13 +17,10 @@ module.exports = {
     ],
     moduleNameMapper: {
         '\\.(jpg|png)\\?(jpg|webp)': '<rootDir>/test/unit/assets/stub.$2',
-        '^@/(.*\\.svg)\\?inline$': '<rootDir>/src/$1',
-        '^~/(.*\\.svg)\\?inline$': '<rootDir>/$1',
-        '^(.*\\.svg)\\?inline$': '$1',
+        '^@/(.*\\.svg)$': '<rootDir>/$1',
         '\\.svg\\?data$': '<rootDir>/test/unit/assets/stub.data',
         '^vue$': 'vue/dist/vue.common.js',
-        '^@/(.*)$': '<rootDir>/src/$1',
-        '^~/(.*)$': '<rootDir>/$1'
+        '^@/(.*)$': '<rootDir>/$1'
     },
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage' }]],
     coverageReporters: ['lcov', 'text'],

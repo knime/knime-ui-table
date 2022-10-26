@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import FilterInputField from '~/components/filter/FilterInputField.vue';
+import FilterInputField from '@/components/filter/FilterInputField.vue';
 
 describe('FilterInputField.vue', () => {
     it('renders', () => {

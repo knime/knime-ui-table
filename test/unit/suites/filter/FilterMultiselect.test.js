@@ -1,5 +1,5 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import FilterMultiselect from '~/components/filter/FilterMultiselect.vue';
+import FilterMultiselect from '@/components/filter/FilterMultiselect.vue';
 
 describe('FilterMultiselect.vue', () => {
     let localVue;

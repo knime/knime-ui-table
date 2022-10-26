@@ -1,4 +1,4 @@
-import { sort } from '~/util/transform/sort';
+import { sort } from '@/util/transform/sort';
 import { orderedData, reversedData, unorderedData, groupedData, missingGroupedData,
     groupedIndicies, columnKeys, currentColumnTypes } from './mockData';
 

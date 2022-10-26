@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { columnTypes } from '~/config/table.config';
+import { columnTypes } from '@/config/table.config';
 
 export const orderedData = [
     { col1: [1], col2: 4, col3: 'A', col4: { item: 4 }, col5: '2020-10-29T19:23:11.277Z', col6: 'Drinks' },

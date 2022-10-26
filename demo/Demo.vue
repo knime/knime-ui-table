@@ -1,8 +1,8 @@
 <script>
 import { markRaw } from 'vue';
-import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
-import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg';
-import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg';
+import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import DeleteIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
+import LinkIcon from 'webapps-common/ui/assets/img/icons/link.svg';
 
 import Table from '../components/Table.vue';
 import demoProps from './props.json';

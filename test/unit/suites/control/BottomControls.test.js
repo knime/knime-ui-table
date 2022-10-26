@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
-import BottomControls from '~/components/control/BottomControls.vue';
-import BaseControls from '~/components/control/BaseControls.vue';
-import ControlDropdown from '~/components/control/ControlDropdown.vue';
-import { tablePageSizes } from '~/config/table.config';
+import BottomControls from '@/components/control/BottomControls.vue';
+import BaseControls from '@/components/control/BaseControls.vue';
+import ControlDropdown from '@/components/control/ControlDropdown.vue';
+import { tablePageSizes } from '@/config/table.config';
 
 describe('BottomControls.vue', () => {
     let wrapper;

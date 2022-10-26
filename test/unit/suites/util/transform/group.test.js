@@ -1,4 +1,4 @@
-import { group } from '~/util/transform/group';
+import { group } from '@/util/transform/group';
 
 describe('group', () => {
     let dataMock = [

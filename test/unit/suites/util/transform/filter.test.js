@@ -1,5 +1,5 @@
-import { filter } from '~/util/transform/filter';
-import { columnTypes } from '~/config/table.config';
+import { filter } from '@/util/transform/filter';
+import { columnTypes } from '@/config/table.config';
 
 describe('filter', () => {
     let now = new Date().toString();

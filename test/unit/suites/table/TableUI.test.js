@@ -1,15 +1,15 @@
 import { shallowMount } from '@vue/test-utils';
-import TableUI from '~/components/TableUI.vue';
-import TopControls from '~/components/control/TopControls.vue';
-import BottomControls from '~/components/control/BottomControls.vue';
-import ColumnFilters from '~/components/filter/ColumnFilters.vue';
-import Header from '~/components/layout/Header.vue';
-import Group from '~/components/layout/Group.vue';
-import Row from '~/components/layout/Row.vue';
-import ActionButton from '~/components/ui/ActionButton.vue';
-import TablePopover from '~/components/popover/TablePopover.vue';
+import TableUI from '@/components/TableUI.vue';
+import TopControls from '@/components/control/TopControls.vue';
+import BottomControls from '@/components/control/BottomControls.vue';
+import ColumnFilters from '@/components/filter/ColumnFilters.vue';
+import Header from '@/components/layout/Header.vue';
+import Group from '@/components/layout/Group.vue';
+import Row from '@/components/layout/Row.vue';
+import ActionButton from '@/components/ui/ActionButton.vue';
+import TablePopover from '@/components/popover/TablePopover.vue';
 
-import { columnTypes } from '~/config/table.config';
+import { columnTypes } from '@/config/table.config';
 
 const getPropsData = (dynamicProps) => ({
     data: [[{ a: 1, b: 2 }]],

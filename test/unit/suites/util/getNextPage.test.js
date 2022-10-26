@@ -1,4 +1,4 @@
-import { getNextPage } from '~/util/getNextPage';
+import { getNextPage } from '@/util/getNextPage';
 
 describe('getNextPage', () => {
     it('returns 1 if the pageSize is greater than the total number of rows', () => {

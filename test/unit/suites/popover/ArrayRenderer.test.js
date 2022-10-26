@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import ArrayRenderer from '~/components/popover/ArrayRenderer.vue';
-import PopoverPageControls from '~/components/popover/PopoverPageControls.vue';
+import ArrayRenderer from '@/components/popover/ArrayRenderer.vue';
+import PopoverPageControls from '@/components/popover/PopoverPageControls.vue';
 
 describe('ArrayRenderer.vue', () => {
     let wrapper;

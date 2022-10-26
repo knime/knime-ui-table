@@ -1,5 +1,5 @@
-import getColumnDomains from '~/util/getColumnDomains';
-import { columnTypes } from '~/config/table.config';
+import getColumnDomains from '@/util/getColumnDomains';
+import { columnTypes } from '@/config/table.config';
 
 describe('getColumnDomains', () => {
     let dataMock = [
