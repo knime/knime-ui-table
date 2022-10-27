@@ -216,6 +216,7 @@ export default {
                 showCollapser: this.showCollapser,
                 showPopovers: this.showPopovers,
                 showColumnFilters: this.showColumnFilters,
+                columnFilterInitiallyActive: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length),
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
@@ -755,7 +756,6 @@ export default {
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
-    :initial-filter-active="showColumnFilters && (initialFilterValues !== {})"
     @timeFilterUpdate="onTimeFilterUpdate"
     @columnUpdate="onColumnUpdate"
     @columnReorder="onColumnReorder"

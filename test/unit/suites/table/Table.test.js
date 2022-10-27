@@ -102,14 +102,16 @@ describe('Table.vue', () => {
                 searchConfig: { searchQuery: '' },
                 sortConfig: { sortColumn: 0, sortDirection: -1 },
                 subMenuItems: [],
-                groupSubMenuItems: []
+                groupSubMenuItems: [],
+                columnFilterInitiallyActive: false
             });
         });
 
         it('supports initial sorting', () => {
             const { wrapper } = doMount(
                 {
-                    shallow: false, customPropsData: { showSorting: true, initialSortColumn: 1, initialSortColumnDirection: 1 }
+                    shallow: false,
+                    customPropsData: { showSorting: true, initialSortColumn: 1, initialSortColumnDirection: 1 }
                 }
             );
 
@@ -135,6 +137,7 @@ describe('Table.vue', () => {
                 }
             );
 
+            expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(true);
             expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
                 expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '4' } }),
                 expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '10' } })
@@ -149,6 +152,7 @@ describe('Table.vue', () => {
                 }
             );
 
+            expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(false);
             expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
                 expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '' } }),
                 expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '' } })
