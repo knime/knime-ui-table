@@ -6,7 +6,7 @@ import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '..
 import { defaultTimeFilter } from '../config/time.config';
 
 import getColumnDomains from '../util/getColumnDomains';
-import { getFilterConfigs, getDefaultFilterValues } from '../util/getFilterConfigs';
+import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '../util/getFilterConfigs';
 import { getNextPage } from '../util/getNextPage';
 import { getProcessedRowInd } from '../util/processSelection';
 import { filter } from '../util/transform/filter';
@@ -69,6 +69,24 @@ export default {
         defaultColumns: {
             type: Array,
             default: () => []
+        },
+        /**
+         * Initial values for sorting and filtering
+         */
+        initialSortColumn: {
+            type: Number,
+            default: 0
+        },
+        initialSortColumnDirection: {
+            type: Number,
+            default: -1,
+            validator(val) {
+                return val === -1 || val === 1;
+            }
+        },
+        initialFilterValues: {
+            type: Object,
+            default: () => ({})
         },
         /**
          * Visual element configuration props.
@@ -146,11 +164,13 @@ export default {
             currentTableSize: 0,
             pageRowCount: 0,
             // column sort
-            columnSort: 0,
-            columnSortDirection: -1,
+            columnSort: this.initialSortColumn,
+            columnSortDirection: this.initialSortColumnDirection,
             // column filter
-            showFilter: false,
-            filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
+            showFilter: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length),
+            filterValues: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length)
+                ? getInitialFilterValues(this.allColumnKeys, this.allColumnTypes, this.initialFilterValues)
+                : getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // Selection State
             masterSelected: this.initMasterSelected(),
             processedIndicies: [],
@@ -275,7 +295,7 @@ export default {
             if (this.showSelection) {
                 specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
             }
-            
+
             const nColumns = this.currentColumns.length;
             const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
                 nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
@@ -496,7 +516,7 @@ export default {
         filterData() {
             consola.trace('Filtering data.');
             // declare locally to avoid asynchronous behavior
-            let x = filter({
+            let filteredDataConfig = filter({
                 data: this.allData,
                 filterValues: this.filterValues,
                 timeFilter: this.currentTimeFilter,
@@ -507,9 +527,9 @@ export default {
                 formatters: this.currentFormatters,
                 types: this.allColumnTypes
             });
-            this.filteredDataConfig = x;
-            this.currentTableSize = x.filteredData.length;
-            return x;
+            this.filteredDataConfig = filteredDataConfig;
+            this.currentTableSize = filteredDataConfig.filteredData.length;
+            return filteredDataConfig;
         },
         groupData({ filteredData, filteredIndicies }) {
             consola.trace('Grouping data.');
@@ -735,6 +755,7 @@ export default {
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
+    :initial-filter-active="showColumnFilters && (initialFilterValues !== {})"
     @timeFilterUpdate="onTimeFilterUpdate"
     @columnUpdate="onColumnUpdate"
     @columnReorder="onColumnReorder"

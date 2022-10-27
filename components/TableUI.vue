@@ -83,11 +83,15 @@ export default {
                     return true;
                 });
             }
+        },
+        initialFilterActive: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
         return {
-            filterActive: false,
+            filterActive: this.initialFilterActive,
             popoverTarget: null,
             popoverData: null,
             popoverColumn: null,
