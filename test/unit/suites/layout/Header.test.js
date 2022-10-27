@@ -28,6 +28,7 @@ describe('Header.vue', () => {
         columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
         columnSubHeaders: [],
         columnSizes: [20, 20, 20, 20, 20],
+        columnSortConfigs: [true, true, true, true, true],
         isSelected: false,
         filtersActive: false
     };
@@ -230,10 +231,56 @@ describe('Header.vue', () => {
 
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
         wrapper.findAll('th.column-header').wrappers.forEach(thWrapper => {
-            expect(thWrapper.classes).not.toContain('sortable');
+            expect(thWrapper.classes()).not.toContain('sortable');
         });
         wrapper.findAll(ArrowIcon).wrappers.forEach(iconWrapper => {
-            expect(iconWrapper.classes).not.toContain('active');
+            expect(iconWrapper.classes()).not.toContain('active');
+        });
+        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+    });
+
+    it('disables sorting for specific columns via the columnSortConfig', () => {
+        wrapper = shallowMount(Header, { propsData: {
+            ...propsData,
+            columnSortConfigs: [true, true, false, false, true]
+        } });
+
+        const wrappers = wrapper.findAll('th.column-header').wrappers;
+        expect(wrappers[2].classes()).not.toContain('sortable');
+        expect(wrappers[3].classes()).not.toContain('sortable');
+
+        wrapper.findAll('th.column-header').at(2).trigger('click', 2);
+        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+    });
+
+    it('enables sorting for specific columns via the columnSortConfig', () => {
+        wrapper = shallowMount(Header, { propsData: {
+            ...propsData,
+            columnSortConfigs: [true, true, false, false, true]
+        } });
+
+        const wrappers = wrapper.findAll('th.column-header').wrappers;
+        expect(wrappers[0].classes()).toContain('sortable');
+        expect(wrappers[1].classes()).toContain('sortable');
+        expect(wrappers[4].classes()).toContain('sortable');
+
+        wrapper.findAll('th.column-header').at(0).trigger('click', 0);
+        expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
+    });
+
+    it('general sortConfig overrides columns specific columnSortConfig', () => {
+        wrapper = shallowMount(Header, { propsData: {
+            ...propsData,
+            tableConfig: {
+                ...propsData.tableConfig,
+                sortConfig: null
+            },
+            columnSortConfigs: [true, true, false, false, true]
+        } });
+
+        wrapper.findAll('th.column-header').wrappers.forEach(thWrapper => {
+            expect(thWrapper.classes()).not.toContain('sortable');
         });
         wrapper.findAll('th.column-header').at(0).trigger('click', 0);
         expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();

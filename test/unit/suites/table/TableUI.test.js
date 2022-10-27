@@ -42,7 +42,8 @@ const getPropsData = ({
                 type: 'MessageRenderer',
                 process: data => data
             },
-            hasSlotContent: false
+            hasSlotContent: false,
+            ...dynamicProps?.enableIsSortable && { isSortable: false }
         }, {
             key: 'b',
             header: 'b',
@@ -55,7 +56,8 @@ const getPropsData = ({
             },
             formatter: (x) => x,
             classGenerator: [],
-            hasSlotContent: false
+            hasSlotContent: false,
+            ...dynamicProps?.enableIsSortable && { isSortable: true }
         }],
         rowConfig: {
             compactMode,
@@ -418,6 +420,19 @@ describe('TableUI.vue', () => {
         });
     });
 
+    describe('column specific sort config', () => {
+        it('adds true to the columnSortConfigs for column configs that do not have the isSortable key', () => {
+            const { wrapper } = doMount();
+
+            expect(wrapper.vm.columnSortConfigs).toEqual([true, true]);
+        });
+
+        it('adds the corresponding isSortable value to the columnSortConfigs if specified', () => {
+            const { wrapper } = doMount();
+
+            expect(wrapper.vm.columnSortConfigs).toEqual([false, true]);
+        });
+    });
 
     describe('the height of the rows and of the body', () => {
         it('sets default height of rows if no height is given', () => {
