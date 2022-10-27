@@ -453,12 +453,17 @@ export default {
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
         }
-        // determine default column size on mounted, since only then do we know the clientWidth of this element
-        this.updateClientWidth();
-        window.addEventListener('resize', this.updateClientWidth);
+        const clientWidth = this.$el.getBoundingClientRect().width;
+        // clientWidth can be 0, e.g., if table is not visible (yet)
+        if (clientWidth) {
+            this.clientWidth = clientWidth;
+            window.addEventListener('resize', this.onResize);
+        } else {
+            this.observeTableIntersection();
+        }
     },
     beforeDestroy() {
-        window.removeEventListener('resize', this.updateClientWidth);
+        window.removeEventListener('resize', this.onResize);
     },
     methods: {
         /*
@@ -729,16 +734,33 @@ export default {
             consola.debug(`Table clearing selection.`);
             Vue.set(this, 'masterSelected', this.allData.map(_ => 0));
         },
-        updateClientWidth: throttle(function () {
+        onResize: throttle(function () {
             /* eslint-disable no-invalid-this */
-            const updatedClientWidth = this.$el.clientWidth;
-            // also update all non-default column widths according to the relative change in client width
-            const ratio = updatedClientWidth / this.clientWidth;
-            this.currentAllColumnSizes = this.currentAllColumnSizes
-                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
-            this.clientWidth = updatedClientWidth;
+            const updatedClientWidth = this.$el.getBoundingClientRect().width;
+            if (updatedClientWidth) {
+                // update all non-default column widths according to the relative change in client width
+                const ratio = updatedClientWidth / this.clientWidth;
+                this.currentAllColumnSizes = this.currentAllColumnSizes
+                    .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+                this.clientWidth = updatedClientWidth;
+            } else {
+                this.observeTableIntersection();
+                window.removeEventListener('resize', this.onResize);
+            }
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        observeTableIntersection() {
+            new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.target === this.$el && entry.boundingClientRect.width) {
+                        this.clientWidth = entry.boundingClientRect.width;
+                        // observer is either removed here or on garbage collection
+                        observer.unobserve(entry.target);
+                        window.addEventListener('resize', this.onResize);
+                    }
+                });
+            }).observe(this.$el);
+        }
     }
 };
 </script>

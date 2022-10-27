@@ -45,6 +45,14 @@ describe('Table.vue', () => {
         return localPropsData;
     };
 
+    beforeEach(() => {
+        window.IntersectionObserver = jest.fn(() => ({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        }));
+    });
+
     it('creates UI configurations', () => {
         wrapper = mount(Table, { propsData });
 
@@ -134,20 +142,68 @@ describe('Table.vue', () => {
     });
 
     describe('events', () => {
-        it('adds resize listener, updates client width on resize, and removes resize listener', () => {
+        it('adds / removes intersection observer / resize listener and updates client width accordingly', () => {
+            const observe = jest.fn();
+            const unobserve = jest.fn();
+            window.IntersectionObserver = jest.fn(() => ({
+                observe,
+                unobserve
+            }));
             jest.spyOn(window, 'addEventListener');
             jest.spyOn(window, 'removeEventListener');
-    
             wrapper = shallowMount(Table, { propsData });
-            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
-    
+            
             expect(wrapper.vm.clientWidth).toBe(0);
-            wrapper.vm.$el = { clientWidth: 500 };
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledWith(wrapper.vm.$el);
+
+            let clientWidth = 100;
+            const mockedEntries = [{
+                target: null
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: 0 }
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: clientWidth }
+            }];
+            const [callback] = window.IntersectionObserver.mock.calls[0];
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(1);
+            expect(unobserve).toHaveBeenCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(1);
+            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: 0 };
+            };
             window.dispatchEvent(new Event('resize'));
-            expect(wrapper.vm.clientWidth).toBe(500);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(1);
+            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenLastCalledWith(wrapper.vm.$el);
+
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(2);
+            expect(unobserve).toHaveBeenLastCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(2);
+            expect(window.addEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+
+            clientWidth = 200;
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: clientWidth };
+            };
+            window.dispatchEvent(new Event('resize'));
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
     
             wrapper.destroy();
-            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(2);
+            expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
         });
 
         describe('page control', () => {
