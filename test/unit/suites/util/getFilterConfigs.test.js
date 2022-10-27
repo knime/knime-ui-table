@@ -1,5 +1,5 @@
 import { columnTypes } from '~/config/table.config';
-import { getFilterConfigs, getDefaultFilterValues } from '~/util/getFilterConfigs';
+import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '~/util/getFilterConfigs';
 
 describe('getFilterConfigs', () => {
     let mockColumns = [];
@@ -20,6 +20,15 @@ describe('getFilterConfigs', () => {
 
     it('gets default filter values', () => {
         expect(getDefaultFilterValues(mockColumns, mockTypes)).toStrictEqual(mockValues);
+    });
+
+    it('gets initial filter values', () => {
+        expect(getInitialFilterValues(mockColumns, mockTypes, {})).toStrictEqual(mockValues);
+        expect(getInitialFilterValues(
+            ['col'],
+            { col: columnTypes.String },
+            { col: 'initial Value' }
+        )).toStrictEqual({ col: 'initial Value' });
     });
 
     it('creates filter configs', () => {

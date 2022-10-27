@@ -5,6 +5,13 @@ export const getDefaultFilterValues = (columns, types) => columns.reduce((obj, c
     return obj;
 }, {});
 
+export const getInitialFilterValues = (columns, types, initialFilterValues) => columns.reduce((obj, col) => {
+    obj[col] = initialFilterValues.hasOwnProperty(col)
+        ? initialFilterValues[col]
+        : columnFilterConfigs[types[col]].value();
+    return obj;
+}, {});
+
 export const getFilterConfigs = ({ domains, columns, types, values }) => columns.map(col => {
     let config = {
         ...columnFilterConfigs[types[col]],
