@@ -216,7 +216,9 @@ export default {
                 showCollapser: this.showCollapser,
                 showPopovers: this.showPopovers,
                 showColumnFilters: this.showColumnFilters,
-                columnFilterInitiallyActive: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length),
+                columnFilterInitiallyActive:
+                    this.showColumnFilters &&
+                    Boolean(Object.keys(this.initialFilterValues).length),
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
