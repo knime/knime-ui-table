@@ -21,7 +21,8 @@ const getPropsData = ({
     enableVirtualScrolling = false,
     rowHeight = null,
     actionButtonConfig = null,
-    columnFilterInitiallyActive = false
+    columnFilterInitiallyActive = false,
+    enableIsSortable = false
 }) => ({
     data: [[{ a: 'cellA', b: 'cellB' }]],
     currentSelection: [[false]],
@@ -43,7 +44,7 @@ const getPropsData = ({
                 process: data => data
             },
             hasSlotContent: false,
-            ...dynamicProps?.enableIsSortable && { isSortable: false }
+            ...enableIsSortable && { isSortable: false }
         }, {
             key: 'b',
             header: 'b',
@@ -57,7 +58,7 @@ const getPropsData = ({
             formatter: (x) => x,
             classGenerator: [],
             hasSlotContent: false,
-            ...dynamicProps?.enableIsSortable && { isSortable: true }
+            ...enableIsSortable && { isSortable: true }
         }],
         rowConfig: {
             compactMode,
@@ -103,6 +104,7 @@ describe('TableUI.vue', () => {
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
+        enableIsSortable = false,
         shallow = true
     } = {}) => {
         const propsData = getPropsData({
@@ -114,7 +116,8 @@ describe('TableUI.vue', () => {
             enableVirtualScrolling,
             rowHeight,
             actionButtonConfig,
-            columnFilterInitiallyActive
+            columnFilterInitiallyActive,
+            enableIsSortable
         });
 
         const wrapper = shallow ? shallowMount(TableUI, { propsData }) : mount(TableUI, { propsData });
@@ -422,13 +425,13 @@ describe('TableUI.vue', () => {
 
     describe('column specific sort config', () => {
         it('adds true to the columnSortConfigs for column configs that do not have the isSortable key', () => {
-            const { wrapper } = doMount();
+            const { wrapper } = doMount({ enableIsSortable: false });
 
             expect(wrapper.vm.columnSortConfigs).toEqual([true, true]);
         });
 
         it('adds the corresponding isSortable value to the columnSortConfigs if specified', () => {
-            const { wrapper } = doMount();
+            const { wrapper } = doMount({ enableIsSortable: true });
 
             expect(wrapper.vm.columnSortConfigs).toEqual([false, true]);
         });
