@@ -80,22 +80,7 @@ typings/
 
 # IDE
 /.history/**
-/.idea/**
-!/.idea/codeStyles/
-!/.idea/codeStyles/**
-!/.idea/runConfigurations/
-!/.idea/runConfigurations/**
-!/.idea/stylesheetLinters/
-!/.idea/stylesheetLinters/**
-!/.idea/*.iml
-!/.idea/cssdialects.xml
-!/.idea/encodings.xml
-!/.idea/externalDependencies.xml
-!/.idea/jsLibraryMappings.xml
-!/.idea/misc.xml
-!/.idea/modules.xml
-!/.idea/vcs.xml
-!/.idea/webpack.config.js
+.idea/**
 
 .vscode/
 !.vscode/launch.json
