@@ -43,6 +43,7 @@ export default {
     },
     data() {
         return {
+            renderComponent: true,
             subMenuItems,
             groupSubMenuItems,
             showTimeFilter: true,
@@ -58,8 +59,46 @@ export default {
             compactMode: true,
             showActionButton: false,
             allColumnSpecificSortConfigs: [],
-            ...demoProps
+            setInitialSorting: false,
+            setInitialFiltering: false
         };
+    },
+    computed: {
+        tableProps() {
+            return {
+                ...demoProps,
+                subMenuItems: this.subMenuItems,
+                groupSubMenuItems: this.groupSubMenuItems,
+                showTimeFilter: this.showTimeFilter,
+                showColumnSelection: this.showColumnSelection,
+                showGroupBy: this.showGroupBy,
+                showColumnFilters: this.showColumnFilters,
+                showSearch: this.showSearch,
+                showBottomControls: this.showBottomControls,
+                showCollapser: this.showCollapser,
+                showSelection: this.showSelection,
+                showSorting: this.showSorting,
+                showPopovers: this.showPopovers,
+                compactMode: this.compactMode,
+                showActionButton: this.showActionButton,
+                allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
+                ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
+                ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
+                ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
+            };
+        }
+    },
+    watch: {
+        showColumnFilters(showColumnFilters) {
+            if (!showColumnFilters) {
+                this.setInitialFiltering = false;
+            }
+        },
+        showSorting(showSorting) {
+            if (!showSorting) {
+                this.setInitialSorting = false;
+            }
+        }
     },
     methods: {
         printConfig() {
@@ -68,6 +107,13 @@ export default {
         },
         onDisableSortOfSpecificColumns(checked) {
             this.allColumnSpecificSortConfigs = checked ? allColumnSpecificSortConfigs : [];
+        },
+        forceRerender() {
+            this.renderComponent = false;
+
+            this.$nextTick(() => {
+                this.renderComponent = true;
+            });
         }
     }
 };
@@ -86,11 +132,24 @@ export default {
       <Checkbox v-model="showColumnSelection">column selection</Checkbox>
       <Checkbox v-model="showGroupBy">group by</Checkbox>
       <Checkbox v-model="showColumnFilters">column filters</Checkbox>
+      <Checkbox
+        v-model="setInitialFiltering"
+        :disabled="!showColumnFilters"
+        @input="forceRerender"
+      >
+        set initial filters
+      </Checkbox>
       <Checkbox v-model="showSearch">search</Checkbox>
       <Checkbox v-model="showBottomControls">bottom controls</Checkbox>
       <Checkbox v-model="showCollapser">collapser</Checkbox>
       <Checkbox v-model="showSelection">selection</Checkbox>
       <Checkbox v-model="showSorting">sort</Checkbox>
+      <Checkbox
+        v-model="setInitialSorting"
+        @input="forceRerender"
+      >
+        set default sorting
+      </Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
@@ -99,8 +158,9 @@ export default {
     </div>
     <br>
     <Table
+      v-if="renderComponent"
       ref="knimeTable"
-      v-bind="_data"
+      v-bind="tableProps"
     >
       <template #collapserContent="{ row }">
         <h6>Example collapser slot:</h6>
