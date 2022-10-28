@@ -75,19 +75,22 @@ export default {
             default: () => []
         },
         /**
-         * Initial values for sorting and filtering
+         * Default sorting
          */
-        initialSortColumn: {
+        defaultSortColumn: {
             type: Number,
             default: 0
         },
-        initialSortColumnDirection: {
+        defaultSortColumnDirection: {
             type: Number,
             default: -1,
             validator(value) {
                 return value === -1 || value === 1;
             }
         },
+        /**
+         * Initial filter values applied if showColumnFilters is true
+         */
         initialFilterValues: {
             type: Object,
             default: () => ({})
@@ -168,8 +171,8 @@ export default {
             currentTableSize: 0,
             pageRowCount: 0,
             // column sort
-            columnSort: this.initialSortColumn,
-            columnSortDirection: this.initialSortColumnDirection,
+            columnSort: this.defaultSortColumn,
+            columnSortDirection: this.defaultSortColumnDirection,
             // column filter
             showFilter: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length),
             filterValues: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length)

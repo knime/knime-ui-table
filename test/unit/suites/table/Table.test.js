@@ -107,26 +107,32 @@ describe('Table.vue', () => {
             });
         });
 
-        it('supports initial sorting', () => {
+        it('supports default sorting when showSort is true', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customPropsData: { showSorting: true, initialSortColumn: 1, initialSortColumnDirection: 1 }
+                    customPropsData: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
                 }
             );
 
             expect(wrapper.vm.tableConfig).toEqual(expect.objectContaining({
                 sortConfig: { sortColumn: 1, sortDirection: 1 }
             }));
+            expect(wrapper.vm.columnSort).toBe(1);
+            expect(wrapper.vm.columnSortDirection).toBe(1);
         });
 
-        it('ignores initial sorting when showSorting is false', () => {
-            const { wrapper } = doMount({
-                shallow: false,
-                customPropsData: { showSorting: false, initialSortColumn: 1, initialSortColumnDirection: 1 }
-            });
+        it('supports default sorting when showSort is false', () => {
+            const { wrapper } = doMount(
+                {
+                    shallow: false,
+                    customPropsData: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                }
+            );
 
             expect(wrapper.vm.tableConfig).not.toHaveProperty('sortConfig');
+            expect(wrapper.vm.columnSort).toBe(1);
+            expect(wrapper.vm.columnSortDirection).toBe(1);
         });
 
         it('supports initial filtering', () => {
