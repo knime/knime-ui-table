@@ -84,8 +84,8 @@ export default {
         initialSortColumnDirection: {
             type: Number,
             default: -1,
-            validator(val) {
-                return val === -1 || val === 1;
+            validator(value) {
+                return value === -1 || value === 1;
             }
         },
         initialFilterValues: {
