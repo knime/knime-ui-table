@@ -519,6 +519,12 @@ export default {
   overflow-y: hidden;
 }
 
+table,
+thead,
+tbody {
+  width: 100%;
+}
+
 table {
   height: 100%;
   overflow-y: hidden;
@@ -551,12 +557,6 @@ table {
       padding-left: 15px;
     }
   }
-}
-
-table,
-thead,
-tbody {
-  width: 100%;
 }
 
 table >>> tr {

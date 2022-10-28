@@ -97,7 +97,7 @@ export default {
 
   &.compact-mode {
     height: 24px;
-    
+
     & .button {
       min-height: 24px;
     }
@@ -106,6 +106,5 @@ export default {
       stroke-width: calc(14px / 14);
     }
   }
-
 }
 </style>

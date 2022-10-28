@@ -342,7 +342,7 @@ tr.row {
       border-right: 1px solid var(--knime-dove-gray);
     }
   }
-  
+
   &.compact-mode {
     & td {
       line-height: 24px;
