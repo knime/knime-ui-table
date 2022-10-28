@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <script>
 import Vue from 'vue';
 import TableUI from './TableUI.vue';
@@ -279,8 +280,8 @@ export default {
                 return [];
             }
 
-            // the first SPECIAL_COLUMNS_SIZE is for the per-row actions sub-menu button
-            const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+            const specialColumnsSizeTotal = (this.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
                 (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
             const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
             const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);

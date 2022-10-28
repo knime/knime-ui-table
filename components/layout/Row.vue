@@ -260,10 +260,6 @@ tr.row {
     padding-left: 20px;
   }
 
-  &.no-sub-menu {
-    padding-right: 10px;
-  }
-
   & td {
     white-space: nowrap;
     overflow: hidden;

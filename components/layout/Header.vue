@@ -63,7 +63,8 @@ export default {
             hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
             dragIndex: null, // the index of the column that is currently being dragged / resized
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-            pageXOnDragStart: null // the x coordinate at which the mouse was clicked when starting the resize drag
+            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+            minimumColumnWidth: MIN_COLUMN_SIZE // need to add this here since it is referenced in the template
         };
     },
     computed: {
@@ -125,7 +126,7 @@ export default {
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag ongoing: ', event);
                 const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, this.minimumColumnWidth));
             }
             /* eslint-enable no-invalid-this */
         }),
@@ -167,7 +168,7 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
+        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
         :class="['column-header', { sortable: isColumnSortable(ind), inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
@@ -216,7 +217,7 @@ export default {
 <style lang="postcss" scoped>
 
 thead {
-  height: 39px;
+  height: 41px;
 
   & tr {
     margin-bottom: -2px;

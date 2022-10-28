@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <script>
 import TopControls from './control/TopControls.vue';
 import BottomControls from './control/BottomControls.vue';
@@ -10,9 +11,7 @@ import TablePopover from './popover/TablePopover.vue';
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
-    HEADER_HEIGHT } from '../util/constants';
-
-const rowMarginBottom = 1;
+    HEADER_HEIGHT, ROW_MARGIN_BOTTOM } from '../util/constants';
 
 /**
  * @see README.md
@@ -98,7 +97,8 @@ export default {
             scrollerKey: 0,
             resizeCount: 0,
             updatedBefore: false,
-            currentExpanded: new Map()
+            currentExpanded: new Map(),
+            rowMarginBottom: ROW_MARGIN_BOTTOM
         };
     },
     computed: {
@@ -168,7 +168,7 @@ export default {
         scrollerItemSize() {
             // The virtual scroller does not support margins, since the height of an element is measured inpdependent
             // from its siblings, hence we need to set a different height for the rows instead
-            return this.rowHeight + rowMarginBottom;
+            return this.rowHeight + ROW_MARGIN_BOTTOM;
         },
         currentBodyHeight() {
             let numberOfGroups = 0; let numberOfRows = 0;
@@ -406,7 +406,8 @@ export default {
                   :table-config="tableConfig"
                   :column-configs="dataConfig.columnConfigs"
                   :row-config="dataConfig.rowConfig"
-                  :row-height="scrollerItemSize"
+                  :row-height="rowHeight"
+                  :margin-bottom="rowMarginBottom"
                   :is-selected="currentSelection[0][index]"
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
@@ -431,7 +432,7 @@ export default {
                   <template slot="rowCollapserContent">
                     <slot
                       name="collapserContent"
-                      :row="row"
+                      :row="item"
                     />
                   </template>
                 </Row>
@@ -439,10 +440,10 @@ export default {
             </template>
           </DynamicScroller>
           <Row
-            v-for="(item, rowInd) in dataGroup"
+            v-for="(row, rowInd) in dataGroup"
             v-else
-            :key="item.id"
-            :row="columnKeys.map(column => item.data[column])"
+            :key="row.id"
+            :row="columnKeys.map(column => row.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
@@ -450,8 +451,8 @@ export default {
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
             @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: item.id, groupInd})"
-            @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd})"
+            @rowSubMenuClick="event => onRowSubMenuClick(event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
             <template

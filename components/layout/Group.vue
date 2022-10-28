@@ -76,7 +76,6 @@ tr.table-group {
   padding-left: 35px;
   background-color: var(--knime-gray-ultra-light);
   margin: 0;
-  margin-top: -3px;
 
   & .action {
     align-items: center;

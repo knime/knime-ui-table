@@ -15,5 +15,8 @@ export const DEFAULT_ROW_HEIGHT = 40;
 // the compact height of a row
 export const COMPACT_ROW_HEIGHT = 24;
 
+// the margin / border width of any given row
+export const ROW_MARGIN_BOTTOM = 1;
+
 // the height of the table header and group headers
-export const HEADER_HEIGHT = 37;
+export const HEADER_HEIGHT = DEFAULT_ROW_HEIGHT;
