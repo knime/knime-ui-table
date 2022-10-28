@@ -161,7 +161,8 @@ describe('Table.vue', () => {
     });
 
     it('generates the correct data config with isSortable key if there are column specific sort configs', () => {
-        wrapper = shallowMount(Table, { propsData: { ...propsData, allColumnSpecificSortConfigs: [true, false] } });
+        const { wrapper } = doMount({ customPropsData: { allColumnSpecificSortConfigs: [true, false] } });
+        
         expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
     });
 
