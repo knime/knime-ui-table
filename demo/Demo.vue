@@ -93,11 +93,6 @@ export default {
             if (!showColumnFilters) {
                 this.setInitialFiltering = false;
             }
-        },
-        showSorting(showSorting) {
-            if (!showSorting) {
-                this.setInitialSorting = false;
-            }
         }
     },
     methods: {
