@@ -486,9 +486,9 @@ describe('Table.vue', () => {
             checkCurrentColumnSizes(200, true, true, 100);
         });
 
-        it('can deal with empty tables when computing currentColumnSizes', () => {
-            wrapper = shallowMount(Table, { propsData });
-            wrapper.setData({ currentColumns: [] });
+        it('can deal with empty tables when computing currentColumnSizes', async () => {
+            const { wrapper } = doMount();
+            await wrapper.setData({ currentColumns: [] });
             expect(wrapper.vm.currentColumnSizes).toStrictEqual([]);
         });
     });
