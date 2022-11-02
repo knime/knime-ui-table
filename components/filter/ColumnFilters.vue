@@ -4,6 +4,7 @@ import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import { MIN_COLUMN_SIZE } from '~/util/constants';
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -38,6 +39,12 @@ export default {
             type: Boolean,
             default: false
         }
+    },
+    data() {
+        return {
+            MIN_COLUMN_SIZE
+            
+        };
     },
     methods: {
         onInput(colInd, value) {
