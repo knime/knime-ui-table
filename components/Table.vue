@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <script>
 import Vue from 'vue';
 import TableUI from './TableUI.vue';
@@ -14,7 +15,7 @@ import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '../util/constants';
 
 /**
  * @see README.md
@@ -300,20 +301,23 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
-            if (this.showCollapser) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
-            }
-            if (this.showSelection) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
+            const nColumns = this.currentColumns.length;
+            if (nColumns < 1) {
+                return [];
             }
 
-            const nColumns = this.currentColumns.length;
-            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
-                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
-            return this.filterByColumn(this.currentAllColumnSizes)
+            const specialColumnsSizeTotal = (this.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+
+            const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
+            const lastColumnMinSize = dataColumnsSizeTotal -
+                currentColumnSizes.slice(0, nColumns - 1).reduce((partialSum, size) => partialSum + size, 0);
+            currentColumnSizes[nColumns - 1] = Math.max(lastColumnMinSize, currentColumnSizes[nColumns - 1]);
+            return currentColumnSizes;
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -476,12 +480,17 @@ export default {
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
         }
-        // determine default column size on mounted, since only then do we know the clientWidth of this element
-        this.updateClientWidth();
-        window.addEventListener('resize', this.updateClientWidth);
+        const clientWidth = this.$el.getBoundingClientRect().width;
+        // clientWidth can be 0, e.g., if table is not visible (yet)
+        if (clientWidth) {
+            this.clientWidth = clientWidth;
+            window.addEventListener('resize', this.onResize);
+        } else {
+            this.observeTableIntersection();
+        }
     },
     beforeDestroy() {
-        window.removeEventListener('resize', this.updateClientWidth);
+        window.removeEventListener('resize', this.onResize);
     },
     methods: {
         /*
@@ -752,16 +761,33 @@ export default {
             consola.debug(`Table clearing selection.`);
             Vue.set(this, 'masterSelected', this.allData.map(_ => 0));
         },
-        updateClientWidth: throttle(function () {
+        onResize: throttle(function () {
             /* eslint-disable no-invalid-this */
-            const updatedClientWidth = this.$el.clientWidth;
-            // also update all non-default column widths according to the relative change in client width
-            const ratio = updatedClientWidth / this.clientWidth;
-            this.currentAllColumnSizes = this.currentAllColumnSizes
-                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
-            this.clientWidth = updatedClientWidth;
+            const updatedClientWidth = this.$el.getBoundingClientRect().width;
+            if (updatedClientWidth) {
+                // update all non-default column widths according to the relative change in client width
+                const ratio = updatedClientWidth / this.clientWidth;
+                this.currentAllColumnSizes = this.currentAllColumnSizes
+                    .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+                this.clientWidth = updatedClientWidth;
+            } else {
+                this.observeTableIntersection();
+                window.removeEventListener('resize', this.onResize);
+            }
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        observeTableIntersection() {
+            new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.target === this.$el && entry.boundingClientRect.width) {
+                        this.clientWidth = entry.boundingClientRect.width;
+                        // observer is either removed here or on garbage collection
+                        observer.unobserve(entry.target);
+                        window.addEventListener('resize', this.onResize);
+                    }
+                });
+            }).observe(this.$el);
+        }
     }
 };
 </script>

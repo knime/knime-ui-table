@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <script>
 import TopControls from './control/TopControls.vue';
 import BottomControls from './control/BottomControls.vue';
@@ -9,11 +10,8 @@ import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-
-const widthColumnMarginLeft = 10;
-const widthColumnSelection = 30;
-const widthColumnFilter = 30;
-const rowMarginBottom = 1;
+import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
+    HEADER_HEIGHT, ROW_MARGIN_BOTTOM } from '../util/constants';
 
 /**
  * @see README.md
@@ -99,7 +97,8 @@ export default {
             scrollerKey: 0,
             resizeCount: 0,
             updatedBefore: false,
-            currentExpanded: new Map()
+            currentExpanded: new Map(),
+            rowMarginBottom: ROW_MARGIN_BOTTOM
         };
     },
     computed: {
@@ -148,9 +147,10 @@ export default {
             }`;
         },
         currentBodyWidth() {
-            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
-            return (this.tableConfig.showSelection ? widthColumnSelection : 0) +
-                widthContentColumns + (this.tableConfig.showColumnFilters ? widthColumnFilter : 0);
+            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + DATA_COLUMNS_MARGIN, 0);
+            return (this.tableConfig.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.tableConfig.showCollapser ? SPECIAL_COLUMNS_SIZE : 0) +
+                widthContentColumns + (this.tableConfig.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0);
         },
         enableVirtualScrolling() {
             return this.tableConfig.enableVirtualScrolling;
@@ -161,20 +161,30 @@ export default {
             ));
         },
         rowHeight() {
-            const defaultRowHeight = 40;
-            const compactRowHeight = 24;
             return this.dataConfig.rowConfig.compactMode
-                ? compactRowHeight
-                : this.dataConfig.rowConfig?.rowHeight || defaultRowHeight;
+                ? COMPACT_ROW_HEIGHT
+                : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
         },
         scrollerItemSize() {
             // The virtual scroller does not support margins, since the height of an element is measured inpdependent
             // from its siblings, hence we need to set a different height for the rows instead
-            return this.rowHeight + rowMarginBottom;
+            return this.rowHeight + ROW_MARGIN_BOTTOM;
         },
         currentBodyHeight() {
-            const numberOfRows = this.tableConfig.pageConfig.pageSize;
-            return this.scrollerItemSize * numberOfRows;
+            let numberOfGroups = 0; let numberOfRows = 0;
+            if (this.data) {
+                for (const dataGroup of this.data) {
+                    if (dataGroup.length > 0) {
+                        numberOfGroups++;
+                        numberOfRows += dataGroup.length;
+                    }
+                }
+            }
+            return this.scrollerItemSize * Math.min(this.tableConfig.pageConfig.pageSize, numberOfRows) +
+                (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
+        },
+        currentTableHeight() {
+            return HEADER_HEIGHT + this.currentBodyHeight;
         }
     },
     watch: {
@@ -310,12 +320,6 @@ export default {
         },
         onColumnResize(columnIndex, newColumnSize) {
             this.$emit('columnResize', columnIndex, newColumnSize);
-        },
-        onShowColumnBorder(columnIndex) {
-            this.showBorderColumnIndex = columnIndex;
-        },
-        onHideColumnBorder() {
-            this.showBorderColumnIndex = null;
         }
     }
 };
@@ -348,14 +352,13 @@ export default {
         :column-sort-configs="columnSortConfigs"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
+        :current-table-height="currentTableHeight"
         :class="tableHeaderClass"
         :style="{ width: `${currentBodyWidth}px` }"
         @headerSelect="onSelectAll"
         @columnSort="onColumnSort"
         @toggleFilter="onToggleFilter"
         @columnResize="onColumnResize"
-        @showColumnBorder="onShowColumnBorder"
-        @hideColumnBorder="onHideColumnBorder"
       />
       <ColumnFilters
         v-if="filterActive"
@@ -403,7 +406,8 @@ export default {
                   :table-config="tableConfig"
                   :column-configs="dataConfig.columnConfigs"
                   :row-config="dataConfig.rowConfig"
-                  :row-height="scrollerItemSize"
+                  :row-height="rowHeight"
+                  :margin-bottom="rowMarginBottom"
                   :is-selected="currentSelection[0][index]"
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
@@ -428,7 +432,7 @@ export default {
                   <template slot="rowCollapserContent">
                     <slot
                       name="collapserContent"
-                      :row="row"
+                      :row="item"
                     />
                   </template>
                 </Row>
@@ -436,20 +440,19 @@ export default {
             </template>
           </DynamicScroller>
           <Row
-            v-for="(item, rowInd) in dataGroup"
+            v-for="(row, rowInd) in dataGroup"
             v-else
-            :key="item.id"
-            :row="columnKeys.map(column => item.data[column])"
+            :key="row.id"
+            :row="columnKeys.map(column => row.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
             :row-height="rowHeight"
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
-            :show-border-column-index="showBorderColumnIndex"
             @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: item.id, groupInd})"
-            @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd})"
+            @rowSubMenuClick="event => onRowSubMenuClick(event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
             <template
@@ -533,7 +536,8 @@ table {
   table-layout: fixed;
   display: flex;
   flex-direction: column;
-  margin: auto;
+  margin-left: 0;
+  margin-right: auto;
 
   & .body {
     overflow-y: auto;

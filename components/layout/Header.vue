@@ -4,7 +4,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import ArrowIcon from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import FilterIcon from '~/webapps-common/ui/assets/img/icons/filter.svg?inline';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE } from '../../util/constants';
+import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT } from '../../util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -51,6 +51,10 @@ export default {
         filtersActive: {
             type: Boolean,
             default: false
+        },
+        currentTableHeight: {
+            type: Number,
+            default: DEFAULT_ROW_HEIGHT
         }
     },
     data() {
@@ -59,7 +63,8 @@ export default {
             hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
             dragIndex: null, // the index of the column that is currently being dragged / resized
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-            pageXOnDragStart: null // the x coordinate at which the mouse was clicked when starting the resize drag
+            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+            minimumColumnWidth: MIN_COLUMN_SIZE // need to add this here since it is referenced in the template
         };
     },
     computed: {
@@ -115,14 +120,13 @@ export default {
             this.dragIndex = columnIndex;
             this.columnSizeOnDragStart = this.columnSizes[columnIndex];
             this.pageXOnDragStart = event.pageX;
-            this.$emit('showColumnBorder', this.dragIndex);
         },
         onPointerMove: throttle(function (event) {
             /* eslint-disable no-invalid-this */
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag ongoing: ', event);
                 const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, this.minimumColumnWidth));
             }
             /* eslint-enable no-invalid-this */
         }),
@@ -135,9 +139,11 @@ export default {
             this.dragIndex = null;
             /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
             this.hoverIndex = null;
-            this.$emit('hideColumnBorder');
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        dragHandleHeight(isDragging) {
+            return isDragging ? this.currentTableHeight : HEADER_HEIGHT;
+        }
     }
 };
 </script>
@@ -162,7 +168,7 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
+        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
         :class="['column-header', { sortable: isColumnSortable(ind), inverted: sortDirection === -1},
                  {'with-subheaders': hasSubHeaders}]"
         tabindex="0"
@@ -185,6 +191,7 @@ export default {
         </div>
         <div
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
+          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px` }"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
           @pointerdown="onPointerDown($event, ind)"
@@ -210,7 +217,7 @@ export default {
 <style lang="postcss" scoped>
 
 thead {
-  height: 39px;
+  height: 41px;
 
   & tr {
     margin-bottom: -2px;
@@ -219,7 +226,7 @@ thead {
 
     & th {
       white-space: nowrap;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
       line-height: 40px;
       padding: 0;
@@ -298,6 +305,7 @@ thead {
           }
 
           & .sub-header-text-container {
+            overflow: hidden;
             font-weight: 400;
             font-size: 10px;
             line-height: 12px;
@@ -309,9 +317,9 @@ thead {
 
         & .drag-handle {
           position: absolute;
+          z-index: 10;
           background-color: var(--knime-dove-gray);
           right: 0;
-          height: 100%;
           width: 5px;
           opacity: 0;
           cursor: col-resize;

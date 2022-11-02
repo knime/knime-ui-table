@@ -3,7 +3,7 @@ import Table from '~/components/Table.vue';
 import TableUI from '~/components/TableUI.vue';
 
 import { columnTypes } from '~/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '~/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '~/util/constants';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -30,6 +30,14 @@ describe('Table.vue', () => {
         showPopovers: true,
         parentSelected: [0]
     };
+
+    beforeEach(() => {
+        window.IntersectionObserver = jest.fn(() => ({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        }));
+    });
 
 
     const doMount = ({ customPropsData = {}, dataCount = 1, shallow = true } = {}) => {
@@ -62,7 +70,7 @@ describe('Table.vue', () => {
                     header: 'A',
                     key: 'a',
                     popoverRenderer: expect.undefined,
-                    size: 30,
+                    size: 50,
                     type: columnTypes.Number
                 }, {
                     classGenerator: [],
@@ -72,7 +80,7 @@ describe('Table.vue', () => {
                     header: 'B',
                     key: 'b',
                     popoverRenderer: expect.undefined,
-                    size: 30,
+                    size: 50,
                     type: columnTypes.Number
                 }],
                 rowConfig: { compactMode: false }
@@ -168,7 +176,7 @@ describe('Table.vue', () => {
 
     it('generates the correct data config with isSortable key if there are column specific sort configs', () => {
         const { wrapper } = doMount({ customPropsData: { allColumnSpecificSortConfigs: [true, false] } });
-        
+
         expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
     });
 
@@ -204,20 +212,69 @@ describe('Table.vue', () => {
     });
 
     describe('events', () => {
-        it('adds resize listener, updates client width on resize, and removes resize listener', () => {
+        it('adds / removes intersection observer / resize listener and updates client width accordingly', () => {
+            const observe = jest.fn();
+            const unobserve = jest.fn();
+            window.IntersectionObserver = jest.fn(() => ({
+                observe,
+                unobserve
+            }));
             jest.spyOn(window, 'addEventListener');
             jest.spyOn(window, 'removeEventListener');
 
             const { wrapper } = doMount();
-            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
 
             expect(wrapper.vm.clientWidth).toBe(0);
-            wrapper.vm.$el = { clientWidth: 500 };
-            window.dispatchEvent(new Event('resize'));
-            expect(wrapper.vm.clientWidth).toBe(500);
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledWith(wrapper.vm.$el);
 
+            let clientWidth = 100;
+            const mockedEntries = [{
+                target: null
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: 0 }
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: clientWidth }
+            }];
+            const [callback] = window.IntersectionObserver.mock.calls[0];
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(1);
+            expect(unobserve).toHaveBeenCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(1);
+            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: 0 };
+            };
+            window.dispatchEvent(new Event('resize'));
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(1);
+            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenLastCalledWith(wrapper.vm.$el);
+
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(2);
+            expect(unobserve).toHaveBeenLastCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(2);
+            expect(window.addEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+
+            clientWidth = 200;
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: clientWidth };
+            };
+            window.dispatchEvent(new Event('resize'));
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+    
             wrapper.destroy();
-            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(2);
+            expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
         });
 
         describe('page control', () => {
@@ -412,15 +469,11 @@ describe('Table.vue', () => {
                     }
                     currentColumnSizes = Array(nColumns).fill(columnSizeOverride);
                 } else {
-                    let reservedSize = SPECIAL_COLUMNS_SIZE + nColumns * DATA_COLUMNS_MARGIN + 2 * TABLE_BORDER_SPACING;
-                    if (showCollapser) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    }
-                    if (showSelection) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    }
-                    const defaultColumnWidth = Math.max((clientWidth - reservedSize) / nColumns, MIN_COLUMN_SIZE);
-                    currentColumnSizes = Array(nColumns).fill(defaultColumnWidth);
+                    const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                        (showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+                    const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+                    currentColumnSizes = Array(nColumns).fill(defaultColumnSize);
                 }
                 expect(wrapper.vm.currentColumnSizes).toStrictEqual(currentColumnSizes);
             };
@@ -431,6 +484,12 @@ describe('Table.vue', () => {
             checkCurrentColumnSizes(200, true, false, null);
             checkCurrentColumnSizes(200, true, true, null);
             checkCurrentColumnSizes(200, true, true, 100);
+        });
+
+        it('can deal with empty tables when computing currentColumnSizes', () => {
+            wrapper = shallowMount(Table, { propsData });
+            wrapper.setData({ currentColumns: [] });
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([]);
         });
     });
 });

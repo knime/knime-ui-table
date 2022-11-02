@@ -145,17 +145,14 @@ describe('Header.vue', () => {
         expect(wrapper.find(Header).emitted().toggleFilter).toBeTruthy();
     });
 
-    it('emits a showColumnBorder event on drag handle pointerdown', () => {
+    it('sets dragIndex on drag handle pointerdown', () => {
         wrapper = shallowMount(Header, { propsData });
-        const header = wrapper.find(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
         expect(wrapper.vm.dragIndex).toBe(null);
-        expect(header.emitted().showColumnBorder).toBeFalsy();
         dragHandle.trigger('pointerdown', 0);
         expect(wrapper.vm.dragIndex).toBe(0);
-        expect(header.emitted().showColumnBorder).toBeTruthy();
     });
 
     it('emits a columnResize event on pointermove during drag', () => {
@@ -171,15 +168,14 @@ describe('Header.vue', () => {
         expect(header.emitted().columnResize).toBeTruthy();
     });
 
-    it('emits a hideColumnBorder event on lostpointercapture', () => {
+    it('unsets dragIndex on drag handle lostpointercapture', () => {
         wrapper = shallowMount(Header, { propsData });
-        const header = wrapper.find(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
-        expect(header.emitted().hideColumnBorder).toBeFalsy();
+        dragHandle.trigger('pointerdown', 0);
         dragHandle.trigger('lostpointercapture');
-        expect(header.emitted().hideColumnBorder).toBeTruthy();
+        expect(wrapper.vm.dragIndex).toBe(null);
     });
 
     it('sets hover index on drag handle pointerover', () => {
