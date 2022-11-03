@@ -6,7 +6,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import CircleHelpIcon from '~/webapps-common/ui/assets/img/icons/circle-help.svg?inline';
-import DEFAULT_ROW_HEIGHT from '../../util/constants';
+import { DEFAULT_ROW_HEIGHT } from '../../util/constants';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a

@@ -43,7 +43,6 @@ export default {
     data() {
         return {
             MIN_COLUMN_SIZE
-            
         };
     },
     methods: {
