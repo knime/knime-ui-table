@@ -21,7 +21,7 @@ const getPropsData = ({
     enableVirtualScrolling = false,
     rowHeight = null,
     actionButtonConfig = null,
-    columnFilterInitiallyActive = false,
+    columnFilterInitiallyActive = null,
     enableIsSortable = false
 }) => ({
     data: [[{ a: 'cellA', b: 'cellB' }]],
@@ -91,7 +91,7 @@ const getPropsData = ({
         groupByConfig: {
             currentGroup: null
         },
-        columnFilterInitiallyActive,
+        ...columnFilterInitiallyActive === null ? {} : { columnFilterInitiallyActive },
         ...actionButtonConfig ? { actionButtonConfig } : {}
     }
 });
@@ -145,6 +145,12 @@ describe('TableUI.vue', () => {
             const { wrapper } = doMount({ columnFilterInitiallyActive: true });
 
             expect(wrapper.find(ColumnFilters).exists()).toBe(true);
+        });
+
+        it('renders with column filters inactive if columnFilterInitiallyActive not provided', () => {
+            const { wrapper } = doMount({ columnFilterInitiallyActive: null });
+
+            expect(wrapper.find(ColumnFilters).exists()).toBe(false);
         });
 
         it('shows column filters via data', () => {

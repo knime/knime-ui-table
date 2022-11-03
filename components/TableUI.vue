@@ -85,7 +85,7 @@ export default {
     },
     data() {
         return {
-            filterActive: this.tableConfig.columnFilterInitiallyActive,
+            filterActive: this.tableConfig.columnFilterInitiallyActive || false,
             popoverTarget: null,
             popoverData: null,
             popoverColumn: null,
