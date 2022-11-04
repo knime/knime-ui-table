@@ -66,7 +66,13 @@ export default {
                     'showBottomControls', 'subMenuItems', 'groupSubMenuItems'];
                 let isValid = requiredProperties.every(key => tableConfig.hasOwnProperty(key));
                 const requiredConfigs = {
-                    pageConfig: ['currentSize', 'tableSize', 'pageSize', 'possiblePageSizes', 'currentPage'],
+                    pageConfig: [
+                        'currentSize',
+                        'tableSize',
+                        'pageSize',
+                        'possiblePageSizes',
+                        'currentPage'
+                    ],
                     searchConfig: ['searchQuery'],
                     timeFilterConfig: ['currentTimeFilter'],
                     columnSelectionConfig: ['possibleColumns', 'currentColumns'],
@@ -180,8 +186,13 @@ export default {
                     }
                 }
             }
-            return this.scrollerItemSize * Math.min(this.tableConfig.pageConfig.pageSize, numberOfRows) +
-                (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
+            let numberOfDisplayedRows = numberOfRows;
+            const visibleSizeParam = this.tableConfig.pageConfig.visibleSize;
+            if (typeof visibleSizeParam !== 'undefined' && visibleSizeParam < numberOfDisplayedRows) {
+                numberOfDisplayedRows = visibleSizeParam;
+            }
+            return this.scrollerItemSize * numberOfDisplayedRows +
+            (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
         },
         currentTableHeight() {
             return HEADER_HEIGHT + this.currentBodyHeight;

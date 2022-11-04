@@ -70,6 +70,7 @@ const getPropsData = ({
             currentSize: 1,
             tableSize: 1,
             pageSize: 5,
+            visibleSize: 5,
             possiblePageSizes: [5, 10, 25],
             currentPage: 1
         },
