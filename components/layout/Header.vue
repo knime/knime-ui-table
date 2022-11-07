@@ -220,6 +220,7 @@ thead {
   height: 41px;
 
   & tr {
+    height: 100%;
     margin-bottom: -2px;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
