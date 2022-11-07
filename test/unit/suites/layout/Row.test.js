@@ -234,7 +234,7 @@ describe('Row.vue', () => {
             expect(wrapper.find(Row).emitted().rowInput).toBeTruthy();
         });
 
-        it('toggles the expandable content when the collapser toggle is clicked and emits rowExpand', () => {
+        it('toggles the expandable content when the collapser toggle is clicked and emits rowExpand', async () => {
             wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
@@ -248,6 +248,7 @@ describe('Row.vue', () => {
             wrapper.find(CollapserToggle).vm.$emit('collapserExpand');
             expect(wrapper.vm.showContent).toBe(true);
             expect(wrapper.find(CloseIcon).exists()).toBe(true);
+            await wrapper.vm.$nextTick();
             expect(wrapper.emitted().rowExpand).toBeTruthy();
             expect(wrapper.emitted().rowExpand[0][0]).toBe(true);
         });

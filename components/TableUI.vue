@@ -102,7 +102,7 @@ export default {
             scrollerKey: 0,
             resizeCount: 0,
             updatedBefore: false,
-            currentExpanded: [],
+            currentExpanded: new Set(),
             rowMarginBottom: ROW_MARGIN_BOTTOM
         };
     },
@@ -165,6 +165,8 @@ export default {
                 (rowData, index) => ({ id: index.toString(), data: rowData, size: this.scrollerItemSize, index })
             ));
             this.currentExpanded.forEach((index) => {
+                // The second child of the dom element referenced by the row is the expanded content.
+                // We need to add this height for the expanded rows.
                 const contentHeight = this.$refs[`row-${index}`][0].$el.children[1].clientHeight;
                 data[0][index].size += contentHeight;
             });
@@ -234,9 +236,17 @@ export default {
             this.$emit('lazyload', { direction, startIndex, endIndex });
         },
         collapseAllUnusedRows(startIndex, endIndex) {
-            const visibleExpanded = this.currentExpanded.filter(i => i < endIndex && i >= startIndex);
-            if (visibleExpanded.length < this.currentExpanded.length) {
-                this.currentExpanded = visibleExpanded;
+            let needsCollapse = false;
+            const usedExpanded = new Set();
+            this.currentExpanded.forEach(i => {
+                if (i < endIndex && i >= startIndex) {
+                    usedExpanded.add(i);
+                } else {
+                    needsCollapse = true;
+                }
+            });
+            if (needsCollapse) {
+                this.currentExpanded = usedExpanded;
             }
         },
         onTimeFilterUpdate(newTimeFilter) {
@@ -294,10 +304,12 @@ export default {
         },
         onRowExpand(expanded, index) {
             if (expanded) {
-                this.currentExpanded = [...this.currentExpanded, index];
+                this.currentExpanded.add(index);
             } else {
-                this.currentExpanded = this.currentExpanded.filter(i => i !== index);
+                this.currentExpanded.delete(index);
             }
+            // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
+            this.currentExpanded = new Set(this.currentExpanded);
         },
         onRowInput(event) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -426,10 +438,10 @@ export default {
               >
                 <!-- Vue requires key on real element for dynamic scoped slots
                     to help Vue framework manage events. -->
-                <span :key="index + '_' + colInd">
+                <span :key="item.index + '_' + colInd">
                   <slot
                     :name="`cellContent-${columnKeys[colInd]}`"
-                    :data="{ ...cellData, key: columnKeys[colInd], rowInd: index, colInd }"
+                    :data="{ ...cellData, key: columnKeys[colInd], rowInd: item.index, colInd }"
                   />
                 </span>
               </template>

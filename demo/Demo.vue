@@ -58,6 +58,7 @@ export default {
             showPopovers: true,
             compactMode: true,
             showActionButton: false,
+            enableVirtualScrolling: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false
@@ -147,6 +148,7 @@ export default {
       </Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
+      <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>

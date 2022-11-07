@@ -519,7 +519,33 @@ describe('TableUI.vue', () => {
             ]]);
         });
 
+        describe('supports expanding and collapsing rows', () => {
+            it('changes the size of the rows if they are expanded', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                wrapper.vm.onRowExpand(true, 0);
+                // simulate the expanded content
+                const expandedContentHeight = 20;
+                wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: expandedContentHeight }] } }];
+                expect(wrapper.vm.currentExpanded).toContain(0);
+                wrapper.vm.onRowExpand(true, 1);
+                wrapper.vm.onRowExpand(false, 1);
+                expect(wrapper.vm.currentExpanded).not.toContain(1);
+                expect(wrapper.vm.scrollData).toStrictEqual([[
+                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
+                ]]);
+            });
 
+            it('collapses unused rows on scroll', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                wrapper.vm.onRowExpand(true, 0);
+                // simulate the expanded content
+                wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: 20 }] } }];
+                expect(wrapper.vm.currentExpanded).toContain(0);
+                wrapper.vm.onScroll(1, 2);
+                expect(wrapper.vm.currentExpanded).not.toContain(0);
+            });
+        });
+        
         it('refreshes scroller', async () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
 
