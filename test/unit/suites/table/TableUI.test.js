@@ -22,9 +22,18 @@ const getPropsData = ({
     rowHeight = null,
     actionButtonConfig = null,
     columnFilterInitiallyActive = null,
-    enableIsSortable = false
+    enableIsSortable = false,
+    data = [[{ a: 'cellA', b: 'cellB' }]],
+    pageConfig = {
+        currentSize: 1,
+        tableSize: 1,
+        pageSize: 5,
+        visibleSize: 5,
+        possiblePageSizes: [5, 10, 25],
+        currentPage: 1
+    }
 }) => ({
-    data: [[{ a: 'cellA', b: 'cellB' }]],
+    data,
     currentSelection: [[false]],
     dataConfig: {
         columnConfigs: [{
@@ -66,14 +75,7 @@ const getPropsData = ({
         }
     },
     tableConfig: {
-        pageConfig: {
-            currentSize: 1,
-            tableSize: 1,
-            pageSize: 5,
-            visibleSize: 5,
-            possiblePageSizes: [5, 10, 25],
-            currentPage: 1
-        },
+        pageConfig,
         showColumnFilters,
         showSelection,
         showBottomControls,
@@ -109,6 +111,15 @@ describe('TableUI.vue', () => {
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
         enableIsSortable = false,
+        data = [[{ a: 'cellA', b: 'cellB' }]],
+        pageConfig = {
+            currentSize: 1,
+            tableSize: 1,
+            pageSize: 5,
+            visibleSize: 5,
+            possiblePageSizes: [5, 10, 25],
+            currentPage: 1
+        },
         shallow = true
     } = {}) => {
         const propsData = getPropsData({
@@ -121,7 +132,9 @@ describe('TableUI.vue', () => {
             rowHeight,
             actionButtonConfig,
             columnFilterInitiallyActive,
-            enableIsSortable
+            enableIsSortable,
+            data,
+            pageConfig
         });
 
         const wrapper = shallow ? shallowMount(TableUI, { propsData }) : mount(TableUI, { propsData });
@@ -166,7 +179,7 @@ describe('TableUI.vue', () => {
 
         it('shows action button via config', () => {
             const { wrapper } = doMount({
-                actionButtonConfig: { text: 'Test Button', callback: () => {} },
+                actionButtonConfig: { text: 'Test Button', callback: () => { } },
                 showBottomControls: false
             });
 
@@ -450,10 +463,36 @@ describe('TableUI.vue', () => {
             expect(wrapper.vm.rowHeight).toEqual(24);
         });
 
-        it('computes height of body from the pageSize and rowHeight', () => {
-            const { wrapper } = doMount();
+        describe('body height', () => {
+            const pageConfigWithoutVisibleSize = {
+                currentSize: 1,
+                tableSize: 1,
+                pageSize: 1,
+                possiblePageSizes: [1],
+                currentPage: 1
+            };
 
-            expect(wrapper.vm.currentBodyHeight).toEqual(41);
+            it('computes height from number of rows when no visibleSize is given', () => {
+                const { wrapper } = doMount({ pageConfig: pageConfigWithoutVisibleSize });
+
+                expect(wrapper.vm.currentBodyHeight).toEqual(41);
+            });
+
+            it('computes height from number of rows when visibleSize is greater than it', () => {
+                const { wrapper } = doMount({ pageConfig: { ...pageConfigWithoutVisibleSize, visibleSize: 3 } });
+
+                expect(wrapper.vm.currentBodyHeight).toEqual(41);
+            });
+
+            it('computes height from visibleSize', () => {
+                const visibleSize = 3;
+                const { wrapper } = doMount({
+                    data: [[{ a: 'cellA' }, { a: 'cellA' }, { a: 'cellA' }, { a: 'cellA' }]],
+                    pageConfig: { ...pageConfigWithoutVisibleSize, visibleSize }
+                });
+
+                expect(wrapper.vm.currentBodyHeight).toEqual(visibleSize * 41);
+            });
         });
     });
 
