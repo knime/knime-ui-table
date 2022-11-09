@@ -96,7 +96,8 @@ describe('Table.vue', () => {
                     currentSize: 1,
                     currentPage: 1,
                     pageSize: 10,
-                    possiblePageSizes: [5, 10, 25, 50, 100]
+                    possiblePageSizes: [5, 10, 25, 50, 100],
+                    fixHeader: false
                 },
                 columnSelectionConfig: {
                     currentColumns: ['A', 'B'],

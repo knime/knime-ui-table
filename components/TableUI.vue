@@ -176,6 +176,13 @@ export default {
             // from its siblings, hence we need to set a different height for the rows instead
             return this.rowHeight + ROW_MARGIN_BOTTOM;
         },
+        fixHeader() {
+            if (this.enableVirtualScrolling) {
+                return true;
+            }
+            const fixHeaderParam = this.tableConfig.pageConfig?.fixHeader;
+            return Boolean(fixHeaderParam);
+        },
         currentBodyHeight() {
             let numberOfGroups = 0; let numberOfRows = 0;
             if (this.data) {
@@ -337,7 +344,10 @@ export default {
 </script>
 
 <template>
-  <div class="wrapper">
+  <div
+    class="wrapper"
+    :class="{'fix-header': fixHeader}"
+  >
     <table
       ref="table"
       class="table"
@@ -384,7 +394,7 @@ export default {
       />
       <div
         class="body"
-        :style="{ width: `${currentBodyWidth}px`, height: `${currentBodyHeight}px` }"
+        :style="{ width: `${currentBodyWidth}px`, ...fixHeader && { height: `${currentBodyHeight}px` }}"
       >
         <Group
           v-for="(dataGroup, groupInd) in dataWithId"
@@ -529,8 +539,6 @@ export default {
 
 .wrapper {
   position: relative;
-  height: 100%;
-  overflow-y: hidden;
 }
 
 table,
@@ -540,8 +548,6 @@ tbody {
 }
 
 table {
-  height: 100%;
-  overflow-y: hidden;
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
@@ -551,8 +557,7 @@ table {
   margin-right: auto;
 
   & .body {
-    overflow-y: auto;
-    overflow-x: clip;
+    overflow-y: visible;
     display: block;
 
     & >>> tbody {
@@ -605,6 +610,19 @@ table >>> tr {
       padding-left: 5px;
       margin-left: 0;
     }
+  }
+}
+
+.fix-header {
+  height: 100%;
+  overflow-y: hidden;
+  & table {
+    height: 100%;
+    overflow-y: hidden;
+    & .body {
+       overflow-y: auto;
+       overflow-x: clip;
+     }
   }
 }
 

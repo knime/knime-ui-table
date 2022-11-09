@@ -30,7 +30,8 @@ const getPropsData = ({
         pageSize: 5,
         visibleSize: 5,
         possiblePageSizes: [5, 10, 25],
-        currentPage: 1
+        currentPage: 1,
+        fixHeader: false
     }
 }) => ({
     data,
@@ -118,7 +119,8 @@ describe('TableUI.vue', () => {
             pageSize: 5,
             visibleSize: 5,
             possiblePageSizes: [5, 10, 25],
-            currentPage: 1
+            currentPage: 1,
+            fixHeader: false
         },
         shallow = true
     } = {}) => {

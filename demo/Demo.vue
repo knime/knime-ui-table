@@ -57,6 +57,7 @@ export default {
             showSorting: true,
             showPopovers: true,
             compactMode: true,
+            fixHeader: true,
             showActionButton: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
@@ -80,6 +81,7 @@ export default {
                 showSorting: this.showSorting,
                 showPopovers: this.showPopovers,
                 compactMode: this.compactMode,
+                fixHeader: this.fixHeader,
                 showActionButton: this.showActionButton,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
@@ -115,7 +117,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex-wrapper">
+  <div :class="{ 'fix-header': fixHeader }">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -147,6 +149,7 @@ export default {
       </Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
+      <Checkbox v-model="fixHeader">fix header</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>
@@ -177,22 +180,22 @@ export default {
     padding: 12px;
   }
 
-  .flex-wrapper {
+  .fix-header {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
     overflow: hidden;
   }
 
-  .flex-wrapper h2 {
+  .fix-header h2 {
     margin-bottom: 0;
   }
 
-  .flex-wrapper .wrapper {
+  .fix-header .wrapper {
     flex-basis: content;
   }
 
-  .flex-wrapper button {
+  .fix-header button {
     align-self: flex-start;
   }
 

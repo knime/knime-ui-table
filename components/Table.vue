@@ -111,6 +111,7 @@ export default {
         showActionButton: Boolean,
         showPopovers: Boolean,
         compactMode: Boolean,
+        fixHeader: Boolean,
         /**
          * Additional configuration options.
          */
@@ -237,7 +238,8 @@ export default {
                     currentSize: this.currentTableSize,
                     pageSize: this.currentPageSize,
                     possiblePageSizes: tablePageSizes,
-                    currentPage: this.currentPage
+                    currentPage: this.currentPage,
+                    fixHeader: this.fixHeader
                 }
             };
             if (this.showTimeFilter && this.timeFilterKey) {
