@@ -165,9 +165,7 @@ export default {
                 (rowData, index) => ({ id: index.toString(), data: rowData, size: this.scrollerItemSize, index })
             ));
             this.currentExpanded.forEach((index) => {
-                // The second child of the dom element referenced by the row is the expanded content.
-                // We need to add this height for the expanded rows.
-                const contentHeight = this.$refs[`row-${index}`][0].$el.children[1].clientHeight;
+                const contentHeight = this.getContentHeight(index);
                 data[0][index].size += contentHeight;
             });
             return data;
@@ -342,6 +340,13 @@ export default {
         },
         onColumnResize(columnIndex, newColumnSize) {
             this.$emit('columnResize', columnIndex, newColumnSize);
+        },
+        // Find the additional height added by expanded content of a row
+        getContentHeight(index) {
+          // The second child of the dom element referenced by the row is the expanded content.
+          const contentHeight = this.$refs[`row-${index}`].map((component) => component.$el.children[1]?.clientHeight)
+            .find(height => typeof height !== 'undefined');
+          return contentHeight || 0;
         }
     }
 };

@@ -89,6 +89,10 @@ export default {
             showContent: false
         };
     },
+    mounted() {
+      // Reverts emited event if component is not ready
+      this.$emit('rowExpand', this.showContent);
+    },
     computed: {
         columnKeys() {
             return this.getPropertiesFromColumns('key');

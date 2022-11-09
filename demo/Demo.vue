@@ -83,6 +83,7 @@ export default {
                 compactMode: this.compactMode,
                 showActionButton: this.showActionButton,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
+                enableVirtualScrolling: this.enableVirtualScrolling,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
                 ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
