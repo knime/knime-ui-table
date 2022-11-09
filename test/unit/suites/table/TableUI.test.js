@@ -314,12 +314,13 @@ describe('TableUI.vue', () => {
             });
 
             it('handles input events', () => {
-                const { wrapper } = doMount();
+                const id = 'uuid';
+                const { wrapper } = doMount({ data: [[{ id }]] });
 
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(Row).vm.$emit('rowInput', { cell: true });
                 expect(wrapper.emitted().tableInput).toStrictEqual(
-                    [[{ cell: true, rowInd: 0, groupInd: 0, id: '0' }]]
+                    [[{ cell: true, rowInd: 0, groupInd: 0, id }]]
                 );
             });
 
