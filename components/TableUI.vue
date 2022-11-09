@@ -412,7 +412,6 @@ export default {
                 :data-index="index"
               >
                 <Row
-                  :key="item.id"
                   :row="columnKeys.map(column => item.data[column])"
                   :table-config="tableConfig"
                   :column-configs="dataConfig.columnConfigs"
@@ -423,7 +422,7 @@ export default {
                   :show-border-column-index="showBorderColumnIndex"
                   @rowSelect="selected => onRowSelect(selected, index, 0)"
                   @rowExpand="(expanded) => onRowExpand(expanded, index)"
-                  @rowInput="event => onRowInput({ ...event, index, id: item.id, groupInd: 0})"
+                  @rowInput="event => onRowInput({ ...event, index, id: item.data.id, groupInd: 0})"
                   @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
                 >
                   <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -453,7 +452,7 @@ export default {
           <Row
             v-for="(row, rowInd) in dataGroup"
             v-else
-            :key="row.id"
+            :key="row.data.id"
             :row="columnKeys.map(column => row.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
@@ -462,7 +461,7 @@ export default {
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
             @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: row.id, groupInd})"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: row.data.id, groupInd})"
             @rowSubMenuClick="event => onRowSubMenuClick(event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
