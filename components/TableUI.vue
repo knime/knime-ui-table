@@ -1,5 +1,5 @@
-<!-- eslint-disable max-lines -->
 <script>
+/* eslint-disable max-lines */
 import TopControls from './control/TopControls.vue';
 import BottomControls from './control/BottomControls.vue';
 import ColumnFilters from './filter/ColumnFilters.vue';
@@ -343,10 +343,10 @@ export default {
         },
         // Find the additional height added by expanded content of a row
         getContentHeight(index) {
-          // The second child of the dom element referenced by the row is the expanded content.
-          const contentHeight = this.$refs[`row-${index}`].map((component) => component.$el.children[1]?.clientHeight)
-            .find(height => typeof height !== 'undefined');
-          return contentHeight || 0;
+            // The second child of the dom element referenced by the row is the expanded content.
+            const contentHeight = this.$refs[`row-${index}`].map((component) => component.$el.children[1]?.clientHeight)
+                .find(height => typeof height !== 'undefined');
+            return contentHeight || 0;
         }
     }
 };
