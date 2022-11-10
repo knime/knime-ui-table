@@ -89,6 +89,10 @@ export default {
             showContent: false
         };
     },
+    mounted() {
+      // Reverts emited event if component is not ready
+      this.$emit('rowExpand', this.showContent);
+    },
     computed: {
         columnKeys() {
             return this.getPropertiesFromColumns('key');
@@ -127,7 +131,7 @@ export default {
         },
         onRowExpand() {
             this.showContent = !this.showContent;
-            this.$emit('rowExpand', this.showContent);
+            this.$nextTick(() => this.$emit('rowExpand', this.showContent));
         },
         onSelect(value) {
             this.$emit('rowSelect', value);

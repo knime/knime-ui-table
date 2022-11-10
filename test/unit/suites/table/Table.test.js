@@ -28,6 +28,7 @@ describe('Table.vue', () => {
         showBottomControls: true,
         showSelection: true,
         showPopovers: true,
+        enableVirtualScrolling: false,
         parentSelected: [0]
     };
 
@@ -91,6 +92,7 @@ describe('Table.vue', () => {
                 showColumnFilters: true,
                 showPopovers: true,
                 showSelection: true,
+                enableVirtualScrolling: false,
                 pageConfig: {
                     tableSize: 1,
                     currentSize: 1,

@@ -8,7 +8,7 @@ import Group from '~/components/layout/Group.vue';
 import Row from '~/components/layout/Row.vue';
 import ActionButton from '~/components/ui/ActionButton.vue';
 import TablePopover from '~/components/popover/TablePopover.vue';
-import { DynamicScroller } from 'vue-virtual-scroller';
+import { RecycleScroller } from 'vue-virtual-scroller';
 
 import { columnTypes } from '~/config/table.config';
 
@@ -300,7 +300,7 @@ describe('TableUI.vue', () => {
             let callbackMock = jest.fn();
             wrapper.find(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
             expect(callbackMock).toHaveBeenCalledWith(
-                [{ data: { a: 'cellA', b: 'cellB' }, id: '0' }], expect.anything()
+                [{ data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }], expect.anything()
             );
         });
 
@@ -501,7 +501,7 @@ describe('TableUI.vue', () => {
         it('renders dynamic scroller when virtual scrolling is enabled', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
 
-            expect(wrapper.find(DynamicScroller).exists()).toBeTruthy();
+            expect(wrapper.find(RecycleScroller).exists()).toBeTruthy();
         });
 
         it('emits lazyloading event onScroll', () => {
@@ -513,37 +513,52 @@ describe('TableUI.vue', () => {
             expect(wrapper.emitted().lazyload).toBeTruthy();
         });
 
-        it('collapses expanded cells as soon as they are no longer rendered', async () => {
-            const { wrapper } = doMount({ enableVirtualScrolling: true, shallow: false });
-
-            const mockedSizes = { '0': 40 };
-            jest.spyOn(wrapper.vm, 'getVscrollData').mockReturnValue({ sizes: mockedSizes });
-            await wrapper.vm.$nextTick();
-            wrapper.find(Row).vm.$emit('rowExpand', true);
-            wrapper.vm.getVscrollData().sizes['0'] = 70;
-            wrapper.vm.onScroll(10, 20);
-            expect(mockedSizes['0']).toBe(40);
-        });
-
-        it('supplies data with ids', () => {
+        it('supplies data with ids and sizes', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
-
-            expect(wrapper.vm.dataWithId).toStrictEqual([[{ data: { a: 'cellA', b: 'cellB' }, id: '0' }]]);
+            expect(wrapper.vm.scrollData).toStrictEqual([[
+                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+            ]]);
         });
 
+        describe('supports expanding and collapsing rows', () => {
+            it('changes the size of the rows if they are expanded', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                wrapper.vm.onRowExpand(true, 0);
+                // simulate the expanded content
+                const expandedContentHeight = 20;
+                wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: expandedContentHeight }] } }];
+                expect(wrapper.vm.currentExpanded).toContain(0);
+                wrapper.vm.onRowExpand(true, 1);
+                wrapper.vm.onRowExpand(false, 1);
+                expect(wrapper.vm.currentExpanded).not.toContain(1);
+                expect(wrapper.vm.scrollData).toStrictEqual([[
+                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
+                ]]);
+            });
 
+            it('collapses unused rows on scroll', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                wrapper.vm.onRowExpand(true, 0);
+                // simulate the expanded content
+                wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: 20 }] } }];
+                expect(wrapper.vm.currentExpanded).toContain(0);
+                wrapper.vm.onScroll(1, 2);
+                expect(wrapper.vm.currentExpanded).not.toContain(0);
+            });
+        });
+        
         it('refreshes scroller', async () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
 
             let isUnmounted = false;
-            wrapper.find(DynamicScroller).vm.$once('hook:beforeDestroy', () => {
+            wrapper.find(RecycleScroller).vm.$once('hook:beforeDestroy', () => {
                 isUnmounted = true;
             });
             await wrapper.vm.$nextTick();
             wrapper.vm.refreshScroller();
             await wrapper.vm.$nextTick();
             expect(isUnmounted).toBeTruthy();
-            const scroller = wrapper.find(DynamicScroller);
+            const scroller = wrapper.find(RecycleScroller);
             expect(scroller.vm._isMounted).toBeTruthy();
         });
     });
