@@ -111,6 +111,10 @@ export default {
         showActionButton: Boolean,
         showPopovers: Boolean,
         compactMode: Boolean,
+        enableVirtualScrolling: {
+            type: Boolean,
+            default: false
+        },
         fixHeader: Boolean,
         /**
          * Additional configuration options.
@@ -233,6 +237,7 @@ export default {
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
+                enableVirtualScrolling: this.enableVirtualScrolling,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,

@@ -121,13 +121,17 @@ export default {
             }));
         }
     },
+    mounted() {
+        // Reverts emited event if component is not ready
+        this.$emit('rowExpand', this.showContent);
+    },
     methods: {
         getPropertiesFromColumns(key) {
             return this.columnConfigs.map(colConfig => colConfig[key]);
         },
         onRowExpand() {
             this.showContent = !this.showContent;
-            this.$emit('rowExpand', this.showContent);
+            this.$nextTick(() => this.$emit('rowExpand', this.showContent));
         },
         onSelect(value) {
             this.$emit('rowSelect', value);

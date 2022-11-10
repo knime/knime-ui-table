@@ -59,6 +59,7 @@ export default {
             compactMode: true,
             fixHeader: true,
             showActionButton: false,
+            enableVirtualScrolling: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false
@@ -84,6 +85,7 @@ export default {
                 fixHeader: this.fixHeader,
                 showActionButton: this.showActionButton,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
+                enableVirtualScrolling: this.enableVirtualScrolling,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
                 ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
@@ -149,6 +151,7 @@ export default {
       </Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
+      <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
       <Checkbox v-model="fixHeader">fix header</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
