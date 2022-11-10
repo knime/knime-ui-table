@@ -623,13 +623,15 @@ table >>> tr {
 .fix-header {
   height: 100%;
   overflow-y: hidden;
+
   & table {
     height: 100%;
     overflow-y: hidden;
+
     & .body {
-       overflow-y: auto;
-       overflow-x: clip;
-     }
+      overflow-y: auto;
+      overflow-x: clip;
+    }
   }
 }
 
