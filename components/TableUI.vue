@@ -43,6 +43,10 @@ export default {
             type: Array,
             default: () => []
         },
+        numRowsAbove: {
+            type: Number,
+            default: 0
+        },
         totalSelected: {
             type: Number,
             default: 0
@@ -438,7 +442,11 @@ export default {
               :row-config="dataConfig.rowConfig"
               :row-height="rowHeight"
               :margin-bottom="rowMarginBottom"
-              :is-selected="currentSelection[0][item.index]"
+              :is-selected="
+                (currentSelection[0] === null || item.index < numRowsAbove || item.index >= numRowsAbove + currentSelection[0].length) ?
+                  false :
+                  currentSelection[0][item.index - numRowsAbove]
+              "
               :show-border-column-index="showBorderColumnIndex"
               @rowSelect="selected => onRowSelect(selected, item.index, 0)"
               @rowExpand="(expanded) => onRowExpand(expanded, item.index)"
