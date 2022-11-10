@@ -317,13 +317,16 @@ export default {
             this.$emit('rowSelect', selected, rowInd, groupInd);
         },
         onRowExpand(expanded, index) {
+            // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
             if (expanded) {
                 this.currentExpanded.add(index);
+                this.currentExpanded = new Set(this.currentExpanded);
             } else {
-                this.currentExpanded.delete(index);
+                const hasDeleted = this.currentExpanded.delete(index);
+                if (hasDeleted) {
+                    this.currentExpanded = new Set(this.currentExpanded);
+                }
             }
-            // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
-            this.currentExpanded = new Set(this.currentExpanded);
         },
         onRowInput(event) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -360,8 +363,9 @@ export default {
         // Find the additional height added by expanded content of a row
         getContentHeight(index) {
             // The second child of the dom element referenced by the row is the expanded content.
-            const contentHeight = this.$refs[`row-${index}`].map((component) => component.$el.children[1]?.clientHeight)
-                .find(height => typeof height !== 'undefined');
+            const contentHeight = this.$refs[`row-${index}`]?.map(
+                (component) => component.$el.children[1]?.clientHeight
+            ).find(height => typeof height !== 'undefined');
             return contentHeight || 0;
         }
     }

@@ -525,17 +525,44 @@ describe('TableUI.vue', () => {
         describe('supports expanding and collapsing rows', () => {
             it('changes the size of the rows if they are expanded', () => {
                 const { wrapper } = doMount({ enableVirtualScrolling: true });
-                wrapper.vm.onRowExpand(true, 0);
                 // simulate the expanded content
                 const expandedContentHeight = 20;
                 wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: expandedContentHeight }] } }];
+                wrapper.vm.onRowExpand(true, 0);
                 expect(wrapper.vm.currentExpanded).toContain(0);
-                wrapper.vm.onRowExpand(true, 1);
-                wrapper.vm.onRowExpand(false, 1);
-                expect(wrapper.vm.currentExpanded).not.toContain(1);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
                     { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
                 ]]);
+                wrapper.vm.onRowExpand(false, 0);
+                expect(wrapper.vm.currentExpanded).not.toContain(0);
+                expect(wrapper.vm.scrollData).toStrictEqual([[
+                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+                ]]);
+            });
+
+            it('calculates the height with virtual elements', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                // simulate the expanded content
+                const expandedContentHeight = 20;
+                wrapper.vm.$refs['row-0'] = [{ $el: { children: [{}, { clientHeight: expandedContentHeight }] } },
+                    { $el: { children: [{}] } }];
+                wrapper.vm.onRowExpand(true, 0);
+                expect(wrapper.vm.currentExpanded).toContain(0);
+                expect(wrapper.vm.scrollData).toStrictEqual([[
+                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
+                ]]);
+                wrapper.vm.onRowExpand(false, 0);
+                expect(wrapper.vm.currentExpanded).not.toContain(0);
+                expect(wrapper.vm.scrollData).toStrictEqual([[
+                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+                ]]);
+            });
+
+            it('calculates the height with virtual elements', () => {
+                const { wrapper } = doMount({ enableVirtualScrolling: true });
+                const currentExpanded = wrapper.vm.currentExpanded;
+                wrapper.vm.onRowExpand(false, 0);
+                expect(wrapper.vm.currentExpanded).toBe(currentExpanded);
             });
 
             it('collapses unused rows on scroll', () => {
