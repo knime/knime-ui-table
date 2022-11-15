@@ -68,7 +68,7 @@
     "vue-svg-loader": "0.16.0",
     "vue-template-compiler": "2.6.14",
     "webapps-common": "file:webapps-common",
-    "vue-virtual-scroller": "1.0.10"
+    "vue-virtual-scroller": "file:vue-virtual-scroller"
   },
   "peerDependencies": {
     "consola": "2.*",
