@@ -47,6 +47,10 @@ export default {
             type: Number,
             default: 0
         },
+        numRowsBelow: {
+            type: Number,
+            default: 0
+        },
         totalSelected: {
             type: Number,
             default: 0
@@ -166,13 +170,18 @@ export default {
         },
         scrollData() {
             const data = this.data?.map(groupData => groupData.map(
-                (rowData, index) => ({ id: index.toString(), data: rowData, size: this.scrollerItemSize, index })
+                (rowData, index) => ({ id: (index + this.numRowsAbove).toString(), data: rowData, size: this.scrollerItemSize, index: (index + this.numRowsAbove) })
             ));
             this.currentExpanded.forEach((index) => {
                 const contentHeight = this.getContentHeight(index);
                 data[0][index].size += contentHeight;
             });
             return data;
+        },
+        currentSelectionMap() {
+          return (index) => (this.currentSelection[0] === null || index < this.numRowsAbove || index >= this.numRowsAbove + this.currentSelection[0].length) ?
+                  false :
+                  this.currentSelection[0][index - this.numRowsAbove]
         },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
@@ -309,7 +318,7 @@ export default {
         },
         onRowSelect(selected, rowInd, groupInd) {
             consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd}`);
-            this.$emit('rowSelect', selected, rowInd, groupInd);
+            this.$emit('rowSelect', selected, rowInd - this.numRowsAbove, groupInd);
         },
         onRowExpand(expanded, index) {
             if (expanded) {
@@ -429,14 +438,17 @@ export default {
             :key="scrollerKey"
             v-slot="{ item }"
             :items="dataGroup"
+            :num-items-above="numRowsAbove"
+            :num-items-below="numRowsBelow"
             :min-item-size="scrollerItemSize"
-            :empty-item="{data: []}"
+            :empty-item="{ data: [], isSelected: false }"
             class="scroller"
             :style="{ height: `${currentBodyHeight}px` }"
             :emit-update="true"
             @update="onScroll"
           >
             <Row
+              :key="item.id"
               :ref="`row-${item.id}`"
               :row="columnKeys.map(column => item.data[column])"
               :table-config="tableConfig"
@@ -444,11 +456,7 @@ export default {
               :row-config="dataConfig.rowConfig"
               :row-height="rowHeight"
               :margin-bottom="rowMarginBottom"
-              :is-selected="
-                (currentSelection[0] === null || item.index < numRowsAbove || item.index >= numRowsAbove + currentSelection[0].length) ?
-                  false :
-                  currentSelection[0][item.index - numRowsAbove]
-              "
+              :is-selected="currentSelectionMap(item.index)"
               :show-border-column-index="showBorderColumnIndex"
               @rowSelect="selected => onRowSelect(selected, item.index, 0)"
               @rowExpand="(expanded) => onRowExpand(expanded, item.index)"
