@@ -6,6 +6,7 @@ import ColumnFilters from './filter/ColumnFilters.vue';
 import Header from './layout/Header.vue';
 import Group from './layout/Group.vue';
 import Row from './layout/Row.vue';
+import Dots from './layout/Dots.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
@@ -27,6 +28,7 @@ export default {
         Header,
         Group,
         Row,
+        Dots,
         ActionButton,
         TablePopover,
         RecycleScroller
@@ -50,7 +52,7 @@ export default {
          */
         numRowsAbove: {
             type: Number,
-            default: 0
+            default: 10
         },
         /**
          * Only used when tableConfig.enableVirtualScrolling is true.
@@ -59,6 +61,14 @@ export default {
         numRowsBelow: {
             type: Number,
             default: 0
+        },
+        /**
+         * Data displayed when scrolling to the bottom of the table. Currently only supproted together
+         * with virtual scrolling enabled.
+        */
+        bottomData: {
+            type: Array,
+            default: () => []
         },
         totalSelected: {
             type: Number,
@@ -124,7 +134,8 @@ export default {
             wrapperHeight: 0,
             wrapperResizeObserver: new ResizeObserver((entries) => {
                 this.wrapperHeight = entries[0].contentRect.height;
-            })
+            }),
+            dotsFontSize: 40
         };
     },
     computed: {
@@ -188,6 +199,9 @@ export default {
             return this.tableConfig.fitToContainer;
         },
         scrollData() {
+            if (this.data === null) {
+                return null;
+            }
             const data = this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({
                     id: (index + this.numRowsAbove).toString(),
@@ -196,6 +210,23 @@ export default {
                     index: index + this.numRowsAbove
                 })
             ));
+            if (this.enableVirtualScrolling) {
+                const topDataLength = data[0].length;
+                const hasBottomData = this.bottomData.length > 0;
+                if (topDataLength > 0 && hasBottomData) {
+                    data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
+                }
+                if (hasBottomData) {
+                    this.bottomData.forEach((rowData, index) => {
+                        data[0].push({
+                            id: (index + this.numRowsAbove + topDataLength + 1).toString(),
+                            data: rowData,
+                            size: this.scrollerItemSize,
+                            index: index + this.numRowsAbove + topDataLength + 1
+                        });
+                    });
+                }
+            }
             this.currentExpanded.forEach((index) => {
                 const contentHeight = this.getContentHeight(index);
                 data[0][index - this.numRowsAbove].size += contentHeight;
@@ -238,6 +269,11 @@ export default {
                         numberOfRows += dataGroup.length;
                     }
                 }
+            }
+            const numberOfBottomRows = this.bottomData.length;
+            if (numberOfBottomRows > 0) {
+                // plus 1 because of the additional "…" row
+                numberOfRows += numberOfBottomRows + 1;
             }
             return this.scrollerItemSize * numberOfRows +
             (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
@@ -504,7 +540,12 @@ export default {
             :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
+            <Dots
+              v-if="item.dots"
+              :height="item.size"
+            />
             <Row
+              v-else
               :key="item.id"
               :ref="`row-${item.id}`"
               :row="columnKeys.map(column => item.data[column])"
