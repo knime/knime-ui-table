@@ -468,6 +468,8 @@ export default {
             :key="scrollerKey"
             v-slot="{ item }"
             :items="dataGroup"
+            :min-item-size="scrollerItemSize"
+            :empty-item="{data: []}"
             class="scroller"
             :emit-update="true"
             :page-mode="false"
