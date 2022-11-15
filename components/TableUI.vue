@@ -6,6 +6,7 @@ import ColumnFilters from './filter/ColumnFilters.vue';
 import Header from './layout/Header.vue';
 import Group from './layout/Group.vue';
 import Row from './layout/Row.vue';
+import PlaceholderRow from './ui/PlaceholderRow.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
@@ -27,6 +28,7 @@ export default {
         Header,
         Group,
         Row,
+        PlaceholderRow,
         ActionButton,
         TablePopover,
         RecycleScroller
@@ -59,6 +61,21 @@ export default {
         numRowsBelow: {
             type: Number,
             default: 0
+        },
+        /**
+         * Data displayed when scrolling to the bottom of the table. Currently only supproted together
+         * with virtual scrolling enabled.
+        */
+        bottomData: {
+            type: Array,
+            default: () => []
+        },
+        /**
+         * analogous to currentSelection but for the bottomData
+         */
+        currentBottomSelection: {
+            type: Array,
+            default: () => []
         },
         totalSelected: {
             type: Number,
@@ -187,30 +204,58 @@ export default {
         fitToContainer() {
             return this.tableConfig.fitToContainer;
         },
+        topDataLength() {
+            if (this.data === null) {
+                return 0;
+            }
+            return this.data[0].length;
+        },
         scrollData() {
+            if (this.data === null) {
+                return null;
+            }
             const data = this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({
                     id: (index + this.numRowsAbove).toString(),
                     data: rowData,
                     size: this.scrollerItemSize,
-                    index: index + this.numRowsAbove
+                    index,
+                    scrollIndex: index + this.numRowsAbove,
+                    isTop: true
                 })
             ));
-            this.currentExpanded.forEach((index) => {
-                const contentHeight = this.getContentHeight(index);
-                data[0][index - this.numRowsAbove].size += contentHeight;
+            if (this.enableVirtualScrolling) {
+                if (this.bottomData.length > 0) {
+                    let hasPlaceholder = this.topDataLength > 0;
+                    if (hasPlaceholder) {
+                        data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
+                    }
+                    this.bottomData.forEach((rowData, index) => {
+                        const scrollIndex = index + this.numRowsAbove + this.topDataLength + (hasPlaceholder ? 1 : 0);
+                        data[0].push({
+                            id: scrollIndex.toString(),
+                            data: rowData,
+                            size: this.scrollerItemSize,
+                            index,
+                            scrollIndex,
+                            isTop: false
+                        });
+                    });
+                }
+            }
+            this.currentExpanded.forEach((scrollIndex) => {
+                const contentHeight = this.getContentHeight(scrollIndex);
+                data[0][scrollIndex - this.numRowsAbove].size += contentHeight;
             });
             return data;
         },
         currentSelectionMap() {
-          if (this.currentSelection[0] === null) {
-            return () => false;
-          }
-          return (index) => {
-            const isAboveRow = index < this.numRowsAbove;
-            const isBelowRow = index >= this.numRowsAbove + this.currentSelection[0].length;
-            return (isAboveRow || isBelowRow) ? false : this.currentSelection[0][index - this.numRowsAbove]
-          }
+            return (index, isTop) => {
+                if (typeof index === 'undefined') {
+                    return false;
+                }
+                return isTop ? this.currentSelection[0][index] : this.currentBottomSelection[index];
+            };
         },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
@@ -238,6 +283,11 @@ export default {
                         numberOfRows += dataGroup.length;
                     }
                 }
+            }
+            const numberOfBottomRows = this.bottomData.length;
+            if (numberOfBottomRows > 0) {
+                // plus 1 because of the additional "…" row
+                numberOfRows += numberOfBottomRows + 1;
             }
             return this.scrollerItemSize * numberOfRows +
             (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
@@ -362,17 +412,17 @@ export default {
             consola.debug(`TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`);
             this.$emit('headerSubMenuItemSelection', item, colInd);
         },
-        onRowSelect(selected, rowInd, groupInd) {
-            consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd}`);
-            this.$emit('rowSelect', selected, rowInd - this.numRowsAbove, groupInd);
+        onRowSelect(selected, rowInd, groupInd, isTop) {
+            consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd} ${isTop}`);
+            this.$emit('rowSelect', selected, rowInd, groupInd, isTop);
         },
-        onRowExpand(expanded, index) {
+        onRowExpand(expanded, scrollIndex) {
             // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
             if (expanded) {
-                this.currentExpanded.add(index);
+                this.currentExpanded.add(scrollIndex);
                 this.currentExpanded = new Set(this.currentExpanded);
             } else {
-                const hasDeleted = this.currentExpanded.delete(index);
+                const hasDeleted = this.currentExpanded.delete(scrollIndex);
                 if (hasDeleted) {
                     this.currentExpanded = new Set(this.currentExpanded);
                 }
@@ -505,7 +555,12 @@ export default {
             :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
+            <PlaceholderRow
+              v-if="item.dots"
+              :height="item.size"
+            />
             <Row
+              v-else
               :key="item.id"
               :ref="`row-${item.id}`"
               :row="columnKeys.map(column => item.data[column])"
@@ -514,11 +569,13 @@ export default {
               :row-config="dataConfig.rowConfig"
               :row-height="rowHeight"
               :margin-bottom="rowMarginBottom"
-              :is-selected="currentSelectionMap(item.index)"
+              :is-selected="currentSelectionMap(item.index, item.isTop)"
               :show-border-column-index="showBorderColumnIndex"
-              @rowSelect="selected => onRowSelect(selected, item.index, 0)"
-              @rowExpand="(expanded) => onRowExpand(expanded, item.index)"
-              @rowInput="event => onRowInput({ ...event, index: item.index, id: item.data.id, groupInd: 0})"
+              @rowSelect="selected => onRowSelect(selected, item.index, 0, item.isTop)"
+              @rowExpand="(expanded) => onRowExpand(expanded, item.scrollIndex, item.isTop)"
+              @rowInput="event => onRowInput(
+                { ...event, index: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+              )"
               @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
             >
               <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -554,8 +611,8 @@ export default {
             :row-height="rowHeight"
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
-            @rowSelect="selected => onRowSelect(selected, rowInd, groupInd)"
-            @rowInput="event => onRowInput({ ...event, rowInd, id: row.data.id, groupInd})"
+            @rowSelect="selected => onRowSelect(selected, rowInd, groupInd, true)"
+            @rowInput="event => onRowInput({ ...event, rowInd, id: row.data.id, groupInd, isTop: true})"
             @rowSubMenuClick="event => onRowSubMenuClick(event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->

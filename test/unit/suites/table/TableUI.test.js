@@ -26,6 +26,7 @@ const getPropsData = ({
     enableIsSortable = false,
     data = [[{ a: 'cellA', b: 'cellB' }]],
     currentSelection = [[false]],
+    currentBottomSelection = [],
     pageConfig = {
         currentSize: 1,
         tableSize: 1,
@@ -35,11 +36,14 @@ const getPropsData = ({
         currentPage: 1,
         fixHeader: false
     },
-    numRowsAbove = 0
+    numRowsAbove = 0,
+    bottomData = []
 }) => ({
     data,
+    bottomData,
     numRowsAbove,
     currentSelection,
+    currentBottomSelection,
     dataConfig: {
         columnConfigs: [{
             key: 'a',
@@ -120,6 +124,7 @@ describe('TableUI.vue', () => {
         enableIsSortable = false,
         data = [[{ a: 'cellA', b: 'cellB' }]],
         currentSelection = [[false]],
+        currentBottomSelection = [],
         pageConfig = {
             currentSize: 1,
             tableSize: 1,
@@ -131,7 +136,8 @@ describe('TableUI.vue', () => {
         },
         numRowsAbove = 0,
         shallow = true,
-        wrapperHeight = 1000
+        wrapperHeight = 1000,
+        bottomData = []
     } = {}) => {
         const propsData = getPropsData({
             includeSubHeaders,
@@ -146,8 +152,10 @@ describe('TableUI.vue', () => {
             enableIsSortable,
             data,
             currentSelection,
+            currentBottomSelection,
             pageConfig,
-            numRowsAbove
+            numRowsAbove,
+            bottomData
         });
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
@@ -337,7 +345,14 @@ describe('TableUI.vue', () => {
             let callbackMock = jest.fn();
             wrapper.find(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
             expect(callbackMock).toHaveBeenCalledWith(
-                [{ data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }], expect.anything()
+                [{
+                    data: { a: 'cellA', b: 'cellB' },
+                    id: '0',
+                    index: 0,
+                    size: 41,
+                    scrollIndex: 0,
+                    isTop: true
+                }], expect.anything()
             );
         });
 
@@ -347,7 +362,7 @@ describe('TableUI.vue', () => {
 
                 expect(wrapper.emitted().rowSelect).toBeFalsy();
                 wrapper.find(Row).vm.$emit('rowSelect', true);
-                expect(wrapper.emitted().rowSelect).toStrictEqual([[true, 0, 0]]);
+                expect(wrapper.emitted().rowSelect).toStrictEqual([[true, 0, 0, true]]);
             });
 
             it('handles input events', () => {
@@ -357,7 +372,7 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(Row).vm.$emit('rowInput', { cell: true });
                 expect(wrapper.emitted().tableInput).toStrictEqual(
-                    [[{ cell: true, rowInd: 0, groupInd: 0, id }]]
+                    [[{ cell: true, rowInd: 0, groupInd: 0, id, isTop: true }]]
                 );
             });
 
@@ -576,7 +591,31 @@ describe('TableUI.vue', () => {
         it('supplies data with ids and sizes', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
             expect(wrapper.vm.scrollData).toStrictEqual([[
-                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41, scrollIndex: 0, isTop: true }
+            ]]);
+        });
+
+        it('adds bottom data to the scroll data', () => {
+            const { wrapper } = doMount({ enableVirtualScrolling: true, bottomData: [['foo'], ['bar']] });
+            expect(wrapper.vm.scrollData).toStrictEqual([[
+                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41, scrollIndex: 0, isTop: true },
+                { dots: true, id: 'dots', size: 41 },
+                { data: ['foo'], id: '2', index: 0, size: 41, scrollIndex: 2, isTop: false },
+                { data: ['bar'], id: '3', index: 1, size: 41, scrollIndex: 3, isTop: false }
+            ]]);
+        });
+        
+
+        it('adds bottom data to the scroll data without top data', () => {
+            const { wrapper } = doMount({
+                enableVirtualScrolling: true,
+                numRowsAbove: 2,
+                data: [[]],
+                bottomData: [['foo'], ['bar']]
+            });
+            expect(wrapper.vm.scrollData).toStrictEqual([[
+                { data: ['foo'], id: '2', index: 0, size: 41, scrollIndex: 2, isTop: false },
+                { data: ['bar'], id: '3', index: 1, size: 41, scrollIndex: 3, isTop: false }
             ]]);
         });
 
@@ -584,39 +623,38 @@ describe('TableUI.vue', () => {
             const numRowsAbove = 3;
             const { wrapper } = doMount({ enableVirtualScrolling: true, numRowsAbove });
             expect(wrapper.vm.scrollData).toStrictEqual([[
-                { data: { a: 'cellA', b: 'cellB' }, id: `${numRowsAbove}`, index: numRowsAbove, size: 41 }
+                {
+                    data: { a: 'cellA', b: 'cellB' },
+                    id: `${numRowsAbove}`,
+                    index: 0,
+                    scrollIndex: numRowsAbove,
+                    size: 41,
+                    isTop: true
+                }
             ]]);
         });
 
-        it('shifts selection by number of rows above', () => {
+        it('computes selection for top and bottom rows', () => {
             const numRowsAbove = 3;
             const { wrapper } = doMount({
-                enableVirtualScrolling: true, numRowsAbove, currentSelection: [[true, false, true]]
+                enableVirtualScrolling: true,
+                numRowsAbove,
+                currentSelection: [[true, false, true]],
+                currentBottomSelection: [true, true]
             });
             const selectionMap = wrapper.vm.currentSelectionMap;
-            expect(selectionMap(0)).toBe(false);
-            expect(selectionMap(1)).toBe(false);
-            expect(selectionMap(2)).toBe(false);
 
-            expect(selectionMap(3)).toBe(true);
-            expect(selectionMap(4)).toBe(false);
-            expect(selectionMap(5)).toBe(true);
-            
-            expect(selectionMap(6)).toBe(false);
-            expect(selectionMap(7)).toBe(false);
-        });
-
-        it('returns false when null currentSelection is supplied', () => {
-            const { wrapper } = doMount({
-                enableVirtualScrolling: true, currentSelection: [null]
-            });
-            const selectionMap = wrapper.vm.currentSelectionMap;
-            expect(selectionMap(0)).toBe(false);
-            expect(selectionMap(1)).toBe(false);
-            expect(selectionMap(100)).toBe(false);
+            expect(selectionMap(0, true)).toBe(true);
+            expect(selectionMap(1, true)).toBe(false);
+            expect(selectionMap(2, true)).toBe(true);
+            expect(selectionMap(0, false)).toBe(true);
+            expect(selectionMap(1, false)).toBe(true);
+            expect(selectionMap(undefined, true)).toBe(false);
         });
 
         describe('supports expanding and collapsing rows', () => {
+            const rowWithoutSize = { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, scrollIndex: 0, isTop: true };
+
             it('changes the size of the rows if they are expanded', () => {
                 const { wrapper } = doMount({ enableVirtualScrolling: true });
                 // simulate the expanded content
@@ -625,12 +663,12 @@ describe('TableUI.vue', () => {
                 wrapper.vm.onRowExpand(true, 0);
                 expect(wrapper.vm.currentExpanded).toContain(0);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
+                    { ...rowWithoutSize, size: 41 + expandedContentHeight }
                 ]]);
                 wrapper.vm.onRowExpand(false, 0);
                 expect(wrapper.vm.currentExpanded).not.toContain(0);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+                    { ...rowWithoutSize, size: 41 }
                 ]]);
             });
 
@@ -643,12 +681,12 @@ describe('TableUI.vue', () => {
                 wrapper.vm.onRowExpand(true, 0);
                 expect(wrapper.vm.currentExpanded).toContain(0);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 + expandedContentHeight }
+                    { ...rowWithoutSize, size: 41 + expandedContentHeight }
                 ]]);
                 wrapper.vm.onRowExpand(false, 0);
                 expect(wrapper.vm.currentExpanded).not.toContain(0);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+                    { ...rowWithoutSize, size: 41 }
                 ]]);
             });
 
