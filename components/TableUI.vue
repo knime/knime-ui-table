@@ -174,7 +174,7 @@ export default {
             ));
             this.currentExpanded.forEach((index) => {
                 const contentHeight = this.getContentHeight(index);
-                data[0][index].size += contentHeight;
+                data[0][index - this.numRowsAbove].size += contentHeight;
             });
             return data;
         },
@@ -440,8 +440,7 @@ export default {
             :items="dataGroup"
             :num-items-above="numRowsAbove"
             :num-items-below="numRowsBelow"
-            :min-item-size="scrollerItemSize"
-            :empty-item="{ data: [], isSelected: false }"
+            :empty-item="{ data: [], isSelected: false, size: scrollerItemSize, tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false} }"
             class="scroller"
             :style="{ height: `${currentBodyHeight}px` }"
             :emit-update="true"
@@ -451,7 +450,7 @@ export default {
               :key="item.id"
               :ref="`row-${item.id}`"
               :row="columnKeys.map(column => item.data[column])"
-              :table-config="tableConfig"
+              :table-config="item.tableConfig || tableConfig"
               :column-configs="dataConfig.columnConfigs"
               :row-config="dataConfig.rowConfig"
               :row-height="rowHeight"
