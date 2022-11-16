@@ -25,6 +25,7 @@ const getPropsData = ({
     columnFilterInitiallyActive = null,
     enableIsSortable = false,
     data = [[{ a: 'cellA', b: 'cellB' }]],
+    currentSelection = [[false]],
     pageConfig = {
         currentSize: 1,
         tableSize: 1,
@@ -33,10 +34,12 @@ const getPropsData = ({
         possiblePageSizes: [5, 10, 25],
         currentPage: 1,
         fixHeader: false
-    }
+    },
+    numRowsAbove = 0
 }) => ({
     data,
-    currentSelection: [[false]],
+    numRowsAbove,
+    currentSelection,
     dataConfig: {
         columnConfigs: [{
             key: 'a',
@@ -116,6 +119,7 @@ describe('TableUI.vue', () => {
         columnFilterInitiallyActive = false,
         enableIsSortable = false,
         data = [[{ a: 'cellA', b: 'cellB' }]],
+        currentSelection = [[false]],
         pageConfig = {
             currentSize: 1,
             tableSize: 1,
@@ -125,6 +129,7 @@ describe('TableUI.vue', () => {
             currentPage: 1,
             fixHeader: false
         },
+        numRowsAbove = 0,
         shallow = true,
         wrapperHeight = 1000
     } = {}) => {
@@ -140,7 +145,9 @@ describe('TableUI.vue', () => {
             columnFilterInitiallyActive,
             enableIsSortable,
             data,
-            pageConfig
+            currentSelection,
+            pageConfig,
+            numRowsAbove
         });
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
@@ -571,6 +578,32 @@ describe('TableUI.vue', () => {
             expect(wrapper.vm.scrollData).toStrictEqual([[
                 { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
             ]]);
+        });
+
+        it('shifts data by number of rows above', () => {
+            const numRowsAbove = 3;
+            const { wrapper } = doMount({ enableVirtualScrolling: true, numRowsAbove });
+            expect(wrapper.vm.scrollData).toStrictEqual([[
+                { data: { a: 'cellA', b: 'cellB' }, id: `${numRowsAbove}`, index: numRowsAbove, size: 41 }
+            ]]);
+        });
+
+        it('shifts selection by number of rows above', () => {
+            const numRowsAbove = 3;
+            const { wrapper } = doMount({
+                enableVirtualScrolling: true, numRowsAbove, currentSelection: [[true, false, true]]
+            });
+            const selectionMap = wrapper.vm.currentSelectionMap;
+            expect(selectionMap(0)).toBe(false);
+            expect(selectionMap(1)).toBe(false);
+            expect(selectionMap(2)).toBe(false);
+
+            expect(selectionMap(3)).toBe(true);
+            expect(selectionMap(4)).toBe(false);
+            expect(selectionMap(5)).toBe(true);
+            
+            expect(selectionMap(6)).toBe(false);
+            expect(selectionMap(7)).toBe(false);
         });
 
         describe('supports expanding and collapsing rows', () => {
