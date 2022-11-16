@@ -185,7 +185,12 @@ export default {
         },
         scrollData() {
             const data = this.data?.map(groupData => groupData.map(
-                (rowData, index) => ({ id: (index + this.numRowsAbove).toString(), data: rowData, size: this.scrollerItemSize, index: (index + this.numRowsAbove) })
+                (rowData, index) => ({
+                    id: (index + this.numRowsAbove).toString(),
+                    data: rowData,
+                    size: this.scrollerItemSize,
+                    index: index + this.numRowsAbove
+                })
             ));
             this.currentExpanded.forEach((index) => {
                 const contentHeight = this.getContentHeight(index);
@@ -194,9 +199,10 @@ export default {
             return data;
         },
         currentSelectionMap() {
-          return (index) => (this.currentSelection[0] === null || index < this.numRowsAbove || index >= this.numRowsAbove + this.currentSelection[0].length) ?
-                  false :
-                  this.currentSelection[0][index - this.numRowsAbove]
+            return (index) => this.currentSelection[0] === null || index < this.numRowsAbove ||
+            index >= this.numRowsAbove + this.currentSelection[0].length
+                ? false
+                : this.currentSelection[0][index - this.numRowsAbove];
         },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
@@ -479,7 +485,11 @@ export default {
             :items="dataGroup"
             :num-items-above="numRowsAbove"
             :num-items-below="numRowsBelow"
-            :empty-item="{ data: [], isSelected: false, size: scrollerItemSize, tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false} }"
+            :empty-item="{
+              data: [],
+              size: scrollerItemSize,
+              tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false}
+            }"
             class="scroller"
             :emit-update="true"
             :page-mode="false"
