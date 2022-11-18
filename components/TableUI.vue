@@ -43,6 +43,11 @@ export default {
             type: Array,
             default: () => []
         },
+        /**
+         * Only used when tableConfig.enableVirtualScrolling is true.
+         * It specifies an offset of the currentSelection such that this array only has to contain the selection of a
+         * smaller (lazyloaded) batch of the data.
+         */
         numRowsAbove: {
             type: Number,
             default: 0
