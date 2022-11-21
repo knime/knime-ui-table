@@ -56,10 +56,10 @@ export default {
             showSelection: true,
             showSorting: true,
             showPopovers: true,
-            compactMode: true,
+            compactMode: false,
             fixHeader: true,
             showActionButton: false,
-            enableVirtualScrolling: false,
+            enableVirtualScrolling: true,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false
