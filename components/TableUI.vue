@@ -45,7 +45,7 @@ export default {
         },
         numRowsAbove: {
             type: Number,
-            default: 1000
+            default: 100
         },
         numRowsBelow: {
             type: Number,
@@ -112,7 +112,8 @@ export default {
             updatedBefore: false,
             currentExpanded: new Set(),
             rowMarginBottom: ROW_MARGIN_BOTTOM,
-            start: 0
+            start: 0,
+            barToBody: false
         };
     },
     computed: {
@@ -251,7 +252,10 @@ export default {
             this.scrollerKey++;
         },
         // Event handling
-        onScroll(startIndex, endIndex) {
+        onScroll(startIndex, endIndex, wrapperTop) {
+            if (!this.barToBody) {
+              this.$refs.scrollbar.scrollTop = -wrapperTop + this.$refs.scrollbar.getBoundingClientRect().top
+            }
             
             if (this.lastScrollIndex === endIndex) {
                 return;
@@ -262,8 +266,9 @@ export default {
             this.$emit('lazyload', { direction, startIndex, endIndex });
         },
         onUpdatedScrollPosition(newScrollTop) {
-          if (this.$refs.body.scrollTop !== newScrollTop) {
-            this.$refs.body.scrollTop = newScrollTop;
+          console.log("hier", newScrollTop,  this.$refs.body.scrollTop)
+          if (Math.floor(newScrollTop - this.$refs.body.scrollTop) !== 0) {
+            this.$refs.body.scrollTop = this.$refs.body.getBoundingClientRect().top + newScrollTop;
           }
         },
         collapseAllUnusedRows(startIndex, endIndex) {
@@ -382,8 +387,11 @@ export default {
             return contentHeight || 0;
         },
         onScrollBarScroll(event) {
-            const scrollPos = event.target.getBoundingClientRect().top - this.$refs.virtualBody.getBoundingClientRect().top;
-            this.start = scrollPos;
+            if (this.barToBody) {
+              //TODO: Treat scroll to bottom differently.
+              const scrollPos = event.target.getBoundingClientRect().top - this.$refs.virtualBody.getBoundingClientRect().top;
+              this.start = scrollPos;
+            }
         }
     }
 };
@@ -551,13 +559,14 @@ export default {
           </Group>
         </div>
         <div
-          v-if="(numRowsAbove + numRowsBelow + scrollData[0].length) * scrollerItemSize > currentBodyHeight"
+          v-if="scrollData && (numRowsAbove + numRowsBelow + scrollData[0].length) * scrollerItemSize > currentBodyHeight"
           :style="{ overflowY: 'scroll',
                     overflowX: 'hidden',
                     height: `${currentBodyHeight}px`,
                     right: '0px',
                     width: '20px' }"
           class="scrollbar"
+          ref="scrollbar"
           @scroll="onScrollBarScroll"
         >
           <div
