@@ -209,12 +209,7 @@ export default {
                     }
                 }
             }
-            let numberOfDisplayedRows = numberOfRows;
-            const visibleSizeParam = this.tableConfig.pageConfig.visibleSize;
-            if (typeof visibleSizeParam !== 'undefined' && visibleSizeParam < numberOfDisplayedRows) {
-                numberOfDisplayedRows = visibleSizeParam;
-            }
-            return this.scrollerItemSize * numberOfDisplayedRows +
+            return this.scrollerItemSize * numberOfRows +
             (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
         },
         currentTableHeight() {
@@ -432,7 +427,7 @@ export default {
       />
       <div
         class="body"
-        :style="{ width: `${currentBodyWidth}px`, ...fixHeader && { height: `${currentBodyHeight}px` }}"
+        :style="{ width: `${currentBodyWidth}px`}"
       >
         <Group
           v-for="(dataGroup, groupInd) in scrollData"
@@ -448,8 +443,8 @@ export default {
             v-slot="{ item }"
             :items="dataGroup"
             class="scroller"
-            :style="{ height: `${currentBodyHeight}px` }"
             :emit-update="true"
+            :page-mode="true"
             @update="onScroll"
           >
             <Row
@@ -568,9 +563,11 @@ export default {
 <style lang="postcss" scoped>
 .scroller {
   overflow-y: auto;
+  height: 100%;
 }
 
 .wrapper {
+  height: 100%;
   position: relative;
 }
 
@@ -581,6 +578,7 @@ tbody {
 }
 
 table {
+  height: 100%;
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
@@ -590,6 +588,7 @@ table {
   margin-right: auto;
 
   & .body {
+    height: 100%;
     overflow-y: visible;
     display: block;
 
@@ -647,11 +646,9 @@ table >>> tr {
 }
 
 .fix-header {
-  height: 100%;
   overflow-y: visible;
 
   & table {
-    height: 100%;
     overflow-y: visible;
 
     & .body {

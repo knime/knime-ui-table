@@ -474,36 +474,17 @@ describe('TableUI.vue', () => {
             expect(wrapper.vm.rowHeight).toEqual(24);
         });
 
-        describe('body height', () => {
-            const pageConfigWithoutVisibleSize = {
+
+        it('computes height from number of rows', () => {
+            const { wrapper } = doMount({ pageConfig: {
                 currentSize: 1,
                 tableSize: 1,
                 pageSize: 1,
                 possiblePageSizes: [1],
                 currentPage: 1
-            };
+            } });
 
-            it('computes height from number of rows when no visibleSize is given', () => {
-                const { wrapper } = doMount({ pageConfig: pageConfigWithoutVisibleSize });
-
-                expect(wrapper.vm.currentBodyHeight).toEqual(41);
-            });
-
-            it('computes height from number of rows when visibleSize is greater than it', () => {
-                const { wrapper } = doMount({ pageConfig: { ...pageConfigWithoutVisibleSize, visibleSize: 3 } });
-
-                expect(wrapper.vm.currentBodyHeight).toEqual(41);
-            });
-
-            it('computes height from visibleSize', () => {
-                const visibleSize = 3;
-                const { wrapper } = doMount({
-                    data: [[{ a: 'cellA' }, { a: 'cellA' }, { a: 'cellA' }, { a: 'cellA' }]],
-                    pageConfig: { ...pageConfigWithoutVisibleSize, visibleSize }
-                });
-
-                expect(wrapper.vm.currentBodyHeight).toEqual(visibleSize * 41);
-            });
+            expect(wrapper.vm.currentBodyHeight).toEqual(41);
         });
     });
 
