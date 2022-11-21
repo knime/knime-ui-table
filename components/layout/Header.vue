@@ -74,8 +74,7 @@ export default {
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
             pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
             minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
-            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
-            expandedSubMenuColumnInd: null // the column index of the expanded sub menu
+            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH
         };
     },
     computed: {
@@ -91,19 +90,6 @@ export default {
         },
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
-        },
-        // column index and subMenu index within $refs can differ because not all columns have a subMenu (e.g. RowKeys)
-        columnIndSubMenuIndMap() {
-            let numberOfSkippedEntries = 0;
-            const indexMap = new Map();
-            this.columnSubMenuItems.forEach((entry, index) => {
-                if (entry) {
-                    indexMap.set(index, index - numberOfSkippedEntries);
-                } else {
-                    numberOfSkippedEntries++;
-                }
-            });
-            return indexMap;
         }
     },
     methods: {
@@ -134,10 +120,7 @@ export default {
             }
         },
         onPointerDown(event, columnIndex) {
-            this.$refs.subMenu?.[this.columnIndSubMenuIndMap.get(this.expandedSubMenuColumnInd)]?.closeMenu(false);
             consola.debug('Resize via drag triggered: ', event);
-            // prevent default browser behavior
-            event.preventDefault();
             // stop the event from propagating up the DOM tree
             event.stopPropagation();
             // capture move events until the pointer is released
@@ -171,15 +154,6 @@ export default {
         },
         onSubMenuItemSelection(item, ind) {
             this.$emit('subMenuItemSelection', item, ind);
-        },
-        onSubMenuToggle(ind, expanded) {
-            if (expanded) {
-                this.expandedSubMenuColumnInd = ind;
-            /* don't use !expanded because closing a menu is registered after opening a menu when expanding two menus
-            consecutively without closing the first expanded menu */
-            } else if (this.expandedSubMenuColumnInd === ind) {
-                this.expandedSubMenuColumnInd = null;
-            }
         }
     }
 };
@@ -238,10 +212,9 @@ export default {
             :items="columnSubMenuItems[ind]"
             orientation="left"
             :max-menu-width="maximumSubMenuWidth"
-            :prevent-overflow-main-axis="false"
+            allow-overflow-main-axis
             button-title="Open table column header submenu"
             @item-click="(_, item) => { onSubMenuItemSelection(item, ind) }"
-            @menu-toggled="expanded => onSubMenuToggle(ind, expanded)"
           >
             <ArrowDropdown class="icon" />
           </SubMenu>
@@ -251,7 +224,7 @@ export default {
           :style="{ height: `${dragHandleHeight(dragIndex === ind)}px` }"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
-          @pointerdown="onPointerDown($event, ind)"
+          @pointerdown.passive="onPointerDown($event, ind)"
           @pointermove="onPointerMove"
           @lostpointercapture="onLostPointerCapture"
         />
@@ -405,10 +378,6 @@ thead {
               height: 14px;
               width: 14px;
             }
-          }
-
-          & >>> .menu-wrapper {
-            z-index: 1;
           }
         }
 

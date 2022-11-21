@@ -96,6 +96,7 @@ export default {
                 compactMode: this.compactMode,
                 fixHeader: this.fixHeader,
                 showActionButton: this.showActionButton,
+                headerSubMenuItems: this.headerSubMenuItems,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
                 enableVirtualScrolling: this.enableVirtualScrolling,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
@@ -203,7 +204,7 @@ export default {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
-    overflow: hidden;
+    overflow: visible;
   }
 
   .fix-header h2 {

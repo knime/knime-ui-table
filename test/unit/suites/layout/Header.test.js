@@ -195,37 +195,6 @@ describe('Header.vue', () => {
         expect(wrapper.find(Header).emitted().subMenuItemSelection).toStrictEqual([[subMenuClickedItem, 1]]);
     });
 
-    it('sets the correct mapping for subMenu indices to column indices', () => {
-        const resultMap = new Map();
-        resultMap.set(1, 0);
-        resultMap.set(4, 1);
-        wrapper = mount(Header, { propsData: { ...propsData,
-            columnSubMenuItems: [null, columnSubMenuItems, null, null, columnSubMenuItems] } });
-        expect(wrapper.vm.columnIndSubMenuIndMap).toStrictEqual(resultMap);
-    });
-
-    it('adjusts the subMenuColumnIndex on subMenu toggle', () => {
-        jest.useFakeTimers();
-        wrapper = mount(Header, { propsData: { ...propsData,
-            columnSubMenuItems: new Array(5).fill(columnSubMenuItems) } });
-        const onSubMenuToggleSpy = jest.spyOn(wrapper.vm, 'onSubMenuToggle');
-
-        wrapper.findAll(SubMenu).at(1).find({ ref: 'submenu-toggle' }).trigger('click');
-        jest.runAllTimers();
-        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(1, 1, true);
-        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(1);
-
-        wrapper.findAll(SubMenu).at(2).find({ ref: 'submenu-toggle' }).trigger('click');
-        jest.runAllTimers();
-        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(2, 2, true);
-        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(2);
-
-        wrapper.findAll(SubMenu).at(2).vm.closeMenu(false);
-        jest.runAllTimers();
-        expect(onSubMenuToggleSpy).toHaveBeenNthCalledWith(3, 2, false);
-        expect(wrapper.vm.expandedSubMenuColumnInd).toStrictEqual(null);
-    });
-
     it('sets hover index on drag handle pointerover', () => {
         wrapper = shallowMount(Header, { propsData });
 

@@ -648,11 +648,11 @@ table >>> tr {
 
 .fix-header {
   height: 100%;
-  overflow-y: hidden;
+  overflow-y: visible;
 
   & table {
     height: 100%;
-    overflow-y: hidden;
+    overflow-y: visible;
 
     & .body {
       overflow-y: auto;
