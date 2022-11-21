@@ -44,14 +44,18 @@ export default {
             default: () => []
         },
         /**
+         
          * Only used when tableConfig.enableVirtualScrolling is true.
-         * It specifies an offset of the currentSelection such that this array only has to contain the selection of a
-         * smaller (lazyloaded) batch of the data.
+         * It specifies how many (empty) rows should be simultated above the given rows in this.data[0]
          */
         numRowsAbove: {
             type: Number,
             default: 0
         },
+        /**
+         * Only used when tableConfig.enableVirtualScrolling is true.
+         * It specifies how many (empty) rows should be simultated below the given rows in this.data[0]
+         */
         numRowsBelow: {
             type: Number,
             default: 0
