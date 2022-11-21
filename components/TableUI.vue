@@ -45,7 +45,7 @@ export default {
         },
         numRowsAbove: {
             type: Number,
-            default: 100
+            default: 0
         },
         numRowsBelow: {
             type: Number,
@@ -112,7 +112,11 @@ export default {
             updatedBefore: false,
             currentExpanded: new Set(),
             rowMarginBottom: ROW_MARGIN_BOTTOM,
-            start: 0,
+            // a variable used to communicate from the scrollbar to the scroller.
+            scrollTo: 0,
+            // Currently only one direction is supported. If barToBody, the bar will change the body. 
+            // Otherwise scrolling the body also adjusts the bar
+            // Problems arise when trying to have both at once, since we would need to stop infinite loops in this case.
             barToBody: false
         };
     },
@@ -254,9 +258,9 @@ export default {
         // Event handling
         onScroll(startIndex, endIndex, wrapperTop) {
             if (!this.barToBody) {
+              //wrapperTop = top of the div which causes the scrolling
               this.$refs.scrollbar.scrollTop = -wrapperTop + this.$refs.scrollbar.getBoundingClientRect().top
             }
-            
             if (this.lastScrollIndex === endIndex) {
                 return;
             }
@@ -266,7 +270,7 @@ export default {
             this.$emit('lazyload', { direction, startIndex, endIndex });
         },
         onUpdatedScrollPosition(newScrollTop) {
-          console.log("hier", newScrollTop,  this.$refs.body.scrollTop)
+          // this event gets sent by the RecycleScroller when its scroll position was adjusted externally (via the parameter scrollTo) after it was updated
           if (Math.floor(newScrollTop - this.$refs.body.scrollTop) !== 0) {
             this.$refs.body.scrollTop = this.$refs.body.getBoundingClientRect().top + newScrollTop;
           }
@@ -388,9 +392,9 @@ export default {
         },
         onScrollBarScroll(event) {
             if (this.barToBody) {
-              //TODO: Treat scroll to bottom differently.
+              //TODO: Treat scroll to bottom differently (the top position is incorrect when scrolling to the bottom). 
               const scrollPos = event.target.getBoundingClientRect().top - this.$refs.virtualBody.getBoundingClientRect().top;
-              this.start = scrollPos;
+              this.scrollTo = scrollPos;
             }
         }
     }
@@ -446,6 +450,7 @@ export default {
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"
       />
+      <!-- div containing two scrollable areas: The body for which the scrollbar is hidden and the scrollbar next to it -->
       <div
         :style="{display: 'flex' }"
       >
@@ -478,7 +483,7 @@ export default {
               :style="{ height: `100%` }"
               :page-mode="true"
               :emit-update="true"
-              :start="start"
+              :scrollTo="scrollTo"
               @update="onScroll"
               @updatedScrollPosition="onUpdatedScrollPosition"
             >
@@ -558,6 +563,7 @@ export default {
             </Row>
           </Group>
         </div>
+        <!-- scrollbar width would have to be set dynamically (also the scrollbar should disappear if it is not needed) -->
         <div
           v-if="scrollData && (numRowsAbove + numRowsBelow + scrollData[0].length) * scrollerItemSize > currentBodyHeight"
           :style="{ overflowY: 'scroll',
@@ -615,6 +621,7 @@ export default {
 
 <style lang="postcss" scoped>
 
+// Hide scrollbar (works differently for different browsers, https://www.w3schools.com/howto/howto_css_hide_scrollbars.asp) 
 .body::-webkit-scrollbar {
   display: none;
 }
@@ -665,7 +672,6 @@ table {
     }
   }
 }
-
 
 table >>> tr {
   display: flex;
