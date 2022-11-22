@@ -93,7 +93,6 @@ export default {
 <style lang="postcss" scoped>
 
 tr {
-  margin-top: -2px;
   height: 40px;
   overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
@@ -105,7 +104,8 @@ tr {
     text-align: left;
 
     &.filter {
-      margin: auto 5px auto 10px;
+      margin: auto 5px auto 0px;
+      padding-left: 10px
     }
 
     &.collapser-cell-spacer {
