@@ -41,7 +41,7 @@ module.exports = {
         '!index.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test|vue-virtual-scroller)/'
     ],
     watchPathIgnorePatterns: [
         '^<rootDir>/(coverage|dist|target|node_modules|webapps-common)/'
