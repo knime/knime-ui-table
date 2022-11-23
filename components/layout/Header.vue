@@ -298,7 +298,7 @@ thead {
           width: 100%;
 
           &.with-sub-menu {
-              width: calc(100% - 27px); /* due to .sub-menu-select-header: width + padding */
+            width: calc(100% - 27px); /* due to .sub-menu-select-header: width + padding */
           }
 
           &:not(.inverted) .icon.active {

@@ -483,7 +483,8 @@ export default {
               :row-height="rowHeight"
               :margin-bottom="rowMarginBottom"
               :is-selected="
-                (currentSelection[0] === null || item.index < numRowsAbove || item.index >= numRowsAbove + currentSelection[0].length) ?
+                (currentSelection[0] === null || item.index < numRowsAbove ||
+                  item.index >= numRowsAbove + currentSelection[0].length) ?
                   false :
                   currentSelection[0][item.index - numRowsAbove]
               "
@@ -590,7 +591,6 @@ export default {
 <style lang="postcss" scoped>
 .scroller {
   overflow-y: auto;
-  height: 100%;
 }
 
 .wrapper {
@@ -615,7 +615,6 @@ table {
   margin-right: auto;
 
   & .body {
-    height: 100%;
     overflow-y: visible;
     display: block;
 
