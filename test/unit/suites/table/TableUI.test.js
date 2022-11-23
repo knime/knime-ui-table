@@ -101,6 +101,7 @@ const getPropsData = ({
 });
 
 describe('TableUI.vue', () => {
+    let bodySizeEvent;
     const doMount = ({
         includeSubHeaders = true,
         compactMode = false,
@@ -108,6 +109,7 @@ describe('TableUI.vue', () => {
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
+        fitToContainer = false,
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
@@ -122,7 +124,8 @@ describe('TableUI.vue', () => {
             currentPage: 1,
             fixHeader: false
         },
-        shallow = true
+        shallow = true,
+        wrapperHeight = 1000
     } = {}) => {
         const propsData = getPropsData({
             includeSubHeaders,
@@ -139,10 +142,26 @@ describe('TableUI.vue', () => {
             pageConfig
         });
 
+        bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
+
         const wrapper = shallow ? shallowMount(TableUI, { propsData }) : mount(TableUI, { propsData });
 
         return { wrapper, propsData };
     };
+
+    beforeEach(() => {
+        bodySizeEvent = [];
+        Object.defineProperty(global, 'ResizeObserver', {
+            writable: true,
+            value: jest.fn().mockImplementation((callback) => ({
+                observe: jest.fn(() => {
+                    callback(bodySizeEvent);
+                }),
+                unobserve: jest.fn(),
+                disconnect: jest.fn()
+            }))
+        });
+    });
 
     describe('configuration', () => {
         it('renders', () => {
@@ -454,7 +473,7 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('the height of the rows and of the body', () => {
+    describe('the height of the rows, of the body and of the table', () => {
         it('sets default height of rows if no height is given', () => {
             const { wrapper } = doMount();
 
@@ -484,7 +503,49 @@ describe('TableUI.vue', () => {
                 currentPage: 1
             } });
 
-            expect(wrapper.vm.currentBodyHeight).toEqual(41);
+            expect(wrapper.vm.fullBodyHeight).toEqual(41);
+        });
+
+        it('sets current body height to zero if there is no available space', () => {
+            const { wrapper } = doMount({ pageConfig: {
+                currentSize: 1,
+                tableSize: 1,
+                pageSize: 1,
+                possiblePageSizes: [1],
+                currentPage: 1
+            },
+            wrapperHeight: 10 });
+
+            expect(wrapper.vm.currentBodyHeight).toEqual(0);
+        });
+
+        it('sets current body height to available space if it the full body size is larger than it', () => {
+            const { wrapper } = doMount({ pageConfig: {
+                currentSize: 1,
+                tableSize: 1,
+                pageSize: 1,
+                possiblePageSizes: [1],
+                currentPage: 1
+            },
+            wrapperHeight: 150 });
+
+            expect(wrapper.vm.currentBodyHeight).toEqual(39);
+            wrapper.setData({ filterActive: true });
+            expect(wrapper.vm.currentBodyHeight).toEqual(1);
+        });
+
+        it('increases computed table height if filters are visible', () => {
+            const { wrapper } = doMount({ pageConfig: {
+                currentSize: 1,
+                tableSize: 1,
+                pageSize: 1,
+                possiblePageSizes: [1],
+                currentPage: 1
+            } });
+
+            expect(wrapper.vm.currentTableHeight).toEqual(81);
+            wrapper.setData({ filterActive: true });
+            expect(wrapper.vm.currentTableHeight).toEqual(119);
         });
     });
 

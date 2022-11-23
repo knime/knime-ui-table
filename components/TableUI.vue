@@ -11,7 +11,7 @@ import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
-    HEADER_HEIGHT, ROW_MARGIN_BOTTOM } from '../util/constants';
+    HEADER_HEIGHT, ROW_MARGIN_BOTTOM, CONTROLS_HEIGHT } from '../util/constants';
 
 /**
  * @see README.md
@@ -71,7 +71,7 @@ export default {
                     return false;
                 }
                 const requiredProperties = ['showSelection', 'showCollapser', 'showPopovers', 'showColumnFilters',
-                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems'];
+                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems', 'fitToContainer'];
                 let isValid = requiredProperties.every(key => tableConfig.hasOwnProperty(key));
                 const requiredConfigs = {
                     pageConfig: [
@@ -112,7 +112,11 @@ export default {
             resizeCount: 0,
             updatedBefore: false,
             currentExpanded: new Set(),
-            rowMarginBottom: ROW_MARGIN_BOTTOM
+            rowMarginBottom: ROW_MARGIN_BOTTOM,
+            wrapperHeight: 0,
+            wrapperResizeObserver: new ResizeObserver((entries) => {
+                this.wrapperHeight = entries[0].contentRect.height;
+            })
         };
     },
     computed: {
@@ -172,6 +176,9 @@ export default {
         enableVirtualScrolling() {
             return this.tableConfig.enableVirtualScrolling;
         },
+        fitToContainer() {
+            return this.tableConfig.fitToContainer;
+        },
         scrollData() {
             const data = this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({ id: index.toString(), data: rowData, size: this.scrollerItemSize, index })
@@ -199,7 +206,7 @@ export default {
             const fixHeaderParam = this.tableConfig.pageConfig?.fixHeader;
             return Boolean(fixHeaderParam);
         },
-        currentBodyHeight() {
+        fullBodyHeight() {
             let numberOfGroups = 0; let numberOfRows = 0;
             if (this.data) {
                 for (const dataGroup of this.data) {
@@ -212,8 +219,23 @@ export default {
             return this.scrollerItemSize * numberOfRows +
             (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
         },
+        currentBodyHeight() {
+            const availableSpace = this.wrapperHeight - this.tableHeightWithoutBody;
+            return Math.max(Math.min(availableSpace, this.fullBodyHeight), 0);
+        },
+        filterHeight() {
+            // Margin of negative two px
+            return this.filterActive ? HEADER_HEIGHT - 2 : 0;
+        },
         currentTableHeight() {
-            return HEADER_HEIGHT + this.currentBodyHeight;
+            return HEADER_HEIGHT + this.filterHeight + this.fullBodyHeight;
+        },
+        tableHeightWithoutBody() {
+            // the height of the header is 41px in total.
+            const actualHeaderHeight = HEADER_HEIGHT + 1;
+            // Top and bottom controls
+            const bottomControlsHeight = this.tableConfig.showBottomControls ? CONTROLS_HEIGHT : 0;
+            return actualHeaderHeight + this.filterHeight + CONTROLS_HEIGHT + bottomControlsHeight;
         }
     },
     watch: {
@@ -225,6 +247,9 @@ export default {
                 }
             }
         }
+    },
+    mounted() {
+        this.wrapperResizeObserver.observe(this.$refs.wrapper);
     },
     methods: {
         // Utilities
@@ -376,6 +401,7 @@ export default {
 
 <template>
   <div
+    ref="wrapper"
     class="wrapper"
     :class="{'fix-header': fixHeader}"
   >
@@ -427,7 +453,7 @@ export default {
       />
       <div
         class="body"
-        :style="{ width: `${currentBodyWidth}px`}"
+        :style="{ width: `${currentBodyWidth}px`, height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
       >
         <Group
           v-for="(dataGroup, groupInd) in scrollData"
@@ -444,7 +470,8 @@ export default {
             :items="dataGroup"
             class="scroller"
             :emit-update="true"
-            :page-mode="true"
+            :page-mode="false"
+            :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
             <Row

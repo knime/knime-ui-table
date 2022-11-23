@@ -72,6 +72,7 @@ export default {
             showActionButton: false,
             enableVirtualScrolling: false,
             headerSubMenuItems: [],
+            fitToContainer: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false
@@ -99,6 +100,7 @@ export default {
                 headerSubMenuItems: this.headerSubMenuItems,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
                 enableVirtualScrolling: this.enableVirtualScrolling,
+                fitToContainer: this.fitToContainer,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
                 ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
@@ -168,6 +170,7 @@ export default {
       <Checkbox v-model="showPopovers">popovers</Checkbox>
       <Checkbox v-model="compactMode">compact mode</Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
+      <Checkbox v-model="fitToContainer">fit to container</Checkbox>
       <Checkbox v-model="fixHeader">fix header</Checkbox>
       <Checkbox @input="onShowHeaderSubMenu">header sub menu settings</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">

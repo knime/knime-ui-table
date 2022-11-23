@@ -115,6 +115,10 @@ export default {
             type: Boolean,
             default: false
         },
+        fitToContainer: {
+            type: Boolean,
+            default: false
+        },
         fixHeader: Boolean,
         /**
          * Additional configuration options.
@@ -243,6 +247,7 @@ export default {
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
                 enableVirtualScrolling: this.enableVirtualScrolling,
+                fitToContainer: this.fitToContainer,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,

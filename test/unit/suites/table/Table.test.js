@@ -64,6 +64,17 @@ describe('Table.vue', () => {
     };
 
     describe('configurations', () => {
+        beforeEach(() => {
+            Object.defineProperty(global, 'ResizeObserver', {
+                writable: true,
+                value: jest.fn().mockImplementation((callback) => ({
+                    observe: jest.fn(),
+                    unobserve: jest.fn(),
+                    disconnect: jest.fn()
+                }))
+            });
+        });
+
         it('creates UI configurations', () => {
             const { wrapper } = doMount({ shallow: false });
 
@@ -98,6 +109,7 @@ describe('Table.vue', () => {
                 showPopovers: true,
                 showSelection: true,
                 enableVirtualScrolling: false,
+                fitToContainer: false,
                 pageConfig: {
                     tableSize: 1,
                     currentSize: 1,
