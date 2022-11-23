@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { shallowMount, mount } from '@vue/test-utils';
 import TableUI from '~/components/TableUI.vue';
 import TopControls from '~/components/control/TopControls.vue';
