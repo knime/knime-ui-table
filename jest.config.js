@@ -44,7 +44,7 @@ module.exports = {
         '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test|vue-virtual-scroller)/'
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|vue-virtual-scroller)/'
     ],
     testMatch: [
         '<rootDir>/test/unit/**/*.test.js'
