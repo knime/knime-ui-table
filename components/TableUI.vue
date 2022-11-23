@@ -124,7 +124,8 @@ export default {
             wrapperHeight: 0,
             wrapperResizeObserver: new ResizeObserver((entries) => {
                 this.wrapperHeight = entries[0].contentRect.height;
-            })
+            }),
+            bottomData: [{ id: '123' }]
         };
     },
     computed: {
@@ -188,6 +189,9 @@ export default {
             return this.tableConfig.fitToContainer;
         },
         scrollData() {
+            if (this.data === null) {
+                return null;
+            }
             const data = this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({
                     id: (index + this.numRowsAbove).toString(),
@@ -196,6 +200,23 @@ export default {
                     index: index + this.numRowsAbove
                 })
             ));
+            if (this.enableVirtualScrolling) {
+                const topDataLength = data[0].length;
+                const hasBottomData = this.bottomData.length > 0;
+                if (topDataLength > 0 && hasBottomData) {
+                    data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
+                }
+                if (hasBottomData) {
+                    this.bottomData.forEach((rowData, index) => {
+                        data[0].push({
+                            id: (index + this.numRowsAbove + topDataLength).toString(),
+                            data: rowData,
+                            size: this.scrollerItemSize,
+                            index: index + this.numRowsAbove + topDataLength
+                        });
+                    });
+                }
+            }
             this.currentExpanded.forEach((index) => {
                 const contentHeight = this.getContentHeight(index);
                 data[0][index - this.numRowsAbove].size += contentHeight;
@@ -500,7 +521,14 @@ export default {
             :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
+            <div
+              v-if="item.dots"
+              :style="{width: '100%', height:`${item.size}px`, display: 'flex', justifyContent:'center', alignItems: 'center'}"
+            >
+              "dots"
+            </div>
             <Row
+              v-else
               :key="item.id"
               :ref="`row-${item.id}`"
               :row="columnKeys.map(column => item.data[column])"
