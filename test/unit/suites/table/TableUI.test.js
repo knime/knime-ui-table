@@ -35,9 +35,11 @@ const getPropsData = ({
         currentPage: 1,
         fixHeader: false
     },
-    numRowsAbove = 0
+    numRowsAbove = 0,
+    bottomData = []
 }) => ({
     data,
+    bottomData,
     numRowsAbove,
     currentSelection,
     dataConfig: {
@@ -131,7 +133,8 @@ describe('TableUI.vue', () => {
         },
         numRowsAbove = 0,
         shallow = true,
-        wrapperHeight = 1000
+        wrapperHeight = 1000,
+        bottomData = []
     } = {}) => {
         const propsData = getPropsData({
             includeSubHeaders,
@@ -147,7 +150,8 @@ describe('TableUI.vue', () => {
             data,
             currentSelection,
             pageConfig,
-            numRowsAbove
+            numRowsAbove,
+            bottomData
         });
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
@@ -577,6 +581,16 @@ describe('TableUI.vue', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
             expect(wrapper.vm.scrollData).toStrictEqual([[
                 { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 }
+            ]]);
+        });
+
+        it('adds bottom data to the scroll data', () => {
+            const { wrapper } = doMount({ enableVirtualScrolling: true, bottomData: [['foo'], ['bar']] });
+            expect(wrapper.vm.scrollData).toStrictEqual([[
+                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41 },
+                { dots: true, id: 'dots', size: 41 },
+                { data: ['foo'], id: '2', index: 2, size: 41 },
+                { data: ['bar'], id: '3', index: 3, size: 41 }
             ]]);
         });
 
