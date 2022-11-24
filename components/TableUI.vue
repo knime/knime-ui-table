@@ -50,7 +50,7 @@ export default {
          */
         numRowsAbove: {
             type: Number,
-            default: 0
+            default: 10
         },
         /**
          * Only used when tableConfig.enableVirtualScrolling is true.
@@ -59,6 +59,10 @@ export default {
         numRowsBelow: {
             type: Number,
             default: 0
+        },
+        bottomData: {
+            type: Array,
+            default: () => []
         },
         totalSelected: {
             type: Number,
@@ -125,7 +129,7 @@ export default {
             wrapperResizeObserver: new ResizeObserver((entries) => {
                 this.wrapperHeight = entries[0].contentRect.height;
             }),
-            bottomData: [{ id: '123' }]
+            dotsFontSize: 40
         };
     },
     computed: {
@@ -209,10 +213,10 @@ export default {
                 if (hasBottomData) {
                     this.bottomData.forEach((rowData, index) => {
                         data[0].push({
-                            id: (index + this.numRowsAbove + topDataLength).toString(),
+                            id: (index + this.numRowsAbove + topDataLength + 1).toString(),
                             data: rowData,
                             size: this.scrollerItemSize,
-                            index: index + this.numRowsAbove + topDataLength
+                            index: index + this.numRowsAbove + topDataLength + 1
                         });
                     });
                 }
@@ -255,6 +259,11 @@ export default {
                         numberOfRows += dataGroup.length;
                     }
                 }
+            }
+            const numberOfBottomRows = this.bottomData.length;
+            if (numberOfBottomRows > 0) {
+                // plus 1 because of the additional "…" row
+                numberOfRows += numberOfBottomRows + 1;
             }
             return this.scrollerItemSize * numberOfRows +
             (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
@@ -523,9 +532,14 @@ export default {
           >
             <div
               v-if="item.dots"
-              :style="{width: '100%', height:`${item.size}px`, display: 'flex', justifyContent:'center', alignItems: 'center'}"
+              class="dots"
+              :style="{ height:`${item.size}px`}"
             >
-              "dots"
+              <span
+                :style="{ fontSize: `${dotsFontSize}px`, marginTop: `-${dotsFontSize + 1 - item.size / 2}px`}"
+              >
+                &#x2026;
+              </span>
             </div>
             <Row
               v-else
@@ -694,6 +708,16 @@ table >>> tr {
 
   &:not(:first-child):not(:last-child) {
     padding: 0 5px;
+  }
+}
+
+.dots {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  & span {
+    pointer-events: none;
   }
 }
 
