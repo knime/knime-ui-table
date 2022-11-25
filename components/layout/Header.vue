@@ -192,7 +192,10 @@ export default {
         >
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-            <div class="header-text-container">
+            <div
+              class="header-text-container"
+              :title="header"
+            >
               {{ header }}
             </div>
           </div>
