@@ -470,6 +470,7 @@ export default {
         :column-sizes="columnSizes"
         :types="columnTypes"
         :show-collapser="tableConfig.showCollapser"
+        :show-selection="tableConfig.showSelection"
         :style="{ width: `${currentBodyWidth}px` }"
         @columnFilter="onColumnFilter"
         @clearFilter="onClearFilter"

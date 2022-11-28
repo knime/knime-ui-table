@@ -38,6 +38,10 @@ export default {
         showCollapser: {
             type: Boolean,
             default: false
+        },
+        showSelection: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -65,7 +69,10 @@ export default {
         v-if="showCollapser"
         class="collapser-cell-spacer"
       />
-      <th class="select-cell-spacer" />
+      <th
+        v-if="showSelection"
+        class="select-cell-spacer"
+      />
       <th
         v-for="(column, ind) in columnHeaders"
         :key="ind + 'filter'"
@@ -104,8 +111,7 @@ tr {
     text-align: left;
 
     &.filter {
-      margin: auto 5px auto 0px;
-      padding-left: 10px
+      margin: auto 0px auto 10px;
     }
 
     &.collapser-cell-spacer {
