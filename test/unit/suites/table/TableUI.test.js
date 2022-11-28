@@ -606,6 +606,16 @@ describe('TableUI.vue', () => {
             expect(selectionMap(7)).toBe(false);
         });
 
+        it('returns false when null currentSelection is supplied', () => {
+            const { wrapper } = doMount({
+                enableVirtualScrolling: true, currentSelection: [null]
+            });
+            const selectionMap = wrapper.vm.currentSelectionMap;
+            expect(selectionMap(0)).toBe(false);
+            expect(selectionMap(1)).toBe(false);
+            expect(selectionMap(100)).toBe(false);
+        });
+
         describe('supports expanding and collapsing rows', () => {
             it('changes the size of the rows if they are expanded', () => {
                 const { wrapper } = doMount({ enableVirtualScrolling: true });
