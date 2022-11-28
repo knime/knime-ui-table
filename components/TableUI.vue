@@ -203,10 +203,14 @@ export default {
             return data;
         },
         currentSelectionMap() {
-            return (index) => this.currentSelection[0] === null || index < this.numRowsAbove ||
-            index >= this.numRowsAbove + this.currentSelection[0].length
-                ? false
-                : this.currentSelection[0][index - this.numRowsAbove];
+          if (this.currentSelection[0] === null) {
+            return () => false;
+          }
+          return (index) => {
+            const isAboveRow = index < this.numRowsAbove;
+            const isBelowRow = index >= this.numRowsAbove + this.currentSelection[0].length;
+            return (isAboveRow || isBelowRow) ? false : this.currentSelection[0][index - this.numRowsAbove]
+          }
         },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
