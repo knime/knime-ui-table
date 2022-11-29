@@ -293,9 +293,9 @@ tr.row {
 
       & .missing-value-icon {
         vertical-align: middle;
-        width: 25px;
-        height: 25px;
-        stroke-width: calc(32px / 25);
+        width: 14px;
+        height: 14px;
+        stroke-width: calc(32px / 14);
         stroke: var(--theme-color-kudos);
       }
     }
