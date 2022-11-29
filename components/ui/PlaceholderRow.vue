@@ -1,9 +1,6 @@
 <script>
 
 export default {
-    components: {
-       
-    },
     props: {
         height: {
             type: Number,
@@ -17,7 +14,7 @@ export default {
     },
     computed: {
         marginTop() {
-            return -this.fontSize + 1 - this.height / 2;
+            return -this.fontSize + 1 + this.height / 2;
         }
     }
     

@@ -6,7 +6,7 @@ import ColumnFilters from './filter/ColumnFilters.vue';
 import Header from './layout/Header.vue';
 import Group from './layout/Group.vue';
 import Row from './layout/Row.vue';
-import Dots from './layout/Dots.vue';
+import PlaceholderRow from './ui/PlaceholderRow.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
@@ -28,7 +28,7 @@ export default {
         Header,
         Group,
         Row,
-        Dots,
+        PlaceholderRow,
         ActionButton,
         TablePopover,
         RecycleScroller
@@ -52,7 +52,7 @@ export default {
          */
         numRowsAbove: {
             type: Number,
-            default: 10
+            default: 0
         },
         /**
          * Only used when tableConfig.enableVirtualScrolling is true.
@@ -68,7 +68,7 @@ export default {
         */
         bottomData: {
             type: Array,
-            default: () => []
+            default: () => [[], [], []]
         },
         totalSelected: {
             type: Number,
@@ -234,14 +234,14 @@ export default {
             return data;
         },
         currentSelectionMap() {
-          if (this.currentSelection[0] === null) {
-            return () => false;
-          }
-          return (index) => {
-            const isAboveRow = index < this.numRowsAbove;
-            const isBelowRow = index >= this.numRowsAbove + this.currentSelection[0].length;
-            return (isAboveRow || isBelowRow) ? false : this.currentSelection[0][index - this.numRowsAbove]
-          }
+            if (this.currentSelection[0] === null) {
+                return () => false;
+            }
+            return (index) => {
+                const isAboveRow = index < this.numRowsAbove;
+                const isBelowRow = index >= this.numRowsAbove + this.currentSelection[0].length;
+                return isAboveRow || isBelowRow ? false : this.currentSelection[0][index - this.numRowsAbove];
+            };
         },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
@@ -540,7 +540,7 @@ export default {
             :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
-            <Dots
+            <PlaceholderRow
               v-if="item.dots"
               :height="item.size"
             />
