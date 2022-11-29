@@ -210,7 +210,6 @@ export default {
 .multiselect {
   position: relative;
   background-color: var(--knime-white);
-  max-width: calc(100% - 20px);
 
   & [role=button] {
     margin: 0;

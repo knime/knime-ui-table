@@ -57,7 +57,6 @@ export default {
 div {
   /* icon and marker need pos 0,0 to be the wrapper */
   position: relative;
-  max-width: calc(100% - 20px);
 }
 
 input {
