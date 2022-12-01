@@ -25,11 +25,11 @@ describe('PageControls.vue', () => {
                 currentPage: 1
             }
         });
-        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 100');
+        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 100');
         wrapper.setProps({ currentItems: 50 });
-        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 50 (100 total)');
+        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 50 (100 total)');
         wrapper.setProps({ currentPage: 2 });
-        expect(wrapper.find('span').text()).toBe('Showing 26-50 of 50 (100 total)');
+        expect(wrapper.find('span').text()).toBe('Rows: 26-50 of 50 (100 total)');
         wrapper.setProps({ currentItems: 0 });
         expect(wrapper.find('span').text()).toBe('No data (100 hidden)');
     });
@@ -44,11 +44,11 @@ describe('PageControls.vue', () => {
                 columnCount: 10
             }
         });
-        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 100   |   Columns: 10');
+        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 100   |   Columns: 10');
         wrapper.setProps({ currentItems: 50 });
-        expect(wrapper.find('span').text()).toBe('Showing 1-25 of 50 (100 total)   |   Columns: 10');
+        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 50 (100 total)   |   Columns: 10');
         wrapper.setProps({ currentPage: 2 });
-        expect(wrapper.find('span').text()).toBe('Showing 26-50 of 50 (100 total)   |   Columns: 10');
+        expect(wrapper.find('span').text()).toBe('Rows: 26-50 of 50 (100 total)   |   Columns: 10');
         wrapper.setProps({ currentItems: 0 });
         expect(wrapper.find('span').text()).toBe('No data (100 hidden)   |   Columns: 10');
         wrapper.setProps({ pageSize: 10, totalItems: 10, currentItems: 10 });

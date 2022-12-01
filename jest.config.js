@@ -21,6 +21,7 @@ module.exports = {
         '\\.svg\\?data$': '<rootDir>/test/unit/assets/stub.data',
         '^vue$': 'vue/dist/vue.common.js',
         '^@/(.*)$': '<rootDir>/$1'
+        '\\.(css)$': '<rootDir>/test/unit/mocks/styleMock.js'
     },
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage' }]],
     coverageReporters: ['lcov', 'text'],
@@ -37,10 +38,10 @@ module.exports = {
         '!index.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|test|vue-virtual-scroller)/'
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|webapps-common|vue-virtual-scroller)/'
     ],
     testMatch: [
         '<rootDir>/test/unit/**/*.test.js'

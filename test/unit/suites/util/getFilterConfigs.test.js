@@ -22,6 +22,15 @@ describe('getFilterConfigs', () => {
         expect(getDefaultFilterValues(mockColumns, mockTypes)).toStrictEqual(mockValues);
     });
 
+    it('gets initial filter values', () => {
+        expect(getInitialFilterValues(mockColumns, mockTypes, {})).toStrictEqual(mockValues);
+        expect(getInitialFilterValues(
+            ['col'],
+            { col: columnTypes.String },
+            { col: 'initial Value' }
+        )).toStrictEqual({ col: 'initial Value' });
+    });
+
     it('creates filter configs', () => {
         let filterConfigs = getFilterConfigs({
             domains: mockDomains, columns: mockColumns, types: mockTypes, values: mockValues

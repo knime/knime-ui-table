@@ -42,13 +42,13 @@ export default {
         rangeText() {
             if (this.currentItems) {
                 let baseInfo;
-                if (this.pageSize === this.totalItems) {
-                    baseInfo = `Rows: ${this.totalItems}`;
+                if (this.pageSize === this.currentItems) {
+                    baseInfo = `Rows: ${this.currentItems}`;
                 } else {
-                    baseInfo = `Showing ${this.pageRangeStart}-${this.pageRangeEnd} of ${this.currentItems}`;
-                    if (this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0) {
-                        baseInfo += ` (${this.totalItems} total)`;
-                    }
+                    baseInfo = `Rows: ${this.pageRangeStart}-${this.pageRangeEnd} of ${this.currentItems}`;
+                }
+                if (this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0) {
+                    baseInfo += ` (${this.totalItems} total)`;
                 }
                 return baseInfo;
             }

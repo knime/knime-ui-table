@@ -4,7 +4,7 @@ import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import { MIN_COLUMN_SIZE } from '../../util/constants';
+import { MIN_COLUMN_SIZE } from '~/util/constants';//TODO: check; maybe without "/~"
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -38,6 +38,10 @@ export default {
         showCollapser: {
             type: Boolean,
             default: false
+        },
+        showSelection: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['columnFilter', 'clearFilter'],
@@ -64,7 +68,10 @@ export default {
         v-if="showCollapser"
         class="collapser-cell-spacer"
       />
-      <th class="select-cell-spacer" />
+      <th
+        v-if="showSelection"
+        class="select-cell-spacer"
+      />
       <th
         v-for="(column, ind) in columnHeaders"
         :key="ind + 'filter'"
@@ -103,7 +110,7 @@ tr {
     text-align: left;
 
     &.filter {
-      margin: auto 5px auto 10px;
+      margin: auto 0px auto 10px;
     }
 
     &.collapser-cell-spacer {

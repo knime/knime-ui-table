@@ -3,7 +3,7 @@ import Table from '@/components/Table.vue';
 import TableUI from '@/components/TableUI.vue';
 
 import { columnTypes } from '@/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '@/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -12,11 +12,13 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
-describe('Table.vue', () => {
-    let wrapper;
+const headerSubMenuItems = [
+    [{ text: 'Column 1: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }],
+    [{ text: 'Column 2: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }]
+];
 
-    let propsData = {
-        allData: [{ a: 1, b: 2 }],
+describe('Table.vue', () => {
+    const defaultPropsData = {
         allColumnHeaders: ['A', 'B'],
         allColumnKeys: ['a', 'b'],
         allColumnTypes: { a: columnTypes.Number, b: columnTypes.Number },
@@ -31,95 +33,204 @@ describe('Table.vue', () => {
         showBottomControls: true,
         showSelection: true,
         showPopovers: true,
+        enableVirtualScrolling: false,
         parentSelected: [0]
     };
 
-    const mockTablePropsWithData = (newSize) => {
-        let localPropsData = {
-            ...propsData,
-            allData: []
+    beforeEach(() => {
+        window.IntersectionObserver = jest.fn(() => ({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        }));
+    });
+
+
+    const doMount = ({ customPropsData = {}, dataCount = 1, shallow = true } = {}) => {
+        const propsData = {
+            allData: [],
+            ...defaultPropsData,
+            ...customPropsData
         };
-        for (let i = 0; i < newSize; i++) {
-            localPropsData.allData.push({ a: i, b: i + 1 });
+        if (propsData.allData.length === 0) {
+            for (let i = 0; i < dataCount; i++) {
+                propsData.allData.push({ a: i, b: i + 1 });
+            }
         }
-        return localPropsData;
+
+        const wrapper = shallow ? shallowMount(Table, { propsData }) : mount(Table, { propsData });
+
+        return { wrapper };
     };
 
-    it('creates UI configurations', () => {
-        wrapper = mount(Table, { propsData });
+    describe('configurations', () => {
+        beforeEach(() => {
+            Object.defineProperty(global, 'ResizeObserver', {
+                writable: true,
+                value: jest.fn().mockImplementation((callback) => ({
+                    observe: jest.fn(),
+                    unobserve: jest.fn(),
+                    disconnect: jest.fn()
+                }))
+            });
+        });
 
-        expect(wrapper.vm.dataConfig).toStrictEqual({ columnConfigs: [{
-            classGenerator: [],
-            filterConfig: { is: 'FilterInputField', value: '' },
-            formatter: expect.any(Function),
-            hasSlotContent: false,
-            header: 'A',
-            key: 'a',
-            popoverRenderer: expect.undefined,
-            size: 30,
-            type: columnTypes.Number
-        }, {
-            classGenerator: [],
-            filterConfig: { is: 'FilterInputField', value: '' },
-            formatter: expect.any(Function),
-            hasSlotContent: false,
-            header: 'B',
-            key: 'b',
-            popoverRenderer: expect.undefined,
-            size: 30,
-            type: columnTypes.Number
-        }],
-        rowConfig: { fixHeader: false, compactMode: false } });
-        expect(wrapper.vm.tableConfig).toStrictEqual({
-            showBottomControls: true,
-            showCollapser: false,
-            showColumnFilters: true,
-            showPopovers: true,
-            showSelection: true,
-            pageConfig: {
-                tableSize: 1,
-                currentSize: 1,
-                currentPage: 1,
-                pageSize: 10,
-                possiblePageSizes: [5, 10, 25, 50, 100]
-            },
-            columnSelectionConfig: {
-                currentColumns: ['A', 'B'],
-                possibleColumns: ['A', 'B']
-            },
-            groupByConfig: {
-                currentGroup: null,
-                possibleGroups: [],
-                currentGroupValues: ['None']
-            },
-            searchConfig: { searchQuery: '' },
-            sortConfig: { sortColumn: 0, sortDirection: -1 },
-            subMenuItems: [],
-            groupSubMenuItems: []
+        it('creates UI configurations', () => {
+            const { wrapper } = doMount({ shallow: false });
+
+            expect(wrapper.vm.dataConfig).toStrictEqual({
+                columnConfigs: [{
+                    classGenerator: [],
+                    filterConfig: { is: 'FilterInputField', value: '' },
+                    formatter: expect.any(Function),
+                    hasSlotContent: false,
+                    header: 'A',
+                    key: 'a',
+                    popoverRenderer: expect.undefined,
+                    size: 50,
+                    type: columnTypes.Number
+                }, {
+                    classGenerator: [],
+                    filterConfig: { is: 'FilterInputField', value: '' },
+                    formatter: expect.any(Function),
+                    hasSlotContent: false,
+                    header: 'B',
+                    key: 'b',
+                    popoverRenderer: expect.undefined,
+                    size: 50,
+                    type: columnTypes.Number
+                }],
+                rowConfig: { compactMode: false }
+            });
+            expect(wrapper.vm.tableConfig).toStrictEqual({
+                showBottomControls: true,
+                showCollapser: false,
+                showColumnFilters: true,
+                showPopovers: true,
+                showSelection: true,
+                enableVirtualScrolling: false,
+                fitToContainer: false,
+                pageConfig: {
+                    tableSize: 1,
+                    currentSize: 1,
+                    currentPage: 1,
+                    pageSize: 10,
+                    possiblePageSizes: [5, 10, 25, 50, 100],
+                    fixHeader: false
+                },
+                columnSelectionConfig: {
+                    currentColumns: ['A', 'B'],
+                    possibleColumns: ['A', 'B']
+                },
+                groupByConfig: {
+                    currentGroup: null,
+                    possibleGroups: [],
+                    currentGroupValues: ['None']
+                },
+                searchConfig: { searchQuery: '' },
+                sortConfig: { sortColumn: 0, sortDirection: -1 },
+                subMenuItems: [],
+                groupSubMenuItems: [],
+                columnFilterInitiallyActive: false
+            });
+        });
+
+        it('supports default sorting when showSort is true', () => {
+            const { wrapper } = doMount(
+                {
+                    shallow: false,
+                    customPropsData: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                }
+            );
+
+            expect(wrapper.vm.tableConfig).toEqual(expect.objectContaining({
+                sortConfig: { sortColumn: 1, sortDirection: 1 }
+            }));
+            expect(wrapper.vm.columnSort).toBe(1);
+            expect(wrapper.vm.columnSortDirection).toBe(1);
+        });
+
+        it('supports default sorting when showSort is false', () => {
+            const { wrapper } = doMount(
+                {
+                    shallow: false,
+                    customPropsData: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                }
+            );
+
+            expect(wrapper.vm.tableConfig).not.toHaveProperty('sortConfig');
+            expect(wrapper.vm.columnSort).toBe(1);
+            expect(wrapper.vm.columnSortDirection).toBe(1);
+        });
+
+        it('supports initial filtering', () => {
+            const { wrapper } = doMount(
+                {
+                    shallow: false,
+                    customPropsData: { showColumnFilters: true, initialFilterValues: { a: '4', b: '10' } }
+                }
+            );
+
+            expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(true);
+            expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
+                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '4' } }),
+                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '10' } })
+            ]));
+        });
+
+        it('ignores initial filtering if show coulmn filters is set to false', () => {
+            const { wrapper } = doMount(
+                {
+                    shallow: false,
+                    customPropsData: { showColumnFilters: false, initialFilterValues: { a: '4', b: '10' } }
+                }
+            );
+
+            expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(false);
+            expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
+                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '' } }),
+                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '' } })
+            ]));
         });
     });
 
+    it('generates the correct data config with isSortable key if there are column specific sort configs', () => {
+        const { wrapper } = doMount({ customPropsData: { allColumnSpecificSortConfigs: [true, false] } });
+
+        expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
+    });
+
+    it('generates the correct data config with headerSubMenuItems key if there are sub menu items for the header',
+        () => {
+            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems: [headerSubMenuItems, null] } });
+            expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [
+                { headerSubMenuItems }, { headerSubMenuItems: null }
+            ] });
+        });
+
     describe('component lifecycle', () => {
         it('creates internally required index reference lists on creation', () => {
-            wrapper = shallowMount(Table, { propsData });
+            const { wrapper } = doMount();
 
             expect(wrapper.vm.masterSelected).toStrictEqual([1]);
             expect(wrapper.vm.processedIndicies).toStrictEqual([[0]]);
         });
 
-        it('updates internal reference lists when data changes', () => {
-            wrapper = shallowMount(Table, { propsData });
+        it('updates internal reference lists when data changes', async () => {
+            const { wrapper } = doMount();
             const expectedMasterSelection = [1];
             const expectedProcessedIndicies = [[0]];
 
             expect(wrapper.vm.masterSelected).toStrictEqual(expectedMasterSelection);
             expect(wrapper.vm.processedIndicies).toStrictEqual(expectedProcessedIndicies);
 
-            const newTableSize = 10;
-            let localPropsData = mockTablePropsWithData(newTableSize);
-            wrapper = shallowMount(Table, { propsData: localPropsData });
+            let newAllData = [];
+            for (let i = 0; i < 10; i++) {
+                newAllData.push({ a: i, b: i + 1 });
+            }
+            await wrapper.setProps({ allData: newAllData });
 
-            for (let i = 1; i < newTableSize; i++) {
+            for (let i = 1; i < 10; i++) {
                 expectedMasterSelection.push(0);
                 expectedProcessedIndicies[0].unshift(i);
             }
@@ -129,26 +240,74 @@ describe('Table.vue', () => {
     });
 
     describe('events', () => {
-        it('adds resize listener, updates client width on resize, and removes resize listener', () => {
+        it('adds / removes intersection observer / resize listener and updates client width accordingly', () => {
+            const observe = jest.fn();
+            const unobserve = jest.fn();
+            window.IntersectionObserver = jest.fn(() => ({
+                observe,
+                unobserve
+            }));
             jest.spyOn(window, 'addEventListener');
             jest.spyOn(window, 'removeEventListener');
-    
-            wrapper = shallowMount(Table, { propsData });
-            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
-    
+
+            const { wrapper } = doMount();
+
             expect(wrapper.vm.clientWidth).toBe(0);
-            wrapper.vm.$el = { clientWidth: 500 };
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledTimes(1);
+            expect(observe).toHaveBeenCalledWith(wrapper.vm.$el);
+
+            let clientWidth = 100;
+            const mockedEntries = [{
+                target: null
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: 0 }
+            }, {
+                target: wrapper.vm.$el,
+                boundingClientRect: { width: clientWidth }
+            }];
+            const [callback] = window.IntersectionObserver.mock.calls[0];
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(1);
+            expect(unobserve).toHaveBeenCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(1);
+            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: 0 };
+            };
             window.dispatchEvent(new Event('resize'));
-            expect(wrapper.vm.clientWidth).toBe(500);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(1);
+            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+            expect(window.IntersectionObserver).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenCalledTimes(2);
+            expect(observe).toHaveBeenLastCalledWith(wrapper.vm.$el);
+
+            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
+            expect(unobserve).toHaveBeenCalledTimes(2);
+            expect(unobserve).toHaveBeenLastCalledWith(wrapper.vm.$el);
+            expect(window.addEventListener).toHaveBeenCalledTimes(2);
+            expect(window.addEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+
+            clientWidth = 200;
+            wrapper.vm.$el.getBoundingClientRect = function () {
+                return { width: clientWidth };
+            };
+            window.dispatchEvent(new Event('resize'));
+            expect(wrapper.vm.clientWidth).toBe(clientWidth);
     
             wrapper.destroy();
-            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.updateClientWidth);
+            expect(window.removeEventListener).toHaveBeenCalledTimes(2);
+            expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
         });
 
         describe('page control', () => {
             it('registers pageChange events', () => {
-                let localPropsData = mockTablePropsWithData(100);
-                wrapper = shallowMount(Table, { propsData: localPropsData });
+                const { wrapper } = doMount({ dataCount: 100 });
                 expect(wrapper.vm.currentPage).toBe(1);
                 wrapper.find(TableUI).vm.$emit('pageChange', 1);
                 expect(wrapper.vm.currentPage).toBe(2);
@@ -157,59 +316,57 @@ describe('Table.vue', () => {
             });
 
             it('registers search events and updates query', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search', 'Find me');
                 expect(wrapper.vm.searchQuery).toBe('Find me');
             });
 
             it('empties search query if search event value is empty', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search', '');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('empties search query if search event value is missing', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.find(TableUI).vm.$emit('search');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('registers groupUpdate events and updates the current group', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.currentGroup).toBe(null);
                 wrapper.find(TableUI).vm.$emit('groupUpdate', 'a');
                 expect(wrapper.vm.currentGroup).toBe('a');
             });
 
             it('registers columnReorder events and updates the column order', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([0, 1]);
                 wrapper.find(TableUI).vm.$emit('columnReorder', 1, 0);
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([1, 0]);
             });
 
             it('registers columnUpdate events and updates the currentColumns', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
                 wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
                 expect(wrapper.vm.currentColumns).toStrictEqual([0]);
             });
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
-                wrapper = shallowMount(Table, { propsData: {
-                    ...propsData,
-                    timeFilterKey: 'a'
-                } });
+                const { wrapper } = doMount({ customPropsData: { timeFilterKey: 'a' } });
                 expect(wrapper.vm.currentTimeFilter).toBe('Last month');
                 wrapper.find(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
             });
 
             it('toggles the column filters', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
+
                 expect(wrapper.vm.showFilter).toBe(false);
                 wrapper.find(TableUI).vm.$emit('toggleFilter', true);
                 expect(wrapper.vm.showFilter).toBe(true);
@@ -218,7 +375,7 @@ describe('Table.vue', () => {
 
         describe('columnar', () => {
             it('registers column sort events', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
                 wrapper.find(TableUI).vm.$emit('columnSort', 0);
@@ -227,7 +384,7 @@ describe('Table.vue', () => {
             });
 
             it('sorts columns in ascending order when the sort column changes', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
                 wrapper.find(TableUI).vm.$emit('columnSort', 1);
@@ -236,7 +393,7 @@ describe('Table.vue', () => {
             });
 
             it('registers column filter events', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
@@ -244,7 +401,7 @@ describe('Table.vue', () => {
             });
 
             it('resets filter to default if value is empty', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('clearFilter', 0, null);
@@ -252,7 +409,7 @@ describe('Table.vue', () => {
             });
 
             it('resets filter to default if value is missing', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('clearFilter', 0);
@@ -260,7 +417,7 @@ describe('Table.vue', () => {
             });
 
             it('registers clear filter events', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
                 wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
@@ -272,7 +429,7 @@ describe('Table.vue', () => {
 
         describe('selection', () => {
             it('registers select all events', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('selectAll', false);
@@ -282,7 +439,7 @@ describe('Table.vue', () => {
             });
 
             it('registers single row selection', () => {
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('rowSelect', false, 0, 0);
@@ -293,7 +450,7 @@ describe('Table.vue', () => {
 
             it('registers and emits table input events', () => {
                 let testEvent = { value: 'test' };
-                wrapper = shallowMount(Table, { propsData });
+                const { wrapper } = doMount();
                 expect(wrapper.emitted().tableInput).toBeFalsy();
                 wrapper.find(TableUI).vm.$emit('tableInput', testEvent);
                 expect(wrapper.emitted().tableInput).toBeTruthy();
@@ -305,20 +462,20 @@ describe('Table.vue', () => {
 
     describe('utilities', () => {
         it('provides method to get current selection to parent component', () => {
-            wrapper = shallowMount(Table, { propsData });
+            const { wrapper } = doMount();
             expect(wrapper.vm.masterSelected).toStrictEqual([1]);
             expect(wrapper.vm.getSelected()).toStrictEqual([0]);
         });
 
         it('provides method to programmatically clear selection', () => {
-            wrapper = shallowMount(Table, { propsData });
+            const { wrapper } = doMount();
             expect(wrapper.vm.masterSelected).toStrictEqual([1]);
             wrapper.vm.clearSelection();
             expect(wrapper.vm.masterSelected).toStrictEqual([0]);
         });
 
         it('can filter an array based on the current columns', () => {
-            wrapper = shallowMount(Table, { propsData });
+            const { wrapper } = doMount();
             expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([5, 10]);
             wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
@@ -329,9 +486,9 @@ describe('Table.vue', () => {
         });
 
         it('computes currentColumnSizes correctly', () => {
-            let checkCurrentColumnSizes = (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
-                wrapper = shallowMount(Table, { propsData: { ...propsData, showCollapser, showSelection } });
-                wrapper.setData({ clientWidth });
+            let checkCurrentColumnSizes = async (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
+                const { wrapper } = doMount({ customPropsData: { showCollapser, showSelection } });
+                await wrapper.setData({ clientWidth });
                 const nColumns = wrapper.vm.currentColumns.length;
                 let currentColumnSizes;
                 if (columnSizeOverride) {
@@ -340,14 +497,11 @@ describe('Table.vue', () => {
                     }
                     currentColumnSizes = Array(nColumns).fill(columnSizeOverride);
                 } else {
-                    let reservedSize = SPECIAL_COLUMNS_SIZE + nColumns * DATA_COLUMNS_MARGIN + 2 * TABLE_BORDER_SPACING;
-                    if (showCollapser) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    } if (showSelection) {
-                        reservedSize += SPECIAL_COLUMNS_SIZE;
-                    }
-                    const defaultColumnWidth = Math.max((clientWidth - reservedSize) / nColumns, MIN_COLUMN_SIZE);
-                    currentColumnSizes = Array(nColumns).fill(defaultColumnWidth);
+                    const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                        (showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+                    const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+                    currentColumnSizes = Array(nColumns).fill(defaultColumnSize);
                 }
                 expect(wrapper.vm.currentColumnSizes).toStrictEqual(currentColumnSizes);
             };
@@ -358,6 +512,21 @@ describe('Table.vue', () => {
             checkCurrentColumnSizes(200, true, false, null);
             checkCurrentColumnSizes(200, true, true, null);
             checkCurrentColumnSizes(200, true, true, 100);
+        });
+
+        it('can deal with empty tables when computing currentColumnSizes', async () => {
+            const { wrapper } = doMount();
+            await wrapper.setData({ currentColumns: [] });
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([]);
+        });
+
+        it('emits header sub menu selection events', () => {
+            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems } });
+            expect(wrapper.emitted().headerSubMenuSelect).toBeFalsy();
+            wrapper.find(TableUI).vm.$emit('headerSubMenuItemSelection', headerSubMenuItems, 1);
+            expect(wrapper.emitted().headerSubMenuSelect).toStrictEqual([[
+                headerSubMenuItems, 1
+            ]]);
         });
     });
 });

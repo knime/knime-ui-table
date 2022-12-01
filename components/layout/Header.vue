@@ -1,10 +1,12 @@
 <script>
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
-import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
+import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
+import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
+import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
+import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg?inline';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE } from '../../util/constants';
+import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '../../util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -15,12 +17,15 @@ import { MIN_COLUMN_SIZE } from '../../util/constants';
  * @emits headerSelect event when the checkbox is selected for table-wide toggling of selection.
  * @emits columnSort event when a column name is clicked to trigger sorting.
  * @emits toggleFilter event when the filter-toggle control is clicked.
+ * @emits subMenuItemSelection event when the selection of a submenu item is changed
  */
 export default {
     components: {
         FunctionButton,
         Checkbox,
+        SubMenu,
         ArrowIcon,
+        ArrowDropdown,
         FilterIcon
     },
     props: {
@@ -40,6 +45,14 @@ export default {
             type: Array,
             default: () => []
         },
+        columnSortConfigs: {
+            type: Array,
+            default: () => []
+        },
+        columnSubMenuItems: {
+            type: Array,
+            default: () => []
+        },
         isSelected: {
             type: Boolean,
             default: false
@@ -47,6 +60,10 @@ export default {
         filtersActive: {
             type: Boolean,
             default: false
+        },
+        currentTableHeight: {
+            type: Number,
+            default: DEFAULT_ROW_HEIGHT
         }
     },
     emits: ['headerSelect', 'columnSort', 'toggleFilter', 'showColumnBorder', 'columnResize', 'hideColumnBorder'],
@@ -56,7 +73,9 @@ export default {
             hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
             dragIndex: null, // the index of the column that is currently being dragged / resized
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-            pageXOnDragStart: null // the x coordinate at which the mouse was clicked when starting the resize drag
+            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+            minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
+            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH
         };
     },
     computed: {
@@ -75,11 +94,14 @@ export default {
         }
     },
     methods: {
+        isColumnSortable(index) {
+            return this.enableSorting && this.columnSortConfigs[index];
+        },
         onSelect() {
             this.$emit('headerSelect', !this.isSelected);
         },
         onHeaderClick(ind) {
-            if (this.enableSorting) {
+            if (this.isColumnSortable(ind)) {
                 this.$emit('columnSort', ind, this.columnHeaders[ind]);
             }
         },
@@ -100,8 +122,6 @@ export default {
         },
         onPointerDown(event, columnIndex) {
             consola.debug('Resize via drag triggered: ', event);
-            // prevent default browser behavior
-            event.preventDefault();
             // stop the event from propagating up the DOM tree
             event.stopPropagation();
             // capture move events until the pointer is released
@@ -109,14 +129,13 @@ export default {
             this.dragIndex = columnIndex;
             this.columnSizeOnDragStart = this.columnSizes[columnIndex];
             this.pageXOnDragStart = event.pageX;
-            this.$emit('showColumnBorder', this.dragIndex);
         },
         onPointerMove: throttle(function (event) {
             /* eslint-disable no-invalid-this */
             if (this.dragIndex !== null) {
                 consola.debug('Resize via drag ongoing: ', event);
                 const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, MIN_COLUMN_SIZE));
+                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, this.minimumColumnWidth));
             }
             /* eslint-enable no-invalid-this */
         }),
@@ -129,9 +148,14 @@ export default {
             this.dragIndex = null;
             /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
             this.hoverIndex = null;
-            this.$emit('hideColumnBorder');
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        dragHandleHeight(isDragging) {
+            return isDragging ? this.currentTableHeight : HEADER_HEIGHT;
+        },
+        onSubMenuItemSelection(item, ind) {
+            this.$emit('subMenuItemSelection', item, ind);
+        }
     }
 };
 </script>
@@ -156,17 +180,23 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
-        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
-        :class="['column-header', { sortable: enableSorting, inverted: sortDirection === -1},
-                 {'with-subheaders': hasSubHeaders}]"
-        tabindex="0"
-        @click="onHeaderClick(ind)"
-        @keydown.space="onHeaderClick(ind)"
+        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
+        class="column-header"
       >
-        <div class="column-header-content">
+        <div
+          class="column-header-content"
+          :class="[{ sortable: isColumnSortable(ind), inverted: sortDirection === -1, 'with-subheaders': hasSubHeaders,
+                     'with-sub-menu': columnSubMenuItems[ind] }]"
+          tabindex="0"
+          @click="onHeaderClick(ind)"
+          @keydown.space="onHeaderClick(ind)"
+        >
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-            <div :class="['header-text-container', { 'with-icon': sortColumn === ind }]">
+            <div
+              class="header-text-container"
+              :title="header"
+            >
               {{ header }}
             </div>
           </div>
@@ -178,10 +208,27 @@ export default {
           </div>
         </div>
         <div
+          v-if="columnSubMenuItems[ind]"
+          class="sub-menu-select-header"
+        >
+          <SubMenu
+            ref="subMenu"
+            :items="columnSubMenuItems[ind]"
+            orientation="left"
+            :max-menu-width="maximumSubMenuWidth"
+            allow-overflow-main-axis
+            button-title="Open table column header submenu"
+            @item-click="(_, item) => { onSubMenuItemSelection(item, ind) }"
+          >
+            <ArrowDropdown class="icon" />
+          </SubMenu>
+        </div>
+        <div
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
+          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px` }"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
-          @pointerdown="onPointerDown($event, ind)"
+          @pointerdown.passive="onPointerDown($event, ind)"
           @pointermove="onPointerMove"
           @lostpointercapture="onLostPointerCapture"
         />
@@ -203,16 +250,16 @@ export default {
 
 <style lang="postcss" scoped>
 thead {
-  height: 39px;
+  height: 41px;
 
   & tr {
-    margin-bottom: -2px;
+    height: 100%;
     transition: height 0.3s, box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
 
     & th {
       white-space: nowrap;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
       line-height: 40px;
       padding: 0;
@@ -242,19 +289,23 @@ thead {
       &.column-header {
         position: relative;
         display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        flex-direction: row;
+        justify-content: space-between;
         margin-left: 10px;
-
-        &:not(.inverted) .icon.active {
-          transform: scaleY(-1);
-        }
 
         & .column-header-content {
           display: flex;
           justify-content: center;
           flex-direction: column;
           width: 100%;
+
+          &.with-sub-menu {
+            width: calc(100% - 27px); /* due to .sub-menu-select-header: width + padding */
+          }
+
+          &:not(.inverted) .icon.active {
+            transform: scaleY(-1);
+          }
 
           & .main-header {
             display: flex;
@@ -268,13 +319,10 @@ thead {
               font-weight: 700;
               line-height: 16px;
               font-size: 14px;
-
-              &.with-icon {
-                max-width: calc(100% - 30px);
-              }
             }
 
             & .icon {
+              min-width: 13px; /* needs to be set such that the icon does not shrink when shrinkig the column width */
               width: 13px;
               height: 13px;
               stroke-width: calc(32px / 13);
@@ -296,15 +344,50 @@ thead {
             line-height: 12px;
             font-style: italic;
             stroke-width: calc(32px / 13);
-            display: flex;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          &.sortable {
+            cursor: pointer;
+
+            &:hover,
+            &:focus {
+              outline: none;
+              color: var(--knime-dove-gray);
+
+              & .main-header {
+                & .icon {
+                  display: unset;
+                  stroke: var(--knime-dove-gray);
+                }
+              }
+            }
+          }
+        }
+
+        & .sub-menu-select-header {
+          width: 22px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          right: 5px;
+
+          & >>> .submenu-toggle {
+            padding: 4px;
+
+            & svg {
+              height: 14px;
+              width: 14px;
+            }
           }
         }
 
         & .drag-handle {
           position: absolute;
+          z-index: 10;
           background-color: var(--knime-dove-gray);
           right: 0;
-          height: 100%;
           width: 5px;
           opacity: 0;
           cursor: col-resize;
@@ -316,23 +399,6 @@ thead {
           &.drag {
             width: 1px;
             opacity: 1;
-          }
-        }
-
-        &.sortable {
-          cursor: pointer;
-
-          &:hover,
-          &:focus {
-            outline: none;
-            color: var(--knime-dove-gray);
-
-            & .main-header {
-              & .icon {
-                display: unset;
-                stroke: var(--knime-dove-gray);
-              }
-            }
           }
         }
       }

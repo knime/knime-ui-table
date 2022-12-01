@@ -6,6 +6,7 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
+import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -66,6 +67,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        rowHeight: {
+            type: Number,
+            default: DEFAULT_ROW_HEIGHT
+        },
         isSelected: {
             type: Boolean,
             default: false
@@ -73,6 +78,10 @@ export default {
         showBorderColumnIndex: {
             type: Number,
             default: null
+        },
+        marginBottom: {
+            type: Number,
+            default: 0
         }
     },
     emits: ['rowSelect', 'rowInput', 'rowSubMenuClick'],
@@ -101,14 +110,6 @@ export default {
             // enforce boolean to reduce reactivity
             return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
         },
-        rowHeightStyle() {
-            const defaultRowHeight = 40;
-            const compactRowHeight = 24;
-            const height = this.rowConfig.compactMode
-                ? compactRowHeight
-                : this.rowConfig?.rowHeight || defaultRowHeight;
-            return `height: ${height}px;`;
-        },
         classes() {
             return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
                 if (typeof classItem === 'function') {
@@ -121,12 +122,17 @@ export default {
             }));
         }
     },
+    mounted() {
+        // Reverts emited event if component is not ready
+        this.$emit('rowExpand', this.showContent);
+    },
     methods: {
         getPropertiesFromColumns(key) {
             return this.columnConfigs.map(colConfig => colConfig[key]);
         },
         onRowExpand() {
             this.showContent = !this.showContent;
+            this.$nextTick(() => this.$emit('rowExpand', this.showContent));
         },
         onSelect(value) {
             this.$emit('rowSelect', value);
@@ -167,12 +173,12 @@ export default {
         'no-sub-menu': !tableConfig.subMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
-      :style="rowHeightStyle"
+      :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
         :expanded="showContent"
-        :compact-mode="tableConfig.compactMode"
+        :compact-mode="rowConfig.compactMode"
         class="collapser-cell"
         @collapser-expand="onRowExpand"
       />
@@ -192,7 +198,7 @@ export default {
         :class="[
           classes[ind],
           'data-cell',
-          { clickable: isClickable(data, ind), 'show-column-border': showBorderColumnIndex === ind}
+          { clickable: isClickable(data, ind)}
         ]"
         :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
         :title="!isClickable(data, ind) ? data : null"
@@ -254,16 +260,11 @@ export default {
 
 <style lang="postcss" scoped>
 tr.row {
-  margin-bottom: 1px;
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);
 
   &.empty-row {
     padding-left: 20px;
-  }
-
-  &.no-sub-menu {
-    padding-right: 10px;
   }
 
   & td {
@@ -295,9 +296,9 @@ tr.row {
 
       & .missing-value-icon {
         vertical-align: middle;
-        width: 25px;
-        height: 25px;
-        stroke-width: calc(32px / 25);
+        width: 14px;
+        height: 14px;
+        stroke-width: calc(32px / 14);
         stroke: var(--theme-color-kudos);
       }
     }
@@ -339,10 +340,6 @@ tr.row {
       &:hover {
         color: var(--knime-masala);
       }
-    }
-
-    &.show-column-border {
-      border-right: 1px solid var(--knime-dove-gray);
     }
   }
 

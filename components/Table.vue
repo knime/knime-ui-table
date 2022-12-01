@@ -6,7 +6,7 @@ import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '..
 import { defaultTimeFilter } from '../config/time.config';
 
 import getColumnDomains from '../util/getColumnDomains';
-import { getFilterConfigs, getDefaultFilterValues } from '../util/getFilterConfigs';
+import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '../util/getFilterConfigs';
 import { getNextPage } from '../util/getNextPage';
 import { getProcessedRowInd } from '../util/processSelection';
 import { filter } from '../util/transform/filter';
@@ -14,7 +14,7 @@ import { group } from '../util/transform/group';
 import { sort } from '../util/transform/sort';
 import { paginate } from '../util/transform/paginate';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN, TABLE_BORDER_SPACING } from '../util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '../util/constants';
 
 /**
  * @see README.md
@@ -62,6 +62,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        allColumnSpecificSortConfigs: {
+            type: Array,
+            default: () => []
+        },
         timeFilterKey: {
             type: String,
             default: null
@@ -69,6 +73,27 @@ export default {
         defaultColumns: {
             type: Array,
             default: () => []
+        },
+        /**
+         * Default sorting
+         */
+        defaultSortColumn: {
+            type: Number,
+            default: 0
+        },
+        defaultSortColumnDirection: {
+            type: Number,
+            default: -1,
+            validator(value) {
+                return value === -1 || value === 1;
+            }
+        },
+        /**
+         * Initial filter values applied if showColumnFilters is true
+         */
+        initialFilterValues: {
+            type: Object,
+            default: () => ({})
         },
         /**
          * Visual element configuration props.
@@ -85,6 +110,15 @@ export default {
         showActionButton: Boolean,
         showPopovers: Boolean,
         compactMode: Boolean,
+        enableVirtualScrolling: {
+            type: Boolean,
+            default: false
+        },
+        fitToContainer: {
+            type: Boolean,
+            default: false
+        },
+        fixHeader: Boolean,
         /**
          * Additional configuration options.
          */
@@ -112,9 +146,9 @@ export default {
             type: Array,
             default: () => []
         },
-        fixHeader: {
-            type: Boolean,
-            default: false
+        headerSubMenuItems: {
+            type: Array,
+            default: () => []
         }
     },
     emits: ['tableSelect', 'tableInput'],
@@ -151,11 +185,13 @@ export default {
             currentTableSize: 0,
             pageRowCount: 0,
             // column sort
-            columnSort: 0,
-            columnSortDirection: -1,
+            columnSort: this.defaultSortColumn,
+            columnSortDirection: this.defaultSortColumnDirection,
             // column filter
-            showFilter: false,
-            filterValues: getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
+            showFilter: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length),
+            filterValues: this.showColumnFilters && Boolean(Object.keys(this.initialFilterValues).length)
+                ? getInitialFilterValues(this.allColumnKeys, this.allColumnTypes, this.initialFilterValues)
+                : getDefaultFilterValues(this.allColumnKeys, this.allColumnTypes),
             // Selection State
             masterSelected: this.initMasterSelected(),
             processedIndicies: [],
@@ -172,7 +208,6 @@ export default {
             let dataConfig = {
                 columnConfigs: [],
                 rowConfig: {
-                    fixHeader: this.fixHeader,
                     compactMode: this.compactMode
                 }
             };
@@ -190,7 +225,10 @@ export default {
                     formatter: this.currentFormatters[ind],
                     classGenerator: this.currentClassGenerators[ind] || [],
                     popoverRenderer: this.allPopoverRenderers[key],
-                    hasSlotContent: this.currentSlottedColumns?.includes(key)
+                    hasSlotContent: this.currentSlottedColumns?.includes(key),
+                    ...this.headerSubMenuItems.length > 0 && { headerSubMenuItems: this.headerSubMenuItems[ind] },
+                    ...this.currentColumnSpecificSortConfigs.length !== 0 &&
+                        { isSortable: this.currentColumnSpecificSortConfigs[ind] }
                 };
                 dataConfig.columnConfigs.push(columnConfig);
             });
@@ -202,15 +240,21 @@ export default {
                 showCollapser: this.showCollapser,
                 showPopovers: this.showPopovers,
                 showColumnFilters: this.showColumnFilters,
+                columnFilterInitiallyActive:
+                    this.showColumnFilters &&
+                    Boolean(Object.keys(this.initialFilterValues).length),
                 showBottomControls: this.showBottomControls,
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
+                enableVirtualScrolling: this.enableVirtualScrolling,
+                fitToContainer: this.fitToContainer,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,
                     pageSize: this.currentPageSize,
                     possiblePageSizes: tablePageSizes,
-                    currentPage: this.currentPage
+                    currentPage: this.currentPage,
+                    fixHeader: this.fixHeader
                 }
             };
             if (this.showTimeFilter && this.timeFilterKey) {
@@ -274,20 +318,23 @@ export default {
             return this.filterByColumn(this.allColumnKeys);
         },
         currentColumnSizes() {
-            let specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE;
-            if (this.showCollapser) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
-            }
-            if (this.showSelection) {
-                specialColumnsSizeTotal += SPECIAL_COLUMNS_SIZE;
-            }
-            
             const nColumns = this.currentColumns.length;
-            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal -
-                nColumns * DATA_COLUMNS_MARGIN - 2 * TABLE_BORDER_SPACING;
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / (nColumns || 1));
-            return this.filterByColumn(this.currentAllColumnSizes)
+            if (nColumns < 1) {
+                return [];
+            }
+
+            const specialColumnsSizeTotal = (this.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+
+            const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
+            const lastColumnMinSize = dataColumnsSizeTotal -
+                currentColumnSizes.slice(0, nColumns - 1).reduce((partialSum, size) => partialSum + size, 0);
+            currentColumnSizes[nColumns - 1] = Math.max(lastColumnMinSize, currentColumnSizes[nColumns - 1]);
+            return currentColumnSizes;
         },
         currentColumnTypes() {
             return this.filterByColumn(Object.values(this.allColumnTypes));
@@ -310,6 +357,9 @@ export default {
                 types: this.allColumnTypes,
                 values: this.filterValues
             });
+        },
+        currentColumnSpecificSortConfigs() {
+            return this.getDataOfCurrentlyShownColumns(this.allColumnSpecificSortConfigs);
         },
         /*
          * Column key of the current group-by column.
@@ -447,12 +497,17 @@ export default {
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
         }
-        // determine default column size on mounted, since only then do we know the clientWidth of this element
-        this.updateClientWidth();
-        window.addEventListener('resize', this.updateClientWidth);
+        const clientWidth = this.$el.getBoundingClientRect().width;
+        // clientWidth can be 0, e.g., if table is not visible (yet)
+        if (clientWidth) {
+            this.clientWidth = clientWidth;
+            window.addEventListener('resize', this.onResize);
+        } else {
+            this.observeTableIntersection();
+        }
     },
     beforeUnmount() {
-        window.removeEventListener('resize', this.updateClientWidth);
+        window.removeEventListener('resize', this.onResize);
     },
     methods: {
         /*
@@ -502,7 +557,7 @@ export default {
         filterData() {
             consola.trace('Filtering data.');
             // declare locally to avoid asynchronous behavior
-            let x = filter({
+            let filteredDataConfig = filter({
                 data: this.allData,
                 filterValues: this.filterValues,
                 timeFilter: this.currentTimeFilter,
@@ -513,9 +568,9 @@ export default {
                 formatters: this.currentFormatters,
                 types: this.allColumnTypes
             });
-            this.filteredDataConfig = x;
-            this.currentTableSize = x.filteredData.length;
-            return x;
+            this.filteredDataConfig = filteredDataConfig;
+            this.currentTableSize = filteredDataConfig.filteredData.length;
+            return filteredDataConfig;
         },
         groupData({ filteredData, filteredIndicies }) {
             consola.trace('Grouping data.');
@@ -569,8 +624,11 @@ export default {
          * Utilities.
          *
          */
+        getDataOfCurrentlyShownColumns(localData) {
+            return localData?.length ? this.currentColumns.map(colInd => localData[colInd]) : [];
+        },
         filterByColumn(localData) {
-            return localData?.length ? this.currentColumns.map(colInd => localData[colInd]).filter(item => item) : [];
+            return this.getDataOfCurrentlyShownColumns(localData).filter(item => item);
         },
         getProcessedRowIndex(relativeInd, groupInd) {
             return getProcessedRowInd({
@@ -705,6 +763,10 @@ export default {
             const resizedColumnIndex = this.currentColumns[columnIndex];
             this.currentAllColumnSizes[resizedColumnIndex] = newColumnSize;
         },
+        onHeaderSubMenuItemSelection(item, index) {
+            consola.debug(`Table received: headerSubMenuItemSelection ${item} ${index}`);
+            this.$emit('headerSubMenuSelect', item, index);
+        },
         /*
          *
          * Table methods.
@@ -719,19 +781,37 @@ export default {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(() => 0);
         },
-        updateClientWidth: throttle(function () {
+        onResize: throttle(function () {
             /* eslint-disable no-invalid-this */
-            const updatedClientWidth = this.$el.clientWidth;
-            // also update all non-default column widths according to the relative change in client width
-            const ratio = updatedClientWidth / this.clientWidth;
-            this.currentAllColumnSizes = this.currentAllColumnSizes
-                .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
-            this.clientWidth = updatedClientWidth;
+            const updatedClientWidth = this.$el.getBoundingClientRect().width;
+            if (updatedClientWidth) {
+                // update all non-default column widths according to the relative change in client width
+                const ratio = updatedClientWidth / this.clientWidth;
+                this.currentAllColumnSizes = this.currentAllColumnSizes
+                    .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+                this.clientWidth = updatedClientWidth;
+            } else {
+                this.observeTableIntersection();
+                window.removeEventListener('resize', this.onResize);
+            }
             /* eslint-enable no-invalid-this */
         }),
         getCellContentSlotName(columnId) {
+            //TODO: Not sure if needed anymore.
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnId}`;
+        }
+        observeTableIntersection() {
+            new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.target === this.$el && entry.boundingClientRect.width) {
+                        this.clientWidth = entry.boundingClientRect.width;
+                        // observer is either removed here or on garbage collection
+                        observer.unobserve(entry.target);
+                        window.addEventListener('resize', this.onResize);
+                    }
+                });
+            }).observe(this.$el);
         }
     }
 };
@@ -759,6 +839,7 @@ export default {
     @row-select="onRowSelect"
     @table-input="onTableInput"
     @column-resize="onColumnResize"
+    @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
   >
     <!-- eslint-disable vue/valid-v-slot -->
     <template

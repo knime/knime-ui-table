@@ -1,16 +1,18 @@
 <script>
+/* eslint-disable max-lines */
 import TopControls from './control/TopControls.vue';
 import BottomControls from './control/BottomControls.vue';
 import ColumnFilters from './filter/ColumnFilters.vue';
 import Header from './layout/Header.vue';
 import Group from './layout/Group.vue';
 import Row from './layout/Row.vue';
+import PlaceholderRow from './ui/PlaceholderRow.vue';
 import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
-
-const widthColumnMarginLeft = 10;
-const widthColumnSelection = 30;
-const widthColumnFilter = 30;
+import { RecycleScroller } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
+    HEADER_HEIGHT, ROW_MARGIN_BOTTOM, CONTROLS_HEIGHT } from '../util/constants';
 
 /**
  * @see README.md
@@ -26,8 +28,10 @@ export default {
         Header,
         Group,
         Row,
+        PlaceholderRow,
         ActionButton,
-        TablePopover
+        TablePopover,
+        RecycleScroller
     },
     props: {
         /**
@@ -38,6 +42,38 @@ export default {
             default: () => []
         },
         currentSelection: {
+            type: Array,
+            default: () => []
+        },
+        /**
+         
+         * Only used when tableConfig.enableVirtualScrolling is true.
+         * It specifies how many (empty) rows should be simultated above the given rows in this.data[0]
+         */
+        numRowsAbove: {
+            type: Number,
+            default: 0
+        },
+        /**
+         * Only used when tableConfig.enableVirtualScrolling is true.
+         * It specifies how many (empty) rows should be simultated below the given rows in this.data[0]
+         */
+        numRowsBelow: {
+            type: Number,
+            default: 0
+        },
+        /**
+         * Data displayed when scrolling to the bottom of the table. Currently only supproted together
+         * with virtual scrolling enabled.
+        */
+        bottomData: {
+            type: Array,
+            default: () => []
+        },
+        /**
+         * analogous to currentSelection but for the bottomData
+         */
+        currentBottomSelection: {
             type: Array,
             default: () => []
         },
@@ -60,10 +96,16 @@ export default {
                     return false;
                 }
                 const requiredProperties = ['showSelection', 'showCollapser', 'showPopovers', 'showColumnFilters',
-                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems'];
+                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems', 'fitToContainer'];
                 let isValid = requiredProperties.every(key => tableConfig.hasOwnProperty(key));
                 const requiredConfigs = {
-                    pageConfig: ['currentSize', 'tableSize', 'pageSize', 'possiblePageSizes', 'currentPage'],
+                    pageConfig: [
+                        'currentSize',
+                        'tableSize',
+                        'pageSize',
+                        'possiblePageSizes',
+                        'currentPage'
+                    ],
                     searchConfig: ['searchQuery'],
                     timeFilterConfig: ['currentTimeFilter'],
                     columnSelectionConfig: ['possibleColumns', 'currentColumns'],
@@ -99,13 +141,24 @@ export default {
     ],
     data() {
         return {
-            filterActive: false,
+            filterActive: this.tableConfig.columnFilterInitiallyActive || false,
             popoverTarget: null,
             popoverData: null,
             popoverColumn: null,
             popoverRenderer: null,
             // the index of the column that is currently being resized and for which a border should be shown
-            showBorderColumnIndex: null
+            showBorderColumnIndex: null,
+            lastScrollIndex: 0,
+            newVal: null,
+            scrollerKey: 0,
+            resizeCount: 0,
+            updatedBefore: false,
+            currentExpanded: new Set(),
+            rowMarginBottom: ROW_MARGIN_BOTTOM,
+            wrapperHeight: 0,
+            wrapperResizeObserver: new ResizeObserver((entries) => {
+                this.wrapperHeight = entries[0].contentRect.height;
+            })
         };
     },
     computed: {
@@ -118,6 +171,9 @@ export default {
         columnSubHeaders() {
             return this.getPropertiesFromColumns('subHeader');
         },
+        columnHeaderSubMenuItems() {
+            return this.getPropertiesFromColumns('headerSubMenuItems');
+        },
         columnSizes() {
             return this.getPropertiesFromColumns('size');
         },
@@ -129,6 +185,11 @@ export default {
         },
         columnKeys() {
             return this.getPropertiesFromColumns('key');
+        },
+        columnSortConfigs() {
+            return this.dataConfig.columnConfigs.map(columnConfig => columnConfig.hasOwnProperty('isSortable')
+                ? columnConfig.isSortable
+                : true);
         },
         slottedColumns() {
             return this.getPropertiesFromColumns('hasSlotContent')
@@ -148,13 +209,123 @@ export default {
                 this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
             }`;
         },
-        shouldFixHeaders() {
-            return Boolean(this.dataConfig.rowConfig?.fixHeader);
-        },
         currentBodyWidth() {
-            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + widthColumnMarginLeft, 0);
-            return (this.tableConfig.showSelection ? widthColumnSelection : 0) +
-                widthContentColumns + (this.tableConfig.showColumnFilters ? widthColumnFilter : 0);
+            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + DATA_COLUMNS_MARGIN, 0);
+            return (this.tableConfig.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
+                (this.tableConfig.showCollapser ? SPECIAL_COLUMNS_SIZE : 0) +
+                widthContentColumns + (this.tableConfig.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0);
+        },
+        enableVirtualScrolling() {
+            return this.tableConfig.enableVirtualScrolling;
+        },
+        fitToContainer() {
+            return this.tableConfig.fitToContainer;
+        },
+        topDataLength() {
+            if (this.data === null) {
+                return 0;
+            }
+            return this.data[0].length;
+        },
+        scrollData() {
+            if (this.data === null) {
+                return null;
+            }
+            const data = this.data?.map(groupData => groupData.map(
+                (rowData, index) => ({
+                    id: (index + this.numRowsAbove).toString(),
+                    data: rowData,
+                    size: this.scrollerItemSize,
+                    index,
+                    scrollIndex: index + this.numRowsAbove,
+                    isTop: true
+                })
+            ));
+            if (this.enableVirtualScrolling) {
+                if (this.bottomData.length > 0) {
+                    let hasPlaceholder = this.topDataLength > 0;
+                    if (hasPlaceholder) {
+                        data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
+                    }
+                    this.bottomData.forEach((rowData, index) => {
+                        const scrollIndex = index + this.numRowsAbove + this.topDataLength + (hasPlaceholder ? 1 : 0);
+                        data[0].push({
+                            id: scrollIndex.toString(),
+                            data: rowData,
+                            size: this.scrollerItemSize,
+                            index,
+                            scrollIndex,
+                            isTop: false
+                        });
+                    });
+                }
+            }
+            this.currentExpanded.forEach((scrollIndex) => {
+                const contentHeight = this.getContentHeight(scrollIndex);
+                data[0][scrollIndex - this.numRowsAbove].size += contentHeight;
+            });
+            return data;
+        },
+        currentSelectionMap() {
+            return (index, isTop) => {
+                if (typeof index === 'undefined') {
+                    return false;
+                }
+                return isTop ? this.currentSelection[0][index] : this.currentBottomSelection[index];
+            };
+        },
+        rowHeight() {
+            return this.dataConfig.rowConfig.compactMode
+                ? COMPACT_ROW_HEIGHT
+                : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
+        },
+        scrollerItemSize() {
+            // The virtual scroller does not support margins, hence we need to set a different height for the rows
+            // instead
+            return this.rowHeight + ROW_MARGIN_BOTTOM;
+        },
+        fixHeader() {
+            if (this.enableVirtualScrolling) {
+                return true;
+            }
+            const fixHeaderParam = this.tableConfig.pageConfig?.fixHeader;
+            return Boolean(fixHeaderParam);
+        },
+        fullBodyHeight() {
+            let numberOfGroups = 0; let numberOfRows = 0;
+            if (this.data) {
+                for (const dataGroup of this.data) {
+                    if (dataGroup.length > 0) {
+                        numberOfGroups++;
+                        numberOfRows += dataGroup.length;
+                    }
+                }
+            }
+            const numberOfBottomRows = this.bottomData.length;
+            if (numberOfBottomRows > 0) {
+                // plus 1 because of the additional "…" row
+                numberOfRows += numberOfBottomRows + 1;
+            }
+            return this.scrollerItemSize * numberOfRows +
+            (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
+        },
+        currentBodyHeight() {
+            const availableSpace = this.wrapperHeight - this.tableHeightWithoutBody;
+            return Math.max(Math.min(availableSpace, this.fullBodyHeight), 0);
+        },
+        filterHeight() {
+            // Margin of negative two px
+            return this.filterActive ? HEADER_HEIGHT - 2 : 0;
+        },
+        currentTableHeight() {
+            return HEADER_HEIGHT + this.filterHeight + this.fullBodyHeight;
+        },
+        tableHeightWithoutBody() {
+            // the height of the header is 41px in total.
+            const actualHeaderHeight = HEADER_HEIGHT + 1;
+            // Top and bottom controls
+            const bottomControlsHeight = this.tableConfig.showBottomControls ? CONTROLS_HEIGHT : 0;
+            return actualHeaderHeight + this.filterHeight + CONTROLS_HEIGHT + bottomControlsHeight;
         }
     },
     watch: {
@@ -167,6 +338,9 @@ export default {
             }
         }
     },
+    mounted() {
+        this.wrapperResizeObserver.observe(this.$refs.wrapper);
+    },
     methods: {
         // Utilities
         getPropertiesFromColumns(key) {
@@ -175,7 +349,33 @@ export default {
         getGroupName(ind) {
             return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || '';
         },
+        refreshScroller() {
+            this.scrollerKey++;
+        },
         // Event handling
+        onScroll(startIndex, endIndex) {
+            if (this.lastScrollIndex === endIndex) {
+                return;
+            }
+            const direction = this.lastScrollIndex < endIndex ? 1 : -1;
+            this.lastScrollIndex = endIndex;
+            this.collapseAllUnusedRows(startIndex, endIndex);
+            this.$emit('lazyload', { direction, startIndex, endIndex });
+        },
+        collapseAllUnusedRows(startIndex, endIndex) {
+            let needsCollapse = false;
+            const usedExpanded = new Set();
+            this.currentExpanded.forEach(i => {
+                if (i < endIndex && i >= startIndex) {
+                    usedExpanded.add(i);
+                } else {
+                    needsCollapse = true;
+                }
+            });
+            if (needsCollapse) {
+                this.currentExpanded = usedExpanded;
+            }
+        },
         onTimeFilterUpdate(newTimeFilter) {
             consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
             this.$emit('timeFilterUpdate', newTimeFilter);
@@ -225,9 +425,25 @@ export default {
             consola.debug(`TableUI emitting: selectAll ${selected}`);
             this.$emit('selectAll', selected);
         },
-        onRowSelect(selected, rowInd, groupInd) {
-            consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd}`);
-            this.$emit('rowSelect', selected, rowInd, groupInd);
+        onHeaderSubMenuItemSelection(item, colInd) {
+            consola.debug(`TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`);
+            this.$emit('headerSubMenuItemSelection', item, colInd);
+        },
+        onRowSelect(selected, rowInd, groupInd, isTop) {
+            consola.debug(`TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd} ${isTop}`);
+            this.$emit('rowSelect', selected, rowInd, groupInd, isTop);
+        },
+        onRowExpand(expanded, scrollIndex) {
+            // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
+            if (expanded) {
+                this.currentExpanded.add(scrollIndex);
+                this.currentExpanded = new Set(this.currentExpanded);
+            } else {
+                const hasDeleted = this.currentExpanded.delete(scrollIndex);
+                if (hasDeleted) {
+                    this.currentExpanded = new Set(this.currentExpanded);
+                }
+            }
         },
         onRowInput(event) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -261,11 +477,13 @@ export default {
         onColumnResize(columnIndex, newColumnSize) {
             this.$emit('columnResize', columnIndex, newColumnSize);
         },
-        onShowColumnBorder(columnIndex) {
-            this.showBorderColumnIndex = columnIndex;
-        },
-        onHideColumnBorder() {
-            this.showBorderColumnIndex = null;
+        // Find the additional height added by expanded content of a row
+        getContentHeight(index) {
+            // The second child of the dom element referenced by the row is the expanded content.
+            const contentHeight = this.$refs[`row-${index}`]?.map(
+                (component) => component.$el.children[1]?.clientHeight
+            ).find(height => typeof height !== 'undefined');
+            return contentHeight || 0;
         },
         getCellContentSlotName(columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
@@ -277,11 +495,13 @@ export default {
 
 <template>
   <div
+    ref="wrapper"
     class="wrapper"
-    :class="{ 'sticky-header': shouldFixHeaders}"
+    :class="{'fix-header': fixHeader}"
   >
     <table
       ref="table"
+      class="table"
       :style="{ width: `${currentBodyWidth}px` }"
     >
       <TopControls
@@ -301,16 +521,18 @@ export default {
         :column-headers="columnHeaders"
         :column-sub-headers="columnSubHeaders"
         :column-sizes="columnSizes"
+        :column-sub-menu-items="columnHeaderSubMenuItems"
+        :column-sort-configs="columnSortConfigs"
         :is-selected="totalSelected > 0"
         :filters-active="filterActive"
+        :current-table-height="currentTableHeight"
         :class="tableHeaderClass"
         :style="{ width: `${currentBodyWidth}px` }"
         @header-select="onSelectAll"
         @column-sort="onColumnSort"
         @toggle-filter="onToggleFilter"
         @column-resize="onColumnResize"
-        @show-column-border="onShowColumnBorder"
-        @hide-column-border="onHideColumnBorder"
+        @sub-menu-item-selection="onHeaderSubMenuItemSelection"
       />
       <ColumnFilters
         v-if="filterActive"
@@ -319,34 +541,101 @@ export default {
         :column-sizes="columnSizes"
         :types="columnTypes"
         :show-collapser="tableConfig.showCollapser"
+        :show-selection="tableConfig.showSelection"
         :style="{ width: `${currentBodyWidth}px` }"
         @column-filter="onColumnFilter"
         @clear-filter="onClearFilter"
       />
       <div
-        class="table-group-wrapper"
-        :style="{ width: `${currentBodyWidth}px` }"
+        class="body"
+        :style="{ width: `${currentBodyWidth}px`, height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
       >
         <Group
-          v-for="(dataGroup, groupInd) in data"
+          v-for="(dataGroup, groupInd) in scrollData"
           :key="groupInd"
           :title="getGroupName(groupInd)"
           :group-sub-menu-items="tableConfig.groupSubMenuItems"
           :show="data.length > 1 && dataGroup.length > 0"
           @group-sub-menu-click="onGroupSubMenuClick($event, dataGroup)"
         >
+          <RecycleScroller
+            v-if="enableVirtualScrolling && scrollData.length === 1"
+            :key="scrollerKey"
+            v-slot="{ item }"
+            :items="dataGroup"
+            :num-items-above="numRowsAbove"
+            :num-items-below="numRowsBelow"
+            :empty-item="{
+              data: [],
+              size: scrollerItemSize,
+              tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false}
+            }"
+            class="scroller"
+            :emit-update="true"
+            :page-mode="false"
+            :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
+            @update="onScroll"
+          >
+            <PlaceholderRow
+              v-if="item.dots"
+              :height="item.size"
+            />
+            <Row
+              v-else
+              :key="item.id"
+              :ref="`row-${item.id}`"
+              :row="columnKeys.map(column => item.data[column])"
+              :table-config="item.tableConfig || tableConfig"
+              :column-configs="dataConfig.columnConfigs"
+              :row-config="dataConfig.rowConfig"
+              :row-height="rowHeight"
+              :margin-bottom="rowMarginBottom"
+              :is-selected="currentSelectionMap(item.index, item.isTop)"
+              :show-border-column-index="showBorderColumnIndex"
+              @rowSelect="selected => onRowSelect(selected, item.index, 0, item.isTop)"
+              @rowExpand="(expanded) => onRowExpand(expanded, item.scrollIndex, item.isTop)"
+              @rowInput="event => onRowInput(
+                { ...event, index: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+              )"
+              @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+            >
+              <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+              <template
+                v-for="colInd in slottedColumns"
+                #[`cellContent-${columnKeys[colInd]}`]="cellData"
+              >
+                <!-- Vue requires key on real element for dynamic scoped slots
+                    to help Vue framework manage events. -->
+                <span :key="item.index + '_' + colInd">
+                  <slot
+                    :name="`cellContent-${columnKeys[colInd]}`"
+                    :data="{ ...cellData, key: columnKeys[colInd], rowInd: item.index, colInd }"
+                  />
+                </span>
+              </template>
+              <template slot="rowCollapserContent">
+                <slot
+                  name="collapserContent"
+                  :row="item"
+                />
+              </template>
+            </Row>
+          </RecycleScroller>
           <Row
             v-for="(row, rowInd) in dataGroup"
-            :key="row.id"
-            :row="columnKeys.map(column => row[column])"
+            v-else
+            :key="row.data.id"
+            :row="columnKeys.map(column => row.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"
             :row-config="dataConfig.rowConfig"
+            :row-height="rowHeight"
+            :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
-            @row-select="onRowSelect($event, rowInd, groupInd)"
-            @row-input="onRowInput({ ...$event, rowInd, id: row.id, groupInd })"
-            @row-sub-menu-click="onRowSubMenuClick($event, row)"
+            @row-select="onRowSelect($event, rowInd, groupInd, true)"
+            @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
+            @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
             <!-- eslint-disable vue/valid-v-slot -->
@@ -406,7 +695,12 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+.scroller {
+  overflow-y: auto;
+}
+
 .wrapper {
+  height: 100%;
   position: relative;
 }
 
@@ -417,14 +711,17 @@ tbody {
 }
 
 table {
+  height: 100%;
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
   display: flex;
   flex-direction: column;
-  margin: auto;
+  margin-left: 0;
+  margin-right: auto;
 
-  & .table-group-wrapper {
+  & .body {
+    overflow-y: visible;
     display: block;
 
     & :deep(tbody) {
@@ -466,21 +763,6 @@ table :deep(tr) {
   }
 }
 
-.sticky-header {
-  height: 100%;
-  overflow-y: hidden;
-
-  & table {
-    height: 100%;
-    overflow-y: hidden;
-
-    & .table-group-wrapper {
-      overflow-y: auto;
-      overflow-x: clip;
-    }
-  }
-}
-
 @media only screen and (max-width: 1180px) {
   table {
     table-layout: fixed;
@@ -491,6 +773,19 @@ table :deep(tr) {
       padding-right: 0;
       padding-left: 5px;
       margin-left: 0;
+    }
+  }
+}
+
+.fix-header {
+  overflow-y: visible;
+
+  & table {
+    overflow-y: visible;
+
+    & .body {
+      overflow-y: auto;
+      overflow-x: clip;
     }
   }
 }

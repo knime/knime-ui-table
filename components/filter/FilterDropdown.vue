@@ -275,7 +275,6 @@ export default {
 .dropdown {
   position: relative;
   background-color: var(--knime-white);
-  max-width: calc(100% - 20px);
 
   & .placeholder {
     color: var(--knime-stone-gray);

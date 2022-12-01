@@ -19,7 +19,9 @@
   "dependencies": {
     "raf-throttle": "2.0.5",
     "vue": "3.2.41",
-    "webapps-common": "file:webapps-common"
+    "webapps-common": "file:webapps-common",
+    "vue-virtual-scroller": "file:vue-virtual-scroller",
+    "@popperjs/core": "2.5.4"
   },
   "devDependencies": {
     "@knime/eslint-config": "7.0.5",
