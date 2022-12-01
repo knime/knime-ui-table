@@ -52,7 +52,7 @@ export default {
          */
         numRowsAbove: {
             type: Number,
-            default: 0
+            default: 10
         },
         /**
          * Only used when tableConfig.enableVirtualScrolling is true.
@@ -561,7 +561,7 @@ export default {
           <RecycleScroller
             v-if="enableVirtualScrolling && scrollData.length === 1"
             :key="scrollerKey"
-            v-slot="{ item }"
+            #default="{ item }"
             :items="dataGroup"
             :num-items-above="numRowsAbove"
             :num-items-below="numRowsBelow"
@@ -592,31 +592,31 @@ export default {
               :margin-bottom="rowMarginBottom"
               :is-selected="currentSelectionMap(item.index, item.isTop)"
               :show-border-column-index="showBorderColumnIndex"
-              @rowSelect="selected => onRowSelect(selected, item.index, 0, item.isTop)"
-              @rowExpand="(expanded) => onRowExpand(expanded, item.scrollIndex, item.isTop)"
-              @rowInput="event => onRowInput(
-                { ...event, index: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+              @row-select="onRowSelect($selected, item.index, 0, item.isTop)"
+              @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
+              @row-input="onRowInput(
+                { ...$event, index: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
               )"
-              @rowSubMenuClick="event => onRowSubMenuClick(event, item.data)"
+              @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
             >
               <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+              <!-- eslint-disable vue/valid-v-slot -->
               <template
                 v-for="colInd in slottedColumns"
-                #[`cellContent-${columnKeys[colInd]}`]="cellData"
+                #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+                :key="rowInd + '_' + colInd"
               >
-                <!-- Vue requires key on real element for dynamic scoped slots
-                    to help Vue framework manage events. -->
-                <span :key="item.index + '_' + colInd">
+                <span>
                   <slot
                     :name="`cellContent-${columnKeys[colInd]}`"
-                    :data="{ ...cellData, key: columnKeys[colInd], rowInd: item.index, colInd }"
+                    :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
                   />
                 </span>
               </template>
-              <template slot="rowCollapserContent">
+              <template #rowCollapserContent>
                 <slot
                   name="collapserContent"
-                  :row="item"
+                  :row="row"
                 />
               </template>
             </Row>

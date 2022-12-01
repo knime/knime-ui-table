@@ -4,7 +4,7 @@ import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import { MIN_COLUMN_SIZE } from '~/util/constants';//TODO: check; maybe without "/~"
+import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -110,7 +110,7 @@ tr {
     text-align: left;
 
     &.filter {
-      margin: auto 0px auto 10px;
+      margin: auto 0 auto 10px;
     }
 
     &.collapser-cell-spacer {

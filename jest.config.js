@@ -20,7 +20,7 @@ module.exports = {
         '^@/(.*\\.svg)$': '<rootDir>/$1',
         '\\.svg\\?data$': '<rootDir>/test/unit/assets/stub.data',
         '^vue$': 'vue/dist/vue.common.js',
-        '^@/(.*)$': '<rootDir>/$1'
+        '^@/(.*)$': '<rootDir>/$1',
         '\\.(css)$': '<rootDir>/test/unit/mocks/styleMock.js'
     },
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage' }]],

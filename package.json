@@ -10,9 +10,9 @@
     "preview": "vite preview --port 4173",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
-    "lint": "run-p 'lint:* -- --fix'",
+    "lint": "run-p \"lint:* -- --fix\"",
     "lint:js": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.json",
-    "lint:css": "stylelint '**/*.{css,vue}'",
+    "lint:css": "stylelint \"**/*.{css,vue}\"",
     "ci:lint": "run-p lint:*",
     "audit": "npm audit --omit dev"
   },

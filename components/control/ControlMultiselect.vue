@@ -1,6 +1,5 @@
 <script>
 import { mixin as VueClickAway } from 'vue3-click-away';
-
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
@@ -167,7 +166,7 @@ export default {
             this.dragGhost = this.$refs.item[ind].querySelector('label').cloneNode(true);
             document.body.appendChild(this.dragGhost);
         },
-        onDragEnd() {
+        onDragEnd(event, ind) {
             let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
@@ -247,8 +246,9 @@ export default {
           :class="['boxes']"
           @update:model-value="onInput(item.id, $event)"
           @keydown.esc.stop.prevent="closeOptions(true)"
-        >
+        ><div>
           {{ item.text }}
+        </div>
         </Checkbox>
         <div
           v-if="dragInd !== ind && dragInd - 1!== ind && hoverInd === ind"

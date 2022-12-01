@@ -30,12 +30,12 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .dots {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+
   & span {
     text-align: center;
     pointer-events: none;

@@ -2,9 +2,9 @@
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
-import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg?inline';
+import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
+import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 import throttle from 'raf-throttle';
 import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '../../util/constants';
 
@@ -286,6 +286,39 @@ thead {
         }
       }
 
+      &.action {
+        align-items: center;
+        display: flex;
+        overflow: visible;
+        min-width: 30px;
+
+        & :deep(.function-button) {
+          display: flex;
+          align-self: stretch;
+          align-items: center;
+          height: 40px;
+          width: 30px;
+          border-radius: 0;
+          transition: background-color 0.15s;
+
+          & svg {
+            stroke: var(--knime-masala);
+          }
+        }
+
+        &.filter-active {
+          background-color: var(--theme-button-function-background-color-hover);
+
+          & :deep(.function-button) {
+            & svg {
+              fill: var(--knime-masala);
+              stroke: var(--knime-masala);
+            }
+          }
+        }
+      }
+
+
       &.column-header {
         position: relative;
         display: flex;
@@ -373,7 +406,7 @@ thead {
           position: relative;
           right: 5px;
 
-          & >>> .submenu-toggle {
+          & :deep(.submenu-toggle) {
             padding: 4px;
 
             & svg {
@@ -399,38 +432,6 @@ thead {
           &.drag {
             width: 1px;
             opacity: 1;
-          }
-        }
-      }
-
-      &.action {
-        align-items: center;
-        display: flex;
-        overflow: visible;
-        min-width: 30px;
-
-        & :deep(.function-button) {
-          display: flex;
-          align-self: stretch;
-          align-items: center;
-          height: 40px;
-          width: 30px;
-          border-radius: 0;
-          transition: background-color 0.15s;
-
-          & svg {
-            stroke: var(--knime-masala);
-          }
-        }
-
-        &.filter-active {
-          background-color: var(--theme-button-function-background-color-hover);
-
-          & :deep(.function-button) {
-            & svg {
-              fill: var(--knime-masala);
-              stroke: var(--knime-masala);
-            }
           }
         }
       }

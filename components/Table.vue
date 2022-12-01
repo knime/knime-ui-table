@@ -797,10 +797,9 @@ export default {
             /* eslint-enable no-invalid-this */
         }),
         getCellContentSlotName(columnId) {
-            //TODO: Not sure if needed anymore.
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnId}`;
-        }
+        },
         observeTableIntersection() {
             new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {

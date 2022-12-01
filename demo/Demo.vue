@@ -219,7 +219,6 @@ export default {
   }
 
   .fix-header .wrapper {
-    flex-basis: content;
   }
 
   .fix-header button {

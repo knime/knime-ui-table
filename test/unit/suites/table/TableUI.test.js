@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import TableUI from '@/components/TableUI.vue';
 import TopControls from '@/components/control/TopControls.vue';
 import BottomControls from '@/components/control/BottomControls.vue';
