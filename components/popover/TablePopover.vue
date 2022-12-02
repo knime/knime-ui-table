@@ -58,6 +58,7 @@ export default {
     },
     emits: ['close'],
     data() {
+        // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
         return {
             expanded: this.initiallyExpanded,
             type: this.renderer?.type || this.renderer,

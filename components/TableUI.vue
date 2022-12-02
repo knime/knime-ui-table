@@ -592,10 +592,10 @@ export default {
               :margin-bottom="rowMarginBottom"
               :is-selected="currentSelectionMap(item.index, item.isTop)"
               :show-border-column-index="showBorderColumnIndex"
-              @row-select="onRowSelect($selected, item.index, 0, item.isTop)"
+              @row-select="onRowSelect($event, item.index, 0, item.isTop)"
               @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
               @row-input="onRowInput(
-                { ...$event, index: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+                { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
               )"
               @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
             >

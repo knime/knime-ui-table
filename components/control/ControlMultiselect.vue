@@ -166,7 +166,7 @@ export default {
             this.dragGhost = this.$refs.item[ind].querySelector('label').cloneNode(true);
             document.body.appendChild(this.dragGhost);
         },
-        onDragEnd(event, ind) {
+        onDragEnd() {
             let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
@@ -232,7 +232,7 @@ export default {
         @keydown.esc.stop.prevent="closeOptions(true)"
       >
         <div
-          draggable
+          draggable="true"
           :class="['item-' + ind, 'drag-handle']"
           @dragstart="onDragStart($event, ind)"
           @dragend="onDragEnd($event, ind)"
@@ -334,6 +334,8 @@ export default {
 
       & .drag-handle {
         cursor: move;
+        height: 0px;
+        width: 0px;
 
         & .drag {
           position: absolute;

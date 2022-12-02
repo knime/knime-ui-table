@@ -151,7 +151,7 @@ export default {
       <Checkbox
         v-model="setInitialFiltering"
         :disabled="!showColumnFilters"
-        @input="forceRerender"
+        @update:model-value="forceRerender"
       >
         set initial filters
       </Checkbox>
@@ -162,7 +162,7 @@ export default {
       <Checkbox v-model="showSorting">sort</Checkbox>
       <Checkbox
         v-model="setInitialSorting"
-        @input="forceRerender"
+        @update:model-value="forceRerender"
       >
         set default sorting
       </Checkbox>
