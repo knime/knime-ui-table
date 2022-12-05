@@ -3,7 +3,7 @@ import FilterMultiselect from './FilterMultiselect.vue';
 import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import TrashIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
 import { MIN_COLUMN_SIZE } from '~/util/constants';
 
 /**
@@ -20,7 +20,7 @@ export default {
         FilterInputField,
         FilterDropdown,
         FunctionButton,
-        CloseIcon
+        TrashIcon
     },
     props: {
         filterConfigs: {
@@ -90,7 +90,7 @@ export default {
       </th>
       <th class="action">
         <FunctionButton @click="onClearFilter">
-          <CloseIcon />
+          <TrashIcon />
         </FunctionButton>
       </th>
     </tr>
