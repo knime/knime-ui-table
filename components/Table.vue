@@ -150,7 +150,7 @@ export default {
             default: () => []
         }
     },
-    emits: ['tableSelect', 'tableInput'],
+    emits: ['tableSelect', 'tableInput', 'headerSubMenuSelect'],
     data() {
         return {
             // Reference State

@@ -66,7 +66,15 @@ export default {
             default: DEFAULT_ROW_HEIGHT
         }
     },
-    emits: ['headerSelect', 'columnSort', 'toggleFilter', 'showColumnBorder', 'columnResize', 'hideColumnBorder'],
+    emits: [
+        'headerSelect',
+        'columnSort',
+        'toggleFilter',
+        'showColumnBorder',
+        'columnResize',
+        'hideColumnBorder',
+        'subMenuItemSelection'
+    ],
     data() {
         return {
             height: 40,
