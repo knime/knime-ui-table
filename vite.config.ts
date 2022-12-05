@@ -33,7 +33,7 @@ export default defineConfig({
         }
     },
     test: {
-        include: ['!(webapps-common)**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        include: ['!(webapps-common)**/__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         environment: 'jsdom',
         reporters: ['default', 'junit'],
         deps: { inline: ['consola'] },
