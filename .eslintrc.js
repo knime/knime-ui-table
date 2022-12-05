@@ -14,5 +14,14 @@ module.exports = {
                 ]
             }
         }
-    }
+    },
+    overrides: [
+        {
+            extends: ['@knime/eslint-config/jest'],
+            files: ['**/__tests__/**'],
+            rules: {
+                'no-magic-numbers': 'off'
+            }
+        }
+    ]
 };

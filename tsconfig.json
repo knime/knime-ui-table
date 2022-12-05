@@ -2,9 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.web.json",
   "include": [
     "env.d.ts",
-    "src/**/*",
-    "vitest-global-setup/*",
-    "src/**/*.vue"
+    "!(webapps-common)**/*.vue"
   ],
   "compilerOptions": {
     "baseUrl": ".",
