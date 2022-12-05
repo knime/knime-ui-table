@@ -4,7 +4,6 @@ import TableUI from './TableUI.vue';
 
 import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
 import { defaultTimeFilter } from '../config/time.config';
-
 import getColumnDomains from '../util/getColumnDomains';
 import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '../util/getFilterConfigs';
 import { getNextPage } from '../util/getNextPage';
@@ -818,6 +817,7 @@ export default {
 
 <template>
   <TableUI
+    ref="tableUI"
     :data="paginatedData"
     :current-selection="paginatedSelection"
     :total-selected="totalSelected"

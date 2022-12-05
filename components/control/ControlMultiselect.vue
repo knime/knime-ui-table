@@ -334,8 +334,8 @@ export default {
 
       & .drag-handle {
         cursor: move;
-        height: 0px;
-        width: 0px;
+        height: 0;
+        width: 0;
 
         & .drag {
           position: absolute;

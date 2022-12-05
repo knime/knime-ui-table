@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import Group from '@/components/layout/Group.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
@@ -8,7 +9,7 @@ describe('Group.vue', () => {
 
     it('renders a table group', () => {
         wrapper = shallowMount(Group, {
-            propsData: {
+            props: {
                 title: 'Group 1',
                 show: true,
                 groupSubMenuItems: [{
@@ -17,16 +18,16 @@ describe('Group.vue', () => {
             }
         });
 
-        expect(wrapper.find(Group).exists()).toBe(true);
+        expect(wrapper.findComponent(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
-        expect(wrapper.find(SubMenu).exists()).toBe(true);
-        expect(wrapper.find(OptionsIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
+        expect(wrapper.findComponent(OptionsIcon).exists()).toBe(true);
         expect(wrapper.find('td').text()).toContain('Group 1');
     });
 
     it('shows slotted content', () => {
         wrapper = shallowMount(Group, {
-            propsData: {
+            props: {
                 title: 'Group 1',
                 show: true,
                 groupSubMenuItems: [{
@@ -38,17 +39,17 @@ describe('Group.vue', () => {
             }
         });
 
-        expect(wrapper.find(Group).exists()).toBe(true);
+        expect(wrapper.findComponent(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
-        expect(wrapper.find(SubMenu).exists()).toBe(true);
-        expect(wrapper.find(OptionsIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
+        expect(wrapper.findComponent(OptionsIcon).exists()).toBe(true);
         expect(wrapper.find('td').text()).toContain('Group 1');
         expect(wrapper.find('.data').text()).toContain('Some Data');
     });
 
     it('hides group but shows slotted content', () => {
         wrapper = shallowMount(Group, {
-            propsData: {
+            props: {
                 title: 'Group 1',
                 show: false,
                 groupSubMenuItems: [{
@@ -60,16 +61,16 @@ describe('Group.vue', () => {
             }
         });
 
-        expect(wrapper.find(Group).exists()).toBe(true);
+        expect(wrapper.findComponent(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(false);
-        expect(wrapper.find(SubMenu).exists()).toBe(false);
-        expect(wrapper.find(OptionsIcon).exists()).toBe(false);
+        expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
+        expect(wrapper.findComponent(OptionsIcon).exists()).toBe(false);
         expect(wrapper.find('.data').text()).toContain('Some Data');
     });
 
     it('hides group submenu if no items', () => {
         wrapper = shallowMount(Group, {
-            propsData: {
+            props: {
                 title: 'Group 1',
                 show: true,
                 groupSubMenuItems: []
@@ -79,10 +80,10 @@ describe('Group.vue', () => {
             }
         });
 
-        expect(wrapper.find(Group).exists()).toBe(true);
+        expect(wrapper.findComponent(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
-        expect(wrapper.find(SubMenu).exists()).toBe(false);
-        expect(wrapper.find(OptionsIcon).exists()).toBe(false);
+        expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
+        expect(wrapper.findComponent(OptionsIcon).exists()).toBe(false);
         expect(wrapper.find('td').text()).toContain('Group 1');
         expect(wrapper.find('.data').text()).toContain('Some Data');
     });
@@ -92,7 +93,7 @@ describe('Group.vue', () => {
             text: 'test'
         }];
         wrapper = shallowMount(Group, {
-            propsData: {
+            props: {
                 title: 'Group 1',
                 show: true,
                 groupSubMenuItems
@@ -101,11 +102,11 @@ describe('Group.vue', () => {
                 default: '<tr class="data">Some Data</tr>'
             }
         });
-        expect(wrapper.find(Group).exists()).toBe(true);
+        expect(wrapper.findComponent(Group).exists()).toBe(true);
         expect(wrapper.find('.table-group').exists()).toBe(true);
-        expect(wrapper.find(SubMenu).exists()).toBe(true);
+        expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
         expect(wrapper.emitted().groupSubMenuClick).toBeFalsy();
-        wrapper.find(SubMenu).vm.$emit(
+        wrapper.findComponent(SubMenu).vm.$emit(
             'item-click',
             new MouseEvent('click'),
             groupSubMenuItems[0]

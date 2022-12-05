@@ -1,4 +1,6 @@
 import { mount, shallowMount } from '@vue/test-utils';
+import { vi } from 'vitest';
+
 
 let wrapInAsyncData = method => async (component, context, options) => {
     if (!component.asyncData && !component.fetch) {
@@ -8,14 +10,14 @@ let wrapInAsyncData = method => async (component, context, options) => {
     // setup spies on redirect and error in order to interrupt mounting
     let redirectSpy, errorSpy, originalRedirect, originalError;
     if (context.redirect) {
-        // jest.spyOn() does not seem to work on spies
+        // vi.spyOn() does not seem to work on spies
         originalRedirect = context.redirect;
-        redirectSpy = jest.fn(originalRedirect);
+        redirectSpy = vi.fn(originalRedirect);
         context.redirect = redirectSpy;
     }
     if (context.error) {
         originalError = context.error;
-        errorSpy = jest.fn(originalError);
+        errorSpy = vi.fn(originalError);
         context.error = errorSpy;
     }
 

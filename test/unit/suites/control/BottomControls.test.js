@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import BottomControls from '@/components/control/BottomControls.vue';
 import BaseControls from '@/components/control/BaseControls.vue';
@@ -6,7 +7,7 @@ import { tablePageSizes } from '@/config/table.config';
 
 describe('BottomControls.vue', () => {
     let wrapper;
-    let propsData = {
+    let props = {
         pageConfig: {
             tableSize: 100,
             currentSize: 100,
@@ -17,27 +18,27 @@ describe('BottomControls.vue', () => {
     };
 
     it('renders table bottom controls', () => {
-        wrapper = shallowMount(BottomControls, { propsData });
+        wrapper = shallowMount(BottomControls, { props });
 
-        expect(wrapper.find(BottomControls).exists()).toBe(true);
-        expect(wrapper.find(BaseControls).exists()).toBe(true);
-        expect(wrapper.find(ControlDropdown).exists()).toBe(true);
+        expect(wrapper.findComponent(BottomControls).exists()).toBe(true);
+        expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
+        expect(wrapper.findComponent(ControlDropdown).exists()).toBe(true);
     });
 
     it('creates page size text for display in the page size dropdown', () => {
-        wrapper = shallowMount(BottomControls, { propsData });
+        wrapper = shallowMount(BottomControls, { props });
         expect(wrapper.vm.createText(50)).toBe('50 per page');
         expect(wrapper.vm.createText(5)).toBe('5 per page');
     });
 
     it('parses page size text for consumption by the parent table', () => {
-        wrapper = shallowMount(BottomControls, { propsData });
+        wrapper = shallowMount(BottomControls, { props });
         expect(wrapper.vm.parseSize('50 per page')).toBe(50);
         expect(wrapper.vm.parseSize('5 per page')).toBe(5);
     });
 
     it('creates dropdown items when provided with a list of page sizes', () => {
-        wrapper = shallowMount(BottomControls, { propsData });
+        wrapper = shallowMount(BottomControls, { props });
         let items = wrapper.vm.getSelectItems(tablePageSizes);
         items.forEach((item, itemInd) => {
             expect(item).toStrictEqual({
@@ -48,28 +49,29 @@ describe('BottomControls.vue', () => {
     });
 
     it('emits pageSizeUpdate events', () => {
-        wrapper = shallowMount(BottomControls, { propsData });
+        wrapper = shallowMount(BottomControls, { props });
         expect(wrapper.emitted().prevPage).toBeFalsy();
-        wrapper.find(ControlDropdown).vm.$emit('input', '50 per page');
+        wrapper.findComponent(ControlDropdown).vm.$emit('update:modelValue', '50 per page');
         expect(wrapper.emitted().pageSizeUpdate[0][0]).toBe(50);
     });
 
     it('emits next and previous page events', () => {
-        let nextPageMock = jest.fn();
-        let prevPageMock = jest.fn();
+        let nextPageMock = vi.fn();
+        let prevPageMock = vi.fn();
         wrapper = shallowMount(BottomControls, {
-            propsData,
-            listeners: {
-                nextPage: nextPageMock,
-                prevPage: prevPageMock
+            props: {
+                ...props,
+                onNextPage: nextPageMock,
+                onPrevPage: prevPageMock
+            
             }
         });
         expect(nextPageMock).not.toHaveBeenCalled();
         expect(prevPageMock).not.toHaveBeenCalled();
-        wrapper.find(BaseControls).vm.$emit('nextPage');
+        wrapper.findComponent(BaseControls).vm.$emit('nextPage');
         expect(nextPageMock).toHaveBeenCalled();
         expect(prevPageMock).not.toHaveBeenCalled();
-        wrapper.find(BaseControls).vm.$emit('prevPage');
+        wrapper.findComponent(BaseControls).vm.$emit('prevPage');
         expect(prevPageMock).toHaveBeenCalled();
     });
 });

@@ -1,20 +1,16 @@
-import { mount, createLocalVue } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
 import FilterDropdown from '@/components/filter/FilterDropdown.vue';
 
-jest.mock('vue-clickaway2', () => ({
+vi.mock('vue-clickaway2', () => ({
     mixin: {}
 }), { virtual: true });
 
 describe('FilterDropdown.vue', () => {
-    let propsData, localVue;
-    
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.directive('onClickaway', () => {});
-    });
+    let props;
 
     beforeEach(() => {
-        propsData = {
+        props = {
             possibleValues: [{
                 id: 'test1',
                 text: 'Text 1'
@@ -37,95 +33,95 @@ describe('FilterDropdown.vue', () => {
 
     it('renders', () => {
         const wrapper = mount(FilterDropdown, {
-            propsData,
-            localVue
+            props
         });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
-        expect(wrapper.findAll('[role=option]').length).toBe(propsData.possibleValues.length);
+        expect(wrapper.findAll('[role=option]').length).toBe(props.possibleValues.length);
     });
 
     it('sets the correct aria-* attributes', () => {
         const wrapper = mount(FilterDropdown, {
-            propsData,
-            localVue
+            props
         });
 
         let button = wrapper.find('[role=button]');
-        expect(button.attributes('aria-label')).toBe(propsData.ariaLabel);
+        expect(button.attributes('aria-label')).toBe(props.ariaLabel);
     });
 
-    it('renders value text or placeholder if no or empty value set', () => {
+    it('renders value text or placeholder if no or empty value set', async () => {
         let placeholder = 'my-placeholder';
         const wrapper = mount(FilterDropdown, {
-            propsData: {
-                ...propsData,
+            props: {
+                ...props,
                 placeholder,
                 value: 'test3'
-            },
-            localVue
+            }
         });
 
         let button = wrapper.find('[role=button]');
         expect(button.text()).toBe('Text 3');
 
-        wrapper.setProps({ value: null });
+        await wrapper.setProps({ value: null });
         expect(button.text()).toBe(placeholder);
-        wrapper.setProps({ value: '' });
+        await wrapper.setProps({ value: '' });
         expect(button.text()).toBe(placeholder);
     });
 
-    it('opens the listbox on click of button and emits event for clicked value', () => {
+    it('opens the listbox on click of button and emits event for clicked value', async () => {
         const wrapper = mount(FilterDropdown, {
-            propsData,
-            localVue
+            props
         });
         let newValueIndex = 1;
         let listbox = wrapper.find('[role=listbox]');
 
         // open list
         wrapper.find('[role=button]').trigger('click');
+        await wrapper.vm.$nextTick();
         expect(listbox.isVisible()).toBe(true);
 
         let input = wrapper.findAll('li[role=option]').at(newValueIndex);
         input.trigger('click');
 
-        expect(wrapper.emitted().input[0][0]).toEqual(propsData.possibleValues[newValueIndex].id);
+        expect(wrapper.emitted().input[0][0]).toEqual(props.possibleValues[newValueIndex].id);
 
         // listbox closed
+        await wrapper.vm.$nextTick();
         expect(listbox.isVisible()).toBe(false);
     });
 
     describe('keyboard navigation', () => {
-        it('opens and closes the listbox on enter/space/esc', () => {
+        it('opens and closes the listbox on enter/space/esc', async () => {
             const wrapper = mount(FilterDropdown, {
-                propsData,
-                localVue
+                props
             });
 
             let listbox = wrapper.find('[role=listbox]');
 
             // open list
             wrapper.find('[role=button]').trigger('keydown.enter');
+            await wrapper.vm.$nextTick();
             expect(listbox.isVisible()).toBe(true);
             // close listbox
             listbox.trigger('keydown.esc');
+            await wrapper.vm.$nextTick();
             expect(listbox.isVisible()).toBe(false);
             // open list
             wrapper.find('[role=button]').trigger('keydown.space');
+            await wrapper.vm.$nextTick();
             expect(listbox.isVisible()).toBe(true);
             // close listbox
             listbox.trigger('keydown.esc');
+            await wrapper.vm.$nextTick();
             expect(listbox.isVisible()).toBe(false);
         });
 
         it('sets the values on keydown navigation', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test2' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');
@@ -135,11 +131,10 @@ describe('FilterDropdown.vue', () => {
 
         it('sets the values on keyup navigation', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test2' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');
@@ -149,11 +144,10 @@ describe('FilterDropdown.vue', () => {
 
         it('sets no values on keyup navigation at the start', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test1' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');
@@ -163,11 +157,10 @@ describe('FilterDropdown.vue', () => {
 
         it('sets no values on keydown navigation at the end', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test5' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');
@@ -177,11 +170,10 @@ describe('FilterDropdown.vue', () => {
 
         it('sets the values to the first value on home key', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test3' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');
@@ -191,11 +183,10 @@ describe('FilterDropdown.vue', () => {
 
         it('sets the values to the last value on end key', () => {
             const wrapper = mount(FilterDropdown, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     value: 'test3' // defines start point
-                },
-                localVue
+                }
             });
 
             let ul = wrapper.find('ul');

@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { getNextPage } from '@/util/getNextPage';
 
 describe('getNextPage', () => {

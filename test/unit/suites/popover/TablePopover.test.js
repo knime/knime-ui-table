@@ -1,17 +1,16 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { describe, it, expect, vi } from 'vitest';
+import { shallowMount } from '@vue/test-utils';
 import { columnTypes } from '@/config/table.config';
 import TablePopover from '@/components/popover/TablePopover.vue';
 import StringRenderer from '@/components/popover/StringRenderer.vue';
 import ObjectRenderer from '@/components/popover/ObjectRenderer.vue';
 import ArrayRenderer from '@/components/popover/ArrayRenderer.vue';
 import MessageRenderer from '@/components/popover/MessageRenderer.vue';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
-jest.mock('vue-clickaway2', () => ({
+vi.mock('vue-clickaway2', () => ({
     mixin: {}
 }), { virtual: true });
-
-const localVue = createLocalVue();
-localVue.directive('onClickaway', () => { });
 
 describe('TablePopover.vue', () => {
     const target = {
@@ -30,63 +29,60 @@ describe('TablePopover.vue', () => {
             slots: {
                 content: 'contentText'
             },
-            propsData: { target, data: [] },
-            localVue
+            props: { target, data: [] }
+            
         });
         expect(wrapper.find('.content').isVisible()).toBeFalsy();
         expect(wrapper.find('.content .closer').exists()).toBeTruthy();
         expect(wrapper.find('.content').text()).toContain('contentText');
     });
 
-    it('renders the different data renders based on type', () => {
+    it('renders the different data renders based on type', async () => {
         const wrapper = shallowMount(TablePopover, {
-            propsData: { target, data: [] },
-            localVue
+            props: { target, data: [] }
         });
-        expect(wrapper.find(ObjectRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.Nominal });
-        expect(wrapper.find(StringRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.String });
-        expect(wrapper.find(StringRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.DateTime });
-        expect(wrapper.find(ObjectRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.Number });
-        expect(wrapper.find(ObjectRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.Boolean });
-        expect(wrapper.find(ObjectRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.Object });
-        expect(wrapper.find(ObjectRenderer).exists()).toBeTruthy();
-        wrapper.setProps({ renderer: columnTypes.Array, data: ['1', '2', '3'] });
-        expect(wrapper.find(ArrayRenderer).exists()).toBeTruthy();
+        expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.Nominal });
+        expect(wrapper.findComponent(StringRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.String });
+        expect(wrapper.findComponent(StringRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.DateTime });
+        expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.Number });
+        expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.Boolean });
+        expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.Object });
+        expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
+        await wrapper.setProps({ renderer: columnTypes.Array, data: ['1', '2', '3'] });
+        expect(wrapper.findComponent(ArrayRenderer).exists()).toBeTruthy();
     });
 
     it('renders dynamic components with data processing functions', () => {
         const wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target,
                 data: [1, 2, 3],
                 renderer: {
                     type: 'MessageRenderer',
                     process: data => data.map(item => item + 1)
                 }
-            },
-            localVue
+            }
         });
-        expect(wrapper.find(MessageRenderer).exists()).toBeTruthy();
+        expect(wrapper.findComponent(MessageRenderer).exists()).toBeTruthy();
         expect(wrapper.vm.processedData).toStrictEqual([2, 3, 4]);
     });
 
     it('computes the vertical direction to render based on the client height', () => {
         let wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target,
                 data: 1
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.displayTop).toBe(true);
         wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target: {
                     ...target,
                     offsetTop: 1,
@@ -95,15 +91,14 @@ describe('TablePopover.vue', () => {
                     }
                 },
                 data: 1
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.displayTop).toBe(false);
     });
 
     it('computes display coordinates based on the provided event target', () => {
         let wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target: {
                     clientHeight: 4,
                     offsetTop: 1,
@@ -116,8 +111,7 @@ describe('TablePopover.vue', () => {
                 },
                 data: 1,
                 rowHeight: 4
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.displayTop).toBe(false);
         expect(wrapper.vm.top).toBe(5);
@@ -136,7 +130,7 @@ describe('TablePopover.vue', () => {
         });
 
         wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target: {
                     clientHeight: 8,
                     offsetTop: 6,
@@ -149,8 +143,7 @@ describe('TablePopover.vue', () => {
                 },
                 data: 1,
                 rowHeight: 4
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.displayTop).toBe(true);
         expect(wrapper.vm.top).toBe(10);
@@ -169,31 +162,31 @@ describe('TablePopover.vue', () => {
         });
     });
 
-    it('emits close events when the close button is clicked', () => {
+    it('emits close events when the close button is clicked', async () => {
         const wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target,
                 data: [1, 2, 3],
                 renderer: {
                     type: 'MessageRenderer',
                     process: data => data.map(item => item + 1)
                 }
-            },
-            localVue
+            }
         });
         expect(wrapper.emitted().close).toBeFalsy();
-        expect(wrapper.find('.closer').exists()).toBeTruthy();
-        wrapper.find('.closer').vm.$emit('click');
+        const closerFunctionButton = wrapper.findComponent(FunctionButton);
+        expect(closerFunctionButton.exists()).toBeTruthy();
+        closerFunctionButton.vm.$emit('click');
+        await wrapper.vm.$nextTick();
         expect(wrapper.emitted().close).toBeTruthy();
     });
 
     it('does not open if there is no data to display', () => {
         const wrapper = shallowMount(TablePopover, {
-            propsData: {
+            props: {
                 target,
                 data: null
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.show).toBe(false);
         expect(wrapper.find('.content').isVisible()).toBeFalsy();

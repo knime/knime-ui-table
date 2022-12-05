@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 import CollapserToggle from '@/components/ui/CollapserToggle.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
@@ -7,8 +8,8 @@ describe('CollapserToggle.vue', () => {
 
     it('renders default', () => {
         wrapper = shallowMount(CollapserToggle);
-        expect(wrapper.find(CollapserToggle).exists()).toBe(true);
-        expect(wrapper.find(DropdownIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(CollapserToggle).exists()).toBe(true);
+        expect(wrapper.findComponent(DropdownIcon).exists()).toBe(true);
     });
 
     it('emit a collapserExpand event when clicked', () => {
@@ -17,10 +18,10 @@ describe('CollapserToggle.vue', () => {
         expect(wrapper.emitted().collapserExpand).toBeTruthy();
     });
 
-    it('changes icon classes when expanded', () => {
+    it('changes icon classes when expanded', async () => {
         wrapper = shallowMount(CollapserToggle);
-        expect(wrapper.find(DropdownIcon).classes()).not.toContain('flip');
-        wrapper.setProps({ expanded: true });
-        expect(wrapper.find(DropdownIcon).classes()).toContain('flip');
+        expect(wrapper.findComponent(DropdownIcon).classes()).not.toContain('flip');
+        await wrapper.setProps({ expanded: true });
+        expect(wrapper.findComponent(DropdownIcon).classes()).toContain('flip');
     });
 });

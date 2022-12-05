@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import TopControls from '@/components/control/TopControls.vue';
 import BaseControls from '@/components/control/BaseControls.vue';
@@ -6,8 +7,9 @@ import ControlMultiselect from '@/components/control/ControlMultiselect.vue';
 import FilterInputField from '@/components/filter/FilterInputField.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
+
 describe('TopControls.vue', () => {
-    let propsData = {
+    let props = {
         tableConfig: {
             pageConfig: {
                 totalItems: 100,
@@ -33,49 +35,51 @@ describe('TopControls.vue', () => {
     };
 
     it('renders table top controls', () => {
-        let wrapper = shallowMount(TopControls, { propsData });
+        let wrapper = shallowMount(TopControls, {
+            props
+        });
 
-        expect(wrapper.find(TopControls).exists()).toBe(true);
-        expect(wrapper.find(BaseControls).exists()).toBe(true);
-        expect(wrapper.findAll(ControlDropdown).length).toBe(2);
-        expect(wrapper.find(ControlMultiselect).exists()).toBe(true);
-        expect(wrapper.find(FunctionButton).exists()).toBe(true);
+        expect(wrapper.findComponent(TopControls).exists()).toBe(true);
+        expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
+        expect(wrapper.findAllComponents(ControlDropdown).length).toBe(2);
+        expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(true);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
     });
 
-    it('controls component visibility via prop', () => {
-        let wrapper = shallowMount(TopControls, { propsData });
+    it('controls component visibility via prop', async () => {
+        let wrapper = shallowMount(TopControls, { props });
 
-        expect(wrapper.find(TopControls).exists()).toBe(true);
-        expect(wrapper.find(BaseControls).exists()).toBe(true);
-        expect(wrapper.findAll(ControlDropdown).length).toBe(2);
-        expect(wrapper.find(ControlMultiselect).exists()).toBe(true);
-        expect(wrapper.find(FunctionButton).exists()).toBe(true);
-        wrapper.setProps({ tableConfig: {
-            ...propsData.tableConfig,
+        expect(wrapper.findComponent(TopControls).exists()).toBe(true);
+        expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
+        expect(wrapper.findAllComponents(ControlDropdown).length).toBe(2);
+        expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(true);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+        await wrapper.setProps({ tableConfig: {
+            ...props.tableConfig,
             timeFilterConfig: null
         } });
-        expect(wrapper.findAll(ControlDropdown).length).toBe(1);
-        wrapper.setProps({ tableConfig: {
-            ...propsData.tableConfig,
+        expect(wrapper.findAllComponents(ControlDropdown).length).toBe(1);
+        await wrapper.setProps({ tableConfig: {
+            ...props.tableConfig,
             columnSelectionConfig: null
         } });
-        expect(wrapper.find(ControlMultiselect).exists()).toBe(false);
-        wrapper.setProps({ tableConfig: {
-            ...propsData.tableConfig,
+        expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(false);
+        await wrapper.setProps({ tableConfig: {
+            ...props.tableConfig,
             groupByConfig: null,
             timeFilterConfig: null
         } });
-        expect(wrapper.findAll(ControlDropdown).length).toBe(0);
-        wrapper.setProps({ tableConfig: {
-            ...propsData.tableConfig,
+        expect(wrapper.findAllComponents(ControlDropdown).length).toBe(0);
+        await wrapper.setProps({ tableConfig: {
+            ...props.tableConfig,
             searchConfig: null
         } });
-        expect(wrapper.find(FunctionButton).exists()).toBe(false);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
     });
 
     it('creates dropdown items when provided with a list of possible values', () => {
         let wrapper = shallowMount(TopControls);
-        let columnHeaders = propsData.columnHeaders;
+        let columnHeaders = props.columnHeaders;
         let items = wrapper.vm.getSelectItems(columnHeaders);
         items.forEach((item, itemInd) => {
             expect(item).toStrictEqual({
@@ -87,105 +91,106 @@ describe('TopControls.vue', () => {
 
     describe('time controls', () => {
         it('emits timeFilterUpdate when timeFilter value is updated', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
-            let timeFilterControls = wrapper.findAll(ControlDropdown).at(0);
+            let wrapper = shallowMount(TopControls, { props });
+            let timeFilterControls = wrapper.findAllComponents(ControlDropdown).at(0);
 
             expect(wrapper.emitted().timeFilterUpdate).toBeFalsy();
-            timeFilterControls.vm.$emit('input', 'Last day');
+            timeFilterControls.vm.$emit('update:model-value', 'Last day');
             expect(wrapper.emitted().timeFilterUpdate[0][0]).toBe('Last day');
         });
     });
 
     describe('column controls', () => {
         it('emits columnUpdate when selected columns change', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
+            let wrapper = shallowMount(TopControls, { props });
 
             expect(wrapper.emitted().columnUpdate).toBeFalsy();
-            wrapper.find(ControlMultiselect).vm.$emit('input', ['User', 'Workflow']);
+            wrapper.findComponent(ControlMultiselect).vm.$emit('update:model-value', ['User', 'Workflow']);
             expect(wrapper.emitted().columnUpdate[0][0]).toStrictEqual(['User', 'Workflow']);
         });
 
         it('emits columnReorder when column order changes', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
+            let wrapper = shallowMount(TopControls, { props });
 
             expect(wrapper.emitted().columnReorder).toBeFalsy();
-            wrapper.find(ControlMultiselect).vm.$emit('columnReorder', 'Workflow', 0);
+            wrapper.findComponent(ControlMultiselect).vm.$emit('columnReorder', 'Workflow', 0);
             expect(wrapper.emitted().columnReorder[0]).toStrictEqual(['Workflow', 0]);
         });
     });
 
     describe('group controls', () => {
         it('emits groupUpdate when group value is updated', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
-            let groupFilterControls = wrapper.findAll(ControlDropdown).at(1);
+            let wrapper = shallowMount(TopControls, { props });
+            let groupFilterControls = wrapper.findAllComponents(ControlDropdown).at(1);
 
             expect(wrapper.emitted().groupUpdate).toBeFalsy();
-            groupFilterControls.vm.$emit('input', 'Location');
+            groupFilterControls.vm.$emit('update:model-value', 'Location');
             expect(wrapper.emitted().groupUpdate[0][0]).toBe('Location');
         });
     });
 
     describe('search controls', () => {
-        it('toggles the search field visibility on button click', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
+        it('toggles the search field visibility on button click', async () => {
+            let wrapper = shallowMount(TopControls, { props });
 
-            expect(wrapper.find(FilterInputField).exists()).toBe(false);
+            expect(wrapper.findComponent(FilterInputField).exists()).toBe(false);
             expect(wrapper.vm.searchActive).toBe(false);
-            expect(wrapper.find(FunctionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
             
-            wrapper.find(FunctionButton).vm.$emit('click');
+            await wrapper.findComponent(FunctionButton).vm.$emit('click');
 
-            expect(wrapper.find(FilterInputField).exists()).toBe(true);
+            expect(wrapper.findComponent(FilterInputField).exists()).toBe(true);
             expect(wrapper.vm.searchActive).toBe(true);
-            expect(wrapper.find(FunctionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
         });
 
         it('toggles search visibility and clears query on search field blur event', async () => {
-            let wrapper = shallowMount(TopControls, { propsData });
-            wrapper.setData({ searchActive: true });
+            let wrapper = shallowMount(TopControls, { props });
+            await wrapper.setData({ searchActive: true });
 
-            expect(wrapper.find(FilterInputField).exists()).toBe(true);
+            expect(wrapper.findComponent(FilterInputField).exists()).toBe(true);
             expect(wrapper.vm.searchActive).toBe(true);
-            expect(wrapper.find(FunctionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
             expect(wrapper.emitted().searchUpdate).toBeFalsy();
             
-            wrapper.find(FilterInputField).vm.$emit('blur');
+            wrapper.findComponent(FilterInputField).vm.$emit('blur');
 
             await wrapper.vm.$nextTick();
 
-            expect(wrapper.find(FilterInputField).exists()).toBe(false);
+            expect(wrapper.findComponent(FilterInputField).exists()).toBe(false);
             expect(wrapper.vm.searchActive).toBe(false);
-            expect(wrapper.find(FunctionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
             expect(wrapper.emitted().searchUpdate[0][0]).toBe('');
         });
 
-        it('emits searchUpdate event on search field input', () => {
-            let wrapper = shallowMount(TopControls, { propsData });
-            wrapper.setData({ searchActive: true });
+        it('emits searchUpdate event on search field input', async () => {
+            let wrapper = shallowMount(TopControls, { props });
+            await wrapper.setData({ searchActive: true });
 
+            
             expect(wrapper.emitted().searchUpdate).toBeFalsy();
-            wrapper.find(FilterInputField).vm.$emit('input', 'Find me');
+            wrapper.findComponent(FilterInputField).vm.$emit('input', 'Find me');
             expect(wrapper.emitted().searchUpdate[0][0]).toBe('Find me');
         });
     });
 
     describe('page controls', () => {
         it('emits next and previous page events', () => {
-            let nextPageMock = jest.fn();
-            let prevPageMock = jest.fn();
+            let nextPageMock = vi.fn();
+            let prevPageMock = vi.fn();
             let wrapper = shallowMount(TopControls, {
-                propsData,
-                listeners: {
-                    nextPage: nextPageMock,
-                    prevPage: prevPageMock
+                props: {
+                    ...props,
+                    onNextPage: nextPageMock,
+                    onPrevPage: prevPageMock
                 }
             });
             expect(nextPageMock).not.toHaveBeenCalled();
             expect(prevPageMock).not.toHaveBeenCalled();
-            wrapper.find(BaseControls).vm.$emit('nextPage');
+            wrapper.findComponent(BaseControls).vm.$emit('nextPage');
             expect(nextPageMock).toHaveBeenCalled();
             expect(prevPageMock).not.toHaveBeenCalled();
-            wrapper.find(BaseControls).vm.$emit('prevPage');
+            wrapper.findComponent(BaseControls).vm.$emit('prevPage');
             expect(prevPageMock).toHaveBeenCalled();
         });
     });

@@ -133,6 +133,9 @@ export default {
             this.$nextTick(() => {
                 this.renderComponent = true;
             });
+        },
+        forceScrollerUpdate() {
+            this.$refs.knimeTable.$refs.tableUI.refreshScroller();
         }
     }
 };
@@ -167,7 +170,12 @@ export default {
         set default sorting
       </Checkbox>
       <Checkbox v-model="showPopovers">popovers</Checkbox>
-      <Checkbox v-model="compactMode">compact mode</Checkbox>
+      <Checkbox
+        v-model="compactMode"
+        @update:model-value="forceScrollerUpdate"
+      >
+        compact mode
+      </Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
       <Checkbox v-model="fitToContainer">fit to container</Checkbox>
       <Checkbox v-model="fixHeader">fix header</Checkbox>
@@ -216,9 +224,6 @@ export default {
 
   .fix-header h2 {
     margin-bottom: 0;
-  }
-
-  .fix-header .wrapper {
   }
 
   .fix-header button {

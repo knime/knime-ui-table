@@ -1,13 +1,14 @@
 import { shallowMount } from '@vue/test-utils';
 import BaseControls from '@/components/control/BaseControls.vue';
 import PageControls from '@/components/control/PageControls.vue';
+import { describe, it, expect } from 'vitest';
 
 describe('BaseControls.vue', () => {
     let wrapper;
 
     it('renders page controls', () => {
         wrapper = shallowMount(BaseControls, {
-            propsData: {
+            props: {
                 totalItems: 100,
                 currentItems: 100,
                 pageSize: 25,
@@ -18,14 +19,14 @@ describe('BaseControls.vue', () => {
             }
         });
 
-        expect(wrapper.find(BaseControls).exists()).toBe(true);
-        expect(wrapper.find(PageControls).exists()).toBe(true);
+        expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
+        expect(wrapper.findComponent(PageControls).exists()).toBe(true);
         expect(wrapper.find('h3').exists()).toBe(true);
     });
 
     it('emits next and previous page events', () => {
         wrapper = shallowMount(BaseControls, {
-            propsData: {
+            props: {
                 totalItems: 100,
                 currentItems: 100,
                 pageSize: 25,
@@ -37,10 +38,10 @@ describe('BaseControls.vue', () => {
         });
         expect(wrapper.emitted().nextPage).toBeFalsy();
         expect(wrapper.emitted().prevPage).toBeFalsy();
-        wrapper.find(PageControls).vm.$emit('nextPage');
+        wrapper.findComponent(PageControls).vm.$emit('nextPage');
         expect(wrapper.emitted().nextPage).toBeTruthy();
         expect(wrapper.emitted().prevPage).toBeFalsy();
-        wrapper.find(PageControls).vm.$emit('prevPage');
+        wrapper.findComponent(PageControls).vm.$emit('prevPage');
         expect(wrapper.emitted().prevPage).toBeTruthy();
     });
 });

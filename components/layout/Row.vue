@@ -84,7 +84,7 @@ export default {
             default: 0
         }
     },
-    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick'],
+    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowExpand'],
     data() {
         return {
             showContent: false

@@ -109,7 +109,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>run coverage -- --ci</arguments>
+                            <arguments>run coverage</arguments>
                         </configuration>
                     </execution>
 

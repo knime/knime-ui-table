@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 import Table from '@/components/Table.vue';
 import TableUI from '@/components/TableUI.vue';
@@ -5,12 +6,14 @@ import TableUI from '@/components/TableUI.vue';
 import { columnTypes } from '@/config/table.config';
 import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
+vi.mock('raf-throttle', () => ({
+    default(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
 const headerSubMenuItems = [
     [{ text: 'Column 1: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }],
@@ -18,7 +21,7 @@ const headerSubMenuItems = [
 ];
 
 describe('Table.vue', () => {
-    const defaultPropsData = {
+    const defaultprops = {
         allColumnHeaders: ['A', 'B'],
         allColumnKeys: ['a', 'b'],
         allColumnTypes: { a: columnTypes.Number, b: columnTypes.Number },
@@ -38,7 +41,7 @@ describe('Table.vue', () => {
     };
 
     beforeEach(() => {
-        window.IntersectionObserver = jest.fn(() => ({
+        window.IntersectionObserver = vi.fn(() => ({
             observe: () => null,
             unobserve: () => null,
             disconnect: () => null
@@ -46,19 +49,19 @@ describe('Table.vue', () => {
     });
 
 
-    const doMount = ({ customPropsData = {}, dataCount = 1, shallow = true } = {}) => {
-        const propsData = {
+    const doMount = ({ customprops = {}, dataCount = 1, shallow = true } = {}) => {
+        const props = {
             allData: [],
-            ...defaultPropsData,
-            ...customPropsData
+            ...defaultprops,
+            ...customprops
         };
-        if (propsData.allData.length === 0) {
+        if (props.allData.length === 0) {
             for (let i = 0; i < dataCount; i++) {
-                propsData.allData.push({ a: i, b: i + 1 });
+                props.allData.push({ a: i, b: i + 1 });
             }
         }
 
-        const wrapper = shallow ? shallowMount(Table, { propsData }) : mount(Table, { propsData });
+        const wrapper = shallow ? shallowMount(Table, { props }) : mount(Table, { props });
 
         return { wrapper };
     };
@@ -67,10 +70,10 @@ describe('Table.vue', () => {
         beforeEach(() => {
             Object.defineProperty(global, 'ResizeObserver', {
                 writable: true,
-                value: jest.fn().mockImplementation((callback) => ({
-                    observe: jest.fn(),
-                    unobserve: jest.fn(),
-                    disconnect: jest.fn()
+                value: vi.fn().mockImplementation((callback) => ({
+                    observe: vi.fn(),
+                    unobserve: vi.fn(),
+                    disconnect: vi.fn()
                 }))
             });
         });
@@ -139,7 +142,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customPropsData: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                    customprops: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
                 }
             );
 
@@ -154,7 +157,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customPropsData: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                    customprops: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
                 }
             );
 
@@ -167,7 +170,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customPropsData: { showColumnFilters: true, initialFilterValues: { a: '4', b: '10' } }
+                    customprops: { showColumnFilters: true, initialFilterValues: { a: '4', b: '10' } }
                 }
             );
 
@@ -182,7 +185,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customPropsData: { showColumnFilters: false, initialFilterValues: { a: '4', b: '10' } }
+                    customprops: { showColumnFilters: false, initialFilterValues: { a: '4', b: '10' } }
                 }
             );
 
@@ -195,14 +198,14 @@ describe('Table.vue', () => {
     });
 
     it('generates the correct data config with isSortable key if there are column specific sort configs', () => {
-        const { wrapper } = doMount({ customPropsData: { allColumnSpecificSortConfigs: [true, false] } });
+        const { wrapper } = doMount({ customprops: { allColumnSpecificSortConfigs: [true, false] } });
 
         expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
     });
 
     it('generates the correct data config with headerSubMenuItems key if there are sub menu items for the header',
         () => {
-            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems: [headerSubMenuItems, null] } });
+            const { wrapper } = doMount({ customprops: { headerSubMenuItems: [headerSubMenuItems, null] } });
             expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [
                 { headerSubMenuItems }, { headerSubMenuItems: null }
             ] });
@@ -241,14 +244,14 @@ describe('Table.vue', () => {
 
     describe('events', () => {
         it('adds / removes intersection observer / resize listener and updates client width accordingly', () => {
-            const observe = jest.fn();
-            const unobserve = jest.fn();
-            window.IntersectionObserver = jest.fn(() => ({
+            const observe = vi.fn();
+            const unobserve = vi.fn();
+            window.IntersectionObserver = vi.fn(() => ({
                 observe,
                 unobserve
             }));
-            jest.spyOn(window, 'addEventListener');
-            jest.spyOn(window, 'removeEventListener');
+            vi.spyOn(window, 'addEventListener');
+            vi.spyOn(window, 'removeEventListener');
 
             const { wrapper } = doMount();
 
@@ -300,7 +303,7 @@ describe('Table.vue', () => {
             window.dispatchEvent(new Event('resize'));
             expect(wrapper.vm.clientWidth).toBe(clientWidth);
     
-            wrapper.destroy();
+            wrapper.unmount();
             expect(window.removeEventListener).toHaveBeenCalledTimes(2);
             expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
         });
@@ -309,58 +312,58 @@ describe('Table.vue', () => {
             it('registers pageChange events', () => {
                 const { wrapper } = doMount({ dataCount: 100 });
                 expect(wrapper.vm.currentPage).toBe(1);
-                wrapper.find(TableUI).vm.$emit('pageChange', 1);
+                wrapper.findComponent(TableUI).vm.$emit('pageChange', 1);
                 expect(wrapper.vm.currentPage).toBe(2);
-                wrapper.find(TableUI).vm.$emit('pageChange', -1);
+                wrapper.findComponent(TableUI).vm.$emit('pageChange', -1);
                 expect(wrapper.vm.currentPage).toBe(1);
             });
 
             it('registers search events and updates query', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
-                wrapper.find(TableUI).vm.$emit('search', 'Find me');
+                wrapper.findComponent(TableUI).vm.$emit('search', 'Find me');
                 expect(wrapper.vm.searchQuery).toBe('Find me');
             });
 
             it('empties search query if search event value is empty', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
-                wrapper.find(TableUI).vm.$emit('search', '');
+                wrapper.findComponent(TableUI).vm.$emit('search', '');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('empties search query if search event value is missing', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
-                wrapper.find(TableUI).vm.$emit('search');
+                wrapper.findComponent(TableUI).vm.$emit('search');
                 expect(wrapper.vm.searchQuery).toBe(null);
             });
 
             it('registers groupUpdate events and updates the current group', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.currentGroup).toBe(null);
-                wrapper.find(TableUI).vm.$emit('groupUpdate', 'a');
+                wrapper.findComponent(TableUI).vm.$emit('groupUpdate', 'a');
                 expect(wrapper.vm.currentGroup).toBe('a');
             });
 
             it('registers columnReorder events and updates the column order', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([0, 1]);
-                wrapper.find(TableUI).vm.$emit('columnReorder', 1, 0);
+                wrapper.findComponent(TableUI).vm.$emit('columnReorder', 1, 0);
                 expect(wrapper.vm.currentAllColumnOrder).toStrictEqual([1, 0]);
             });
 
             it('registers columnUpdate events and updates the currentColumns', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
-                wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
+                wrapper.findComponent(TableUI).vm.$emit('columnUpdate', ['A']);
                 expect(wrapper.vm.currentColumns).toStrictEqual([0]);
             });
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
-                const { wrapper } = doMount({ customPropsData: { timeFilterKey: 'a' } });
+                const { wrapper } = doMount({ customprops: { timeFilterKey: 'a' } });
                 expect(wrapper.vm.currentTimeFilter).toBe('Last month');
-                wrapper.find(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
+                wrapper.findComponent(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
             });
 
@@ -368,7 +371,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
 
                 expect(wrapper.vm.showFilter).toBe(false);
-                wrapper.find(TableUI).vm.$emit('toggleFilter', true);
+                wrapper.findComponent(TableUI).vm.$emit('toggleFilter', true);
                 expect(wrapper.vm.showFilter).toBe(true);
             });
         });
@@ -378,7 +381,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
-                wrapper.find(TableUI).vm.$emit('columnSort', 0);
+                wrapper.findComponent(TableUI).vm.$emit('columnSort', 0);
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(1);
             });
@@ -387,7 +390,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.columnSort).toBe(0);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
-                wrapper.find(TableUI).vm.$emit('columnSort', 1);
+                wrapper.findComponent(TableUI).vm.$emit('columnSort', 1);
                 expect(wrapper.vm.columnSort).toBe(1);
                 expect(wrapper.vm.columnSortDirection).toBe(-1);
             });
@@ -396,7 +399,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
-                wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
+                wrapper.findComponent(TableUI).vm.$emit('columnFilter', 0, '10');
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '10', b: '' });
             });
 
@@ -404,7 +407,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
-                wrapper.find(TableUI).vm.$emit('clearFilter', 0, null);
+                wrapper.findComponent(TableUI).vm.$emit('clearFilter', 0, null);
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
             });
 
@@ -412,7 +415,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
-                wrapper.find(TableUI).vm.$emit('clearFilter', 0);
+                wrapper.findComponent(TableUI).vm.$emit('clearFilter', 0);
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
             });
 
@@ -420,9 +423,9 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
                 wrapper.vm.onToggleFilter();
-                wrapper.find(TableUI).vm.$emit('columnFilter', 0, '10');
+                wrapper.findComponent(TableUI).vm.$emit('columnFilter', 0, '10');
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '10', b: '' });
-                wrapper.find(TableUI).vm.$emit('clearFilter');
+                wrapper.findComponent(TableUI).vm.$emit('clearFilter');
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
             });
         });
@@ -432,7 +435,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
-                wrapper.find(TableUI).vm.$emit('selectAll', false);
+                wrapper.findComponent(TableUI).vm.$emit('selectAll', false);
                 expect(wrapper.vm.masterSelected).toStrictEqual([0]);
                 expect(wrapper.emitted().tableSelect).toBeTruthy();
                 expect(wrapper.emitted().tableSelect[0]).toStrictEqual([0]);
@@ -442,7 +445,7 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.masterSelected).toStrictEqual([1]);
                 expect(wrapper.emitted().tableSelect).toBeFalsy();
-                wrapper.find(TableUI).vm.$emit('rowSelect', false, 0, 0);
+                wrapper.findComponent(TableUI).vm.$emit('rowSelect', false, 0, 0);
                 expect(wrapper.vm.masterSelected).toStrictEqual([0]);
                 expect(wrapper.emitted().tableSelect).toBeTruthy();
                 expect(wrapper.emitted().tableSelect[0]).toStrictEqual([0]);
@@ -452,7 +455,7 @@ describe('Table.vue', () => {
                 let testEvent = { value: 'test' };
                 const { wrapper } = doMount();
                 expect(wrapper.emitted().tableInput).toBeFalsy();
-                wrapper.find(TableUI).vm.$emit('tableInput', testEvent);
+                wrapper.findComponent(TableUI).vm.$emit('tableInput', testEvent);
                 expect(wrapper.emitted().tableInput).toBeTruthy();
                 expect(wrapper.emitted().tableInput[0][0]).toStrictEqual(testEvent);
             });
@@ -478,16 +481,16 @@ describe('Table.vue', () => {
             const { wrapper } = doMount();
             expect(wrapper.vm.currentColumns).toStrictEqual([0, 1]);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([5, 10]);
-            wrapper.find(TableUI).vm.$emit('columnUpdate', ['A']);
+            wrapper.findComponent(TableUI).vm.$emit('columnUpdate', ['A']);
             expect(wrapper.vm.currentColumns).toStrictEqual([0]);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([5]);
-            wrapper.find(TableUI).vm.$emit('columnUpdate', ['B']);
+            wrapper.findComponent(TableUI).vm.$emit('columnUpdate', ['B']);
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([10]);
         });
 
         it('computes currentColumnSizes correctly', () => {
             let checkCurrentColumnSizes = async (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
-                const { wrapper } = doMount({ customPropsData: { showCollapser, showSelection } });
+                const { wrapper } = doMount({ customprops: { showCollapser, showSelection } });
                 await wrapper.setData({ clientWidth });
                 const nColumns = wrapper.vm.currentColumns.length;
                 let currentColumnSizes;
@@ -521,9 +524,9 @@ describe('Table.vue', () => {
         });
 
         it('emits header sub menu selection events', () => {
-            const { wrapper } = doMount({ customPropsData: { headerSubMenuItems } });
+            const { wrapper } = doMount({ customprops: { headerSubMenuItems } });
             expect(wrapper.emitted().headerSubMenuSelect).toBeFalsy();
-            wrapper.find(TableUI).vm.$emit('headerSubMenuItemSelection', headerSubMenuItems, 1);
+            wrapper.findComponent(TableUI).vm.$emit('headerSubMenuItemSelection', headerSubMenuItems, 1);
             expect(wrapper.emitted().headerSubMenuSelect).toStrictEqual([[
                 headerSubMenuItems, 1
             ]]);

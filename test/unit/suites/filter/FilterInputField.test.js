@@ -1,16 +1,17 @@
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import FilterInputField from '@/components/filter/FilterInputField.vue';
 
 describe('FilterInputField.vue', () => {
     it('renders', () => {
         const wrapper = mount(FilterInputField, {
-            propsData: {
+            props: {
                 value: 'Test value'
             }
         });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
-        expect(wrapper.is('div')).toBeTruthy();
+        expect(wrapper.element.tagName).toBe('DIV');
         let input = wrapper.find('input');
         expect(input.attributes('type')).toBe('text'); // default
         expect(input.element.value).toBe('Test value');
@@ -33,7 +34,7 @@ describe('FilterInputField.vue', () => {
     });
 
     it('focuses on focus call', () => {
-        const wrapper = mount(FilterInputField);
+        const wrapper = mount(FilterInputField, { attachTo: document.body });
         wrapper.vm.focus();
         expect(document.activeElement).toEqual(wrapper.find('input').element);
     });

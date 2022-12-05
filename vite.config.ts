@@ -1,5 +1,7 @@
+// eslint-disable-next-line spaced-comment
+/// <reference types="vitest" />
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
@@ -14,7 +16,10 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('.', import.meta.url))
-        }
+        },
+        dedupe: [
+            'vue' // see https://github.com/vuejs/core/issues/4344#issuecomment-899064501
+        ]
     },
     envPrefix: 'KNIME_',
     build: {
@@ -25,6 +30,26 @@ export default defineConfig({
         },
         rollupOptions: {
             external: ['vue']
+        }
+    },
+    test: {
+        include: ['!(webapps-common)**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        environment: 'jsdom',
+        reporters: ['default', 'junit'],
+        deps: { inline: ['consola'] },
+        setupFiles: [
+            fileURLToPath(new URL('test/vitest.setup.js', import.meta.url))
+        ],
+        coverage: {
+            all: true,
+            exclude: [
+                'buildtools/', 'coverage/**', 'dist/**', 'webapps-common/**',
+                '**/*.d.ts', '**/__tests__/**', '**/{vite,vitest}.config.{js,cjs,mjs,ts}',
+                '**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}'
+            ]
+        },
+        outputFile: {
+            junit: 'test-results/junit.xml' // needed for Bitbucket Pipeline, see https://support.atlassian.com/bitbucket-cloud/docs/test-reporting-in-pipelines/
         }
     }
 });

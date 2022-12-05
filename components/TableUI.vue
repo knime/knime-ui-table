@@ -137,7 +137,9 @@ export default {
         'selectAll',
         'rowSelect',
         'tableInput',
-        'columnResize'
+        'columnResize',
+        'headerSubMenuItemSelection',
+        'lazyload'
     ],
     data() {
         return {
@@ -562,6 +564,7 @@ export default {
             v-if="enableVirtualScrolling && scrollData.length === 1"
             :key="scrollerKey"
             #default="{ item }"
+            ref="scroller"
             :items="dataGroup"
             :num-items-above="numRowsAbove"
             :num-items-below="numRowsBelow"

@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import MessageRenderer from '@/components/popover/MessageRenderer.vue';
 import PopoverPageControls from '@/components/popover/PopoverPageControls.vue';
@@ -26,19 +27,19 @@ describe('MessageRenderer.vue', () => {
 
     it('renders message data', () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: testMessages
             }
         });
 
-        expect(wrapper.find(MessageRenderer).exists()).toBe(true);
-        expect(wrapper.find(PopoverPageControls).exists()).toBe(true);
-        expect(wrapper.find(ErrorIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(MessageRenderer).exists()).toBe(true);
+        expect(wrapper.findComponent(PopoverPageControls).exists()).toBe(true);
+        expect(wrapper.findComponent(ErrorIcon).exists()).toBe(true);
     });
 
     it('renders defaults for missing message data', () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: [{}]
             }
         });
@@ -47,67 +48,69 @@ describe('MessageRenderer.vue', () => {
         expect(messageContent).toContain('Missing item.');
         expect(messageContent).toContain('Message');
         expect(messageContent).toContain('No message found.');
-        expect(wrapper.find(ErrorIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(ErrorIcon).exists()).toBe(true);
     });
 
     it('renders ERROR message data', () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: [testMessages[0]]
             }
         });
 
-        expect(wrapper.find(ErrorIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(ErrorIcon).exists()).toBe(true);
         expect(wrapper.find('.error').text()).toContain(`Error`);
         expect(wrapper.find('.content').text()).toContain(`An error occurred`);
     });
 
     it('renders WARN message data', () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: [testMessages[1]]
             }
         });
 
-        expect(wrapper.find(WarnIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(WarnIcon).exists()).toBe(true);
         expect(wrapper.find('.warning').text()).toContain(`Warning`);
         expect(wrapper.find('.content').text()).toContain(`Some warning`);
     });
 
-    it('reacts to page events by updating the content of the page', () => {
+    it('reacts to page events by updating the content of the page', async () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: testMessages
             }
         });
 
-        expect(wrapper.find(MessageRenderer).exists()).toBe(true);
-        expect(wrapper.find(PopoverPageControls).exists()).toBe(true);
+        expect(wrapper.findComponent(MessageRenderer).exists()).toBe(true);
+        expect(wrapper.findComponent(PopoverPageControls).exists()).toBe(true);
         expect(wrapper.find('.content').text()).toContain(`An error occurred`);
         expect(wrapper.find('.content').text()).not.toContain(`Some warning`);
-        wrapper.find(PopoverPageControls).vm.$emit('nextPage');
+        wrapper.findComponent(PopoverPageControls).vm.$emit('nextPage');
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('.content').text()).not.toContain(`An error occurred`);
         expect(wrapper.find('.content').text()).toContain(`Some warning`);
-        wrapper.find(PopoverPageControls).vm.$emit('prevPage');
+        wrapper.findComponent(PopoverPageControls).vm.$emit('prevPage');
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('.content').text()).toContain(`An error occurred`);
         expect(wrapper.find('.content').text()).not.toContain(`Some warning`);
     });
 
     it('does not render if no messages', () => {
         wrapper = shallowMount(MessageRenderer, {
-            propsData: {
+            props: {
                 data: []
             }
         });
 
-        expect(wrapper.find(MessageRenderer).exists()).toBe(true);
+        expect(wrapper.findComponent(MessageRenderer).exists()).toBe(true);
         expect(wrapper.find('div').exists()).toBe(false);
     });
 
     it('does not render if data is missing', () => {
         wrapper = shallowMount(MessageRenderer);
 
-        expect(wrapper.find(MessageRenderer).exists()).toBe(true);
+        expect(wrapper.findComponent(MessageRenderer).exists()).toBe(true);
         expect(wrapper.find('div').exists()).toBe(false);
     });
 });

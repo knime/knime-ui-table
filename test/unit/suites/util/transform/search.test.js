@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { searchCell } from '@/util/transform/search';
 import { columnTypes } from '@/config/table.config';
 

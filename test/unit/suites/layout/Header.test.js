@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
 import Header from '@/components/layout/Header.vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
@@ -6,12 +7,14 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
 import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
+vi.mock('raf-throttle', () => ({
+    default(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
 const columnSubMenuItems = [
     { text: 'Data renderer', separator: true, sectionHeadline: true },
@@ -22,7 +25,7 @@ const columnSubMenuItems = [
 describe('Header.vue', () => {
     let wrapper;
 
-    let propsData = {
+    let props = {
         tableConfig: {
             sortConfig: {
                 sortColumn: '',
@@ -42,37 +45,37 @@ describe('Header.vue', () => {
     };
 
     it('renders default table header', () => {
-        wrapper = shallowMount(Header, { propsData });
-        expect(wrapper.find(Header).exists()).toBe(true);
-        expect(wrapper.find(Checkbox).exists()).toBe(true);
-        expect(wrapper.find(FunctionButton).exists()).toBe(true);
-        expect(wrapper.find(FilterIcon).exists()).toBe(true);
-        expect(wrapper.find(ArrowIcon).exists()).toBe(true);
+        wrapper = shallowMount(Header, { props });
+        expect(wrapper.findComponent(Header).exists()).toBe(true);
+        expect(wrapper.findComponent(Checkbox).exists()).toBe(true);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+        expect(wrapper.findComponent(FilterIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(ArrowIcon).exists()).toBe(true);
         expect(wrapper.find('.collapser-cell-spacer').exists()).toBe(false);
         let columns = wrapper.findAll('th.column-header');
         expect(columns.length).toBe(5);
-        expect(columns.at(0).text()).toContain(propsData.columnHeaders[0]);
-        expect(columns.at(1).text()).toContain(propsData.columnHeaders[1]);
-        expect(columns.at(2).text()).toContain(propsData.columnHeaders[2]);
-        expect(columns.at(3).text()).toContain(propsData.columnHeaders[3]);
-        expect(columns.at(4).text()).toContain(propsData.columnHeaders[4]);
+        expect(columns.at(0).text()).toContain(props.columnHeaders[0]);
+        expect(columns.at(1).text()).toContain(props.columnHeaders[1]);
+        expect(columns.at(2).text()).toContain(props.columnHeaders[2]);
+        expect(columns.at(3).text()).toContain(props.columnHeaders[3]);
+        expect(columns.at(4).text()).toContain(props.columnHeaders[4]);
         expect(wrapper.find('.sub-header-text-container').exists()).toBe(false);
     });
 
     it('renders sub headers', () => {
-        propsData.columnSubHeaders = ['SubHeader 1', 'SubHeader 2', 'SubHeader 3', 'SubHeader 4', 'SubHeader 5'];
-        wrapper = shallowMount(Header, { propsData });
+        props.columnSubHeaders = ['SubHeader 1', 'SubHeader 2', 'SubHeader 3', 'SubHeader 4', 'SubHeader 5'];
+        wrapper = shallowMount(Header, { props });
         let columns = wrapper.findAll('.sub-header-text-container');
         expect(columns.length).toBe(5);
-        expect(columns.at(0).text()).toContain(propsData.columnSubHeaders[0]);
-        expect(columns.at(1).text()).toContain(propsData.columnSubHeaders[1]);
-        expect(columns.at(2).text()).toContain(propsData.columnSubHeaders[2]);
-        expect(columns.at(3).text()).toContain(propsData.columnSubHeaders[3]);
-        expect(columns.at(4).text()).toContain(propsData.columnSubHeaders[4]);
+        expect(columns.at(0).text()).toContain(props.columnSubHeaders[0]);
+        expect(columns.at(1).text()).toContain(props.columnSubHeaders[1]);
+        expect(columns.at(2).text()).toContain(props.columnSubHeaders[2]);
+        expect(columns.at(3).text()).toContain(props.columnSubHeaders[3]);
+        expect(columns.at(4).text()).toContain(props.columnSubHeaders[4]);
     });
 
     it('renders drag handles', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
         let handles = wrapper.findAll('.drag-handle');
         expect(handles.length).toBe(5);
     });
@@ -80,81 +83,81 @@ describe('Header.vue', () => {
     it('hides "tr" element if no headers provided', () => {
         wrapper = shallowMount(Header);
 
-        expect(wrapper.find(Header).exists()).toBe(true);
-        expect(wrapper.find(Checkbox).exists()).toBe(false);
-        expect(wrapper.find(FunctionButton).exists()).toBe(false);
-        expect(wrapper.find(ArrowIcon).exists()).toBe(false);
+        expect(wrapper.findComponent(Header).exists()).toBe(true);
+        expect(wrapper.findComponent(Checkbox).exists()).toBe(false);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
+        expect(wrapper.findComponent(ArrowIcon).exists()).toBe(false);
         expect(wrapper.find('.collapser-cell-spacer').exists()).toBe(false);
         expect(wrapper.find('th.column-header').exists()).toBe(false);
     });
 
     it('hides the checkbox via config', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             tableConfig: {
-                ...propsData.tableConfig,
+                ...props.tableConfig,
                 showSelection: false
             }
         } });
 
-        expect(wrapper.find(Header).exists()).toBe(true);
-        expect(wrapper.find(Checkbox).exists()).toBe(false);
+        expect(wrapper.findComponent(Header).exists()).toBe(true);
+        expect(wrapper.findComponent(Checkbox).exists()).toBe(false);
     });
 
     it('hides the column filter toggle via config', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             tableConfig: {
-                ...propsData.tableConfig,
+                ...props.tableConfig,
                 showColumnFilters: false
             }
         } });
 
-        expect(wrapper.find(Header).exists()).toBe(true);
-        expect(wrapper.find(FunctionButton).exists()).toBe(false);
+        expect(wrapper.findComponent(Header).exists()).toBe(true);
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
     });
 
     it('adds a collapser control spacer via config', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             tableConfig: {
-                ...propsData.tableConfig,
+                ...props.tableConfig,
                 showCollapser: true
             }
         } });
 
-        expect(wrapper.find(Header).exists()).toBe(true);
+        expect(wrapper.findComponent(Header).exists()).toBe(true);
         expect(wrapper.find('.collapser-cell-spacer').exists()).toBe(true);
     });
 
     it('emits a rowSelect event when the header checkbox is selected', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
 
-        expect(wrapper.find(Header).emitted().headerSelect).toBeFalsy();
-        wrapper.find(Checkbox).vm.$emit('input');
-        expect(wrapper.find(Header).emitted().headerSelect).toBeTruthy();
-        expect(wrapper.find(Header).emitted().headerSelect[0]).toStrictEqual([true]);
+        expect(wrapper.findComponent(Header).emitted().headerSelect).toBeFalsy();
+        wrapper.findComponent(Checkbox).vm.$emit('update:modelValue');
+        expect(wrapper.findComponent(Header).emitted().headerSelect).toBeTruthy();
+        expect(wrapper.findComponent(Header).emitted().headerSelect[0]).toStrictEqual([true]);
     });
 
     it('emits a headerSort event when a column is clicked', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
 
-        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
         wrapper.findAll('th.column-header .column-header-content').at(0).trigger('click', 0);
-        expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
-        expect(wrapper.find(Header).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeTruthy();
+        expect(wrapper.findComponent(Header).emitted().columnSort[0]).toStrictEqual([0, 'Column 1']);
     });
 
     it('emits a toggleFilter event when the filter toggle is clicked', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
 
-        expect(wrapper.find(Header).emitted().toggleFilter).toBeFalsy();
-        wrapper.find(FunctionButton).vm.$emit('click');
-        expect(wrapper.find(Header).emitted().toggleFilter).toBeTruthy();
+        expect(wrapper.findComponent(Header).emitted().toggleFilter).toBeFalsy();
+        wrapper.findComponent(FunctionButton).vm.$emit('click');
+        expect(wrapper.findComponent(Header).emitted().toggleFilter).toBeTruthy();
     });
 
     it('sets dragIndex on drag handle pointerdown', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
@@ -164,8 +167,8 @@ describe('Header.vue', () => {
     });
 
     it('emits a columnResize event on pointermove during drag', () => {
-        wrapper = shallowMount(Header, { propsData });
-        const header = wrapper.find(Header);
+        wrapper = shallowMount(Header, { props });
+        const header = wrapper.findComponent(Header);
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
@@ -177,7 +180,7 @@ describe('Header.vue', () => {
     });
 
     it('unsets dragIndex on drag handle lostpointercapture', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
@@ -188,24 +191,24 @@ describe('Header.vue', () => {
 
     it('emits a subMenuItemSelection event when another subMenuItem is selected', () => {
         const subMenuClickedItem = { text: 'renderer1', id: 'rend1', section: 'dataRendering' };
-        wrapper = mount(Header, { propsData: { ...propsData,
+        wrapper = mount(Header, { props: { ...props,
             columnSubMenuItems: new Array(5).fill(columnSubMenuItems) } });
-        wrapper.findAll(SubMenu).at(1).vm.$emit('item-click', {}, subMenuClickedItem);
-        expect(wrapper.find(Header).emitted().subMenuItemSelection).toBeTruthy();
-        expect(wrapper.find(Header).emitted().subMenuItemSelection).toStrictEqual([[subMenuClickedItem, 1]]);
+        wrapper.findAllComponents(SubMenu).at(1).vm.$emit('item-click', {}, subMenuClickedItem);
+        expect(wrapper.findComponent(Header).emitted().subMenuItemSelection).toBeTruthy();
+        expect(wrapper.findComponent(Header).emitted().subMenuItemSelection).toStrictEqual([[subMenuClickedItem, 1]]);
     });
 
     it('sets hover index on drag handle pointerover', () => {
-        wrapper = shallowMount(Header, { propsData });
+        wrapper = shallowMount(Header, { props });
 
         expect(wrapper.vm.hoverIndex).toBe(null);
-        wrapper.findAll('.drag-handle').at(0).trigger('pointerover', 0);
+        wrapper.findAll('.drag-handle')[0].trigger('pointerover', 0);
         expect(wrapper.vm.hoverIndex).toBe(0);
     });
 
     it('does not set hover index on drag handle pointerover during drag', () => {
-        wrapper = shallowMount(Header, { propsData });
-        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle')[0];
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
         dragHandle.trigger('pointerdown', 1);
@@ -214,8 +217,8 @@ describe('Header.vue', () => {
     });
 
     it('unsets hover index on on drag handle pointerleave after pointerover', () => {
-        wrapper = shallowMount(Header, { propsData });
-        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle')[0];
 
         dragHandle.trigger('pointerover', 0);
         dragHandle.trigger('pointerleave');
@@ -223,8 +226,8 @@ describe('Header.vue', () => {
     });
 
     it('does not unset hover index on drag handle pointerleave after pointerover during drag', () => {
-        wrapper = shallowMount(Header, { propsData });
-        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle')[0];
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
         dragHandle.trigger('pointerover', 0);
@@ -234,68 +237,68 @@ describe('Header.vue', () => {
     });
 
     it('disables sorting via config', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             tableConfig: {
-                ...propsData.tableConfig,
+                ...props.tableConfig,
                 sortConfig: null
             }
         } });
 
-        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
-        wrapper.findAll('th .column-header-content').wrappers.forEach(thWrapper => {
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
+        wrapper.findAll('th > .column-header-content').forEach(thWrapper => {
             expect(thWrapper.classes()).not.toContain('sortable');
         });
-        wrapper.findAll(ArrowIcon).wrappers.forEach(iconWrapper => {
+        wrapper.findAllComponents(ArrowIcon).forEach(iconWrapper => {
             expect(iconWrapper.classes()).not.toContain('active');
         });
-        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
-        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+        wrapper.findAll('th > .column-header-content')[0].trigger('click', 0);
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
     });
 
     it('disables sorting for specific columns via the columnSortConfig', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        const wrappers = wrapper.findAll('th .column-header-content').wrappers;
+        const wrappers = wrapper.findAll('th > .column-header-content');
         expect(wrappers[2].classes()).not.toContain('sortable');
         expect(wrappers[3].classes()).not.toContain('sortable');
 
-        wrapper.findAll('th .column-header-content').at(2).trigger('click', 2);
-        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+        wrapper.findAll('th > .column-header-content')[2].trigger('click', 2);
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
     });
 
     it('enables sorting for specific columns via the columnSortConfig', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        const wrappers = wrapper.findAll('th .column-header-content').wrappers;
+        const wrappers = wrapper.findAll('th > .column-header-content');
         expect(wrappers[0].classes()).toContain('sortable');
         expect(wrappers[1].classes()).toContain('sortable');
         expect(wrappers[4].classes()).toContain('sortable');
 
-        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
-        expect(wrapper.find(Header).emitted().columnSort).toBeTruthy();
+        wrapper.findAll('th > .column-header-content')[0].trigger('click', 0);
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeTruthy();
     });
 
     it('general sortConfig overrides columns specific columnSortConfig', () => {
-        wrapper = shallowMount(Header, { propsData: {
-            ...propsData,
+        wrapper = shallowMount(Header, { props: {
+            ...props,
             tableConfig: {
-                ...propsData.tableConfig,
+                ...props.tableConfig,
                 sortConfig: null
             },
             columnSortConfigs: [true, true, false, false, true]
         } });
 
-        wrapper.findAll('th .column-header-content').wrappers.forEach(thWrapper => {
+        wrapper.findAll('th > .column-header-content').forEach(thWrapper => {
             expect(thWrapper.classes()).not.toContain('sortable');
         });
-        wrapper.findAll('th .column-header-content').at(0).trigger('click', 0);
-        expect(wrapper.find(Header).emitted().columnSort).toBeFalsy();
+        wrapper.findAll('th > .column-header-content')[0].trigger('click', 0);
+        expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
     });
 });

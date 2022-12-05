@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import ActionButton from '@/components/ui/ActionButton.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -7,21 +8,21 @@ describe('ActionButton.vue', () => {
 
     it('renders default', () => {
         wrapper = shallowMount(ActionButton, {
-            propsData: {
+            props: {
                 config: {
                     text: 'test',
-                    callback: jest.fn()
+                    callback: vi.fn()
                 }
             }
         });
-        expect(wrapper.find(ActionButton).exists()).toBe(true);
-        expect(wrapper.find(Button).text()).toBe('test');
+        expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+        expect(wrapper.findComponent(Button).text()).toBe('test');
     });
 
     it('invokes a callback function on click', () => {
-        let actionCallbackMock = jest.fn();
+        let actionCallbackMock = vi.fn();
         wrapper = shallowMount(ActionButton, {
-            propsData: {
+            props: {
                 config: {
                     text: 'test',
                     callback: actionCallbackMock
@@ -29,7 +30,7 @@ describe('ActionButton.vue', () => {
             }
         });
         expect(actionCallbackMock).not.toHaveBeenCalled();
-        wrapper.find(Button).vm.$emit('click');
+        wrapper.findComponent(Button).vm.$emit('click');
         expect(actionCallbackMock).toHaveBeenCalled();
     });
 });

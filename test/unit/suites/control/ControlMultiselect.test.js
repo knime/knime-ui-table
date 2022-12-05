@@ -1,13 +1,12 @@
-import { mount, createLocalVue } from '@vue/test-utils';
-
-const localVue = createLocalVue();
+import { describe, it, expect, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
 
 import ControlMultiselect from '@/components/control/ControlMultiselect.vue';
 
 describe('ControlMultiselect.vue', () => {
     it('renders', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -18,17 +17,16 @@ describe('ControlMultiselect.vue', () => {
                     id: 'test3',
                     text: 'test3'
                 }]
-            },
-            localVue
+            }
         });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
         expect(wrapper.classes()).toContain('multiselect');
     });
 
-    it('renders placeholder until options have been selected', () => {
+    it('renders placeholder until options have been selected', async () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -41,8 +39,7 @@ describe('ControlMultiselect.vue', () => {
                     text: 'test3'
                 }],
                 placeholder: 'Test Title'
-            },
-            localVue
+            }
         });
 
         let button = wrapper.find('[role="button"]');
@@ -50,17 +47,19 @@ describe('ControlMultiselect.vue', () => {
         expect(button.classes()).toContain('placeholder');
 
         wrapper.vm.onInput('test1', true);
+        await wrapper.vm.$nextTick();
         expect(button.text()).toBe('test1');
         expect(button.classes()).not.toContain('placeholder');
         
         wrapper.vm.onInput('test2', true);
+        await wrapper.vm.$nextTick();
         expect(button.text()).toBe('test1, Test2');
         expect(button.classes()).not.toContain('placeholder');
     });
 
     it('locks placeholder', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -74,8 +73,7 @@ describe('ControlMultiselect.vue', () => {
                 }],
                 placeholder: 'Test Title',
                 lockPlaceholder: true
-            },
-            localVue
+            }
         });
 
         let button = wrapper.find('[role="button"]');
@@ -93,7 +91,7 @@ describe('ControlMultiselect.vue', () => {
 
     it('emits input events', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -104,16 +102,15 @@ describe('ControlMultiselect.vue', () => {
                     id: 'test3',
                     text: 'test3'
                 }]
-            },
-            localVue
+            }
         });
         wrapper.vm.onInput('test1', true);
-        expect(wrapper.emitted().input).toBeTruthy();
+        expect(wrapper.emitted()['update:modelValue']).toBeTruthy();
     });
 
     it('toggles properly', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -124,8 +121,7 @@ describe('ControlMultiselect.vue', () => {
                     id: 'test3',
                     text: 'test3'
                 }]
-            },
-            localVue
+            }
         });
         expect(wrapper.vm.collapsed).toBe(true);
         wrapper.vm.toggle();
@@ -136,7 +132,7 @@ describe('ControlMultiselect.vue', () => {
 
     it('adds values to the checked values', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -147,8 +143,7 @@ describe('ControlMultiselect.vue', () => {
                     id: 'test3',
                     text: 'test3'
                 }]
-            },
-            localVue
+            }
         });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
@@ -156,7 +151,7 @@ describe('ControlMultiselect.vue', () => {
 
     it('removes values from the checked values', () => {
         const wrapper = mount(ControlMultiselect, {
-            propsData: {
+            props: {
                 possibleValues: [{
                     id: 'test1',
                     text: 'test1'
@@ -167,8 +162,7 @@ describe('ControlMultiselect.vue', () => {
                     id: 'test3',
                     text: 'test3'
                 }]
-            },
-            localVue
+            }
         });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
@@ -180,7 +174,7 @@ describe('ControlMultiselect.vue', () => {
     describe('keyboard interaction', () => {
         it('show options on space', () => {
             const wrapper = mount(ControlMultiselect, {
-                propsData: {
+                props: {
                     possibleValues: [{
                         id: 'test1',
                         text: 'test1'
@@ -191,8 +185,7 @@ describe('ControlMultiselect.vue', () => {
                         id: 'test3',
                         text: 'test3'
                     }]
-                },
-                localVue
+                }
             });
             let button = wrapper.find('[role=button]');
             button.trigger('keydown.space');
@@ -200,9 +193,9 @@ describe('ControlMultiselect.vue', () => {
         });
 
         it('hide options on esc', () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
             const wrapper = mount(ControlMultiselect, {
-                propsData: {
+                props: {
                     possibleValues: [{
                         id: 'test1',
                         text: 'test1'
@@ -213,14 +206,13 @@ describe('ControlMultiselect.vue', () => {
                         id: 'test3',
                         text: 'test3'
                     }]
-                },
-                localVue
+                }
             });
-            let toggleFocusMock = jest.spyOn(wrapper.vm.$refs.toggle, 'focus');
+            let toggleFocusMock = vi.spyOn(wrapper.vm.$refs.toggle, 'focus');
             let button = wrapper.find('[role=button]');
             wrapper.vm.collapsed = false;
             button.trigger('keydown.esc');
-            jest.runAllTimers();
+            vi.runAllTimers();
             expect(wrapper.vm.collapsed).toBe(true);
             expect(toggleFocusMock).toHaveBeenCalled();
         });
@@ -228,7 +220,7 @@ describe('ControlMultiselect.vue', () => {
         describe('arrow key navigation', () => {
             it('gets next item to focus', () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -240,7 +232,7 @@ describe('ControlMultiselect.vue', () => {
                             text: 'test3'
                         }]
                     },
-                    localVue
+                    attachTo: document.body
                 });
                 // up and down
                 wrapper.vm.focusOptions[1].focus();
@@ -259,9 +251,9 @@ describe('ControlMultiselect.vue', () => {
                 expect(wrapper.vm.getNextElement(1)).toBe(wrapper.vm.focusOptions[0]);
             });
     
-            it('focuses next element on key down', () => {
+            it('focuses next element on key down', async () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -273,11 +265,11 @@ describe('ControlMultiselect.vue', () => {
                             text: 'test3'
                         }]
                     },
-                    localVue
+                    attachTo: document.body
                 });
-                let onDownMock = jest.spyOn(wrapper.vm, 'onDown');
+                let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
                 expect(wrapper.vm.collapsed).toBe(true);
-                wrapper.setData({ collapsed: false });
+                await wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
@@ -289,9 +281,9 @@ describe('ControlMultiselect.vue', () => {
                 expect(onDownMock).toHaveBeenCalled();
             });
     
-            it('focuses previous element on key up', () => {
+            it('focuses previous element on key up', async () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -303,11 +295,11 @@ describe('ControlMultiselect.vue', () => {
                             text: 'test3'
                         }]
                     },
-                    localVue
+                    attachTo: document.body
                 });
-                let onUpMock = jest.spyOn(wrapper.vm, 'onUp');
+                let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
                 expect(wrapper.vm.collapsed).toBe(true);
-                wrapper.setData({ collapsed: false });
+                await wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[1].focus();
@@ -319,9 +311,9 @@ describe('ControlMultiselect.vue', () => {
                 expect(onUpMock).toHaveBeenCalled();
             });
     
-            it('focuses first element on key down at list end', () => {
+            it('focuses first element on key down at list end', async () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -333,11 +325,11 @@ describe('ControlMultiselect.vue', () => {
                             text: 'test3'
                         }]
                     },
-                    localVue
+                    attachTo: document.body
                 });
-                let onDownMock = jest.spyOn(wrapper.vm, 'onDown');
+                let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
                 expect(wrapper.vm.collapsed).toBe(true);
-                wrapper.setData({ collapsed: false });
+                await wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[2].focus();
@@ -349,9 +341,9 @@ describe('ControlMultiselect.vue', () => {
                 expect(onDownMock).toHaveBeenCalled();
             });
     
-            it('focuses last element on key up at list start', () => {
+            it('focuses last element on key up at list start', async () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -363,11 +355,11 @@ describe('ControlMultiselect.vue', () => {
                             text: 'test3'
                         }]
                     },
-                    localVue
+                    attachTo: document.body
                 });
-                let onUpMock = jest.spyOn(wrapper.vm, 'onUp');
+                let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
                 expect(wrapper.vm.collapsed).toBe(true);
-                wrapper.setData({ collapsed: false });
+                await wrapper.setData({ collapsed: false });
                 expect(wrapper.vm.collapsed).toBe(false);
                 expect(wrapper.vm.focusOptions.length).toBe(3);
                 wrapper.vm.focusOptions[0].focus();
@@ -383,7 +375,7 @@ describe('ControlMultiselect.vue', () => {
         describe('drag reordering', () => {
             it('reorders items on drag', () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -394,12 +386,11 @@ describe('ControlMultiselect.vue', () => {
                             id: 'test3',
                             text: 'test3'
                         }]
-                    },
-                    localVue
+                    }
                 });
                 let dragEvent = {
                     dataTransfer: {
-                        setDragImage: jest.fn()
+                        setDragImage: vi.fn()
                     }
                 };
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
@@ -432,7 +423,7 @@ describe('ControlMultiselect.vue', () => {
 
             it('clears hover ind when drag leaves multiselect', () => {
                 const wrapper = mount(ControlMultiselect, {
-                    propsData: {
+                    props: {
                         possibleValues: [{
                             id: 'test1',
                             text: 'test1'
@@ -443,12 +434,11 @@ describe('ControlMultiselect.vue', () => {
                             id: 'test3',
                             text: 'test3'
                         }]
-                    },
-                    localVue
+                    }
                 });
                 let dragEvent = {
                     dataTransfer: {
-                        setDragImage: jest.fn()
+                        setDragImage: vi.fn()
                     }
                 };
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
