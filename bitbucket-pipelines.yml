@@ -7,11 +7,12 @@ definitions:
         caches:
           - node
         script:
+          - git submodule update --init --recursive
           - npm ci
-          - npm run lint
+          - npm run ci:lint
           - npm run coverage
           - npm run build
-          - npm audit --production
+          - npm run audit
         artifacts:
           - dist/**
 

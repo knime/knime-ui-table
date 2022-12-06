@@ -24,9 +24,8 @@
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
         <sonar.exclusions>**/__test__/**,demo/**,node_modules/**/*,dist/**/*,.nyc_output/**/*,coverage/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**,vue-virtual-scroller/**</sonar.exclusions>
-        <node.version>v14.19.0</node.version>
-        <npm.version>6.14.5</npm.version>
-        <resourcedir>dist/inlined</resourcedir>
+        <node.version>v18.12.1</node.version>
+        <npm.version>8.19.2</npm.version>
         <dependency-check.skip>true</dependency-check.skip>
     </properties>
 
@@ -92,17 +91,6 @@
                     </execution>
 
                     <execution>
-                        <id>npm run build</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>npm run coverage</id>
                         <phase>test</phase>
                         <goals>
@@ -112,45 +100,9 @@
                             <arguments>run coverage</arguments>
                         </configuration>
                     </execution>
-
-                    <execution>
-                        <id>npm run audit</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run audit</arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm run lint</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run lint:ci</arguments>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>.nuxt</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>dist</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
+            
         </plugins>
     </build>
 </project>
