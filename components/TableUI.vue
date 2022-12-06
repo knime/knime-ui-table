@@ -52,7 +52,7 @@ export default {
          */
         numRowsAbove: {
             type: Number,
-            default: 10
+            default: 0
         },
         /**
          * Only used when tableConfig.enableVirtualScrolling is true.
