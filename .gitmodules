@@ -3,4 +3,4 @@
 	url = ../webapps-common
 [submodule "vue-virtual-scroller"]
 	path = vue-virtual-scroller
-	url = ../vue-virtual-scroller.git
+	url = ../vue-virtual-scroller
