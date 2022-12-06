@@ -38,14 +38,14 @@ export default defineConfig({
         reporters: ['default', 'junit'],
         deps: { inline: ['consola'] },
         setupFiles: [
-            fileURLToPath(new URL('test/vitest.setup.js', import.meta.url))
+            fileURLToPath(new URL('test-setup/vitest.setup.js', import.meta.url))
         ],
         coverage: {
             all: true,
             exclude: [
-                'buildtools/', 'coverage/**', 'dist/**', 'webapps-common/**',
-                '**/*.d.ts', '**/__tests__/**', '**/{vite,vitest}.config.{js,cjs,mjs,ts}',
-                '**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}'
+                'buildtools/', 'coverage/**', 'dist/**', 'webapps-common/**', 'vue-virtual-scroller/**', 'demo/**',
+                'lib/**', '**/*.d.ts', '**/__tests__/**', 'test-setup/**',
+                '**/{vite,vitest,postcss}.config.{js,cjs,mjs,ts}', '**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}'
             ]
         },
         outputFile: {
