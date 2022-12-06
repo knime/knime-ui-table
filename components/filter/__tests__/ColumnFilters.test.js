@@ -5,9 +5,7 @@ import FilterMultiselect from '@/components/filter/FilterMultiselect.vue';
 import FilterInputField from '@/components/filter/FilterInputField.vue';
 import FilterDropdown from '@/components/filter/FilterDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-
-require('consola');
+import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 
 describe('ColumnFilters.vue', () => {
     let props = {
@@ -46,7 +44,7 @@ describe('ColumnFilters.vue', () => {
         expect(wrapper.findComponent(FilterDropdown).exists()).toBe(true);
         expect(wrapper.findComponent(FilterInputField).exists()).toBe(true);
         expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
-        expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(TrashIcon).exists()).toBe(true);
     });
 
     it('emits columnFilter events', () => {
