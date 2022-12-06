@@ -29,7 +29,7 @@ export const paginate = paginationConfig => {
     let {
         sortedData,
         processedIndicies,
-        processedSelection,
+        processedSelection = [],
         pageSize,
         pageStart,
         pageEnd
@@ -66,7 +66,7 @@ export const paginate = paginationConfig => {
                 groupSliceEnd = groupSliceStart + remainingRows;
             }
             returnValue = dataGroup.slice(groupSliceStart, groupSliceEnd);
-            paginatedSelection.push(processedSelection[groupInd].slice(groupSliceStart, groupSliceEnd));
+            paginatedSelection.push(processedSelection[groupInd]?.slice(groupSliceStart, groupSliceEnd));
             paginatedIndicies.push(processedIndicies[groupInd].slice(groupSliceStart, groupSliceEnd));
         }
         includedRows += returnValue.length;

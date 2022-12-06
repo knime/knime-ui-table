@@ -1191,9 +1191,6 @@
     "id"
   ],
   "defaultTimeFilter": "Last month",
-  "parentSelected": [],
-  "pageSize": 10,
-  "actionButtonText": "",
   "allPopoverRenderers": {
     "status": {
       "type": "StringRenderer"
@@ -1205,5 +1202,25 @@
     "configurationWithPasswords": true,
     "configuration": true
   },
-  "compactMode": false
+  "allColumnSpecificSortConfigs": [
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ]
 }

@@ -167,8 +167,7 @@ describe('TopControls.vue', () => {
         it('emits searchUpdate event on search field input', async () => {
             let wrapper = shallowMount(TopControls, { props });
             await wrapper.setData({ searchActive: true });
-
-            
+         
             expect(wrapper.emitted().searchUpdate).toBeFalsy();
             wrapper.findComponent(FilterInputField).vm.$emit('input', 'Find me');
             expect(wrapper.emitted().searchUpdate[0][0]).toBe('Find me');
