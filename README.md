@@ -1,8 +1,8 @@
-# KNIME-Table for KNIME® Analytics Platform & WebPortal
+# Table UI component for KNIME Analytics Platform & KNIME Hub
 
-This repository contains the table component used by the WebPortal and by the Table view for the Analytics Platform. It is based on the [Vue] JavaScript framework.
-The knime-ui-table repository is included into those projects as a git submodule.
-It itself uses webapps-common as submodule.
+This repository contains the table component used by e.g. the TableView of KNIME Analytics Platform and KNIME Hub. It is based on the [Vue] JavaScript framework.
+
+It's published as npm package: [@knime/knime-ui-table]
 
 ## Development
 
@@ -24,30 +24,23 @@ git submodule update --init
 npm install
 ```
 
-and then use the following commands. For detailed explanations see [Vue CLI docs]:
 
 ### Launch development server
 
-Compiles all JavaScript sources, assets, … and starts a local web server with a demo app for development.
-Includes hot-reloading, so code changes will be visible in the browser immediately.
-
 ```sh
-npm run demo
+npm run dev
 ```
 
 ### Testing
 
 #### Running unit tests
 
-This project contains unit tests written with [jest].
+This project contains unit tests based on [Vitest].
 They are run with
 
 ```sh
 npm run test:unit
 ```
-
-During development, you can use `npm run test:unit -- --watch` to have the unit tests run automatically whenever a
-source file changes.
 
 You can generate a coverage report with
 
@@ -63,7 +56,7 @@ The output can be found in the `coverage` folder. It contains a browseable html 
 npm provides a check against known security issues of used dependencies. Run it by calling
 
 ```sh
-npm audit
+npm run audit
 ```
 
 ### Logging
@@ -74,7 +67,7 @@ See https://github.com/nuxt/consola for details.
 
 ## Building
 
-To build the PageBuilder as [Vue library], use the following command:
+To build the table component as [Vue library], use the following command:
 
 ```sh
 npm run build
@@ -82,10 +75,16 @@ npm run build
 
 Results are saved to `/dist`.
 
-## Embedding the KNIME-Table in your Vue application
+## Using the KNIME-Table in a Vue application
+
+Install [@knime/knime-ui-table] npm package as dependency:
+
+```sh
+npm i @knime/knime-ui-table
+```
 
 ```js
-import { Table } from "knime-ui-table";
+import { Table } from "@knime/knime-ui-table";
 
 export default {
   // ...
@@ -112,10 +111,10 @@ The KNIME-Table expects that the embedding app provides the following:
 - global `window.Vue` object
 - global `window.consola` instance for logging
 
-[vue]: https://vuejs.org/
+[Vue]: https://vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
-[vue cli docs]: https://cli.vuejs.org/guide/
-[vue library]: https://cli.vuejs.org/guide/build-targets.html#library
-[jest]: https://jestjs.io/en
+[Vue library]: https://vitejs.dev/guide/build.html#library-mode
+[Vitest]: https://vitest.dev/
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[@knime/knime-ui-table]: https://www.npmjs.com/package/@knime/knime-ui-table
