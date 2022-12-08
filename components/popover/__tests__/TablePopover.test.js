@@ -43,7 +43,7 @@ describe('TablePopover.vue', () => {
             props: { target, data: [] }
         });
         expect(wrapper.findComponent(ObjectRenderer).exists()).toBeTruthy();
-        await wrapper.setProps({ renderer: columnTypes.Nominal });
+        await wrapper.setProps({ renderer: columnTypes.Nominal, data: '' });
         expect(wrapper.findComponent(StringRenderer).exists()).toBeTruthy();
         await wrapper.setProps({ renderer: columnTypes.String });
         expect(wrapper.findComponent(StringRenderer).exists()).toBeTruthy();
