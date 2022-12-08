@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+
 import { columnTypes } from '@/config/table.config';
 import TablePopover from '@/components/popover/TablePopover.vue';
 import StringRenderer from '@/components/popover/StringRenderer.vue';

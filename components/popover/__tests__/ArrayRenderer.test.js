@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+
 import ArrayRenderer from '@/components/popover/ArrayRenderer.vue';
 import PopoverPageControls from '@/components/popover/PopoverPageControls.vue';
 

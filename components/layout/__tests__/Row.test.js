@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
+
 import Row from '@/components/layout/Row.vue';
 import CollapserToggle from '@/components/ui/CollapserToggle.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
@@ -30,7 +31,7 @@ describe('Row.vue', () => {
         hasSlotContent: false,
         popoverRenderer: false
     }));
-    let getUpdatedprops = (colProp, values) => {
+    let getUpdatedProps = (colProp, values) => {
         let updatedProps = JSON.parse(JSON.stringify(props));
         updatedProps.columnConfigs.forEach((colConfig, colInd) => {
             colConfig.formatter = f;
@@ -114,7 +115,7 @@ describe('Row.vue', () => {
         });
 
         it('selectively generates slots for specific columns', () => {
-            let props = getUpdatedprops('hasSlotContent', [
+            let props = getUpdatedProps('hasSlotContent', [
                 false, false, true, false, false
             ]);
             wrapper = shallowMount(Row, {
@@ -129,7 +130,7 @@ describe('Row.vue', () => {
         });
 
         it('provides column data to the slotted column', () => {
-            let props = getUpdatedprops('hasSlotContent', [
+            let props = getUpdatedProps('hasSlotContent', [
                 false, false, true, false, false
             ]);
             wrapper = mount(Row, {
@@ -144,7 +145,7 @@ describe('Row.vue', () => {
         });
 
         it('uses formatters for rendering', () => {
-            let props = getUpdatedprops('formatter', [
+            let props = getUpdatedProps('formatter', [
                 val => val.toUpperCase(),
                 val => val.value,
                 val => typeof val,
@@ -194,7 +195,7 @@ describe('Row.vue', () => {
         });
 
         it('emits a rowInput event when a cell is clicked if popover column', () => {
-            let props = getUpdatedprops('popoverRenderer', [
+            let props = getUpdatedProps('popoverRenderer', [
                 true, false, false, false, false
             ]);
             wrapper = shallowMount(Row, {
@@ -280,7 +281,7 @@ describe('Row.vue', () => {
                 data4: 'width-4',
                 data5: 'width-5'
             };
-            let props = getUpdatedprops('classGenerator', [
+            let props = getUpdatedProps('classGenerator', [
                 [classMap],
                 [classMap],
                 [classMap],
@@ -302,7 +303,7 @@ describe('Row.vue', () => {
 
         it('applies function class generators to the data', () => {
             let classFunction = data => `width-${data.slice(-1)}`;
-            let props = getUpdatedprops('classGenerator', [
+            let props = getUpdatedProps('classGenerator', [
                 [classFunction],
                 [classFunction],
                 [classFunction],
@@ -323,7 +324,7 @@ describe('Row.vue', () => {
         });
 
         it('uses custom classes', () => {
-            let props = getUpdatedprops('classGenerator', [
+            let props = getUpdatedProps('classGenerator', [
                 ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
             ]);
             wrapper = shallowMount(Row, { props });

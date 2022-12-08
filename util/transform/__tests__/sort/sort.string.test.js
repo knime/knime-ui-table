@@ -1,7 +1,8 @@
+import { describe, it, expect } from 'vitest';
+
 import { sort } from '@/util/transform/sort';
 import { orderedData, reversedData, unorderedData, groupedData, missingGroupedData,
     groupedIndicies, columnKeys, currentColumnTypes } from './mockData';
-import { describe, it, expect } from 'vitest';
 
 describe('sort', () => {
     describe('single group sorting', () => {

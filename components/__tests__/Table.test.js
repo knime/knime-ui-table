@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
+
 import Table from '@/components/Table.vue';
 import TableUI from '@/components/TableUI.vue';
 
@@ -21,7 +22,7 @@ const headerSubMenuItems = [
 ];
 
 describe('Table.vue', () => {
-    const defaultprops = {
+    const defaultProps = {
         allColumnHeaders: ['A', 'B'],
         allColumnKeys: ['a', 'b'],
         allColumnTypes: { a: columnTypes.Number, b: columnTypes.Number },
@@ -49,11 +50,11 @@ describe('Table.vue', () => {
     });
 
 
-    const doMount = ({ customprops = {}, dataCount = 1, shallow = true } = {}) => {
+    const doMount = ({ customProps = {}, dataCount = 1, shallow = true } = {}) => {
         const props = {
             allData: [],
-            ...defaultprops,
-            ...customprops
+            ...defaultProps,
+            ...customProps
         };
         if (props.allData.length === 0) {
             for (let i = 0; i < dataCount; i++) {
@@ -142,7 +143,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customprops: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                    customProps: { showSorting: true, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
                 }
             );
 
@@ -157,7 +158,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customprops: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
+                    customProps: { showSorting: false, defaultSortColumn: 1, defaultSortColumnDirection: 1 }
                 }
             );
 
@@ -170,7 +171,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customprops: { showColumnFilters: true, initialFilterValues: { a: '4', b: '10' } }
+                    customProps: { showColumnFilters: true, initialFilterValues: { a: '4', b: '10' } }
                 }
             );
 
@@ -185,7 +186,7 @@ describe('Table.vue', () => {
             const { wrapper } = doMount(
                 {
                     shallow: false,
-                    customprops: { showColumnFilters: false, initialFilterValues: { a: '4', b: '10' } }
+                    customProps: { showColumnFilters: false, initialFilterValues: { a: '4', b: '10' } }
                 }
             );
 
@@ -198,14 +199,14 @@ describe('Table.vue', () => {
     });
 
     it('generates the correct data config with isSortable key if there are column specific sort configs', () => {
-        const { wrapper } = doMount({ customprops: { allColumnSpecificSortConfigs: [true, false] } });
+        const { wrapper } = doMount({ customProps: { allColumnSpecificSortConfigs: [true, false] } });
 
         expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [{ isSortable: true }, { isSortable: false }] });
     });
 
     it('generates the correct data config with headerSubMenuItems key if there are sub menu items for the header',
         () => {
-            const { wrapper } = doMount({ customprops: { headerSubMenuItems: [headerSubMenuItems, null] } });
+            const { wrapper } = doMount({ customProps: { headerSubMenuItems: [headerSubMenuItems, null] } });
             expect(wrapper.vm.dataConfig).toMatchObject({ columnConfigs: [
                 { headerSubMenuItems }, { headerSubMenuItems: null }
             ] });
@@ -361,7 +362,7 @@ describe('Table.vue', () => {
             });
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
-                const { wrapper } = doMount({ customprops: { timeFilterKey: 'a' } });
+                const { wrapper } = doMount({ customProps: { timeFilterKey: 'a' } });
                 expect(wrapper.vm.currentTimeFilter).toBe('Last month');
                 wrapper.findComponent(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
@@ -490,7 +491,7 @@ describe('Table.vue', () => {
 
         it('computes currentColumnSizes correctly', () => {
             let checkCurrentColumnSizes = async (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
-                const { wrapper } = doMount({ customprops: { showCollapser, showSelection } });
+                const { wrapper } = doMount({ customProps: { showCollapser, showSelection } });
                 await wrapper.setData({ clientWidth });
                 const nColumns = wrapper.vm.currentColumns.length;
                 let currentColumnSizes;
@@ -524,7 +525,7 @@ describe('Table.vue', () => {
         });
 
         it('emits header sub menu selection events', () => {
-            const { wrapper } = doMount({ customprops: { headerSubMenuItems } });
+            const { wrapper } = doMount({ customProps: { headerSubMenuItems } });
             expect(wrapper.emitted().headerSubMenuSelect).toBeFalsy();
             wrapper.findComponent(TableUI).vm.$emit('headerSubMenuItemSelection', headerSubMenuItems, 1);
             expect(wrapper.emitted().headerSubMenuSelect).toStrictEqual([[

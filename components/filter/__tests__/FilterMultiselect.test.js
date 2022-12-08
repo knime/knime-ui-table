@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+
 import FilterMultiselect from '@/components/filter/FilterMultiselect.vue';
 
 describe('FilterMultiselect.vue', () => {

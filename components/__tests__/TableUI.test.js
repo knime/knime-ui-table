@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+
 import TableUI from '@/components/TableUI.vue';
 import TopControls from '@/components/control/TopControls.vue';
 import BottomControls from '@/components/control/BottomControls.vue';
@@ -15,7 +16,7 @@ import { RecycleScroller } from 'vue-virtual-scroller';
 
 import { columnTypes } from '@/config/table.config';
 require('consola');
-const getprops = ({
+const getProps = ({
     includeSubHeaders = true,
     compactMode = false,
     showSelection = true,
@@ -141,7 +142,7 @@ describe('TableUI.vue', () => {
         wrapperHeight = 1000,
         bottomData = []
     } = {}) => {
-        const props = getprops({
+        const props = getProps({
             includeSubHeaders,
             compactMode,
             showSelection,
