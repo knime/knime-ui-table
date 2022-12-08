@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "Data Table for KNIME",
   "author": "KNIME AG, Zurich, Switzerland",
-  "license": "See the file LICENSE",
+  "license": "See the file license.txt",
   "scripts": {
     "postinstall": "npm --prefix vue-virtual-scroller run build",
     "dev": "vite",
