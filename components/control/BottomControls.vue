@@ -50,7 +50,7 @@ export default {
 <template>
   <BaseControls
     class="base-controls"
-    v-bind="$attrs"
+    v-bind="{...$props, ...$attrs}"
   >
     <ControlDropdown
       open-up
