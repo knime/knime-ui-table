@@ -1,5 +1,6 @@
 {
   "name": "@knime/ui-table",
+  "type": "module",
   "version": "0.3.0",
   "description": "Data Table for KNIME",
   "author": "KNIME AG, Zurich, Switzerland",
@@ -27,7 +28,7 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@knime/eslint-config": "7.0.5",
+    "@knime/eslint-config": "7.0.6",
     "@types/jsdom": "20.0.1",
     "@types/node": "18.11.11",
     "@vitejs/plugin-vue": "3.2.0",
@@ -52,10 +53,10 @@
   "files": [
     "dist"
   ],
-  "module": "./dist/KNIME-Table.js",
+  "module": "./dist/knime-ui-table.js",
   "exports": {
     ".": {
-      "import": "./dist/KNIME-Table.js"
+      "import": "./dist/knime-ui-table.js"
     }
   },
   "engines": {

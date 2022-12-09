@@ -203,7 +203,7 @@ export default {
 </template>
 
 <style>
-  @import "webapps-common/ui/css";
+  @import url("webapps-common/ui/css");
 
   :root {
     font-size: 16px;
