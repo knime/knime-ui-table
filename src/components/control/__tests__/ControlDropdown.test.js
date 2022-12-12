@@ -1,11 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import ControlDropdown from '../ControlDropdown.vue';
-
-vi.mock('vue-clickaway2', () => ({
-    mixin: {}
-}), { virtual: true });
 
 describe('ControlDropdown.vue', () => {
     let props;

@@ -12,7 +12,7 @@ import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
-    HEADER_HEIGHT, ROW_MARGIN_BOTTOM, CONTROLS_HEIGHT } from '../util/constants';
+    HEADER_HEIGHT, ROW_MARGIN_BOTTOM, CONTROLS_HEIGHT } from '@/util/constants';
 
 /**
  * @see README.md

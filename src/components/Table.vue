@@ -2,18 +2,18 @@
 <script>
 import TableUI from './TableUI.vue';
 
-import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '../config/table.config';
-import { defaultTimeFilter } from '../config/time.config';
-import getColumnDomains from '../util/getColumnDomains';
-import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '../util/getFilterConfigs';
-import { getNextPage } from '../util/getNextPage';
-import { getProcessedRowInd } from '../util/processSelection';
-import { filter } from '../util/transform/filter';
-import { group } from '../util/transform/group';
-import { sort } from '../util/transform/sort';
-import { paginate } from '../util/transform/paginate';
+import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '@/config/table.config';
+import { defaultTimeFilter } from '@/config/time.config';
+import getColumnDomains from '@/util/getColumnDomains';
+import { getFilterConfigs, getDefaultFilterValues, getInitialFilterValues } from '@/util/getFilterConfigs';
+import { getNextPage } from '@/util/getNextPage';
+import { getProcessedRowInd } from '@/util/processSelection';
+import { filter } from '@/util/transform/filter';
+import { group } from '@/util/transform/group';
+import { sort } from '@/util/transform/sort';
+import { paginate } from '@/util/transform/paginate';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '../util/constants';
 
 /**
  * @see README.md

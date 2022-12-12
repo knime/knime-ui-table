@@ -40,7 +40,9 @@ export default {
             }
         },
         /**
-         * selected value (which is a list of ids of entries)
+         * selected value (which is a list of ids of entries).
+         * currently used in ColumnFilter with a v-bind, so renaming this to modelValue is only possible when
+         * filterConfigs are adjusted, too.
          */
         value: {
             type: Array,

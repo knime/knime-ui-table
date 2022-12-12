@@ -23,6 +23,7 @@
     "@popperjs/core": "2.5.4",
     "raf-throttle": "2.0.5",
     "vue": "3.2.45",
+    "vue3-click-away": "1.2.4",
     "vue-virtual-scroller": "file:vue-virtual-scroller",
     "webapps-common": "file:webapps-common"
   },

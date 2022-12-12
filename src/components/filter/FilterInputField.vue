@@ -8,6 +8,10 @@
  */
 export default {
     props: {
+        /**
+         *  currently used in ColumnFilter with a v-bind, so renaming this to modelValue is only possible when
+         * filterConfigs are adjusted, too.
+        */
         value: {
             default: '',
             type: [Number, String]
