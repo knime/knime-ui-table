@@ -10,7 +10,7 @@ module.exports = {
         'import/resolver': {
             alias: {
                 map: [
-                    ['@', '.']
+                    ['@', 'src/.']
                 ]
             }
         }
@@ -18,7 +18,7 @@ module.exports = {
     overrides: [
         {
             extends: ['@knime/eslint-config/jest'],
-            files: ['**/__tests__/**', 'test-setup/**'],
+            files: ['src/**/__tests__/**', 'test-setup/**'],
             rules: {
                 'no-magic-numbers': 'off'
             }

@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': fileURLToPath(new URL('.', import.meta.url))
+            '@': fileURLToPath(new URL('src/.', import.meta.url))
         },
         dedupe: [
             'vue' // see https://github.com/vuejs/core/issues/4344#issuecomment-899064501
@@ -31,7 +31,7 @@ export default defineConfig({
         }
     },
     test: {
-        include: ['!(webapps-common)**/__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        include: ['src/**/__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         environment: 'jsdom',
         reporters: ['default', 'junit'],
         deps: { inline: ['consola'] },
