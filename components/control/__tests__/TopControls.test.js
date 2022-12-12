@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import TopControls from '@/components/control/TopControls.vue';
-import BaseControls from '@/components/control/BaseControls.vue';
-import ControlDropdown from '@/components/control/ControlDropdown.vue';
-import ControlMultiselect from '@/components/control/ControlMultiselect.vue';
+import TopControls from '../TopControls.vue';
+import BaseControls from '../BaseControls.vue';
+import ControlDropdown from '../ControlDropdown.vue';
+import ControlMultiselect from '../ControlMultiselect.vue';
 import FilterInputField from '@/components/filter/FilterInputField.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 

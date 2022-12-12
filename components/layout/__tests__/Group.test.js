@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import Group from '@/components/layout/Group.vue';
+import Group from '../Group.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 

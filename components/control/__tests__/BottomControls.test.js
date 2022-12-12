@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import BottomControls from '@/components/control/BottomControls.vue';
-import BaseControls from '@/components/control/BaseControls.vue';
-import ControlDropdown from '@/components/control/ControlDropdown.vue';
+import BottomControls from '../BottomControls.vue';
+import BaseControls from '../BaseControls.vue';
+import ControlDropdown from '../ControlDropdown.vue';
 import { tablePageSizes } from '@/config/table.config';
 
 describe('BottomControls.vue', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import ObjectRenderer from '@/components/popover/ObjectRenderer.vue';
+import ObjectRenderer from '../ObjectRenderer.vue';
 
 describe('ObjectRenderer.vue', () => {
     let wrapper;

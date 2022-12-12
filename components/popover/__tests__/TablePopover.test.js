@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import { columnTypes } from '@/config/table.config';
-import TablePopover from '@/components/popover/TablePopover.vue';
-import StringRenderer from '@/components/popover/StringRenderer.vue';
-import ObjectRenderer from '@/components/popover/ObjectRenderer.vue';
-import ArrayRenderer from '@/components/popover/ArrayRenderer.vue';
-import MessageRenderer from '@/components/popover/MessageRenderer.vue';
+import TablePopover from '../TablePopover.vue';
+import StringRenderer from '../StringRenderer.vue';
+import ObjectRenderer from '../ObjectRenderer.vue';
+import ArrayRenderer from '../ArrayRenderer.vue';
+import MessageRenderer from '../MessageRenderer.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 vi.mock('vue-clickaway2', () => ({

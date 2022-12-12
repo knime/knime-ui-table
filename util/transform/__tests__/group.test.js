@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { group } from '@/util/transform/group';
+import { group } from '../group';
 
 describe('group', () => {
     let dataMock = [

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import PopoverPageControls from '@/components/popover/PopoverPageControls.vue';
+import PopoverPageControls from '../PopoverPageControls.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import ArrowNextIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
 import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';

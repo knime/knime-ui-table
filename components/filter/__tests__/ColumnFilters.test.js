@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import ColumnFilters from '@/components/filter/ColumnFilters.vue';
-import FilterMultiselect from '@/components/filter/FilterMultiselect.vue';
-import FilterInputField from '@/components/filter/FilterInputField.vue';
-import FilterDropdown from '@/components/filter/FilterDropdown.vue';
+import ColumnFilters from '../ColumnFilters.vue';
+import FilterMultiselect from '../FilterMultiselect.vue';
+import FilterInputField from '../FilterInputField.vue';
+import FilterDropdown from '../FilterDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 

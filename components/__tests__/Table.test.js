@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
-import Table from '@/components/Table.vue';
-import TableUI from '@/components/TableUI.vue';
+import Table from '../Table.vue';
+import TableUI from '../TableUI.vue';
 
 import { columnTypes } from '@/config/table.config';
 import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';

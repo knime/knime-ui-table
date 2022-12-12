@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getNextPage } from '@/util/getNextPage';
+import { getNextPage } from '../getNextPage';
 
 describe('getNextPage', () => {
     it('returns 1 if the pageSize is greater than the total number of rows', () => {

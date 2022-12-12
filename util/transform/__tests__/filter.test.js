@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filter } from '@/util/transform/filter';
+import { filter } from '../filter';
 import { columnTypes } from '@/config/table.config';
 
 describe('filter', () => {

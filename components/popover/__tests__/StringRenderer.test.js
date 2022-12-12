@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import StringRenderer from '@/components/popover/StringRenderer.vue';
+import StringRenderer from '../StringRenderer.vue';
 
 describe('StringRenderer.vue', () => {
     let wrapper;

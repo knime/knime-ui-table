@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
-import CollapserToggle from '@/components/ui/CollapserToggle.vue';
+import CollapserToggle from '../CollapserToggle.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
 
 describe('CollapserToggle.vue', () => {

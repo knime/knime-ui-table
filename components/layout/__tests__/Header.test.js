@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
 
-import Header from '@/components/layout/Header.vue';
+import Header from '../Header.vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';

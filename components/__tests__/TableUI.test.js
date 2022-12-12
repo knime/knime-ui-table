@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import TableUI from '@/components/TableUI.vue';
+import TableUI from '../TableUI.vue';
 import TopControls from '@/components/control/TopControls.vue';
 import BottomControls from '@/components/control/BottomControls.vue';
 import ColumnFilters from '@/components/filter/ColumnFilters.vue';

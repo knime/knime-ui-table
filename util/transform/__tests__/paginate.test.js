@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { paginate } from '@/util/transform/paginate';
+import { paginate } from '../paginate';
 
 describe('paginate', () => {
     it('returns an empty page if no data', () => {

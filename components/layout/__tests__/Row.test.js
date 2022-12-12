@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
-import Row from '@/components/layout/Row.vue';
+import Row from '../Row.vue';
 import CollapserToggle from '@/components/ui/CollapserToggle.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import BaseControls from '@/components/control/BaseControls.vue';
-import PageControls from '@/components/control/PageControls.vue';
+import BaseControls from '../BaseControls.vue';
+import PageControls from '../PageControls.vue';
 
 describe('BaseControls.vue', () => {
     let wrapper;

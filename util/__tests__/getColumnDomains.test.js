@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import getColumnDomains from '@/util/getColumnDomains';
+import getColumnDomains from '../getColumnDomains';
 import { columnTypes } from '@/config/table.config';
 
 describe('getColumnDomains', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ControlMultiselect from '@/components/control/ControlMultiselect.vue';
+import ControlMultiselect from '../ControlMultiselect.vue';
 
 describe('ControlMultiselect.vue', () => {
     it('renders', () => {
