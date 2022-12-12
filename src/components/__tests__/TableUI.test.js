@@ -16,6 +16,9 @@ import { RecycleScroller } from 'vue-virtual-scroller';
 
 import { columnTypes } from '@/config/table.config';
 require('consola');
+
+const expectedNormalRowHeight = 41;
+
 const getProps = ({
     includeSubHeaders = true,
     compactMode = false,
@@ -354,7 +357,7 @@ describe('TableUI.vue', () => {
                     data: { a: 'cellA', b: 'cellB' },
                     id: '0',
                     index: 0,
-                    size: 41,
+                    size: expectedNormalRowHeight,
                     scrollIndex: 0,
                     isTop: true
                 }], expect.anything()
@@ -533,7 +536,7 @@ describe('TableUI.vue', () => {
                 currentPage: 1
             } });
 
-            expect(wrapper.vm.fullBodyHeight).toEqual(41);
+            expect(wrapper.vm.fullBodyHeight).toEqual(expectedNormalRowHeight);
         });
 
         it('sets current body height to zero if there is no available space', () => {
@@ -606,7 +609,14 @@ describe('TableUI.vue', () => {
         it('supplies data with ids and sizes', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true, shallow: false });
             expect(wrapper.vm.scrollData).toStrictEqual([[
-                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41, scrollIndex: 0, isTop: true }
+                {
+                    data: { a: 'cellA', b: 'cellB' },
+                    id: '0',
+                    index: 0,
+                    size: expectedNormalRowHeight,
+                    scrollIndex: 0,
+                    isTop: true
+                }
             ]]);
         });
 
@@ -617,10 +627,17 @@ describe('TableUI.vue', () => {
                 shallow: false
             });
             expect(wrapper.vm.scrollData).toStrictEqual([[
-                { data: { a: 'cellA', b: 'cellB' }, id: '0', index: 0, size: 41, scrollIndex: 0, isTop: true },
+                {
+                    data: { a: 'cellA', b: 'cellB' },
+                    id: '0',
+                    index: 0,
+                    size: expectedNormalRowHeight,
+                    scrollIndex: 0,
+                    isTop: true
+                },
                 { dots: true, id: 'dots', size: 41 },
-                { data: ['foo'], id: '2', index: 0, size: 41, scrollIndex: 2, isTop: false },
-                { data: ['bar'], id: '3', index: 1, size: 41, scrollIndex: 3, isTop: false }
+                { data: ['foo'], id: '2', index: 0, size: expectedNormalRowHeight, scrollIndex: 2, isTop: false },
+                { data: ['bar'], id: '3', index: 1, size: expectedNormalRowHeight, scrollIndex: 3, isTop: false }
             ]]);
         });
         
@@ -634,8 +651,8 @@ describe('TableUI.vue', () => {
                 shallow: false
             });
             expect(wrapper.vm.scrollData).toStrictEqual([[
-                { data: ['foo'], id: '2', index: 0, size: 41, scrollIndex: 2, isTop: false },
-                { data: ['bar'], id: '3', index: 1, size: 41, scrollIndex: 3, isTop: false }
+                { data: ['foo'], id: '2', index: 0, size: expectedNormalRowHeight, scrollIndex: 2, isTop: false },
+                { data: ['bar'], id: '3', index: 1, size: expectedNormalRowHeight, scrollIndex: 3, isTop: false }
             ]]);
         });
 
@@ -652,7 +669,7 @@ describe('TableUI.vue', () => {
                     id: `${numRowsAbove}`,
                     index: 0,
                     scrollIndex: numRowsAbove,
-                    size: 41,
+                    size: expectedNormalRowHeight,
                     isTop: true
                 }
             ]]);
@@ -696,13 +713,13 @@ describe('TableUI.vue', () => {
                 expect(wrapper.vm.currentExpanded).toContain(0);
 
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { ...rowWithoutSize, size: 41 + expandedContentHeight }
+                    { ...rowWithoutSize, size: expectedNormalRowHeight + expandedContentHeight }
                 ]]);
                 firstRow.onRowExpand();
                 await wrapper.vm.$nextTick();
                 expect(wrapper.vm.currentExpanded).not.toContain(0);
                 expect(wrapper.vm.scrollData).toStrictEqual([[
-                    { ...rowWithoutSize, size: 41 }
+                    { ...rowWithoutSize, size: expectedNormalRowHeight }
                 ]]);
             });
 
