@@ -160,6 +160,10 @@ export default {
                 return false;
             }
             return true;
+        },
+        getCellContentSlotName(columnKeys, columnId) {
+            // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
+            return `cellContent-${columnKeys[columnId]}`;
         }
     }
 };
@@ -211,7 +215,7 @@ export default {
         />
         <slot
           v-else-if="slottedColumns[ind]"
-          :name="`cellContent-${columnKeys[ind]}`"
+          :name="getCellContentSlotName(columnKeys,ind)"
           :row="row"
           :ind="ind"
         />

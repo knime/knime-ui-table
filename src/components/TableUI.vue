@@ -487,9 +487,9 @@ export default {
             ).find(height => typeof height !== 'undefined');
             return contentHeight || 0;
         },
-        getCellContentSlotName(columnId) {
+        getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
-            return `cellContent-${columnId}`;
+            return `cellContent-${columnKeys[columnId]}`;
         }
     }
 };
