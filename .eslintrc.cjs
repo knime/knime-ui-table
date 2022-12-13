@@ -20,7 +20,11 @@ module.exports = {
             extends: ['@knime/eslint-config/jest'],
             files: ['src/**/__tests__/**', 'test-setup/**'],
             rules: {
-                'no-magic-numbers': 'off'
+                'no-magic-numbers': 'off',
+                'import/extensions': [
+                    'error',
+                    { vue: 'always', json: 'always', mjs: 'always', svg: 'always', config: 'ignorePackages' }
+                ]
             }
         }
     ]
