@@ -42,7 +42,7 @@ export default defineConfig({
             all: true,
             exclude: [
                 'buildtools/', 'coverage/**', 'dist/**', 'webapps-common/**', 'vue-virtual-scroller/**', 'demo/**',
-                'lib/**', '**/*.d.ts', '**/__tests__/**', 'test-setup/**',
+                'stories/**', 'lib/**', '**/*.d.ts', '**/__tests__/**', 'test-setup/**',
                 '**/{vite,vitest,postcss}.config.{js,cjs,mjs,ts}', '**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}'
             ]
         },

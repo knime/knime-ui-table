@@ -7,7 +7,7 @@ const svgLoader = require('vite-svg-loader');
 module.exports = {
   "stories": [
     "**/*.stories.mdx",
-    "../demo/**/*.stories.@(js|jsx|ts|tsx)"
+    "../stories/**/*.stories.@(js|jsx|ts|tsx)"
   ],
   "addons": [
     "@storybook/addon-links",
