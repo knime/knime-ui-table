@@ -23,11 +23,11 @@ pipelines:
       - step:
           # actually publishing should be only possible on the master branch, but see
           # https://community.atlassian.com/t5/Bitbucket-questions/bitbucket-pipeline-user-permissions-to-write-to-master/qaq-p/1177712
-          name: "publish minor version to npm"
+          name: "publish patch version to npm"
           trigger: manual
           deployment: production
           script:
-            - npm version minor -m "Bump version to %s [skip ci]"
+            - npm version patch -m "Bump version to %s [skip ci]"
             - git push && git push --tags
             - pipe: atlassian/npm-publish:0.2.0
               variables:
