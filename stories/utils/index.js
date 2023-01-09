@@ -10,7 +10,7 @@ import useColumnResizing from './useColumnResizing';
 import generateAllData from './generateAllData';
 
 
-// Composables hoding reactive state using the vue3 composition api
+// Composables holding reactive state using the vue3 composition api
 export {
     useColumnSelection,
     useColumnResizing,
