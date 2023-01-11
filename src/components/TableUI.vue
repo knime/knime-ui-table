@@ -378,6 +378,15 @@ export default {
                 this.currentExpanded = usedExpanded;
             }
         },
+        getScrollItemOffset(target) {
+            const transform = target.offsetParent.style.transform;
+            const re = new RegExp('(?![translateY(])([0-9]+)');
+            const rowOffset = parseInt(re.exec(transform)[0], 10);
+            const body = this.$refs.body;
+            const bodyOffset = body.offsetTop;
+            const scrollTop = body.scrollTop;
+            return bodyOffset + rowOffset - scrollTop;
+        },
         onTimeFilterUpdate(newTimeFilter) {
             consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
             this.$emit('timeFilterUpdate', newTimeFilter);
@@ -447,10 +456,10 @@ export default {
                 }
             }
         },
-        onRowInput(event) {
+        onRowInput(event, getTargetTopOffset) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
             this.$emit('tableInput', event);
-            this.openPopover(event);
+            this.openPopover(event, getTargetTopOffset);
         },
         onGroupSubMenuClick(event, group) {
             consola.debug(`TableUI group submenu clicked ${event} ${group}`);
@@ -460,12 +469,17 @@ export default {
             consola.debug(`TableUI row submenu clicked ${event} ${row}`);
             event.callback(row, this);
         },
-        openPopover(event) {
+        openPopover(event, getTargetTopOffset) {
             consola.debug(`TableUI: open popover`, event);
             this.popoverColumn = this.columnKeys[event.colInd];
             this.popoverRenderer = this.popoverRenderers[event.colInd] || this.columnTypes[event.colInd];
             this.popoverData = this.data[event.groupInd][event.rowInd][this.popoverColumn];
-            this.popoverTarget = event.cell;
+            this.popoverTarget = {
+                top: getTargetTopOffset(event.cell),
+                left: event.cell.offsetLeft,
+                height: event.cell.offsetHeight,
+                width: event.cell.offsetWidth
+            };
             window.addEventListener('resize', this.onPopoverClose);
         },
         onPopoverClose() {
@@ -549,7 +563,9 @@ export default {
         @clear-filter="onClearFilter"
       />
       <div
+        ref="body"
         class="body"
+        :onscroll="onPopoverClose"
         :style="{ width: `${currentBodyWidth}px`, height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
       >
         <Group
@@ -576,7 +592,6 @@ export default {
             class="scroller"
             :emit-update="true"
             :page-mode="false"
-            :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
             <PlaceholderRow
@@ -598,7 +613,8 @@ export default {
               @row-select="onRowSelect($event, item.index, 0, item.isTop)"
               @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
               @row-input="onRowInput(
-                { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+                { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop},
+                getScrollItemOffset
               )"
               @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
             >
@@ -607,12 +623,12 @@ export default {
               <template
                 v-for="colInd in slottedColumns"
                 #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-                :key="rowInd + '_' + colInd"
+                :key="item.index + '_' + colInd"
               >
                 <span>
                   <slot
                     :name="`cellContent-${columnKeys[colInd]}`"
-                    :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                    :data="{ ...cellData, key: columnKeys[colInd], rowInd: item.index, colInd }"
                   />
                 </span>
               </template>
@@ -637,7 +653,10 @@ export default {
             :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
             @row-select="onRowSelect($event, rowInd, groupInd, true)"
-            @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
+            @row-input="onRowInput(
+              { ...$event, rowInd, id: row.data.id, groupInd, isTop: true },
+              target => target.offsetTop
+            )"
             @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -683,6 +702,7 @@ export default {
       :use-button="false"
       :data="popoverData"
       :target="popoverTarget"
+      :parent-height="wrapperHeight"
       :renderer="popoverRenderer"
       @close="onPopoverClose"
     >
@@ -700,6 +720,7 @@ export default {
 <style lang="postcss" scoped>
 .scroller {
   overflow-y: auto;
+  height: 100%;
 }
 
 .wrapper {

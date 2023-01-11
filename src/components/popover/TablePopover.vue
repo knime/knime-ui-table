@@ -47,13 +47,14 @@ export default {
             default: null,
             required: true
         },
+        parentHeight: {
+            type: Number,
+            default: 0,
+            required: true
+        },
         renderer: {
             type: [Object, String],
             default: columnTypes.Object
-        },
-        rowHeight: {
-            type: Number,
-            default: 40
         }
     },
     emits: ['close'],
@@ -61,13 +62,7 @@ export default {
         // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
         return {
             expanded: this.initiallyExpanded,
-            type: this.renderer?.type || this.renderer,
-            offsetParentHeight: this.target.offsetParent.clientHeight,
-            offsetTop: this.target.offsetTop,
-            offsetLeft: this.target.offsetLeft,
-            offsetHeight: this.target.offsetHeight,
-            offsetWidth: this.target.offsetWidth,
-            rowOffset: (this.rowHeight / 2) - 2
+            type: this.renderer?.type || this.renderer
         };
     },
     computed: {
@@ -92,19 +87,19 @@ export default {
             return this.renderer?.process?.(this.data) || this.data;
         },
         displayTop() {
-            return this.offsetTop / this.offsetParentHeight >= PARENT_RATIO;
+            return this.target.top / this.parentHeight >= PARENT_RATIO;
         },
         verticalUnits() {
             return this.displayTop ? 'bottom' : 'top';
         },
         top() {
-            return this.offsetTop + (this.offsetHeight / 2);
+            return this.target.top + (this.target.height / 2);
         },
         left() {
-            return this.offsetLeft + (this.offsetWidth / 2);
+            return this.target.left + (this.target.width / 2);
         },
         maxHeight() {
-            return Math.max(this.displayTop ? this.top : this.offsetParentHeight - this.top, MAX_TOTAL_HEIGHT);
+            return Math.max(this.displayTop ? this.top : this.parentHeight - this.top, MAX_TOTAL_HEIGHT);
         },
         style() {
             return {
@@ -114,13 +109,13 @@ export default {
         },
         contentStyle() {
             return {
-                [this.verticalUnits]: `${this.target.clientHeight - this.rowOffset}px`,
+                [this.verticalUnits]: `${this.target.height / 2 + 2}px`,
                 'max-height': `${this.maxHeight}px`
             };
         },
         childMaxHeight() {
             return {
-                'max-height': `${this.maxHeight - this.rowHeight}px`
+                'max-height': `${this.maxHeight - this.target.height}px`
             };
         },
         show() {
