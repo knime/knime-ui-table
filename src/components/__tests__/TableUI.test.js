@@ -344,22 +344,56 @@ describe('TableUI.vue', () => {
             });
         });
 
-        it('handles group sub menu items', () => {
-            const { wrapper } = doMount();
+        describe('row and group submenus', () => {
+            beforeEach(() => {
+                vi.useFakeTimers();
+            });
 
-            let callbackMock = vi.fn();
-            wrapper.findComponent(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
-            expect(callbackMock).toHaveBeenCalledWith(
-                [{
-                    data: { a: 'cellA', b: 'cellB' },
-                    id: '0',
-                    index: 0,
-                    size: expectedNormalRowHeight,
-                    scrollIndex: 0,
-                    isTop: true
-                }], expect.anything()
-            );
+            it('handles row sub menu clicks', () => {
+                const { wrapper, props } = doMount();
+
+                let callbackMock = vi.fn();
+                wrapper.findComponent(Row).vm.$emit('rowSubMenuClick', { callback: callbackMock });
+                expect(callbackMock).toHaveBeenCalledWith(props.data[0][0], expect.anything());
+            });
+            
+            it('handles group sub menu clicks', () => {
+                const { wrapper } = doMount();
+    
+                let callbackMock = vi.fn();
+                wrapper.findComponent(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
+                expect(callbackMock).toHaveBeenCalledWith(
+                    [{
+                        data: { a: 'cellA', b: 'cellB' },
+                        id: '0',
+                        index: 0,
+                        size: expectedNormalRowHeight,
+                        scrollIndex: 0,
+                        isTop: true
+                    }], expect.anything()
+                );
+            });
+
+            it('collapses expanded submenu on scroll', () => {
+                const { wrapper } = doMount();
+    
+                let callbackMockRow = vi.fn();
+                wrapper.findComponent(Row).vm.$emit('rowSubMenuExpand', callbackMockRow);
+                vi.advanceTimersToNextTimer();
+                expect(callbackMockRow).toHaveBeenCalledTimes(0);
+                wrapper.find('.body').element.dispatchEvent(new Event('scroll'));
+                expect(callbackMockRow).toHaveBeenCalledTimes(1);
+
+                let callbackMockGroup = vi.fn();
+                wrapper.findComponent(Group).vm.$emit('groupSubMenuExpand', callbackMockGroup);
+                vi.advanceTimersToNextTimer();
+                expect(callbackMockGroup).toHaveBeenCalledTimes(0);
+                wrapper.find('.body').element.dispatchEvent(new Event('scroll'));
+                expect(callbackMockRow).toHaveBeenCalledTimes(1);
+                expect(callbackMockGroup).toHaveBeenCalledTimes(1);
+            });
         });
+
 
         describe('rows', () => {
             it('handles select events', () => {
@@ -379,14 +413,6 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toStrictEqual(
                     [[{ cell: true, rowInd: 0, groupInd: 0, id, isTop: true }]]
                 );
-            });
-
-            it('handles submenu clicks', () => {
-                const { wrapper, props } = doMount();
-
-                let callbackMock = vi.fn();
-                wrapper.findComponent(Row).vm.$emit('rowSubMenuClick', { callback: callbackMock });
-                expect(callbackMock).toHaveBeenCalledWith(props.data[0][0], expect.anything());
             });
         });
 

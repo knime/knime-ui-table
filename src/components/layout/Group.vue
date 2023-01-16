@@ -29,12 +29,15 @@ export default {
             default: () => []
         }
     },
-    emits: ['groupSubMenuClick'],
+    emits: ['groupSubMenuClick', 'groupSubMenuExpand'],
     methods: {
         onSubMenuItemClick(event, clickedItem) {
             this.$emit('groupSubMenuClick', clickedItem);
             event.preventDefault();
             return false;
+        },
+        onSubMenuToggle(callback) {
+            this.$emit('groupSubMenuExpand', callback);
         }
     }
 };
@@ -55,8 +58,10 @@ export default {
         class="action"
       >
         <SubMenu
+          teleport-to-body
           :items="groupSubMenuItems"
           button-title="actions"
+          @toggle="onSubMenuToggle"
           @item-click="onSubMenuItemClick"
         >
           <OptionsIcon />

@@ -84,7 +84,7 @@ export default {
             default: 0
         }
     },
-    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowExpand'],
+    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
     data() {
         return {
             showContent: false
@@ -154,6 +154,9 @@ export default {
             this.$emit('rowSubMenuClick', clickedItem);
             event.preventDefault();
             return false;
+        },
+        onSubMenuToggle(callback) {
+            this.$emit('rowSubMenuExpand', callback);
         },
         isClickable(data, ind) {
             if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
@@ -229,9 +232,11 @@ export default {
         class="action"
       >
         <SubMenu
+          teleport-to-body
           :items="tableConfig.subMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
+          @toggle="onSubMenuToggle"
         >
           <OptionsIcon />
         </SubMenu>
