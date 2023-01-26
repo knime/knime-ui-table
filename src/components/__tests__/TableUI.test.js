@@ -16,9 +16,6 @@ import { columnTypes } from '@/config/table.config';
 
 const expectedNormalRowHeight = 41;
 
-const mockedScrollBarWidth = 10;
-vi.mock('../../util/getScrollbarWidth.js', () => ({ default: vi.fn(() => mockedScrollBarWidth) }));
-
 const getProps = ({
     includeSubHeaders = true,
     compactMode = false,
@@ -43,8 +40,7 @@ const getProps = ({
         fixHeader: false
     },
     numRowsAbove = 0,
-    bottomData = [],
-    fitToContainer = false
+    bottomData = []
 }) => ({
     data,
     bottomData,
@@ -111,8 +107,7 @@ const getProps = ({
             currentGroup: null
         },
         ...columnFilterInitiallyActive === null ? {} : { columnFilterInitiallyActive },
-        ...actionButtonConfig ? { actionButtonConfig } : {},
-        fitToContainer
+        ...actionButtonConfig ? { actionButtonConfig } : {}
     }
 });
 
@@ -125,7 +120,6 @@ describe('TableUI.vue', () => {
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
-        fitToContainer = false,
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
@@ -163,8 +157,7 @@ describe('TableUI.vue', () => {
             currentBottomSelection,
             pageConfig,
             numRowsAbove,
-            bottomData,
-            fitToContainer
+            bottomData
         });
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
@@ -387,14 +380,14 @@ describe('TableUI.vue', () => {
                 wrapper.findComponent(Row).vm.$emit('rowSubMenuExpand', callbackMockRow);
                 vi.advanceTimersToNextTimer();
                 expect(callbackMockRow).toHaveBeenCalledTimes(0);
-                wrapper.find('.body').element.dispatchEvent(new Event('scroll'));
+                wrapper.find('.vertical-scroll').element.dispatchEvent(new Event('scroll'));
                 expect(callbackMockRow).toHaveBeenCalledTimes(1);
 
                 let callbackMockGroup = vi.fn();
                 wrapper.findComponent(Group).vm.$emit('groupSubMenuExpand', callbackMockGroup);
                 vi.advanceTimersToNextTimer();
                 expect(callbackMockGroup).toHaveBeenCalledTimes(0);
-                wrapper.find('.body').element.dispatchEvent(new Event('scroll'));
+                wrapper.find('.vertical-scroll').element.dispatchEvent(new Event('scroll'));
                 expect(callbackMockRow).toHaveBeenCalledTimes(1);
                 expect(callbackMockGroup).toHaveBeenCalledTimes(1);
             });
@@ -535,7 +528,7 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('the height of the rows, of the body and of the table', () => {
+    describe('the height of the rows', () => {
         it('sets default height of rows if no height is given', () => {
             const { wrapper } = doMount();
 
@@ -553,72 +546,6 @@ describe('TableUI.vue', () => {
             const { wrapper } = doMount({ compactMode: true });
 
             expect(wrapper.vm.rowHeight).toBe(24);
-        });
-
-
-        it('computes height from number of rows', () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            } });
-
-            expect(wrapper.vm.fullBodyHeight).toEqual(expectedNormalRowHeight);
-        });
-
-        it('sets current body height to full body height if fitToContainer is false', () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            },
-            fitToContainer: false,
-            wrapperHeight: 20 });
-
-            expect(wrapper.vm.fullBodyHeight).toBe(41);
-            expect(wrapper.vm.currentBodyHeight).toBe(41);
-            wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentBodyHeight).toBe(41);
-        });
-
-        it('sets current body height to available space if fitToContainer is true', async () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            },
-            fitToContainer: true,
-            wrapperHeight: 200 });
-            wrapper.setData({ wrapperWidth: 2000 }); // greater than the currentBodyWidth
-            await wrapper.vm.$nextTick();
-            // still taking the full body height as there is enough space
-            expect(wrapper.vm.currentBodyHeight).toBe(41);
-            await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentBodyHeight).toBe(40);
-            wrapper.setData({ wrapperWidth: 20 }); // smaller than the currentBodyWidth
-            await wrapper.vm.$nextTick();
-            expect(wrapper.vm.scrollBarWidth).toBe(mockedScrollBarWidth);
-            expect(wrapper.vm.currentBodyHeight).toEqual(40 - mockedScrollBarWidth);
-        });
-
-        it('increases computed table height if filters are visible', () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            } });
-
-            expect(wrapper.vm.currentTableHeight).toBe(81);
-            wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentTableHeight).toBe(121);
         });
     });
 
@@ -745,7 +672,7 @@ describe('TableUI.vue', () => {
                 Object.defineProperty(scroller.vm.$el, 'clientHeight', { value: 1000 });
                 scroller.vm.updateVisibleItems();
                 await wrapper.vm.$nextTick();
-                const firstRow = wrapper.vm.$refs['row-0'][0];
+                const firstRow = wrapper.vm.$refs['row-0'];
                 firstRow.onRowExpand();
                 await wrapper.vm.$nextTick();
                 Object.defineProperty(firstRow.$el.children[1], 'clientHeight', { value: expandedContentHeight });
@@ -778,5 +705,12 @@ describe('TableUI.vue', () => {
                 expect(wrapper.vm.currentExpanded).not.toContain(0);
             });
         });
+    });
+
+    it('computes drag handle height', () => {
+        const { wrapper } = doMount();
+        expect(wrapper.vm.getDragHandleHeight()).toBeDefined();
+        const { wrapper: wrapperWithScroller } = doMount({ enableVirtualScrolling: true, shallow: false });
+        expect(wrapperWithScroller.vm.getDragHandleHeight()).toBeDefined();
     });
 });

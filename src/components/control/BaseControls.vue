@@ -101,7 +101,7 @@ thead {
           display: inline-flex;
           align-items: center;
           text-align: left;
-  
+
           & span {
             line-height: 50px;
           }

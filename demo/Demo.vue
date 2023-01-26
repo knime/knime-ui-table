@@ -73,10 +73,10 @@ export default {
             showActionButton: false,
             enableVirtualScrolling: false,
             headerSubMenuItems: [],
-            fitToContainer: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
-            setInitialFiltering: false
+            setInitialFiltering: false,
+            fitToWindow: false
         };
     },
     computed: {
@@ -100,7 +100,6 @@ export default {
                 headerSubMenuItems: this.headerSubMenuItems,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
                 enableVirtualScrolling: this.enableVirtualScrolling,
-                fitToContainer: this.fitToContainer,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
                 ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
@@ -140,7 +139,7 @@ export default {
 </script>
 
 <template>
-  <div class="demo">
+  <div :class="['demo',{'fit-to-window': fitToWindow}]">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -175,11 +174,11 @@ export default {
         compact mode
       </Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
-      <Checkbox v-model="fitToContainer">fit to container</Checkbox>
       <Checkbox @input="onShowHeaderSubMenu">header sub menu settings</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>
+      <Checkbox v-model="fitToWindow">Fit table inside the current window</Checkbox>
     </div>
     <br>
     <Table
@@ -212,12 +211,16 @@ export default {
     padding: 12px;
   }
 
-  .demo {
+  .fit-to-window {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
     overflow: visible;
   }
+
+  .fit-to-window .table {
+      flex-grow: 1;
+    }
 
   .demo h2 {
     margin-bottom: 0;

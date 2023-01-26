@@ -6,7 +6,7 @@ import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
 import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '@/util/constants';
+import { MIN_COLUMN_SIZE, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '@/util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -61,9 +61,9 @@ export default {
             type: Boolean,
             default: false
         },
-        currentTableHeight: {
-            type: Number,
-            default: DEFAULT_ROW_HEIGHT
+        getDragHandleHeight: {
+            type: Function,
+            default: () => HEADER_HEIGHT
         }
     },
     emits: [
@@ -73,7 +73,9 @@ export default {
         'showColumnBorder',
         'columnResize',
         'hideColumnBorder',
-        'subMenuItemSelection'
+        'subMenuItemSelection',
+        'columnResizeEnd',
+        'columnResizeStart'
     ],
     data() {
         return {
@@ -83,7 +85,8 @@ export default {
             columnSizeOnDragStart: null, // the original width of the column that is currently being resized
             pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
             minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
-            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH
+            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
+            currentDragHandlerHeight: 0
         };
     },
     computed: {
@@ -135,8 +138,13 @@ export default {
             // capture move events until the pointer is released
             event.target.setPointerCapture(event.pointerId);
             this.dragIndex = columnIndex;
+            this.currentDragHandlerHeight = this.getDragHandleHeight();
             this.columnSizeOnDragStart = this.columnSizes[columnIndex];
             this.pageXOnDragStart = event.pageX;
+            this.$emit('columnResizeStart');
+        },
+        onPointerUp() {
+            this.$emit('columnResizeEnd');
         },
         onPointerMove: throttle(function (event) {
             /* eslint-disable no-invalid-this */
@@ -159,7 +167,7 @@ export default {
             /* eslint-enable no-invalid-this */
         }),
         dragHandleHeight(isDragging) {
-            return isDragging ? this.currentTableHeight : HEADER_HEIGHT;
+            return isDragging ? this.currentDragHandlerHeight : HEADER_HEIGHT;
         },
         onSubMenuItemSelection(item, ind) {
             this.$emit('subMenuItemSelection', item, ind);
@@ -233,10 +241,11 @@ export default {
         </div>
         <div
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
-          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px` }"
+          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`}"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
           @pointerdown.passive="onPointerDown($event, ind)"
+          @pointerup.passive="onPointerUp($event)"
           @pointermove="onPointerMove"
           @lostpointercapture="onLostPointerCapture"
         />

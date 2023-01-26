@@ -339,7 +339,7 @@ export default {
         stroke: var(--knime-masala);
       }
   }
- 
+
 
   &.collapsed:hover {
     color: var(--knime-masala);

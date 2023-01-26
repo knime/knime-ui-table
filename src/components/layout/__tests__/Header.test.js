@@ -167,6 +167,34 @@ describe('Header.vue', () => {
         expect(wrapper.vm.dragIndex).toBe(0);
     });
 
+    it('emit columnResizeStart on pounterdown', () => {
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+        dragHandle.trigger('pointerdown', 0);
+        expect(wrapper.emitted('columnResizeStart')).toBeDefined();
+    });
+
+    it('emit columnResizeEnd on pounterup', () => {
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+        dragHandle.trigger('pointerup', 0);
+        expect(wrapper.emitted('columnResizeEnd')).toBeDefined();
+    });
+
+
+    it('calls getDragHandleHeight on pointerdown', async () => {
+        const dragHandlerHeightMock = 100;
+        props.getDragHandleHeight = vi.fn(() => dragHandlerHeightMock);
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+        dragHandle.trigger('pointerdown', 0);
+        await wrapper.vm.$nextTick();
+        expect(dragHandle.element.style.height).toBe(`${dragHandlerHeightMock}px`);
+    });
+
     it('emits a columnResize event on pointermove during drag', () => {
         wrapper = shallowMount(Header, { props });
         const header = wrapper.findComponent(Header);
