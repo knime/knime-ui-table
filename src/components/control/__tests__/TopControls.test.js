@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 
 import TopControls from '../TopControls.vue';
 import BaseControls from '../BaseControls.vue';
@@ -36,7 +36,7 @@ describe('TopControls.vue', () => {
     };
 
     it('renders table top controls', () => {
-        let wrapper = shallowMount(TopControls, {
+        let wrapper = mount(TopControls, {
             props
         });
 
@@ -48,7 +48,7 @@ describe('TopControls.vue', () => {
     });
 
     it('controls component visibility via prop', async () => {
-        let wrapper = shallowMount(TopControls, { props });
+        let wrapper = mount(TopControls, { props });
 
         expect(wrapper.findComponent(TopControls).exists()).toBe(true);
         expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
@@ -92,7 +92,7 @@ describe('TopControls.vue', () => {
 
     describe('time controls', () => {
         it('emits timeFilterUpdate when timeFilter value is updated', () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
             let timeFilterControls = wrapper.findAllComponents(ControlDropdown).at(0);
 
             expect(wrapper.emitted().timeFilterUpdate).toBeFalsy();
@@ -103,7 +103,7 @@ describe('TopControls.vue', () => {
 
     describe('column controls', () => {
         it('emits columnUpdate when selected columns change', () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
 
             expect(wrapper.emitted().columnUpdate).toBeFalsy();
             wrapper.findComponent(ControlMultiselect).vm.$emit('update:model-value', ['User', 'Workflow']);
@@ -111,7 +111,7 @@ describe('TopControls.vue', () => {
         });
 
         it('emits columnReorder when column order changes', () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
 
             expect(wrapper.emitted().columnReorder).toBeFalsy();
             wrapper.findComponent(ControlMultiselect).vm.$emit('columnReorder', 'Workflow', 0);
@@ -121,7 +121,7 @@ describe('TopControls.vue', () => {
 
     describe('group controls', () => {
         it('emits groupUpdate when group value is updated', () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
             let groupFilterControls = wrapper.findAllComponents(ControlDropdown).at(1);
 
             expect(wrapper.emitted().groupUpdate).toBeFalsy();
@@ -132,7 +132,7 @@ describe('TopControls.vue', () => {
 
     describe('search controls', () => {
         it('toggles the search field visibility on button click', async () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
 
             expect(wrapper.findComponent(FilterInputField).exists()).toBe(false);
             expect(wrapper.vm.searchActive).toBe(false);
@@ -146,7 +146,7 @@ describe('TopControls.vue', () => {
         });
 
         it('toggles search visibility and clears query on search field blur event', async () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
             await wrapper.setData({ searchActive: true });
 
             expect(wrapper.findComponent(FilterInputField).exists()).toBe(true);
@@ -165,12 +165,12 @@ describe('TopControls.vue', () => {
         });
 
         it('emits searchUpdate event on search field input', async () => {
-            let wrapper = shallowMount(TopControls, { props });
+            let wrapper = mount(TopControls, { props });
             await wrapper.setData({ searchActive: true });
 
             
             expect(wrapper.emitted().searchUpdate).toBeFalsy();
-            wrapper.findComponent(FilterInputField).vm.$emit('input', 'Find me');
+            wrapper.findComponent(FilterInputField).vm.$emit('update:modelValue', 'Find me');
             expect(wrapper.emitted().searchUpdate[0][0]).toBe('Find me');
         });
     });

@@ -1,7 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { mount, shallowMount } from '@vue/test-utils';
+import { ref, unref } from 'vue';
 
 import ControlDropdown from '../ControlDropdown.vue';
+
+const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onKeydown: vi.fn() };
+vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
+
+const dropdownPopper = { updatePopper: vi.fn(), popperInstance: { setOptions: vi.fn() } };
+vi.mock('../../../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+vi.mock('webapps-common/ui/composables/useClickOutside', () => ({ default: vi.fn() }));
+
+import useDropdownPopper from '../../../composables/useDropdownPopper';
+import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
+import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
 
 describe('ControlDropdown.vue', () => {
     let props;
@@ -35,7 +47,7 @@ describe('ControlDropdown.vue', () => {
         });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
-        expect(wrapper.findAll('[role=option]').length).toBe(props.possibleValues.length);
+        expect(wrapper.find({ ref: 'ul' }).findAll('[role=option]').length).toBe(props.possibleValues.length);
     });
 
     it('includes placeholder value in options if enabled', () => {
@@ -48,7 +60,7 @@ describe('ControlDropdown.vue', () => {
                 includePlaceholder: true
             }
         });
-        expect(wrapper.findAll('[role=option]').length).toBe(itemCount + 1);
+        expect(wrapper.find({ ref: 'ul' }).findAll('[role=option]').length).toBe(itemCount + 1);
         expect(wrapper.vm.localValues.some(item => item.text === placeholder)).toBe(true);
     });
 
@@ -107,7 +119,7 @@ describe('ControlDropdown.vue', () => {
             }
         });
         let placeholderItemIndex = wrapper.vm.localValues.findIndex(item => item.text === placeholder);
-        let input = wrapper.findAll('li[role=option]').at(placeholderItemIndex);
+        let input = wrapper.find({ ref: 'ul' }).findAll('li[role=option]').at(placeholderItemIndex);
         input.trigger('click');
         expect(wrapper.emitted()['update:modelValue'][0][0]).toBe('');
     });
@@ -117,14 +129,14 @@ describe('ControlDropdown.vue', () => {
             props
         });
         let newValueIndex = 1;
-        let listbox = wrapper.find('[role=listbox]');
+        let listbox = wrapper.find({ ref: 'ul' });
 
         // open list
         wrapper.find('[role=button]').trigger('click');
         await wrapper.vm.$nextTick();
         expect(listbox.isVisible()).toBe(true);
 
-        let input = wrapper.findAll('li[role=option]').at(newValueIndex);
+        let input = listbox.findAll('li[role=option]').at(newValueIndex);
         input.trigger('click');
 
         expect(wrapper.emitted()['update:modelValue'][0][0]).toEqual(props.possibleValues[newValueIndex].id);
@@ -134,108 +146,203 @@ describe('ControlDropdown.vue', () => {
         expect(listbox.isVisible()).toBe(false);
     });
 
-    describe('keyboard navigation', () => {
-        it('opens and closes the listbox on enter/space/esc', async () => {
-            const wrapper = mount(ControlDropdown, {
-                props
-            });
 
-            let listbox = wrapper.find('[role=listbox]');
+    describe('dropdown navigation', () => {
+        let props;
 
-            // open list
-            wrapper.find('[role=button]').trigger('keydown.enter');
-            await wrapper.vm.$nextTick();
-            expect(listbox.isVisible()).toBe(true);
-            // close listbox
-            listbox.trigger('keydown.esc');
-            await wrapper.vm.$nextTick();
-            expect(listbox.isVisible()).toBe(false);
-            // open list
-            wrapper.find('[role=button]').trigger('keydown.space');
-            await wrapper.vm.$nextTick();
-            expect(listbox.isVisible()).toBe(true);
-            // close listbox
-            listbox.trigger('keydown.esc');
-            await wrapper.vm.$nextTick();
-            expect(listbox.isVisible()).toBe(false);
+        beforeEach(() => {
+            props = {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }],
+                ariaLabel: 'foo'
+            };
         });
 
-        it('sets the values on keydown navigation', () => {
-            const wrapper = mount(ControlDropdown, {
+        it('calls keydown callback', () => {
+            const wrapper = mount(ControlDropdown, { props });
+
+            wrapper.find('[role="button"]').trigger('keydown');
+
+            expect(dropdownNavigation.onKeydown).toHaveBeenCalled();
+        });
+
+        it('marks active element', () => {
+            const wrapper = mount(ControlDropdown, { props });
+            wrapper.find('[role="button"]').trigger('click');
+            const currentfocusedIndex = dropdownNavigation.currentIndex.value;
+            const popover = wrapper.find({ ref: 'ul' });
+            const options = popover.findAll('.focused');
+            expect(options.length).toBe(1);
+            expect(options[0].html()).toContain(props.possibleValues[currentfocusedIndex].text);
+        });
+    
+        it('uses close function which emits @close', () => {
+            useDropdownNavigation.reset();
+            const wrapper = shallowMount(ControlDropdown, { props });
+            const { close } = useDropdownNavigation.mock.calls[0][0];
+            wrapper.find('[role="button"]').trigger('click');
+         
+            expect(wrapper.vm.isExpanded).toBe(true);
+            close();
+            expect(wrapper.vm.isExpanded).toBe(false);
+        });
+    
+        describe('getNextElement', () => {
+            let elementClickSpy,
+                getNextElement;
+    
+            beforeEach(() => {
+                useDropdownNavigation.reset();
+                const wrapper = mount(ControlDropdown, { props, attachTo: document.body });
+                wrapper.find('[role="button"]').trigger('click');
+                getNextElement = useDropdownNavigation.mock.calls[0][0].getNextElement;
+                elementClickSpy = (i) => {
+                    const popover = wrapper.find({ ref: 'ul' });
+                    const element = popover.findAll('li')[i].element;
+                    return vi.spyOn(element, 'click');
+                };
+            });
+
+            const expectNextElement = ({ index, onClick }, expectedIndex) => {
+                expect(index).toBe(expectedIndex);
+                const clickSpy = elementClickSpy(index);
+                clickSpy.reset();
+                onClick();
+                expect(clickSpy).toHaveBeenCalled();
+            };
+    
+            it('yields the first element on downward navigation if there is no previous selection', () => {
+                expectNextElement(getNextElement(-1, 1), 0);
+            });
+    
+            it('yields next element on downwards navigation and wraps around', () => {
+                expectNextElement(getNextElement(0, 1), 1);
+                expectNextElement(getNextElement(1, 1), 2);
+                expectNextElement(getNextElement(2, 1), 0);
+            });
+    
+            it('yields the last element on upwards navigation if there is no previous selection', () => {
+                expectNextElement(getNextElement(null, -1), 2);
+            });
+    
+            it('yields next element on upwards navigation and wraps around', () => {
+                expectNextElement(getNextElement(2, -1), 1);
+                expectNextElement(getNextElement(1, -1), 0);
+                expectNextElement(getNextElement(0, -1), 2);
+            });
+
+            it('yields first element', () => {
+                const getFirstElement = useDropdownNavigation.mock.calls[0][0].getFirstElement;
+                expectNextElement(getFirstElement(), 0);
+            });
+
+            it('yields last element', () => {
+                const getLastElement = useDropdownNavigation.mock.calls[0][0].getLastElement;
+                expectNextElement(getLastElement(), 2);
+            });
+        });
+
+        it('sets aria-owns and aria-activedescendant label', () => {
+            const wrapper = shallowMount(ControlDropdown, { props });
+            const button = wrapper.find('[role="button"]');
+            const selectedElementId = wrapper.find({ ref: 'ul' }).find('.focused').element.id;
+            expect(button.attributes('aria-owns')).toBe(selectedElementId);
+            expect(button.attributes('aria-activedescendant')).toBe(selectedElementId);
+        });
+
+
+        it('resets navigation on toggle', () => {
+            const wrapper = shallowMount(ControlDropdown, { props });
+            const button = wrapper.find('[role="button"]');
+            button.trigger('click');
+            expect(dropdownNavigation.resetNavigation).toHaveBeenCalled();
+        });
+    });
+
+    describe('dropdown popover', () => {
+        it('uses dropdown popper', () => {
+            useDropdownPopper.reset();
+            const wrapper = shallowMount(ControlDropdown, {
                 props: {
-                    ...props,
-                    modelValue: 'test2' // defines start point
+                    possibleValues: [{
+                        id: 'test1',
+                        text: 'test1'
+                    }, {
+                        id: 'test2',
+                        text: 'test2'
+                    }, {
+                        id: 'test3',
+                        text: 'test3'
+                    }],
+                    ariaLabel: 'foo'
                 }
             });
-
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.down');
-            expect(wrapper.emitted()['update:modelValue'][0][0]).toBe('test3');
+            const [{ popperTarget, referenceEl }, openUp] = useDropdownPopper.mock.calls[0];
+            
+            expect(unref(referenceEl)).toStrictEqual(wrapper.find('[role="button"]').element);
+            expect(unref(popperTarget)).toStrictEqual(wrapper.find({ ref: 'ul' }).element);
+            expect(openUp).toBe(false);
         });
 
-        it('sets the values on keyup navigation', () => {
-            const wrapper = mount(ControlDropdown, {
+        it('reverses direction on openUp', () => {
+            useDropdownPopper.reset();
+            shallowMount(ControlDropdown, {
                 props: {
-                    ...props,
-                    modelValue: 'test2' // defines start point
+                    possibleValues: [{
+                        id: 'test1',
+                        text: 'test1'
+                    }, {
+                        id: 'test2',
+                        text: 'test2'
+                    }, {
+                        id: 'test3',
+                        text: 'test3'
+                    }],
+                    ariaLabel: 'foo',
+                    openUp: true
                 }
             });
-
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.up');
-            expect(wrapper.emitted()['update:modelValue'][0][0]).toBe('test1');
+            const openUp = useDropdownPopper.mock.calls[0][1];
+            expect(openUp).toBe(true);
         });
+    });
 
-        it('sets no values on keyup navigation at the start', () => {
-            const wrapper = mount(ControlDropdown, {
-                props: {
-                    ...props,
-                    modelValue: 'test1' // defines start point
-                }
-            });
 
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.up');
-            expect(wrapper.emitted()['update:modelValue']).toBeFalsy();
+    it('uses click outside', () => {
+        useClickOutside.reset();
+        const wrapper = mount(ControlDropdown, {
+            props: {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }],
+                ariaLabel: 'foo'
+            }
         });
+        const [{ targets, callback }, active] = useClickOutside.mock.calls[0];
+        
+        expect(targets.length).toBe(2);
+        expect(targets[0].value).toStrictEqual(wrapper.find('[role="button"]').element);
+        expect(targets[1].value).toStrictEqual(wrapper.find({ ref: 'ul' }).element);
+        expect(active.value).toBe(wrapper.vm.isExpanded);
 
-        it('sets no values on keydown navigation at the end', () => {
-            const wrapper = mount(ControlDropdown, {
-                props: {
-                    ...props,
-                    modelValue: 'test5' // defines start point
-                }
-            });
-
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.down');
-            expect(wrapper.emitted()['update:modelValue']).toBeFalsy();
-        });
-
-        it('sets the values to the first value on home key', () => {
-            const wrapper = mount(ControlDropdown, {
-                props: {
-                    ...props,
-                    modelValue: 'test3' // defines start point
-                }
-            });
-
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.home');
-            expect(wrapper.emitted()['update:modelValue'][0][0]).toBe('test1');
-        });
-
-        it('sets the values to the last value on end key', () => {
-            const wrapper = mount(ControlDropdown, {
-                props: {
-                    ...props,
-                    modelValue: 'test3' // defines start point
-                }
-            });
-
-            let ul = wrapper.find('ul');
-            ul.trigger('keydown.end');
-            expect(wrapper.emitted()['update:modelValue'][0][0]).toBe('test5');
-        });
+        wrapper.find('[role="button"]').trigger('click');
+        expect(wrapper.vm.isExpanded).toBe(true);
+        callback();
+        expect(wrapper.vm.isExpanded).toBe(false);
     });
 });

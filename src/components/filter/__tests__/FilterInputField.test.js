@@ -7,7 +7,7 @@ describe('FilterInputField.vue', () => {
     it('renders', () => {
         const wrapper = mount(FilterInputField, {
             props: {
-                value: 'Test value'
+                modelValue: 'Test value'
             }
         });
         expect(wrapper.html()).toBeTruthy();
@@ -23,7 +23,7 @@ describe('FilterInputField.vue', () => {
         const newValue = 'new value';
         let input = wrapper.find('input');
         input.setValue(newValue);
-        expect(wrapper.emitted('input')[0][0]).toEqual(newValue);
+        expect(wrapper.emitted('update:modelValue')[0][0]).toEqual(newValue);
     });
 
     it('emits blur events', () => {

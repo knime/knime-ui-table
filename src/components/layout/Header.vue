@@ -258,7 +258,7 @@ export default {
 
 <style lang="postcss" scoped>
 thead {
-  height: 41px;
+  height: 40px;
 
   & tr {
     height: 100%;
@@ -295,6 +295,9 @@ thead {
       }
 
       &.action {
+        position: sticky;
+        right: 0;
+        background-color: var(--knime-porcelain);
         align-items: center;
         display: flex;
         overflow: visible;
@@ -315,7 +318,7 @@ thead {
         }
 
         &.filter-active {
-          background-color: var(--theme-button-function-background-color-hover);
+          background-color: var(--knime-silver-sand);
 
           & :deep(.function-button) {
             & svg {
@@ -426,7 +429,6 @@ thead {
 
         & .drag-handle {
           position: absolute;
-          z-index: 10;
           background-color: var(--knime-dove-gray);
           right: 0;
           width: 5px;
@@ -438,6 +440,8 @@ thead {
           }
 
           &.drag {
+            /* otherwise the handle will be behind rows when virtual scrolling */
+            z-index: 10;
             width: 1px;
             opacity: 1;
           }

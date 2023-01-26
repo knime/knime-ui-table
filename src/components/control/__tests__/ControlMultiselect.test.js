@@ -1,9 +1,28 @@
-import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount, shallowMount } from '@vue/test-utils';
 
 import ControlMultiselect from '../ControlMultiselect.vue';
+import { ref, unref } from 'vue';
+
+
+const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onKeydown: vi.fn() };
+vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
+
+const dropdownPopper = { updatePopper: vi.fn(), popperInstance: { setOptions: vi.fn() } };
+vi.mock('../../../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+vi.mock('webapps-common/ui/composables/useClickOutside', () => ({ default: vi.fn() }));
+
+import useDropdownPopper from '../../../composables/useDropdownPopper';
+import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
+import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
+
+window.scrollTo = vi.fn();
 
 describe('ControlMultiselect.vue', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('renders', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
@@ -57,6 +76,30 @@ describe('ControlMultiselect.vue', () => {
         expect(button.classes()).not.toContain('placeholder');
     });
 
+    it('number of selected items if items are selected and isFilter is true', () => {
+        const wrapper = mount(ControlMultiselect, {
+            props: {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2',
+                    selectedText: 'Test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }],
+                placeholder: 'Test Title',
+                isFilter: true,
+                modelValue: ['test1', 'test3']
+            }
+        });
+
+        let button = wrapper.find('[role="button"]');
+        expect(button.text()).toBe('2 selected');
+    });
+
     it('locks placeholder', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
@@ -89,7 +132,7 @@ describe('ControlMultiselect.vue', () => {
         expect(button.classes()).toContain('placeholder');
     });
 
-    it('emits input events', () => {
+    it('emits update:modelValue events', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
                 possibleValues: [{
@@ -123,11 +166,11 @@ describe('ControlMultiselect.vue', () => {
                 }]
             }
         });
-        expect(wrapper.vm.collapsed).toBe(true);
+        expect(wrapper.vm.isExpanded).toBe(false);
         wrapper.vm.toggle();
-        expect(wrapper.vm.collapsed).toBe(false);
+        expect(wrapper.vm.isExpanded).toBe(true);
         wrapper.vm.toggle();
-        expect(wrapper.vm.collapsed).toBe(true);
+        expect(wrapper.vm.isExpanded).toBe(false);
     });
 
     it('adds values to the checked values', () => {
@@ -171,8 +214,219 @@ describe('ControlMultiselect.vue', () => {
         expect(wrapper.vm.checkedValue).toHaveLength(0);
     });
 
-    describe('keyboard interaction', () => {
-        it('show options on space', () => {
+
+    it('show options on space', () => {
+        const wrapper = mount(ControlMultiselect, {
+            props: {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }]
+            }
+        });
+        let button = wrapper.find('[role=button]');
+        button.trigger('keydown.space');
+        expect(wrapper.vm.isExpanded).toBe(true);
+    });
+
+    describe('dropdown navigation', () => {
+        let props;
+
+        beforeEach(() => {
+            props = {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }]
+            };
+        });
+
+        it('calls keydown callback', () => {
+            const wrapper = mount(ControlMultiselect, { props });
+
+            wrapper.find('[role="button"]').trigger('keydown');
+
+            expect(dropdownNavigation.onKeydown).toHaveBeenCalled();
+        });
+
+        it('marks active element', () => {
+            const wrapper = mount(ControlMultiselect, { props });
+            wrapper.vm.toggle();
+            const currentfocusedIndex = dropdownNavigation.currentIndex.value;
+            const popover = wrapper.find({ ref: 'optionsPopover' });
+            const options = popover.findAll('.focused');
+            expect(options.length).toBe(1);
+            expect(options[0].html()).toContain(props.possibleValues[currentfocusedIndex].text);
+        });
+    
+        it('uses close function which emits @close', () => {
+            useDropdownNavigation.reset();
+            const wrapper = shallowMount(ControlMultiselect, { props });
+            const { close } = useDropdownNavigation.mock.calls[0][0];
+            wrapper.vm.toggle();
+         
+            expect(wrapper.vm.isExpanded).toBe(true);
+            close();
+            expect(wrapper.vm.isExpanded).toBe(false);
+        });
+    
+        describe('getNextElement', () => {
+            let elementClickSpy,
+                getNextElement;
+    
+            beforeEach(() => {
+                useDropdownNavigation.reset();
+                const wrapper = mount(ControlMultiselect, { props, attachTo: document.body });
+                wrapper.vm.toggle();
+                getNextElement = useDropdownNavigation.mock.calls[0][0].getNextElement;
+                
+                elementClickSpy = (i) => {
+                    const popover = wrapper.find({ ref: 'optionsPopover' });
+                    const element = popover.findAll('.boxes')[i].find('input').element;
+                    return vi.spyOn(element, 'click');
+                };
+            });
+
+            const expectNextElement = ({ index, onClick }, expectedIndex) => {
+                expect(index).toBe(expectedIndex);
+                const clickSpy = elementClickSpy(index);
+                clickSpy.reset();
+                onClick();
+                expect(clickSpy).toHaveBeenCalled();
+            };
+    
+            it('yields the first element on downward navigation if there is no previous selection', () => {
+                expectNextElement(getNextElement(-1, 1), 0);
+            });
+    
+            it('yields next element on downwards navigation and wraps around', () => {
+                expectNextElement(getNextElement(0, 1), 1);
+                expectNextElement(getNextElement(1, 1), 2);
+                expectNextElement(getNextElement(2, 1), 0);
+            });
+    
+            it('yields the last element on upwards navigation if there is no previous selection', () => {
+                expectNextElement(getNextElement(null, -1), 2);
+            });
+    
+            it('yields next element on upwards navigation and wraps around', () => {
+                expectNextElement(getNextElement(2, -1), 1);
+                expectNextElement(getNextElement(1, -1), 0);
+                expectNextElement(getNextElement(0, -1), 2);
+            });
+
+            it('yields first element', () => {
+                const getFirstElement = useDropdownNavigation.mock.calls[0][0].getFirstElement;
+                expectNextElement(getFirstElement(), 0);
+            });
+
+            it('yields last element', () => {
+                const getLastElement = useDropdownNavigation.mock.calls[0][0].getLastElement;
+                expectNextElement(getLastElement(), 2);
+            });
+
+            /* Since it is not possible to simulate the full browser functionality here, we instead mock the
+            accessed window parameters */
+            // eslint-disable-next-line vitest/max-nested-describe
+            describe('scrolls to current active element', () => {
+                it('scrolls down if the element is not visible at the bottom of the screen', () => {
+                    window.pageYOffset = -1000;
+                    window.innerHeight = 400;
+                    getNextElement(2, -1);
+                    expect(window.scrollTo).toHaveBeenCalledWith(window.pageXOffset, 20 - window.innerHeight);
+                });
+
+                it('scrolls up if the element is not visible at the top of the screen', () => {
+                    window.pageYOffset = 1000;
+                    window.innerHeight = 400;
+                    getNextElement(2, -1);
+                    expect(window.scrollTo).toHaveBeenCalledWith(window.pageXOffset, -20);
+                });
+            });
+        });
+
+        it('sets aria-owns and aria-activedescendant label', () => {
+            const wrapper = mount(ControlMultiselect, { props });
+            const button = wrapper.find('[role="button"]');
+            const selectedElementId = wrapper.find({ ref: 'optionsPopover' }).find('.focused').element.id;
+            expect(button.attributes('aria-owns')).toBe(selectedElementId);
+            expect(button.attributes('aria-activedescendant')).toBe(selectedElementId);
+        });
+
+
+        it('resets navigation on toggle', () => {
+            const wrapper = mount(ControlMultiselect, { props });
+            const button = wrapper.find('[role="button"]');
+            button.trigger('click');
+            expect(dropdownNavigation.resetNavigation).toHaveBeenCalled();
+        });
+    });
+
+    it('uses dropdown popper', () => {
+        useDropdownPopper.reset();
+        const wrapper = mount(ControlMultiselect, {
+            props: {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }]
+            }
+        });
+        const [{ popperTarget, referenceEl }] = useDropdownPopper.mock.calls[0];
+        
+        expect(unref(referenceEl)).toStrictEqual(wrapper.find('[role="button"]').element);
+        expect(unref(popperTarget)).toStrictEqual(wrapper.find({ ref: 'optionsPopover' }).element);
+    });
+
+    it('uses click outside', () => {
+        useClickOutside.reset();
+        const wrapper = mount(ControlMultiselect, {
+            props: {
+                possibleValues: [{
+                    id: 'test1',
+                    text: 'test1'
+                }, {
+                    id: 'test2',
+                    text: 'test2'
+                }, {
+                    id: 'test3',
+                    text: 'test3'
+                }]
+            }
+        });
+        const [{ targets, callback }, active] = useClickOutside.mock.calls[0];
+        
+        expect(targets.length).toBe(2);
+        expect(targets[0].value).toStrictEqual(wrapper.find('[role="button"]').element);
+        expect(targets[1].value).toStrictEqual(wrapper.find({ ref: 'optionsPopover' }).element);
+        expect(active.value).toBe(wrapper.vm.isExpanded);
+
+        wrapper.vm.toggle();
+        expect(wrapper.vm.isExpanded).toBe(true);
+        callback();
+        expect(wrapper.vm.isExpanded).toBe(false);
+    });
+
+    describe('drag reordering', () => {
+        it('reorders items on drag', () => {
             const wrapper = mount(ControlMultiselect, {
                 props: {
                     possibleValues: [{
@@ -187,13 +441,41 @@ describe('ControlMultiselect.vue', () => {
                     }]
                 }
             });
-            let button = wrapper.find('[role=button]');
-            button.trigger('keydown.space');
-            expect(wrapper.vm.collapsed).toBe(false);
+            let dragEvent = {
+                dataTransfer: {
+                    setDragImage: vi.fn()
+                }
+            };
+            const popover = wrapper.find({ ref: 'optionsPopover' });
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+            popover.find('.drag-handle').trigger('dragstart', dragEvent, 0);
+            expect(wrapper.vm.dragInd).toBe(0);
+            expect(wrapper.vm.dragGhost).toBeTruthy();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+            // test only switching hover ind after halfway over next item
+            dragEvent.offsetY = 10;
+            let secondItem = popover.findAll('.drag-handle').at(1);
+            secondItem.trigger('dragover', dragEvent, 1);
+            expect(wrapper.vm.dragInd).toBe(0);
+            expect(wrapper.vm.hoverInd).toBe(0);
+            expect(wrapper.vm.dragGhost).toBeTruthy();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+            // test only switching hover ind after halfway over next item
+            dragEvent.offsetY = 20;
+            secondItem.trigger('dragover', dragEvent, 1);
+            expect(wrapper.vm.dragInd).toBe(0);
+            expect(wrapper.vm.hoverInd).toBe(1);
+            expect(wrapper.vm.dragGhost).toBeTruthy();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+
+            secondItem.trigger('dragend', dragEvent);
+            expect(wrapper.vm.dragInd).toBeNull();
+            expect(wrapper.vm.hoverInd).toBeNull();
+            expect(wrapper.vm.dragGhost).toBeNull();
+            expect(wrapper.emitted().columnReorder).toStrictEqual([[0, 2]]);
         });
 
-        it('hide options on esc', () => {
-            vi.useFakeTimers();
+        it('clears hover ind when drag leaves multiselect', () => {
             const wrapper = mount(ControlMultiselect, {
                 props: {
                     possibleValues: [{
@@ -208,256 +490,48 @@ describe('ControlMultiselect.vue', () => {
                     }]
                 }
             });
-            let toggleFocusMock = vi.spyOn(wrapper.vm.$refs.toggle, 'focus');
-            let button = wrapper.find('[role=button]');
-            wrapper.vm.collapsed = false;
-            button.trigger('keydown.esc');
-            vi.runAllTimers();
-            expect(wrapper.vm.collapsed).toBe(true);
-            expect(toggleFocusMock).toHaveBeenCalled();
+            let dragEvent = {
+                dataTransfer: {
+                    setDragImage: vi.fn()
+                }
+            };
+            const popover = wrapper.find({ ref: 'optionsPopover' });
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+
+            popover.find('.drag-handle').trigger('dragstart', dragEvent, 0);
+            expect(wrapper.vm.dragInd).toBe(0);
+            expect(wrapper.vm.dragGhost).toBeTruthy();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+            wrapper.find('.multiselect').trigger('dragleave');
+            dragEvent.offsetY = 10;
+            let secondItem = popover.findAll('.drag-handle').at(1);
+            secondItem.trigger('dragover', dragEvent, 1);
+            expect(wrapper.vm.dragInd).toBe(0);
+            expect(wrapper.vm.hoverInd).toBe(0);
+            expect(wrapper.vm.dragGhost).toBeTruthy();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
+            wrapper.find('.multiselect').trigger('dragleave');
+            expect(wrapper.vm.hoverInd).toBeNull();
+            expect(wrapper.emitted().columnReorder).toBeFalsy();
         });
 
-        describe('arrow key navigation', () => {
-            it('gets next item to focus', () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
-                // up and down
-                wrapper.vm.focusOptions[1].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
-                expect(wrapper.vm.getNextElement(-1)).toBe(wrapper.vm.focusOptions[0]);
-                expect(wrapper.vm.getNextElement(1)).toBe(wrapper.vm.focusOptions[2]);
-                // jumps to end of list
-                wrapper.vm.focusOptions[0].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
-                expect(wrapper.vm.getNextElement(1)).toBe(wrapper.vm.focusOptions[1]);
-                expect(wrapper.vm.getNextElement(-1)).toBe(wrapper.vm.focusOptions[2]);
-                // jumps to start of list
-                wrapper.vm.focusOptions[2].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[2]);
-                expect(wrapper.vm.getNextElement(-1)).toBe(wrapper.vm.focusOptions[1]);
-                expect(wrapper.vm.getNextElement(1)).toBe(wrapper.vm.focusOptions[0]);
+        it('does not allow reoridering if it is a filter', () => {
+            const wrapper = mount(ControlMultiselect, {
+                props: {
+                    possibleValues: [{
+                        id: 'test1',
+                        text: 'test1'
+                    }, {
+                        id: 'test2',
+                        text: 'test2'
+                    }, {
+                        id: 'test3',
+                        text: 'test3'
+                    }],
+                    isFilter: true
+                }
             });
-    
-            it('focuses next element on key down', async () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
-                let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
-                expect(wrapper.vm.collapsed).toBe(true);
-                await wrapper.setData({ collapsed: false });
-                expect(wrapper.vm.collapsed).toBe(false);
-                expect(wrapper.vm.focusOptions.length).toBe(3);
-                wrapper.vm.focusOptions[0].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
-    
-                wrapper.trigger('keydown.down');
-    
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
-                expect(onDownMock).toHaveBeenCalled();
-            });
-    
-            it('focuses previous element on key up', async () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
-                let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
-                expect(wrapper.vm.collapsed).toBe(true);
-                await wrapper.setData({ collapsed: false });
-                expect(wrapper.vm.collapsed).toBe(false);
-                expect(wrapper.vm.focusOptions.length).toBe(3);
-                wrapper.vm.focusOptions[1].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
-    
-                wrapper.trigger('keydown.up');
-    
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
-                expect(onUpMock).toHaveBeenCalled();
-            });
-    
-            it('focuses first element on key down at list end', async () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
-                let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
-                expect(wrapper.vm.collapsed).toBe(true);
-                await wrapper.setData({ collapsed: false });
-                expect(wrapper.vm.collapsed).toBe(false);
-                expect(wrapper.vm.focusOptions.length).toBe(3);
-                wrapper.vm.focusOptions[2].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[2]);
-    
-                wrapper.trigger('keydown.down');
-    
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
-                expect(onDownMock).toHaveBeenCalled();
-            });
-    
-            it('focuses last element on key up at list start', async () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
-                let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
-                expect(wrapper.vm.collapsed).toBe(true);
-                await wrapper.setData({ collapsed: false });
-                expect(wrapper.vm.collapsed).toBe(false);
-                expect(wrapper.vm.focusOptions.length).toBe(3);
-                wrapper.vm.focusOptions[0].focus();
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[0]);
-    
-                wrapper.trigger('keydown.up');
-    
-                expect(document.activeElement).toBe(wrapper.vm.focusOptions[2]);
-                expect(onUpMock).toHaveBeenCalled();
-            });
-        });
-
-        describe('drag reordering', () => {
-            it('reorders items on drag', () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    }
-                });
-                let dragEvent = {
-                    dataTransfer: {
-                        setDragImage: vi.fn()
-                    }
-                };
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                wrapper.find('.drag-handle').trigger('dragstart', dragEvent, 0);
-                expect(wrapper.vm.dragInd).toBe(0);
-                expect(wrapper.vm.dragGhost).toBeTruthy();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                // test only switching hover ind after halfway over next item
-                dragEvent.offsetY = 10;
-                let secondItem = wrapper.findAll('.drag-handle').at(1);
-                secondItem.trigger('dragover', dragEvent, 1);
-                expect(wrapper.vm.dragInd).toBe(0);
-                expect(wrapper.vm.hoverInd).toBe(0);
-                expect(wrapper.vm.dragGhost).toBeTruthy();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                // test only switching hover ind after halfway over next item
-                dragEvent.offsetY = 20;
-                secondItem.trigger('dragover', dragEvent, 1);
-                expect(wrapper.vm.dragInd).toBe(0);
-                expect(wrapper.vm.hoverInd).toBe(1);
-                expect(wrapper.vm.dragGhost).toBeTruthy();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-
-                secondItem.trigger('dragend', dragEvent);
-                expect(wrapper.vm.dragInd).toBeNull();
-                expect(wrapper.vm.hoverInd).toBeNull();
-                expect(wrapper.vm.dragGhost).toBeNull();
-                expect(wrapper.emitted().columnReorder).toStrictEqual([[0, 2]]);
-            });
-
-            it('clears hover ind when drag leaves multiselect', () => {
-                const wrapper = mount(ControlMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    }
-                });
-                let dragEvent = {
-                    dataTransfer: {
-                        setDragImage: vi.fn()
-                    }
-                };
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                wrapper.find('.drag-handle').trigger('dragstart', dragEvent, 0);
-                expect(wrapper.vm.dragInd).toBe(0);
-                expect(wrapper.vm.dragGhost).toBeTruthy();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                wrapper.find('.multiselect').trigger('dragleave');
-                dragEvent.offsetY = 10;
-                let secondItem = wrapper.findAll('.drag-handle').at(1);
-                secondItem.trigger('dragover', dragEvent, 1);
-                expect(wrapper.vm.dragInd).toBe(0);
-                expect(wrapper.vm.hoverInd).toBe(0);
-                expect(wrapper.vm.dragGhost).toBeTruthy();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-                wrapper.find('.multiselect').trigger('dragleave');
-                expect(wrapper.vm.hoverInd).toBeNull();
-                expect(wrapper.emitted().columnReorder).toBeFalsy();
-            });
+            expect(wrapper.find({ ref: 'optionsPopover' }).find('.drag-handle').exists()).toBeFalsy();
         });
     });
 });

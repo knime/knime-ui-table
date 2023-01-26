@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 
 import BottomControls from '../BottomControls.vue';
 import BaseControls from '../BaseControls.vue';
@@ -19,7 +19,7 @@ describe('BottomControls.vue', () => {
     };
 
     it('renders table bottom controls', () => {
-        wrapper = shallowMount(BottomControls, { props });
+        wrapper = mount(BottomControls, { props });
 
         expect(wrapper.findComponent(BottomControls).exists()).toBe(true);
         expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
@@ -50,7 +50,7 @@ describe('BottomControls.vue', () => {
     });
 
     it('emits pageSizeUpdate events', () => {
-        wrapper = shallowMount(BottomControls, { props });
+        wrapper = mount(BottomControls, { props });
         expect(wrapper.emitted().prevPage).toBeFalsy();
         wrapper.findComponent(ControlDropdown).vm.$emit('update:modelValue', '50 per page');
         expect(wrapper.emitted().pageSizeUpdate[0][0]).toBe(50);

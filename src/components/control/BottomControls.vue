@@ -52,15 +52,17 @@ export default {
     class="base-controls"
     v-bind="{...$props, ...$attrs}"
   >
-    <ControlDropdown
-      open-up
-      :model-value="createText(pageConfig.pageSize)"
-      :aria-label="'Choose page size'"
-      :possible-values="getSelectItems(pageConfig.possiblePageSizes.map(num => createText(num)))"
-      class="dropdown-controls"
-      placeholder="Items per page"
-      @update:model-value="onPageSizeSelect"
-    />
+    <template #carousel>
+      <ControlDropdown
+        open-up
+        :model-value="createText(pageConfig.pageSize)"
+        :aria-label="'Choose page size'"
+        :possible-values="getSelectItems(pageConfig.possiblePageSizes.map(num => createText(num)))"
+        class="dropdown-controls"
+        placeholder="Items per page"
+        @update:model-value="onPageSizeSelect"
+      />
+    </template>
   </BaseControls>
 </template>
 
