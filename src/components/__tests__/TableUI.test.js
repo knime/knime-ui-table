@@ -16,6 +16,9 @@ import { columnTypes } from '@/config/table.config';
 
 const expectedNormalRowHeight = 41;
 
+const mockedScrollBarWidth = 10;
+vi.mock('../../util/getScrollbarWidth.js', () => ({ default: vi.fn(() => mockedScrollBarWidth) }));
+
 const getProps = ({
     includeSubHeaders = true,
     compactMode = false,
@@ -40,7 +43,8 @@ const getProps = ({
         fixHeader: false
     },
     numRowsAbove = 0,
-    bottomData = []
+    bottomData = [],
+    fitToContainer = false
 }) => ({
     data,
     bottomData,
@@ -107,7 +111,8 @@ const getProps = ({
             currentGroup: null
         },
         ...columnFilterInitiallyActive === null ? {} : { columnFilterInitiallyActive },
-        ...actionButtonConfig ? { actionButtonConfig } : {}
+        ...actionButtonConfig ? { actionButtonConfig } : {},
+        fitToContainer
     }
 });
 
@@ -158,7 +163,8 @@ describe('TableUI.vue', () => {
             currentBottomSelection,
             pageConfig,
             numRowsAbove,
-            bottomData
+            bottomData,
+            fitToContainer
         });
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
@@ -562,7 +568,7 @@ describe('TableUI.vue', () => {
             expect(wrapper.vm.fullBodyHeight).toEqual(expectedNormalRowHeight);
         });
 
-        it('sets current body height to zero if there is no available space', () => {
+        it('sets current body height to full body height if fitToContainer is false', () => {
             const { wrapper } = doMount({ pageConfig: {
                 currentSize: 1,
                 tableSize: 1,
@@ -570,12 +576,16 @@ describe('TableUI.vue', () => {
                 possiblePageSizes: [1],
                 currentPage: 1
             },
-            wrapperHeight: 10 });
+            fitToContainer: false,
+            wrapperHeight: 20 });
 
-            expect(wrapper.vm.currentBodyHeight).toBe(0);
+            expect(wrapper.vm.fullBodyHeight).toBe(41);
+            expect(wrapper.vm.currentBodyHeight).toBe(41);
+            wrapper.setData({ filterActive: true });
+            expect(wrapper.vm.currentBodyHeight).toBe(41);
         });
 
-        it('sets current body height to available space if it the full body size is larger than it', async () => {
+        it('sets current body height to available space if fitToContainer is true', async () => {
             const { wrapper } = doMount({ pageConfig: {
                 currentSize: 1,
                 tableSize: 1,
@@ -583,14 +593,21 @@ describe('TableUI.vue', () => {
                 possiblePageSizes: [1],
                 currentPage: 1
             },
-            wrapperHeight: 150 });
-
-            expect(wrapper.vm.currentBodyHeight).toBe(39);
+            fitToContainer: true,
+            wrapperHeight: 200 });
+            wrapper.setData({ wrapperWidth: 2000 }); // greater than the currentBodyWidth
+            await wrapper.vm.$nextTick();
+            // still taking the full body height as there is enough space
+            expect(wrapper.vm.currentBodyHeight).toBe(41);
             await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentBodyHeight).toBe(1);
+            expect(wrapper.vm.currentBodyHeight).toBe(40);
+            wrapper.setData({ wrapperWidth: 20 }); // smaller than the currentBodyWidth
+            await wrapper.vm.$nextTick();
+            expect(wrapper.vm.scrollBarWidth).toBe(mockedScrollBarWidth);
+            expect(wrapper.vm.currentBodyHeight).toEqual(40 - mockedScrollBarWidth);
         });
 
-        it('increases computed table height if filters are visible', async () => {
+        it('increases computed table height if filters are visible', () => {
             const { wrapper } = doMount({ pageConfig: {
                 currentSize: 1,
                 tableSize: 1,
@@ -600,8 +617,8 @@ describe('TableUI.vue', () => {
             } });
 
             expect(wrapper.vm.currentTableHeight).toBe(81);
-            await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentTableHeight).toBe(119);
+            wrapper.setData({ filterActive: true });
+            expect(wrapper.vm.currentTableHeight).toBe(121);
         });
     });
 
@@ -732,7 +749,7 @@ describe('TableUI.vue', () => {
                 firstRow.onRowExpand();
                 await wrapper.vm.$nextTick();
                 Object.defineProperty(firstRow.$el.children[1], 'clientHeight', { value: expandedContentHeight });
-                
+
                 expect(wrapper.vm.currentExpanded).toContain(0);
 
                 expect(wrapper.vm.scrollData).toStrictEqual([[

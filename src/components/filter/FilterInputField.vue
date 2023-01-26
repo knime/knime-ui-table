@@ -8,11 +8,7 @@
  */
 export default {
     props: {
-        /**
-         *  currently used in ColumnFilter with a v-bind, so renaming this to modelValue is only possible when
-         * filterConfigs are adjusted, too.
-        */
-        value: {
+        modelValue: {
             default: '',
             type: [Number, String]
         },
@@ -25,13 +21,13 @@ export default {
             type: Boolean
         }
     },
-    emits: ['input', 'blur'],
+    emits: ['update:modelValue', 'blur'],
     methods: {
         getValue() {
             return this.$refs.input.value;
         },
         onInput() {
-            this.$emit('input', this.getValue());
+            this.$emit('update:modelValue', this.getValue());
         },
         onBlur(e) {
             this.$emit('blur', e);
@@ -47,7 +43,7 @@ export default {
   <div>
     <input
       ref="input"
-      :value="value"
+      :value="modelValue"
       :placeholder="placeholder"
       :disabled="disabled"
       type="text"

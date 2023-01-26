@@ -81,7 +81,6 @@ export default {
             showSorting: true,
             showPopovers: true,
             compactMode: true,
-            fixHeader: true,
             showActionButton: false,
             enableVirtualScrolling: false,
             headerSubMenuItems: [],
@@ -108,7 +107,6 @@ export default {
                 showSorting: this.showSorting,
                 showPopovers: this.showPopovers,
                 compactMode: this.compactMode,
-                fixHeader: this.fixHeader,
                 showActionButton: this.showActionButton,
                 headerSubMenuItems: this.headerSubMenuItems,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
@@ -153,7 +151,7 @@ export default {
 </script>
 
 <template>
-  <div :class="{ 'fix-header': fixHeader }">
+  <div class="demo">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -189,7 +187,6 @@ export default {
       </Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
       <Checkbox v-model="fitToContainer">fit to container</Checkbox>
-      <Checkbox v-model="fixHeader">fix header</Checkbox>
       <Checkbox @input="onShowHeaderSubMenu">header sub menu settings</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
@@ -222,22 +219,22 @@ export default {
   }
 
   body {
-    background-color: var(--knime-silver-sand-semi);
+    background-color: var(--knime-porcelain);
     padding: 12px;
   }
 
-  .fix-header {
+  .demo {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
     overflow: visible;
   }
 
-  .fix-header h2 {
+  .demo h2 {
     margin-bottom: 0;
   }
 
-  .fix-header button {
+  .demo button {
     align-self: flex-start;
   }
 

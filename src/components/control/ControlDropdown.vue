@@ -1,15 +1,15 @@
-<script>
-import { mixin as VueClickAway } from 'vue3-click-away';
-
+<script lang="ts">
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-
-const KEY_DOWN = 40;
-const KEY_UP = 38;
-const KEY_HOME = 36;
-const KEY_END = 35;
-const KEY_ESC = 27;
-const KEY_ENTER = 13;
-const KEY_SPACE = 32;
+import { ref, computed, toRefs } from 'vue';
+import type { Ref, PropType } from 'vue';
+import { isMissingValue } from '@/util';
+import useDropdownPopper from '../../composables/useDropdownPopper';
+import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
+import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
+import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
+import type PossibleValue from '../../types/PossibleValue';
+import useIdGeneration from '@/composables/useIdGeneration';
 
 /**
  * A dropdown component specifically styled for the top and bottom control bars of the table
@@ -20,9 +20,9 @@ const KEY_SPACE = 32;
  */
 export default {
     components: {
+        CircleHelpIcon,
         DropdownIcon
     },
-    mixins: [VueClickAway],
     props: {
         modelValue: {
             type: String,
@@ -48,7 +48,7 @@ export default {
          * }]
          */
         possibleValues: {
-            type: Array,
+            type: Array as PropType<PossibleValue[]>,
             default: () => [],
             validator(values) {
                 if (!Array.isArray(values)) {
@@ -59,7 +59,7 @@ export default {
         },
         formatter: {
             type: Function,
-            default: item => item
+            default: (item : string) => item
         },
         includePlaceholder: {
             type: Boolean,
@@ -68,34 +68,107 @@ export default {
         openUp: {
             type: Boolean,
             default: false
+        },
+        isFilter: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:modelValue'],
-    data() {
-        return {
-            isExpanded: false,
-            localValues: (() => {
-                let values = this.possibleValues;
-                if (this.includePlaceholder) {
-                    values.unshift({
-                        id: this.placeholder,
-                        text: this.placeholder
-                    });
+    setup(props) {
+        const button = ref(null);
+        const ul: Ref<HTMLUListElement | null> = ref(null);
+        const options: Ref<HTMLLIElement[]|null> = ref([]);
+        const isExpanded = ref(false);
+
+        // for accessibility, we need to scroll to the element we navigate to using keyboard navigation
+        const scrollTo = (element: HTMLElement) => {
+            const listBoxNode = ul.value;
+            if (listBoxNode && listBoxNode.scrollHeight > listBoxNode.clientHeight) {
+                const scrollBottom = listBoxNode.clientHeight + listBoxNode.scrollTop;
+                const elementBottom = element.offsetTop + element.offsetHeight;
+                if (elementBottom > scrollBottom) {
+                    listBoxNode.scrollTop = elementBottom - listBoxNode.clientHeight;
+                } else if (element.offsetTop < listBoxNode.scrollTop) {
+                    listBoxNode.scrollTop = element.offsetTop;
                 }
-                return values;
-            })(),
-            id: 'dropdown-input'
+            }
+        };
+
+        const getNextElement = (current: number | null, direction: 1 | -1) => {
+            const listItems = options.value as HTMLLIElement[];
+            const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
+            scrollTo(element);
+            return { index, onClick: () => element.click() };
+        };
+
+        const getFirstElement = () => getNextElement(null, 1);
+
+        const getLastElement = () => getNextElement(null, -1);
+
+        const closeMenu = () => {
+            isExpanded.value = false;
+        };
+
+        const { updatePopper } = useDropdownPopper({ popperTarget: ul, referenceEl: button }, props.openUp);
+        const { onKeydown, resetNavigation, currentIndex: selectedIndex } = useDropdownNavigation({
+            getNextElement,
+            getFirstElement,
+            getLastElement,
+            close: closeMenu
+        });
+
+        useClickOutside({
+            targets: [button, ul],
+            callback: () => {
+                closeMenu();
+                resetNavigation();
+            }
+        }, isExpanded);
+        const { possibleValues, includePlaceholder, placeholder } = toRefs(props);
+        const localValues = computed(() => {
+            const values = possibleValues.value.filter(({ id }) => typeof id !== 'undefined');
+            if (includePlaceholder.value) {
+                values.unshift({
+                    id: placeholder.value,
+                    text: placeholder.value
+                });
+            }
+            return values;
+        });
+        const ids = computed(() => localValues.value.map(({ id }) => id));
+
+        const { activeDescendantId, buttonId, generateOptionId } = useIdGeneration(
+            ids,
+            selectedIndex,
+            'dropdown-input'
+        );
+        return {
+            updatePopper,
+            onKeydown,
+            resetNavigation,
+            generateOptionId,
+            localValues,
+            selectedIndex,
+            isExpanded,
+            options,
+            button,
+            ul,
+            activeDescendantId,
+            buttonId
         };
     },
     computed: {
-        selectedIndex() {
-            return this.localValues.map(x => x.id).indexOf(this.modelValue);
-        },
         showPlaceholder() {
-            return !this.modelValue || this.modelValue === this.placeholder;
+            const noModelValuePresent = typeof this.modelValue === 'undefined' || this.modelValue === '';
+            if (this.includePlaceholder) {
+                return noModelValuePresent || this.modelValue === this.placeholder;
+            } else {
+                return noModelValuePresent;
+            }
         },
         displayTextMap() {
-            let map = {};
+            let map: Record<string, string> = {};
             for (let value of this.localValues) {
                 map[value.id] = value.text;
             }
@@ -112,134 +185,29 @@ export default {
         }
     },
     methods: {
-        isCurrentValue(candidate) {
+        isCurrentValue(candidate: string) {
             return this.modelValue === candidate;
         },
-        setSelected(value) {
+        isMissingValue,
+        isFocusedValue(index: number) {
+            return this.selectedIndex === index;
+        },
+        setSelected(value: string) {
             consola.trace('ListBox setSelected on', value);
             if (this.includePlaceholder && value === this.placeholder) {
                 value = '';
             }
-            /**
-             * Fired when the selection changes.
-             *
-             * @event input
-             * @type {String}
-             */
             this.$emit('update:modelValue', value);
         },
-        onOptionClick(value) {
+        onOptionClick(value: string) {
             this.setSelected(value);
             this.isExpanded = false;
-            this.$refs.button.focus();
-        },
-        scrollTo(optionIndex) {
-            let listBoxNode = this.$refs.ul;
-            if (listBoxNode.scrollHeight > listBoxNode.clientHeight) {
-                let element = this.$refs.options[optionIndex];
-                let scrollBottom = listBoxNode.clientHeight + listBoxNode.scrollTop;
-                let elementBottom = element.offsetTop + element.offsetHeight;
-                if (elementBottom > scrollBottom) {
-                    listBoxNode.scrollTop = elementBottom - listBoxNode.clientHeight;
-                } else if (element.offsetTop < listBoxNode.scrollTop) {
-                    listBoxNode.scrollTop = element.offsetTop;
-                }
-            }
-        },
-        onArrowDown() {
-            let next = this.selectedIndex + 1;
-            if (next >= this.localValues.length) {
-                return;
-            }
-            this.setSelected(this.localValues[next].id);
-            this.scrollTo(next);
-        },
-        onArrowUp() {
-            let next = this.selectedIndex - 1;
-            if (next < 0) {
-                return;
-            }
-            this.setSelected(this.localValues[next].id);
-            this.scrollTo(next);
-        },
-        onEndKey() {
-            let next = this.localValues.length - 1;
-            this.setSelected(this.localValues[next].id);
-            this.$refs.ul.scrollTop = this.$refs.ul.scrollHeight;
-        },
-        onHomeKey() {
-            let next = 0;
-            this.setSelected(this.localValues[next].id);
-            this.$refs.ul.scrollTop = 0;
+            this.updatePopper();
         },
         toggleExpanded() {
             this.isExpanded = !this.isExpanded;
-            if (this.isExpanded) {
-                this.$nextTick(() => this.$refs.ul.focus());
-            }
-        },
-        handleKeyDownList(e) {
-            /* NOTE: we use a single keyDown method because @keydown.up bindings are not testable. */
-            if (e.keyCode === KEY_DOWN) {
-                this.onArrowDown();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_UP) {
-                this.onArrowUp();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_END) {
-                this.onEndKey();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_HOME) {
-                this.onHomeKey();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_ESC) {
-                this.isExpanded = false;
-                this.$refs.ul.blur();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_ENTER) {
-                this.isExpanded = false;
-                this.$refs.button.focus();
-                e.preventDefault();
-            }
-        },
-        handleKeyDownButton(e) {
-            if (e.keyCode === KEY_ENTER || e.keyCode === KEY_SPACE) {
-                this.toggleExpanded();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_DOWN) {
-                this.onArrowDown();
-                e.preventDefault();
-            }
-            if (e.keyCode === KEY_UP) {
-                this.onArrowUp();
-                e.preventDefault();
-            }
-        },
-        hasSelection() {
-            return this.selectedIndex >= 0;
-        },
-        getCurrentSelectedId() {
-            try {
-                return this.localValues[this.selectedIndex].id;
-            } catch (e) {
-                return '';
-            }
-        },
-        generateId(node, itemId) {
-            if (!itemId) {
-                return `${node}-${this.id}`;
-            }
-            let cleanId = String(itemId).replace(/[^\w]/gi, '');
-            return `${node}-${this.id}-${cleanId}`;
-        },
-        clickAway() {
-            this.isExpanded = false;
+            this.resetNavigation();
+            this.updatePopper();
         }
     }
 };
@@ -247,48 +215,63 @@ export default {
 
 <template>
   <div
-    v-click-away="clickAway"
-    :class="['dropdown' , { collapsed: !isExpanded }]"
+    :class="['dropdown' , { filter: isFilter, collapsed: !isExpanded }]"
+    @keydown.space.prevent="toggleExpanded"
   >
     <div
-      :id="generateId('button')"
+      :id="buttonId"
       ref="button"
       role="button"
       tabindex="0"
       aria-haspopup="listbox"
       :class="{'placeholder': showPlaceholder}"
       :aria-label="ariaLabel"
-      :aria-labelledby="generateId('button')"
+      :aria-labelledby="buttonId"
       :aria-expanded="isExpanded"
+      :aria-activedescendant="activeDescendantId"
+      :aria-owns="activeDescendantId"
       @click="toggleExpanded"
-      @keydown="handleKeyDownButton"
+      @keydown="isExpanded && onKeydown($event)"
     >
-      {{ displayText }}
+      <CircleHelpIcon
+        v-if="isMissingValue(displayText)"
+        class="missing-value-icon"
+      />
+      <span v-else>{{ displayText }}</span>
       <DropdownIcon :class="['icon', { 'open-up': openUp }]" />
     </div>
-    <ul
-      v-show="isExpanded"
-      ref="ul"
-      role="listbox"
-      tabindex="-1"
-      :class="{ 'open-up': openUp, 'with-placeholder': includePlaceholder }"
-      :aria-activedescendant="isExpanded ? generateId('option', getCurrentSelectedId()) : false"
-      @keydown="handleKeyDownList"
-    >
-      <li
-        v-for="item of localValues"
-        :id="generateId('option', item.id)"
-        :key="`listbox-${item.id}`"
-        ref="options"
-        role="option"
-        :title="item.text"
-        :class="{ 'focused': isCurrentValue(item.id), 'noselect': true, 'empty': item.text.trim() === '' }"
-        :aria-selected="isCurrentValue(item.id)"
-        @click="onOptionClick(item.id)"
+    <Teleport to="body">
+      <ul
+        v-show="isExpanded"
+        ref="ul"
+        role="listbox"
+        tabindex="-1"
+        :class="{ 'open-up': openUp, 'with-placeholder': includePlaceholder, filter: isFilter }"
       >
-        {{ item.text }}
-      </li>
-    </ul>
+        <li
+          v-for="item, index in localValues"
+          :id="generateOptionId(item.id)"
+          :key="`listbox-${item.id}`"
+          ref="options"
+          role="option"
+          :title="item.text"
+          :class="{
+            'focused': isFocusedValue(index),
+            'selected': isCurrentValue(item.id),
+            'noselect': true,
+            'empty': item.text?.trim() === ''
+          }"
+          :aria-selected="isCurrentValue(item.id)"
+          @click="onOptionClick(item.id)"
+        >
+          <CircleHelpIcon
+            v-if="isMissingValue(item.id)"
+            class="missing-value-icon"
+          />
+          <span v-else-if="item.text !== undefined">{{ item.text }}</span>
+        </li>
+      </ul>
+    </Teleport>
   </div>
 </template>
 
@@ -300,46 +283,94 @@ export default {
     color: var(--knime-stone-gray);
   }
 
+  &.filter {
+    background-color: var(--knime-white);
+
+    &.collapsed:hover  {
+        background-color: var(--knime-silver-sand-semi);
+    }
+  }
+
   & [role="button"] {
     margin: 0;
     padding: 0 38px 0 10px;
     font-size: 13px;
-    height: 40px;
-    line-height: 40px; /* to center text vertically */
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 
-    &:focus,
-    &:hover {
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      position: absolute;
+      left: 10px;
+      top: 7px;
+    }
+  }
+
+  &.filter [role="button"] {
+    border: 1px solid var(--knime-stone-gray);
+    font-weight: 400;
+    height: 27px;
+    line-height: 26px; /* to center text vertically */
+  }
+
+  &:not(.filter) [role="button"] {
+    height: 40px;
+    line-height: 40px; /* to center text vertically */
+  }
+
+  & [role="button"]:focus {
       outline: none;
+  }
+
+  &.filter [role="button"]:focus {
+      border-color: var(--knime-masala);
+  }
+
+  &:not(.filter) [role="button"]:focus,
+  &:not(.filter) [role="button"]:hover {
       color: var(--knime-masala);
 
       & :deep(svg) {
         stroke: var(--knime-masala);
       }
-    }
   }
+ 
 
   &.collapsed:hover {
     color: var(--knime-masala);
   }
 
   & .icon {
-    width: 18px;
-    height: 18px;
-    stroke-width: calc(32px / 18);
-    stroke: var(--knime-dove-gray);
     position: absolute;
-    right: 10px;
-    top: 11px;
     pointer-events: none;
     transition: transform 0.2s ease-in-out;
 
     &.open-up {
       transform: scaleY(-1);
     }
+  }
+
+  &.filter .icon {
+    width: 12px;
+    height: 12px;
+    stroke-width: calc(32px / 12);
+    stroke: var(--knime-masala);
+    right: 7px;
+    top: 8px;
+  }
+
+  &:not(.filter) .icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: calc(32px / 18);
+    stroke: var(--knime-dove-gray);
+    right: 10px;
+    top: 11px;
   }
 
   &:not(.collapsed) .icon {
@@ -349,70 +380,83 @@ export default {
       transform: rotate(0deg);
     }
   }
+}
 
-  /* this selector is required to override some * rules interfere (overflow) - so do not simplify */
-  & [role="listbox"] {
-    overflow-y: auto;
-    position: absolute;
-    z-index: 2;
-    max-height: calc(22px * 7); /* show max 7 items */
+/* this selector is required to override some * rules interfere (overflow) - so do not simplify */
+[role="listbox"] {
+  overflow-y: auto;
+  z-index: 2;
+  max-height: calc(22px * 7); /* show max 7 items */
+  min-height: 22px;
+  width: fit-content;
+  padding: 0;
+  background: var(--knime-white);
+  cursor: pointer;
+
+  &:not(.filter) {
     font-size: 14px;
-    min-height: 22px;
-    min-width: 100%;
-    width: fit-content;
-    padding: 0;
     margin: -1px 0 1px;
-    background: var(--knime-white);
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-    cursor: pointer;
-
-    & [role="option"] {
-      display: block;
-      width: 100%;
-      padding: 0 10px;
-      line-height: 22px;
-      position: relative;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      background: var(--theme-dropdown-background-color);
-      color: var(--theme-dropdown-foreground-color);
-
-      &.empty {
-        white-space: pre-wrap;
-      }
-
-      &:hover {
-        background: var(--theme-dropdown-background-color-hover);
-        color: var(--theme-dropdown-foreground-color-hover);
-      }
-
-      &:focus {
-        background: var(--theme-dropdown-background-color-focus);
-        color: var(--theme-dropdown-foreground-color-focus);
-      }
-
-      &.focused {
-        background: var(--theme-dropdown-background-color-selected);
-        color: var(--theme-dropdown-foreground-color-selected);
-      }
-    }
-
-    &.with-placeholder [role="option"]:first-child {
-      color: var(--knime-stone);
-    }
-
-    &:focus {
-      outline: none;
-    }
   }
 
-  & [role="listbox"].open-up {
+  &.filter{
+    font-size: 13px;
+    font-weight: 400;
+    margin: -1.5px 0 1px;
+    box-shadow: 0 1px 5px 0 var(--knime-gray-dark);
+  }
+
+  &.open-up {
     bottom: 40px;
   }
 
   & .noselect {
     user-select: none;
+  }
+
+  & [role="option"] {
+    display: block;
+    width: 100%;
+    padding: 0 10px;
+    line-height: 22px;
+    position: relative;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--theme-dropdown-background-color);
+    color: var(--theme-dropdown-foreground-color);
+
+    &.empty {
+      white-space: pre-wrap;
+    }
+
+    &.selected {
+      background: var(--theme-dropdown-background-color-selected);
+      color: var(--theme-dropdown-foreground-color-selected);
+    }
+
+    &:hover,
+    &.focused {
+      background: var(--theme-dropdown-background-color-hover);
+      color: var(--theme-dropdown-foreground-color-hover);
+    }
+
+
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      vertical-align: middle;
+    }
+  }
+
+  &.with-placeholder [role="option"]:first-child {
+    color: var(--knime-stone);
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 </style>

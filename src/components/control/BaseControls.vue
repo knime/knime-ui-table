@@ -1,5 +1,6 @@
 <script>
 import PageControls from './PageControls.vue';
+import Carousel from 'webapps-common/ui/components/Carousel.vue';
 
 /**
  * Base table header component with table page controls on the left of the table row
@@ -10,7 +11,8 @@ import PageControls from './PageControls.vue';
  */
 export default {
     components: {
-        PageControls
+        PageControls,
+        Carousel
     },
     props: {
         pageConfig: {
@@ -23,6 +25,11 @@ export default {
                 const requiredProperties = ['currentSize', 'tableSize', 'pageSize', 'currentPage', 'possiblePageSizes'];
                 return requiredProperties.every(key => pageConfig.hasOwnProperty(key));
             }
+        },
+        hasCarousel: {
+            type: Boolean,
+            required: false,
+            default: true
         }
     },
     emits: ['nextPage', 'prevPage'],
@@ -52,7 +59,20 @@ export default {
         @prev-page="onPrevPage"
       />
       <th class="right-controls">
-        <slot />
+        <div
+          v-if="hasCarousel"
+          ref="carousel-wrapper"
+          class="carousel-wrapper"
+        >
+          <Carousel>
+            <div class="wrapper">
+              <slot name="carousel" />
+            </div>
+          </Carousel>
+        </div>
+        <div class="wrapper">
+          <slot name="rightmost-control" />
+        </div>
       </th>
     </tr>
   </thead>
@@ -61,10 +81,9 @@ export default {
 <style lang="postcss" scoped>
 thead {
   & tr {
+    justify-content: space-between;
     padding: 0;
     margin: 0;
-    margin-top: -3px;
-    margin-bottom: -2px;
     height: 40px;
 
     & th {
@@ -73,16 +92,36 @@ thead {
       color: var(--knime-dove-gray);
 
       &.right-controls {
+        min-width: 0;
         display: flex;
-        align-items: center;
-        margin-left: auto;
         justify-content: flex-end;
-        text-align: left;
 
-        & span {
-          line-height: 50px;
+        & .wrapper {
+          flex-flow: row nowrap;
+          display: inline-flex;
+          align-items: center;
+          text-align: left;
+  
+          & span {
+            line-height: 50px;
+          }
+        }
+
+        & .carousel-wrapper {
+          min-width: 0;
+
+          & .wrapper {
+            padding-left: 0;
+            padding-right: 0;
+          }
+          
+          & :deep(.shadow-wrapper) {
+            margin-right: 0;
+            margin-left: 0;
+          }
         }
       }
+
     }
   }
 }

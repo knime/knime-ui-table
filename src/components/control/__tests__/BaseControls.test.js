@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
+import Carousel from 'webapps-common/ui/components/Carousel.vue';
 
 import BaseControls from '../BaseControls.vue';
 import PageControls from '../PageControls.vue';
@@ -7,8 +8,8 @@ import PageControls from '../PageControls.vue';
 describe('BaseControls.vue', () => {
     let wrapper;
 
-    it('renders page controls', () => {
-        wrapper = shallowMount(BaseControls, {
+    it('renders page controls and slots', () => {
+        wrapper = mount(BaseControls, {
             props: {
                 totalItems: 100,
                 currentItems: 100,
@@ -16,12 +17,14 @@ describe('BaseControls.vue', () => {
                 currentPage: 1
             },
             slots: {
-                default: '<h3>This is a Slot!</h3>'
+                carousel: '<h2>This is a Slot inside a carousel!</h2>',
+                'rightmost-control': '<h3>This is a Slot on the right!</h3>'
             }
         });
 
         expect(wrapper.findComponent(BaseControls).exists()).toBe(true);
         expect(wrapper.findComponent(PageControls).exists()).toBe(true);
+        expect(wrapper.findComponent(Carousel).find('h2').exists()).toBe(true);
         expect(wrapper.find('h3').exists()).toBe(true);
     });
 
@@ -32,9 +35,6 @@ describe('BaseControls.vue', () => {
                 currentItems: 100,
                 pageSize: 25,
                 currentPage: 1
-            },
-            slots: {
-                default: '<h3>This is a Slot!</h3>'
             }
         });
         expect(wrapper.emitted().nextPage).toBeFalsy();
