@@ -81,6 +81,7 @@ export default {
 <style lang="postcss" scoped>
 thead {
   & tr {
+    display: flex;
     justify-content: space-between;
     padding: 0;
     margin: 0;
@@ -101,7 +102,7 @@ thead {
           display: inline-flex;
           align-items: center;
           text-align: left;
-  
+
           & span {
             line-height: 50px;
           }

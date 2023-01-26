@@ -300,6 +300,11 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
+tr {
+  display: flex;
+}
+
 tr.row {
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);

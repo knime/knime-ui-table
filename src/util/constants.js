@@ -21,9 +21,6 @@ export const ROW_MARGIN_BOTTOM = 1;
 // the height of the table header and group headers
 export const HEADER_HEIGHT = DEFAULT_ROW_HEIGHT;
 
-// the height of the top/bottom controls of the table
-export const CONTROLS_HEIGHT = 40;
-
 // the maximum width of the submenu in the header
 export const MAX_SUB_MENU_WIDTH = 160;
 

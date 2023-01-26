@@ -241,22 +241,22 @@ describe('ControlDropdown.vue', () => {
             expect(options.length).toBe(1);
             expect(options[0].html()).toContain(props.possibleValues[currentfocusedIndex].text);
         });
-    
+
         it('uses close function which emits @close', () => {
             useDropdownNavigation.reset();
             const wrapper = shallowMount(ControlDropdown, { props });
             const { close } = useDropdownNavigation.mock.calls[0][0];
             wrapper.find('[role="button"]').trigger('click');
-         
+
             expect(wrapper.vm.isExpanded).toBe(true);
             close();
             expect(wrapper.vm.isExpanded).toBe(false);
         });
-    
+
         describe('getNextElement', () => {
             let elementClickSpy,
                 getNextElement;
-    
+
             beforeEach(() => {
                 useDropdownNavigation.reset();
                 const wrapper = mount(ControlDropdown, { props, attachTo: document.body });
@@ -276,21 +276,21 @@ describe('ControlDropdown.vue', () => {
                 onClick();
                 expect(clickSpy).toHaveBeenCalled();
             };
-    
+
             it('yields the first element on downward navigation if there is no previous selection', () => {
                 expectNextElement(getNextElement(-1, 1), 0);
             });
-    
+
             it('yields next element on downwards navigation and wraps around', () => {
                 expectNextElement(getNextElement(0, 1), 1);
                 expectNextElement(getNextElement(1, 1), 2);
                 expectNextElement(getNextElement(2, 1), 0);
             });
-    
+
             it('yields the last element on upwards navigation if there is no previous selection', () => {
                 expectNextElement(getNextElement(null, -1), 2);
             });
-    
+
             it('yields next element on upwards navigation and wraps around', () => {
                 expectNextElement(getNextElement(2, -1), 1);
                 expectNextElement(getNextElement(1, -1), 0);
@@ -344,7 +344,7 @@ describe('ControlDropdown.vue', () => {
                 }
             });
             const [{ popperTarget, referenceEl }, openUp] = useDropdownPopper.mock.calls[0];
-            
+
             expect(unref(referenceEl)).toStrictEqual(wrapper.find('[role="button"]').element);
             expect(unref(popperTarget)).toStrictEqual(wrapper.find({ ref: 'ul' }).element);
             expect(openUp).toBe(false);
@@ -391,7 +391,7 @@ describe('ControlDropdown.vue', () => {
             }
         });
         const [{ targets, callback }, active] = useClickOutside.mock.calls[0];
-        
+
         expect(targets.length).toBe(2);
         expect(targets[0].value).toStrictEqual(wrapper.find('[role="button"]').element);
         expect(targets[1].value).toStrictEqual(wrapper.find({ ref: 'ul' }).element);

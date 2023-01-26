@@ -12,8 +12,7 @@ import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
-    HEADER_HEIGHT, ROW_MARGIN_BOTTOM, CONTROLS_HEIGHT } from '@/util/constants';
-import getScrollbarWidth from '../util/getScrollbarWidth';
+    ROW_MARGIN_BOTTOM } from '@/util/constants';
 
 /**
  * @see README.md
@@ -47,7 +46,6 @@ export default {
             default: () => []
         },
         /**
-         
          * Only used when tableConfig.enableVirtualScrolling is true.
          * It specifies how many (empty) rows should be simultated above the given rows in this.data[0]
          */
@@ -97,7 +95,7 @@ export default {
                     return false;
                 }
                 const requiredProperties = ['showSelection', 'showCollapser', 'showPopovers', 'showColumnFilters',
-                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems', 'fitToContainer'];
+                    'showBottomControls', 'subMenuItems', 'groupSubMenuItems'];
                 let isValid = requiredProperties.every(key => tableConfig.hasOwnProperty(key));
                 const requiredConfigs = {
                     pageConfig: [
@@ -158,14 +156,11 @@ export default {
             updatedBefore: false,
             currentExpanded: new Set(),
             rowMarginBottom: ROW_MARGIN_BOTTOM,
-            wrapperHeight: 0,
             wrapperWidth: 0,
-            wrapperResizeObserver: new ResizeObserver((entries) => {
-                this.wrapperHeight = entries[0].contentRect.height;
-                this.wrapperWidth = entries[0].contentRect.width;
-            }),
-            scrollBarWidth: 0,
-            closeExpandedSubMenu: () => {}
+            // used for temporarily hiding the vertical scrollbar while changing column sizes to avoid flickering
+            hideVerticalScrollbar: false,
+            closeExpandedSubMenu: () => {},
+            scrollerId: 'scroller'
         };
     },
     computed: {
@@ -212,9 +207,9 @@ export default {
             });
         },
         tableHeaderClass() {
-            return `table-header${
-                this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters ? ' sub-menu-active' : ''
-            }`;
+            return ['table-header', {
+                'sub-menu-active': this.tableConfig.subMenuItems?.length && !this.tableConfig.showColumnFilters
+            }];
         },
         currentBodyWidth() {
             const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + DATA_COLUMNS_MARGIN, 0);
@@ -225,8 +220,8 @@ export default {
         enableVirtualScrolling() {
             return this.tableConfig.enableVirtualScrolling;
         },
-        fitToContainer() {
-            return this.tableConfig.fitToContainer;
+        showVirtualScroller() {
+            return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
         topDataLength() {
             if (this.data === null) {
@@ -236,7 +231,7 @@ export default {
         },
         scrollData() {
             if (this.data === null) {
-                return null;
+                return [];
             }
             const data = this.data?.map(groupData => groupData.map(
                 (rowData, index) => ({
@@ -290,50 +285,6 @@ export default {
             // The virtual scroller does not support margins, hence we need to set a different height for the rows
             // instead
             return this.rowHeight + ROW_MARGIN_BOTTOM;
-        },
-        fullBodyHeight() {
-            let numberOfGroups = 0; let numberOfRows = 0;
-            if (this.data) {
-                for (const dataGroup of this.data) {
-                    if (dataGroup.length > 0) {
-                        numberOfGroups++;
-                        numberOfRows += dataGroup.length;
-                    }
-                }
-            }
-            const numberOfBottomRows = this.bottomData.length;
-            if (numberOfBottomRows > 0) {
-                // plus 1 because of the additional "…" row
-                numberOfRows += numberOfBottomRows + 1;
-            }
-            return this.scrollerItemSize * numberOfRows +
-            (this.tableConfig.groupByConfig?.currentGroup ? numberOfGroups * HEADER_HEIGHT : 0);
-        },
-        currentBodyHeight() {
-            let bodyHeight = this.currentTableHeight - this.headerAndFilterHeight;
-            if (this.hasHorizontalScrollbar) {
-                bodyHeight -= this.scrollBarWidth;
-            }
-            return Math.max(bodyHeight, 0);
-        },
-        hasHorizontalScrollbar() {
-            // plus 1 to avoid rounding errors
-            return this.currentBodyWidth > this.wrapperWidth + 1;
-        },
-        headerAndFilterHeight() {
-            return HEADER_HEIGHT + (this.filterActive ? HEADER_HEIGHT : 0);
-        },
-        currentTableHeight() {
-            const bottomControlsHeight = this.tableConfig.showBottomControls ? CONTROLS_HEIGHT : 0;
-            const availableSpace = this.wrapperHeight - CONTROLS_HEIGHT - bottomControlsHeight;
-            let fullTableHeight = this.headerAndFilterHeight + this.fullBodyHeight;
-            if (this.hasHorizontalScrollbar) {
-                fullTableHeight += this.scrollBarWidth;
-            }
-            if (this.fitToContainer) {
-                return Math.max(Math.min(fullTableHeight, availableSpace), 0);
-            }
-            return fullTableHeight;
         }
     },
     watch: {
@@ -345,10 +296,6 @@ export default {
                 }
             }
         }
-    },
-    mounted() {
-        this.scrollBarWidth = getScrollbarWidth();
-        this.wrapperResizeObserver.observe(this.$refs.wrapper);
     },
     methods: {
         // Utilities
@@ -495,10 +442,21 @@ export default {
         // Find the additional height added by expanded content of a row
         getContentHeight(index) {
             // The second child of the dom element referenced by the row is the expanded content.
-            const contentHeight = this.$refs[`row-${index}`]?.map(
-                (component) => component.$el.children[1]?.clientHeight
-            ).find(height => typeof height !== 'undefined');
+            const contentHeight = this.$refs[`row-${index}`]?.$el.children[1]?.clientHeight;
             return contentHeight || 0;
+        },
+        getDragHandleHeight() {
+            const scroller = this.$refs['scroll-wrapper'];
+            return Array(...scroller.children).reduce(
+                (prev, cur) => {
+                    if (cur.id === this.scrollerId) {
+                        // the first child of the RecycleScroller is an element of the heigt of all rows combined
+                        return prev + cur.children[0].offsetHeight;
+                    } else {
+                        return prev + cur.offsetHeight;
+                    }
+                }, 0
+            );
         },
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
@@ -509,192 +467,187 @@ export default {
 </script>
 
 <template>
-  <div
-    ref="wrapper"
-    class="wrapper"
-  >
-    <table
-      ref="table"
-      class="table"
+  <table>
+    <TopControls
+      :table-config="tableConfig"
+      :column-headers="columnHeaders"
+      @next-page="onPageChange(1)"
+      @prev-page="onPageChange(-1)"
+      @column-update="onColumnUpdate"
+      @column-reorder="onColumnReorder"
+      @group-update="onGroupUpdate"
+      @search-update="onSearch"
+      @time-filter-update="onTimeFilterUpdate"
+    />
+    <div
+      ref="scroll-wrapper"
+      :class="['horizontal-scroll', {'vertical-scroll': !showVirtualScroller && !hideVerticalScrollbar}]"
+      @scroll="closeExpandedSubMenu"
     >
-      <TopControls
+      <Header
         :table-config="tableConfig"
         :column-headers="columnHeaders"
-        @next-page="onPageChange(1)"
-        @prev-page="onPageChange(-1)"
-        @column-update="onColumnUpdate"
-        @column-reorder="onColumnReorder"
-        @group-update="onGroupUpdate"
-        @search-update="onSearch"
-        @time-filter-update="onTimeFilterUpdate"
+        :column-sub-headers="columnSubHeaders"
+        :column-sizes="columnSizes"
+        :column-sub-menu-items="columnHeaderSubMenuItems"
+        :column-sort-configs="columnSortConfigs"
+        :is-selected="totalSelected > 0"
+        :filters-active="filterActive"
+        :get-drag-handle-height="getDragHandleHeight"
+        :class="tableHeaderClass"
+        :style="{ width: `${currentBodyWidth}px` }"
+        @header-select="onSelectAll"
+        @column-sort="onColumnSort"
+        @toggle-filter="onToggleFilter"
+        @column-resize="onColumnResize"
+        @column-resize-start="() => {hideVerticalScrollbar = true}"
+        @column-resize-end="() => {hideVerticalScrollbar = false}"
+        @sub-menu-item-selection="onHeaderSubMenuItemSelection"
       />
-      <div
-        class="horizontal-scroll"
-        :style="{height: `${currentTableHeight}px`}"
+      <ColumnFilters
+        v-if="filterActive"
+        class="column-filter"
+        :filter-configs="columnFilterConfigs"
+        :column-headers="columnHeaders"
+        :column-sizes="columnSizes"
+        :types="columnTypes"
+        :show-collapser="tableConfig.showCollapser"
+        :show-selection="tableConfig.showSelection"
+        :style="{ width: `${currentBodyWidth}px` }"
+        @column-filter="onColumnFilter"
+        @clear-filter="onClearFilter"
+      />
+      <RecycleScroller
+        v-if="showVirtualScroller"
+        :id="scrollerId"
+        :key="scrollerKey"
+        #default="{ item }"
+        :style="{ width: `${currentBodyWidth}px`}"
+        :items="scrollData[0]"
+        :num-items-above="numRowsAbove"
+        :num-items-below="numRowsBelow"
+        :empty-item="{
+          data: [],
+          size: scrollerItemSize,
+          tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false}
+        }"
+        class="scroller"
+        :emit-update="true"
+        :page-mode="false"
+        list-tag="tbody"
+        item-tag="tr"
+        @scroll="closeExpandedSubMenu"
+        @update="onScroll"
       >
-        <Header
-          :table-config="tableConfig"
-          :column-headers="columnHeaders"
-          :column-sub-headers="columnSubHeaders"
-          :column-sizes="columnSizes"
-          :column-sub-menu-items="columnHeaderSubMenuItems"
-          :column-sort-configs="columnSortConfigs"
-          :is-selected="totalSelected > 0"
-          :filters-active="filterActive"
-          :current-table-height="currentTableHeight"
-          :class="tableHeaderClass"
-          :style="{ width: `${currentBodyWidth}px` }"
-          @header-select="onSelectAll"
-          @column-sort="onColumnSort"
-          @toggle-filter="onToggleFilter"
-          @column-resize="onColumnResize"
-          @sub-menu-item-selection="onHeaderSubMenuItemSelection"
+        <PlaceholderRow
+          v-if="item.dots"
+          :height="item.size"
         />
-        <ColumnFilters
-          v-if="filterActive"
-          :filter-configs="columnFilterConfigs"
-          :column-headers="columnHeaders"
-          :column-sizes="columnSizes"
-          :types="columnTypes"
-          :show-collapser="tableConfig.showCollapser"
-          :show-selection="tableConfig.showSelection"
-          :style="{ width: `${currentBodyWidth}px` }"
-          @column-filter="onColumnFilter"
-          @clear-filter="onClearFilter"
-        />
-        <div
-          class="body"
-          :style="{ width: `${currentBodyWidth}px`, height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
-          @scroll="closeExpandedSubMenu"
+        <Row
+          v-else
+          :key="item.id"
+          :ref="`row-${item.id}`"
+          :row-data="item.data"
+          :row="columnKeys.map(column => item.data[column])"
+          :table-config="item.tableConfig || tableConfig"
+          :column-configs="dataConfig.columnConfigs"
+          :row-config="dataConfig.rowConfig"
+          :row-height="rowHeight"
+          :margin-bottom="rowMarginBottom"
+          :is-selected="currentSelectionMap(item.index, item.isTop)"
+          :show-border-column-index="showBorderColumnIndex"
+          @row-select="onRowSelect($event, item.index, 0, item.isTop)"
+          @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
+          @row-input="onRowInput(
+            { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
+          )"
+          @row-sub-menu-expand="registerExpandedSubMenu"
+          @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
         >
-          <Group
-            v-for="(dataGroup, groupInd) in scrollData"
-            :key="groupInd"
-            :title="getGroupName(groupInd)"
-            :group-sub-menu-items="tableConfig.groupSubMenuItems"
-            :show="data.length > 1 && dataGroup.length > 0"
-            @group-sub-menu-click="onGroupSubMenuClick($event, dataGroup)"
-            @group-sub-menu-expand="registerExpandedSubMenu"
+          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+          <!-- eslint-disable vue/valid-v-slot -->
+          <template
+            v-for="colInd in slottedColumns"
+            #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+            :key="item.index + '_' + colInd"
           >
-            <RecycleScroller
-              v-if="enableVirtualScrolling && scrollData.length === 1"
-              :key="scrollerKey"
-              #default="{ item }"
-              ref="scroller"
-              :items="dataGroup"
-              :num-items-above="numRowsAbove"
-              :num-items-below="numRowsBelow"
-              :empty-item="{
-                data: [],
-                size: scrollerItemSize,
-                tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false}
-              }"
-              class="scroller"
-              :emit-update="true"
-              :page-mode="false"
-              @update="onScroll"
-            >
-              <PlaceholderRow
-                v-if="item.dots"
-                :height="item.size"
+            <span>
+              <slot
+                :name="`cellContent-${columnKeys[colInd]}`"
+                :data="{ ...cellData, key: columnKeys[colInd], rowInd: item.index, colInd }"
               />
-              <Row
-                v-else
-                :key="item.id"
-                :ref="`row-${item.id}`"
-                :row-data="item.data"
-                :row="columnKeys.map(column => item.data[column])"
-                :table-config="item.tableConfig || tableConfig"
-                :column-configs="dataConfig.columnConfigs"
-                :row-config="dataConfig.rowConfig"
-                :row-height="rowHeight"
-                :margin-bottom="rowMarginBottom"
-                :is-selected="currentSelectionMap(item.index, item.isTop)"
-                :show-border-column-index="showBorderColumnIndex"
-                @row-select="onRowSelect($event, item.index, 0, item.isTop)"
-                @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
-                @row-input="onRowInput(
-                  { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
-                )"
-                @row-sub-menu-expand="registerExpandedSubMenu"
-                @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
-              >
-                <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-                <!-- eslint-disable vue/valid-v-slot -->
-                <template
-                  v-for="colInd in slottedColumns"
-                  #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-                  :key="rowInd + '_' + colInd"
-                >
-                  <span>
-                    <slot
-                      :name="`cellContent-${columnKeys[colInd]}`"
-                      :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
-                    />
-                  </span>
-                </template>
-                <template #rowCollapserContent>
-                  <slot
-                    name="collapserContent"
-                    :row="item"
-                  />
-                </template>
-              </Row>
-            </RecycleScroller>
-            <Row
-              v-for="(row, rowInd) in dataGroup"
-              v-else
-              :key="row.data.id"
-              :row-data="row"
-              :row="columnKeys.map(column => row.data[column])"
-              :table-config="tableConfig"
-              :column-configs="dataConfig.columnConfigs"
-              :row-config="dataConfig.rowConfig"
-              :row-height="rowHeight"
-              :margin-bottom="rowMarginBottom"
-              :is-selected="currentSelection[groupInd][rowInd]"
-              :show-border-column-index="showBorderColumnIndex"
-              @row-select="onRowSelect($event, rowInd, groupInd, true)"
-              @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
-              @row-sub-menu-expand="registerExpandedSubMenu"
-              @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
-            >
-              <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-              <!-- eslint-disable vue/valid-v-slot -->
-              <template
-                v-for="colInd in slottedColumns"
-                #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-                :key="rowInd + '_' + colInd"
-              >
-                <span>
-                  <slot
-                    :name="`cellContent-${columnKeys[colInd]}`"
-                    :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
-                  />
-                </span>
-              </template>
-              <template #rowCollapserContent>
-                <slot
-                  name="collapserContent"
-                  :row="row"
-                />
-              </template>
-            </Row>
-          </Group>
-        </div>
-      </div>
-      <BottomControls
-        v-if="tableConfig.showBottomControls"
-        :page-config="tableConfig.pageConfig"
-        @next-page="onPageChange(1)"
-        @prev-page="onPageChange(-1)"
-        @page-size-update="onPageSizeUpdate"
-      />
-      <ActionButton
-        v-else-if="tableConfig.actionButtonConfig"
-        :config="tableConfig.actionButtonConfig"
-      />
-    </table>
+            </span>
+          </template>
+          <template #rowCollapserContent>
+            <slot
+              name="collapserContent"
+              :row="item"
+            />
+          </template>
+        </Row>
+      </RecycleScroller>
+      <Group
+        v-for="(dataGroup, groupInd) in scrollData"
+        v-else
+        :key="groupInd"
+        :style="{ width: `${currentBodyWidth}px` }"
+        :title="getGroupName(groupInd)"
+        :group-sub-menu-items="tableConfig.groupSubMenuItems"
+        :show="data.length > 1 && dataGroup.length > 0"
+        @group-sub-menu-expand="registerExpandedSubMenu"
+        @group-sub-menu-click="event => onGroupSubMenuClick(event, dataGroup)"
+      >
+        <Row
+          v-for="(row, rowInd) in dataGroup"
+          :key="row.data.id"
+          :row-data="row"
+          :row="columnKeys.map(column => row.data[column])"
+          :table-config="tableConfig"
+          :column-configs="dataConfig.columnConfigs"
+          :row-config="dataConfig.rowConfig"
+          :row-height="rowHeight"
+          :margin-bottom="rowMarginBottom"
+          :is-selected="currentSelection[groupInd][rowInd]"
+          :show-border-column-index="showBorderColumnIndex"
+          @row-select="onRowSelect($event, rowInd, groupInd, true)"
+          @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
+          @row-sub-menu-expand="registerExpandedSubMenu"
+          @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
+        >
+          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+          <!-- eslint-disable vue/valid-v-slot -->
+          <template
+            v-for="colInd in slottedColumns"
+            #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+            :key="rowInd + '_' + colInd"
+          >
+            <span>
+              <slot
+                :name="`cellContent-${columnKeys[colInd]}`"
+                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+              />
+            </span>
+          </template>
+          <template #rowCollapserContent>
+            <slot
+              name="collapserContent"
+              :row="row"
+            />
+          </template>
+        </Row>
+      </Group>
+    </div>
+    <BottomControls
+      v-if="tableConfig.showBottomControls"
+      :page-config="tableConfig.pageConfig"
+      @next-page="onPageChange(1)"
+      @prev-page="onPageChange(-1)"
+      @page-size-update="onPageSizeUpdate"
+    />
+    <ActionButton
+      v-else-if="tableConfig.actionButtonConfig"
+      :config="tableConfig.actionButtonConfig"
+    />
     <TablePopover
       v-if="popoverTarget && (typeof popoverData !== 'undefined')"
       ref="tablePopover"
@@ -713,28 +666,17 @@ export default {
         />
       </template>
     </TablePopover>
-  </div>
+  </table>
 </template>
 
 <style lang="postcss" scoped>
 .scroller {
-  height: 100%;
-  overflow-y: auto;
-}
-
-.wrapper {
-  height: 100%;
-  position: relative;
-}
-
-table,
-thead,
-tbody {
-  width: 100%;
+  flex: 1 1 0;
 }
 
 table {
   height: 100%;
+  width: 100%;
   font-size: 13px;
   font-weight: 400;
   table-layout: fixed;
@@ -747,39 +689,31 @@ table {
     display: flex;
     flex-direction: column;
     overflow-x: auto;
-    overflow-y: hidden;
     flex: 1;
-  }
+    overflow-y: hidden;
 
-  & .body {
-    overflow-y: auto;
-    display: block;
+    &.vertical-scroll {
+      overflow-y: auto;
+    }
 
     & :deep(tbody) {
       display: block;
-      height:100%;
-    }
-
-    & :deep(td > a) {
-      text-decoration: none;
-      display: block;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      width: 100%;
-      padding-right: 15px;
-    }
-
-    & :deep(td:first-child > a) {
-      padding-left: 15px;
+      min-height: 0;
+      flex-shrink: 0;
     }
   }
-}
 
-table :deep(tr) {
-  display: flex;
+  & :deep(td > a) {
+    text-decoration: none;
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    padding-right: 15px;
+  }
 
-  &:not(:first-child, :last-child) {
-    padding: 0 5px;
+  & :deep(td:first-child > a) {
+    padding-left: 15px;
   }
 }
 

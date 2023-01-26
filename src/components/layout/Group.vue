@@ -74,6 +74,7 @@ export default {
 
 <style lang="postcss" scoped>
 tr.table-group {
+  display: flex;
   font-weight: 500;
   font-size: 13px;
   align-items: center;

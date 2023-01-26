@@ -139,6 +139,7 @@ export default {
 
 <style lang="postcss" scoped>
 tr {
+  display: flex;
   height: 40px;
   overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
