@@ -404,6 +404,9 @@ thead {
       }
 
       &.action {
+        position: sticky;
+        right: 0;
+        background-color: var(--knime-silver-sand-semi);
         align-items: center;
         display: flex;
         overflow: visible;

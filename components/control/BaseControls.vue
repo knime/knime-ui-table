@@ -73,6 +73,8 @@ thead {
       color: var(--knime-dove-gray);
 
       &.right-controls {
+        position: sticky;
+        right: 0;
         display: flex;
         align-items: center;
         margin-left: auto;

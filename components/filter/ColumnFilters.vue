@@ -100,7 +100,6 @@ export default {
 <style lang="postcss" scoped>
 
 tr {
-  margin-top: -2px;
   height: 40px;
   overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
@@ -130,6 +129,9 @@ tr {
   }
 
   & th.action {
+    position: sticky;
+    right: 0;
+    background-color: inherit;
     align-items: center;
     display: flex;
     overflow: visible;

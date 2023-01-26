@@ -297,8 +297,7 @@ export default {
             return Math.max(Math.min(availableSpace, this.fullBodyHeight), 0);
         },
         filterHeight() {
-            // Margin of negative two px
-            return this.filterActive ? HEADER_HEIGHT - 2 : 0;
+            return this.filterActive ? HEADER_HEIGHT : 0;
         },
         currentTableHeight() {
             return HEADER_HEIGHT + this.filterHeight + this.fullBodyHeight;

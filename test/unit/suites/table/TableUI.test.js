@@ -550,9 +550,9 @@ describe('TableUI.vue', () => {
                 possiblePageSizes: [1],
                 currentPage: 1
             },
-            wrapperHeight: 150 });
+            wrapperHeight: 152 });
 
-            expect(wrapper.vm.currentBodyHeight).toEqual(39);
+            expect(wrapper.vm.currentBodyHeight).toEqual(41);
             wrapper.setData({ filterActive: true });
             expect(wrapper.vm.currentBodyHeight).toEqual(1);
         });
@@ -568,7 +568,7 @@ describe('TableUI.vue', () => {
 
             expect(wrapper.vm.currentTableHeight).toEqual(81);
             wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentTableHeight).toEqual(119);
+            expect(wrapper.vm.currentTableHeight).toEqual(121);
         });
     });
 
