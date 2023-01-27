@@ -359,7 +359,7 @@ describe('Table.vue', () => {
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
                 const { wrapper } = doMount({ customPropsData: { timeFilterKey: 'a' } });
-                expect(wrapper.vm.currentTimeFilter).toBe('Last month');
+                expect(wrapper.vm.currentTimeFilter).toBe('All time');
                 wrapper.find(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
             });
