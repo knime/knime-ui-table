@@ -1,4 +1,4 @@
-export const defaultTimeFilter = 'Last month';
+export const defaultTimeFilter = 'All time';
 
 export const checkTimeFilter = (inDateString, timeFilterConfig) => {
     try {
@@ -47,7 +47,8 @@ export const tableTimeFilters = {
         getFn: 'getYear',
         setFn: 'setYear',
         val: 1
-    }
+    },
+    'All time': {}
 };
 
 export const months = {
