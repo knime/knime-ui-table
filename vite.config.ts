@@ -27,7 +27,14 @@ export default defineConfig({
             formats: ['es']
         },
         rollupOptions: {
-            external: ['vue']
+            external: [
+                'vue'
+            ],
+            output: {
+                globals: {
+                    vue: 'Vue' // maps to window.Vue which must be provided by the consuming app
+                }
+            }
         }
     },
     test: {
