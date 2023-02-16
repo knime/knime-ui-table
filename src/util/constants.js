@@ -26,3 +26,5 @@ export const CONTROLS_HEIGHT = 35;
 
 // the maximum width of the submenu in the header
 export const MAX_SUB_MENU_WIDTH = 160;
+
+export default { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN };
