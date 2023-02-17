@@ -434,10 +434,10 @@ describe('TableUI.vue', () => {
                 });
                 await wrapper.vm.$nextTick();
                 expect(wrapper.findComponent(TablePopover).exists()).toBeTruthy();
-                expect(wrapper.vm.popoverColumn).toStrictEqual('b');
-                expect(wrapper.vm.popoverData).toStrictEqual('cellB');
+                expect(wrapper.vm.popoverColumn).toBe('b');
+                expect(wrapper.vm.popoverData).toBe('cellB');
                 expect(wrapper.vm.popoverRenderer).toStrictEqual(columnTypes.Number);
-                expect(wrapper.vm.popoverTarget).toStrictEqual('<td>1</td>');
+                expect(wrapper.vm.popoverTarget).toBe('<td>1</td>');
                 wrapper.findComponent(TablePopover).vm.$emit('close');
                 await wrapper.vm.$nextTick();
                 expect(wrapper.findComponent(TablePopover).exists()).toBeFalsy();
@@ -479,7 +479,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(180);
+            expect(wrapper.vm.currentBodyWidth).toBe(180);
         });
 
         it('gets the correct width of the table-body when selection & filtering are disabled', () => {
@@ -488,7 +488,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(120);
+            expect(wrapper.vm.currentBodyWidth).toBe(120);
         });
     });
 
@@ -510,7 +510,7 @@ describe('TableUI.vue', () => {
         it('sets default height of rows if no height is given', () => {
             const { wrapper } = doMount();
 
-            expect(wrapper.vm.rowHeight).toEqual(40);
+            expect(wrapper.vm.rowHeight).toBe(40);
         });
 
         it('sets given rowHeight', () => {
@@ -523,7 +523,7 @@ describe('TableUI.vue', () => {
         it('sets small height of rows on compact mode', () => {
             const { wrapper } = doMount({ compactMode: true });
 
-            expect(wrapper.vm.rowHeight).toEqual(24);
+            expect(wrapper.vm.rowHeight).toBe(24);
         });
 
 
@@ -549,7 +549,7 @@ describe('TableUI.vue', () => {
             },
             wrapperHeight: 10 });
 
-            expect(wrapper.vm.currentBodyHeight).toEqual(0);
+            expect(wrapper.vm.currentBodyHeight).toBe(0);
         });
 
         it('sets current body height to available space if it the full body size is larger than it', async () => {
@@ -562,9 +562,9 @@ describe('TableUI.vue', () => {
             },
             wrapperHeight: 150 });
 
-            expect(wrapper.vm.currentBodyHeight).toEqual(39);
+            expect(wrapper.vm.currentBodyHeight).toBe(39);
             await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentBodyHeight).toEqual(1);
+            expect(wrapper.vm.currentBodyHeight).toBe(1);
         });
 
         it('increases computed table height if filters are visible', async () => {
@@ -576,9 +576,9 @@ describe('TableUI.vue', () => {
                 currentPage: 1
             } });
 
-            expect(wrapper.vm.currentTableHeight).toEqual(81);
+            expect(wrapper.vm.currentTableHeight).toBe(81);
             await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentTableHeight).toEqual(119);
+            expect(wrapper.vm.currentTableHeight).toBe(119);
         });
     });
 

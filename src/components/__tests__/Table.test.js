@@ -330,19 +330,19 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.findComponent(TableUI).vm.$emit('search', '');
-                expect(wrapper.vm.searchQuery).toBe(null);
+                expect(wrapper.vm.searchQuery).toBeNull();
             });
 
             it('empties search query if search event value is missing', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.findComponent(TableUI).vm.$emit('search');
-                expect(wrapper.vm.searchQuery).toBe(null);
+                expect(wrapper.vm.searchQuery).toBeNull();
             });
 
             it('registers groupUpdate events and updates the current group', () => {
                 const { wrapper } = doMount();
-                expect(wrapper.vm.currentGroup).toBe(null);
+                expect(wrapper.vm.currentGroup).toBeNull();
                 wrapper.findComponent(TableUI).vm.$emit('groupUpdate', 'a');
                 expect(wrapper.vm.currentGroup).toBe('a');
             });
