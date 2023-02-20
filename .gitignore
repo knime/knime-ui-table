@@ -17,9 +17,6 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
-
-test-results/
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,3 +26,11 @@ test-results/
 *.njsproj
 *.sln
 *.sw?
+
+# Test outputs
+test/*/reports
+test-results/
+
+# Optional eslint/stylelint cache
+.eslintcache
+.stylelintcache
