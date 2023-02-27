@@ -36,6 +36,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  
   & span {
     text-align: center;
     pointer-events: none;

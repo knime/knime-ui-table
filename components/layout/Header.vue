@@ -286,6 +286,38 @@ thead {
         }
       }
 
+      &.action {
+        align-items: center;
+        display: flex;
+        overflow: visible;
+        min-width: 30px;
+
+        & >>> .function-button {
+          display: flex;
+          align-self: stretch;
+          align-items: center;
+          height: 40px;
+          width: 30px;
+          border-radius: 0;
+          transition: background-color 0.15s;
+
+          & svg {
+            stroke: var(--knime-masala);
+          }
+        }
+
+        &.filter-active {
+          background-color: var(--theme-button-function-background-color-hover);
+
+          & >>> .function-button {
+            & svg {
+              fill: var(--knime-masala);
+              stroke: var(--knime-masala);
+            }
+          }
+        }
+      }
+
       &.column-header {
         position: relative;
         display: flex;
@@ -399,38 +431,6 @@ thead {
           &.drag {
             width: 1px;
             opacity: 1;
-          }
-        }
-      }
-
-      &.action {
-        align-items: center;
-        display: flex;
-        overflow: visible;
-        min-width: 30px;
-
-        & >>> .function-button {
-          display: flex;
-          align-self: stretch;
-          align-items: center;
-          height: 40px;
-          width: 30px;
-          border-radius: 0;
-          transition: background-color 0.15s;
-
-          & svg {
-            stroke: var(--knime-masala);
-          }
-        }
-
-        &.filter-active {
-          background-color: var(--theme-button-function-background-color-hover);
-
-          & >>> .function-button {
-            & svg {
-              fill: var(--knime-masala);
-              stroke: var(--knime-masala);
-            }
           }
         }
       }

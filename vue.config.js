@@ -13,7 +13,7 @@ module.exports = {
         config.resolve.alias.set('webapps-common', path.resolve(__dirname, 'webapps-common'));
 
         // apply SVG loader config
-        config.module.rule('svg').uses.clear();
+        config.module.rules.delete('svg');
         config.merge({ module: { rule: { svg: svgConfig } } });
     }
 };
