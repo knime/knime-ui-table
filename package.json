@@ -1,10 +1,10 @@
 {
   "name": "@knime/knime-ui-table",
-  "version": "0.2.70",
+  "version": "0.2.71",
   "description": "JS Data Table for KNIME",
   "scripts": {
     "audit": "check-audit --production --json > target/audit.json || true",
-    "build": "vue-cli-service build --target lib --name KNIME-Table index.js",
+    "build": "vue-cli-service build --target lib --formats umd,umd-min --name KNIME-Table index.js",
     "build:report": "npm run build -- --report",
     "coverage": "jest --coverage",
     "demo": "concurrently -n server,app -c yellow,blue \"http-server -c-1 --cors -p 4000 dist http-server\" \"vue-cli-service serve demo/demo.js\"",
@@ -19,7 +19,7 @@
   },
   "license": "See the file LICENSE",
   "author": "KNIME AG, Zurich, Switzerland",
-  "main": "dist/KNIME-Table.common.js",
+  "main": "dist/KNIME-Table.umd.min.js",
   "files": [
     "util/constants.js",
     "dist/KNIME-Table.*",
