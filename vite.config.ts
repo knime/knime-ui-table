@@ -27,18 +27,11 @@ export default defineConfig({
             formats: ['es']
         },
         rollupOptions: {
-            external: [
-                'vue'
-            ],
-            output: {
-                globals: {
-                    vue: 'Vue' // maps to window.Vue which must be provided by the consuming app
-                }
-            }
+            external: ['vue']
         }
     },
     test: {
-        include: ['src/**/__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        include: ['**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         environment: 'jsdom',
         reporters: ['default', 'junit'],
         deps: { inline: ['consola'] },

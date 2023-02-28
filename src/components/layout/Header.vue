@@ -6,7 +6,7 @@ import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
 import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '../../util/constants';
+import { MIN_COLUMN_SIZE, DEFAULT_ROW_HEIGHT, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '@/util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component

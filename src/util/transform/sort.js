@@ -1,4 +1,4 @@
-import { columnTypes } from '../../config/table.config';
+import { columnTypes } from '@/config/table.config';
 
 /**
  * Utility function for sorting a data set. This functionality sorts the entire dataset, but also performs sorts within

@@ -4,7 +4,7 @@ import FilterInputField from './FilterInputField.vue';
 import FilterDropdown from './FilterDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
-import { MIN_COLUMN_SIZE } from '../../util/constants';
+import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 /**
  * A table header element which dynamically created table data elements containing
