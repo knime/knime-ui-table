@@ -162,7 +162,7 @@ describe('Header.vue', () => {
         const dragHandle = wrapper.findAll('.drag-handle').at(0);
         dragHandle.element.setPointerCapture = (pointerId) => null;
 
-        expect(wrapper.vm.dragIndex).toBe(null);
+        expect(wrapper.vm.dragIndex).toBeNull();
         dragHandle.trigger('pointerdown', 0);
         expect(wrapper.vm.dragIndex).toBe(0);
     });
@@ -187,7 +187,7 @@ describe('Header.vue', () => {
 
         dragHandle.trigger('pointerdown', 0);
         dragHandle.trigger('lostpointercapture');
-        expect(wrapper.vm.dragIndex).toBe(null);
+        expect(wrapper.vm.dragIndex).toBeNull();
     });
 
     it('emits a subMenuItemSelection event when another subMenuItem is selected', () => {
@@ -202,7 +202,7 @@ describe('Header.vue', () => {
     it('sets hover index on drag handle pointerover', () => {
         wrapper = shallowMount(Header, { props });
 
-        expect(wrapper.vm.hoverIndex).toBe(null);
+        expect(wrapper.vm.hoverIndex).toBeNull();
         wrapper.findAll('.drag-handle')[0].trigger('pointerover', 0);
         expect(wrapper.vm.hoverIndex).toBe(0);
     });
@@ -214,7 +214,7 @@ describe('Header.vue', () => {
 
         dragHandle.trigger('pointerdown', 1);
         dragHandle.trigger('pointerover', 0);
-        expect(wrapper.vm.hoverIndex).toBe(null);
+        expect(wrapper.vm.hoverIndex).toBeNull();
     });
 
     it('unsets hover index on on drag handle pointerleave after pointerover', () => {
@@ -223,7 +223,7 @@ describe('Header.vue', () => {
 
         dragHandle.trigger('pointerover', 0);
         dragHandle.trigger('pointerleave');
-        expect(wrapper.vm.hoverIndex).toBe(null);
+        expect(wrapper.vm.hoverIndex).toBeNull();
     });
 
     it('does not unset hover index on drag handle pointerleave after pointerover during drag', () => {

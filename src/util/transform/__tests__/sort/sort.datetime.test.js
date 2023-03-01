@@ -202,7 +202,7 @@ describe('sort', () => {
                 });
             });
 
-            it('sorts groups', () => {
+            it('sorts groups #2', () => {
                 let sortConfig = {
                     groupedData: missingGroupedData,
                     groupedIndicies: [

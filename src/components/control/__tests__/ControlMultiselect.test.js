@@ -415,9 +415,9 @@ describe('ControlMultiselect.vue', () => {
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
 
                 secondItem.trigger('dragend', dragEvent);
-                expect(wrapper.vm.dragInd).toBe(null);
-                expect(wrapper.vm.hoverInd).toBe(null);
-                expect(wrapper.vm.dragGhost).toBe(null);
+                expect(wrapper.vm.dragInd).toBeNull();
+                expect(wrapper.vm.hoverInd).toBeNull();
+                expect(wrapper.vm.dragGhost).toBeNull();
                 expect(wrapper.emitted().columnReorder).toStrictEqual([[0, 2]]);
             });
 
@@ -455,7 +455,7 @@ describe('ControlMultiselect.vue', () => {
                 expect(wrapper.vm.dragGhost).toBeTruthy();
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
                 wrapper.find('.multiselect').trigger('dragleave');
-                expect(wrapper.vm.hoverInd).toBe(null);
+                expect(wrapper.vm.hoverInd).toBeNull();
                 expect(wrapper.emitted().columnReorder).toBeFalsy();
             });
         });

@@ -15,7 +15,7 @@ describe('getNextPage', () => {
         const currentPage = 1;
         const availableRows = 10;
         const pageRows = 5;
-        expect(getNextPage(pageSize, currentPage, availableRows, pageRows)).toBe(null);
+        expect(getNextPage(pageSize, currentPage, availableRows, pageRows)).toBeNull();
     });
 
     it('finds the closest viable page if the current page is out of range', () => {

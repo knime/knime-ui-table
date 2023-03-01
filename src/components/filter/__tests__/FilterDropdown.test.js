@@ -127,7 +127,7 @@ describe('FilterDropdown.vue', () => {
 
             let ul = wrapper.find('ul');
             ul.trigger('keydown.down');
-            expect(wrapper.emitted().input[0][0]).toEqual('test3');
+            expect(wrapper.emitted().input[0][0]).toBe('test3');
         });
 
         it('sets the values on keyup navigation', () => {
@@ -140,7 +140,7 @@ describe('FilterDropdown.vue', () => {
 
             let ul = wrapper.find('ul');
             ul.trigger('keydown.up');
-            expect(wrapper.emitted().input[0][0]).toEqual('test1');
+            expect(wrapper.emitted().input[0][0]).toBe('test1');
         });
 
         it('sets no values on keyup navigation at the start', () => {
