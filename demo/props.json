@@ -1106,6 +1106,25 @@
       },
       "status": true,
       "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]"
+    },
+    {
+      "id": null,
+      "numFailures": null,
+      "workflowPath": null,
+      "reset": null,
+      "discardAfterSuccessfulExec": null,
+      "discardAfterFailedExec": null,
+      "targetName": null,
+      "schedule": null,
+      "notifications": null,
+      "actions": null,
+      "lastRun": null,
+      "lastJob": null,
+      "executionRetries": null,
+      "user": null,
+      "configuration": null,
+      "status": null,
+      "nextScheduledExecution": null
     }
   ],
   "allColumnHeaders": [
@@ -1205,5 +1224,30 @@
     "configurationWithPasswords": true,
     "configuration": true
   },
-  "compactMode": false
+  "compactMode": false,
+  "cellMetadata": {
+    "11": {
+      "lastRun": {
+        "missingCellErrorMessage": "Dummy message for column Last run"
+      },
+      "nextScheduledExecution": {
+        "missingCellErrorMessage": "Dummy message for column Next run"
+      },
+      "targetName": {
+        "missingCellErrorMessage": "Dummy message for column Workflow"
+      },
+      "user": {
+        "missingCellErrorMessage": "Dummy message for column User"
+      },
+      "schedule": {
+        "missingCellErrorMessage": "Dummy message for column Interval"
+      },
+      "status": {
+        "missingCellErrorMessage": "Dummy message for column Status"
+      },
+      "id": {
+        "missingCellErrorMessage": "Dummy message for column Schedule ID"
+      }
+    }
+  }
 }

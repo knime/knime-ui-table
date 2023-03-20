@@ -82,6 +82,10 @@ export default {
         marginBottom: {
             type: Number,
             default: 0
+        },
+        cellMetadata: {
+            type: Object,
+            default: () => ({})
         }
     },
     emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
@@ -167,6 +171,16 @@ export default {
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnKeys[columnId]}`;
+        },
+        getCellTitle(data, ind) {
+            if (data === null) {
+                let errorMessage = null;
+                if (this.cellMetadata !== null) {
+                    errorMessage = this.cellMetadata[this.columnKeys[ind]]?.missingCellErrorMessage;
+                }
+                return `Missing Value${errorMessage ? ` (${errorMessage})` : ''}`;
+            }
+            return this.isClickable(data, ind) ? null : data;
         }
     }
 };
@@ -208,7 +222,7 @@ export default {
           { clickable: isClickable(data, ind)}
         ]"
         :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
-        :title="!isClickable(data, ind) ? data : null"
+        :title="getCellTitle(data, ind)"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
       >

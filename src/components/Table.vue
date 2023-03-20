@@ -148,6 +148,10 @@ export default {
         headerSubMenuItems: {
             type: Array,
             default: () => []
+        },
+        cellMetadata: {
+            type: Object,
+            default: () => ({})
         }
     },
     emits: ['tableSelect', 'tableInput', 'headerSubMenuSelect'],
@@ -404,6 +408,21 @@ export default {
                 currentPage: this.currentPage,
                 currentPageSize: this.currentPageSize
             };
+        },
+        paginatedCellMetadata() {
+            const cellMetadata = {};
+            if (this.cellMetadata) {
+                for (const [key, value] of Object.entries(this.cellMetadata)) {
+                    /* pageStart/pageEnd are dynamic based on the current page, but the row index for each page starts
+                     * at 0 which is why the pageStart must be subtracted to get the row index for the current page.
+                     */
+                    if (key >= this.pageStart && key < this.pageEnd) {
+                        const newKey = key - this.pageStart;
+                        cellMetadata[newKey] = value;
+                    }
+                }
+            }
+            return cellMetadata;
         }
     },
     watch: {
@@ -820,6 +839,7 @@ export default {
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
+    :cell-metadata="paginatedCellMetadata"
     @time-filter-update="onTimeFilterUpdate"
     @column-update="onColumnUpdate"
     @column-reorder="onColumnReorder"

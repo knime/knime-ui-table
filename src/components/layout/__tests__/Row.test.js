@@ -24,7 +24,7 @@ describe('Row.vue', () => {
         columnConfigs: []
     };
     props.row.forEach((data, i) => props.columnConfigs.push({
-        key: i.toString(),
+        key: `col${i.toString()}`,
         formatter: f,
         classGenerator: [],
         size: 20,
@@ -121,7 +121,7 @@ describe('Row.vue', () => {
             wrapper = shallowMount(Row, {
                 props,
                 slots: {
-                    'cellContent-2': '<iframe> Custom content </iframe>'
+                    'cellContent-col2': '<iframe> Custom content </iframe>'
                 }
             });
 
@@ -136,7 +136,7 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 props,
                 slots: {
-                    'cellContent-2': props => `<div>${props.row}</div>`
+                    'cellContent-col2': props => `<div>${props.row}</div>`
                 }
             });
 
@@ -179,6 +179,23 @@ describe('Row.vue', () => {
             expect(wrapper.find('.expandable-content').exists()).toBe(false);
             await wrapper.setData({ showContent: true });
             expect(wrapper.find('.expandable-content').exists()).toBe(true);
+        });
+
+        it('renders the correct title', () => {
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    row: ['data1', null, null, 'data4', null],
+                    cellMetadata: { col1: { missingCellErrorMessage: 'Col1' },
+                        col2: { missingCellErrorMessage: 'Col2' },
+                        col4: { missingCellErrorMessage: null } }
+                }
+            });
+            expect(wrapper.findAll('.data-cell').at(0).attributes('title')).toBe('data1');
+            expect(wrapper.findAll('.data-cell').at(1).attributes('title')).toBe('Missing Value (Col1)');
+            expect(wrapper.findAll('.data-cell').at(2).attributes('title')).toBe('Missing Value (Col2)');
+            expect(wrapper.findAll('.data-cell').at(3).attributes('title')).toBe('data4');
+            expect(wrapper.findAll('.data-cell').at(4).attributes('title')).toBe('Missing Value');
         });
     });
 

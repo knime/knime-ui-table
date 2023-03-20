@@ -82,6 +82,21 @@ export default {
             default: 0
         },
         /**
+         * An array that contains the cell metadata for each row contained in 'data'. The metadata is stored as object
+         * that maps the column key to the corresponding cell metadata object.
+         */
+        cellMetadata: {
+            type: Object,
+            default: () => ({})
+        },
+        /**
+         * analogous to cellMetadata but for the bottomCellMetadata
+         */
+        bottomCellMetadata: {
+            type: Object,
+            default: () => ({})
+        },
+        /**
          * Config props.
          */
         dataConfig: {
@@ -603,6 +618,7 @@ export default {
               :margin-bottom="rowMarginBottom"
               :is-selected="currentSelectionMap(item.index, item.isTop)"
               :show-border-column-index="showBorderColumnIndex"
+              :cell-metadata="(item.isTop ? cellMetadata : bottomCellMetadata)[item.index]"
               @row-select="onRowSelect($event, item.index, 0, item.isTop)"
               @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
               @row-input="onRowInput(
@@ -645,6 +661,7 @@ export default {
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
             :show-border-column-index="showBorderColumnIndex"
+            :cell-metadata="cellMetadata[rowInd]"
             @row-select="onRowSelect($event, rowInd, groupInd, true)"
             @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
             @row-sub-menu-expand="registerExpandedSubMenu"
