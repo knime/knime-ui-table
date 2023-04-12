@@ -7,7 +7,7 @@ import FilterInputField from '../filter/FilterInputField.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SearchIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 
-import { tableTimeFilters } from '../../config/time.config';
+import { tableTimeFilters } from '@/config/time.config';
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,

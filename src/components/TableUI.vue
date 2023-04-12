@@ -160,7 +160,8 @@ export default {
             wrapperHeight: 0,
             wrapperResizeObserver: new ResizeObserver((entries) => {
                 this.wrapperHeight = entries[0].contentRect.height;
-            })
+            }),
+            closeExpandedSubMenu: () => {}
         };
     },
     computed: {
@@ -460,6 +461,12 @@ export default {
             consola.debug(`TableUI row submenu clicked ${event} ${row}`);
             event.callback(row, this);
         },
+        registerExpandedSubMenu(callback) {
+            // Timeout to prevent the sub menu to be closed due to scroll event triggered by clicking a row/group
+            setTimeout(() => {
+                this.closeExpandedSubMenu = callback;
+            }, 100);
+        },
         openPopover(event) {
             consola.debug(`TableUI: open popover`, event);
             this.popoverColumn = this.columnKeys[event.colInd];
@@ -551,6 +558,7 @@ export default {
       <div
         class="body"
         :style="{ width: `${currentBodyWidth}px`, height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
+        @scroll="closeExpandedSubMenu"
       >
         <Group
           v-for="(dataGroup, groupInd) in scrollData"
@@ -559,6 +567,7 @@ export default {
           :group-sub-menu-items="tableConfig.groupSubMenuItems"
           :show="data.length > 1 && dataGroup.length > 0"
           @group-sub-menu-click="onGroupSubMenuClick($event, dataGroup)"
+          @group-sub-menu-expand="registerExpandedSubMenu"
         >
           <RecycleScroller
             v-if="enableVirtualScrolling && scrollData.length === 1"
@@ -576,7 +585,6 @@ export default {
             class="scroller"
             :emit-update="true"
             :page-mode="false"
-            :style="{height: fitToContainer ? `${currentBodyHeight}px` : '100%'}"
             @update="onScroll"
           >
             <PlaceholderRow
@@ -600,6 +608,7 @@ export default {
               @row-input="onRowInput(
                 { ...$event, rowInd: item.index, id: item.data.id, groupInd: 0, isTop: item.isTop}
               )"
+              @row-sub-menu-expand="registerExpandedSubMenu"
               @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
             >
               <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -638,6 +647,7 @@ export default {
             :show-border-column-index="showBorderColumnIndex"
             @row-select="onRowSelect($event, rowInd, groupInd, true)"
             @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
+            @row-sub-menu-expand="registerExpandedSubMenu"
             @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -766,7 +776,7 @@ table :deep(tr) {
   }
 }
 
-@media only screen and (max-width: 1180px) {
+@media only screen and (width <= 1180px) {
   table {
     table-layout: fixed;
     width: 100%;
@@ -793,7 +803,7 @@ table :deep(tr) {
   }
 }
 
-@media only screen and (max-width: 750px) {
+@media only screen and (width <= 750px) {
   table {
     & :deep(.name) {
       width: 40%;

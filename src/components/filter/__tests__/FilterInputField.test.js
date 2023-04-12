@@ -23,15 +23,15 @@ describe('FilterInputField.vue', () => {
         const newValue = 'new value';
         let input = wrapper.find('input');
         input.setValue(newValue);
-        expect(wrapper.emitted().input[0][0]).toEqual(newValue);
+        expect(wrapper.emitted('input')[0][0]).toEqual(newValue);
     });
 
-    it('emits input events', () => {
+    it('emits blur events', () => {
         const wrapper = mount(FilterInputField);
         wrapper.vm.focus();
-        expect(wrapper.emitted().blur).toBeFalsy();
+        expect(wrapper.emitted('blur')).toBeFalsy();
         wrapper.find('input').trigger('keydown.esc');
-        expect(wrapper.emitted().blur).toBeTruthy();
+        expect(wrapper.emitted('blur')).toBeTruthy();
     });
 
     it('focuses on focus call', () => {

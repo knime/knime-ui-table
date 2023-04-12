@@ -69,7 +69,7 @@ describe('Table.vue', () => {
 
     describe('configurations', () => {
         beforeEach(() => {
-            Object.defineProperty(global, 'ResizeObserver', {
+            Object.defineProperty(window, 'ResizeObserver', {
                 writable: true,
                 value: vi.fn().mockImplementation((callback) => ({
                     observe: vi.fn(),
