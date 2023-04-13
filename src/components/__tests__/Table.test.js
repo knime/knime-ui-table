@@ -212,21 +212,6 @@ describe('Table.vue', () => {
             ] });
         });
 
-    it('generates the correct paginated cell metadata', () => {
-        const { wrapper } = doMount({ customProps:
-            { allData:
-                [{ a: 'r0c0', b: 'r0c1' }, { a: null, b: null }, { a: 'r2c0', b: 'r2c1' }, { a: 'r3c0', b: null }],
-            pageSize: 2,
-            cellMetadata:
-                { '1': { '0': { missingCellErrorMessage: 'row1col0' }, '1': { missingCellErrorMessage: 'row1col1' } },
-                    '3': { '1': { missingCellErrorMessage: 'row4col1' } } } } });
-
-        expect(wrapper.vm.paginatedCellMetadata).toEqual({ '1': { '0': { missingCellErrorMessage: 'row1col0' },
-            '1': { missingCellErrorMessage: 'row1col1' } } });
-        wrapper.vm.onPageChange(1);
-        expect(wrapper.vm.paginatedCellMetadata).toEqual({ '1': { '1': { missingCellErrorMessage: 'row4col1' } } });
-    });
-
     describe('component lifecycle', () => {
         it('creates internally required index reference lists on creation', () => {
             const { wrapper } = doMount();

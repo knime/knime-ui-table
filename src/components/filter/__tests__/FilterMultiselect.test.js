@@ -1,24 +1,29 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import FilterMultiselect from '../FilterMultiselect.vue';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 
 describe('FilterMultiselect.vue', () => {
+    let props;
+
+    beforeEach(() => {
+        props = {
+            possibleValues: [{
+                id: 'test1',
+                text: 'test1'
+            }, {
+                id: 'test2',
+                text: 'test2'
+            }, {
+                id: 'test3',
+                text: 'test3'
+            }]
+        };
+    });
+
     it('renders', () => {
-        const wrapper = mount(FilterMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(FilterMultiselect, { props });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
         expect(wrapper.classes()).toContain('multiselect');
@@ -27,17 +32,7 @@ describe('FilterMultiselect.vue', () => {
     it('renders placeholder or number of selected items', async () => {
         const wrapper = mount(FilterMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2',
-                    selectedText: 'Test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }],
+                ...props,
                 placeholder: 'Test Title'
             }
         });
@@ -57,40 +52,28 @@ describe('FilterMultiselect.vue', () => {
         expect(button.classes()).not.toContain('placeholder');
     });
 
-    it('emits input events', () => {
+    it('renders a missing value icon when item.id is null, else it renders the item.text within the options', () => {
         const wrapper = mount(FilterMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
+                possibleValues: [...props.possibleValues, { id: null, text: null }]
             }
         });
+        const options = wrapper.findAll('.boxes');
+        expect(options[0].find('span').text()).toBe('test1');
+        expect(options[0].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[2].find('span').text()).toBe('test3');
+        expect(options[2].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[3].findComponent(CircleHelpIcon).exists()).toBeTruthy();
+    });
+
+    it('emits input events', () => {
+        const wrapper = mount(FilterMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.emitted().input).toBeTruthy();
     });
 
     it('toggles properly', () => {
-        const wrapper = mount(FilterMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(FilterMultiselect, { props });
         expect(wrapper.vm.collapsed).toBe(true);
         wrapper.vm.toggle();
         expect(wrapper.vm.collapsed).toBe(false);
@@ -99,39 +82,13 @@ describe('FilterMultiselect.vue', () => {
     });
 
     it('adds values to the checked values', () => {
-        const wrapper = mount(FilterMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(FilterMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
     });
 
     it('removes values from the checked values', () => {
-        const wrapper = mount(FilterMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(FilterMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
         expect(wrapper.vm.checkedValue).toHaveLength(1);
@@ -141,20 +98,7 @@ describe('FilterMultiselect.vue', () => {
 
     describe('keyboard interaction', () => {
         it('show options on space', () => {
-            const wrapper = mount(FilterMultiselect, {
-                props: {
-                    possibleValues: [{
-                        id: 'test1',
-                        text: 'test1'
-                    }, {
-                        id: 'test2',
-                        text: 'test2'
-                    }, {
-                        id: 'test3',
-                        text: 'test3'
-                    }]
-                }
-            });
+            const wrapper = mount(FilterMultiselect, { props });
             let button = wrapper.find('[role=button]');
             button.trigger('keydown.space');
             expect(wrapper.vm.collapsed).toBe(false);
@@ -188,20 +132,7 @@ describe('FilterMultiselect.vue', () => {
         it('hide options when focus leaves the component', async () => {
             vi.useFakeTimers();
 
-            const wrapper = mount(FilterMultiselect, {
-                props: {
-                    possibleValues: [{
-                        id: 'test1',
-                        text: 'test1'
-                    }, {
-                        id: 'test2',
-                        text: 'test2'
-                    }, {
-                        id: 'test3',
-                        text: 'test3'
-                    }]
-                }
-            });
+            const wrapper = mount(FilterMultiselect, { props });
             let refocusMock = vi.spyOn(wrapper.vm.$refs.toggle, 'focus');
             let onFocusOutMock = vi.spyOn(wrapper.vm, 'onFocusOut');
             let closeMenuMock = vi.spyOn(wrapper.vm, 'closeOptions');
@@ -221,21 +152,7 @@ describe('FilterMultiselect.vue', () => {
 
         describe('arrow key navigation', () => {
             it('gets next item to focus', () => {
-                const wrapper = mount(FilterMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
+                const wrapper = mount(FilterMultiselect, { props, attachTo: document.body });
                 // up and down
                 wrapper.vm.focusOptions[1].focus();
                 expect(document.activeElement).toBe(wrapper.vm.focusOptions[1]);
@@ -254,21 +171,7 @@ describe('FilterMultiselect.vue', () => {
             });
     
             it('focuses next element on key down', async () => {
-                const wrapper = mount(FilterMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
+                const wrapper = mount(FilterMultiselect, { props, attachTo: document.body });
                 let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
                 expect(wrapper.vm.collapsed).toBe(true);
                 await wrapper.setData({ collapsed: false });
@@ -284,21 +187,7 @@ describe('FilterMultiselect.vue', () => {
             });
     
             it('focuses previous element on key up', async () => {
-                const wrapper = mount(FilterMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
+                const wrapper = mount(FilterMultiselect, { props, attachTo: document.body });
                 let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
                 expect(wrapper.vm.collapsed).toBe(true);
                 await wrapper.setData({ collapsed: false });
@@ -314,21 +203,8 @@ describe('FilterMultiselect.vue', () => {
             });
     
             it('focuses first element on key down at list end', async () => {
-                const wrapper = mount(FilterMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
+                const wrapper = mount(FilterMultiselect, { props, attachTo: document.body });
+
                 let onDownMock = vi.spyOn(wrapper.vm, 'onDown');
                 expect(wrapper.vm.collapsed).toBe(true);
                 await wrapper.setData({ collapsed: false });
@@ -344,21 +220,8 @@ describe('FilterMultiselect.vue', () => {
             });
     
             it('focuses last element on key up at list start', async () => {
-                const wrapper = mount(FilterMultiselect, {
-                    props: {
-                        possibleValues: [{
-                            id: 'test1',
-                            text: 'test1'
-                        }, {
-                            id: 'test2',
-                            text: 'test2'
-                        }, {
-                            id: 'test3',
-                            text: 'test3'
-                        }]
-                    },
-                    attachTo: document.body
-                });
+                const wrapper = mount(FilterMultiselect, { props, attachTo: document.body });
+
                 let onUpMock = vi.spyOn(wrapper.vm, 'onUp');
                 expect(wrapper.vm.collapsed).toBe(true);
                 await wrapper.setData({ collapsed: false });

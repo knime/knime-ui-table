@@ -1,6 +1,8 @@
 <script>
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import { isMissingValue } from '@/util';
 
 const BLUR_TIMEOUT = 1;
 
@@ -13,6 +15,7 @@ const BLUR_TIMEOUT = 1;
 export default {
     components: {
         Checkbox,
+        CircleHelpIcon,
         DropdownIcon
     },
     props: {
@@ -121,6 +124,7 @@ export default {
         isChecked(itemId) {
             return this.checkedValue.indexOf(itemId) > -1;
         },
+        isMissingValue,
         /**
          * Handle closing the options.
          *
@@ -202,7 +206,11 @@ export default {
         class="boxes"
         @update:model-value="onInput(item.id, $event)"
       >
-        {{ item.text }}
+        <CircleHelpIcon
+          v-if="isMissingValue(item.id)"
+          class="missing-value-icon"
+        />
+        <span v-else>{{ item.text }}</span>
       </Checkbox>
     </div>
   </div>
@@ -275,6 +283,14 @@ export default {
 
       & :deep(span) {
         width: 100%;
+      }
+
+      & .missing-value-icon {
+        width: 14px;
+        height: 14px;
+        stroke-width: calc(32px / 14);
+        stroke: var(--theme-color-kudos);
+        vertical-align: text-top;
       }
     }
   }

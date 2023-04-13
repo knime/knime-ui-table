@@ -161,7 +161,7 @@ describe('filter', () => {
             expect(filteredIndicies).toStrictEqual([2, 4]);
         });
 
-        it('does not filter with empty or missing column filter values', () => {
+        it('does not filter with empty column filter values', () => {
             let params = getParams();
             params.filterValues = {
                 col3: undefined
@@ -176,12 +176,18 @@ describe('filter', () => {
             ({ filteredData, filteredIndicies } = filter(params));
             expect(filteredData).toStrictEqual(params.data);
             expect(filteredIndicies).toStrictEqual([0, 1, 2, 3, 4]);
+        });
+
+        it('does filter with missing values/null as column filter value', () => {
+            const params = getParams();
             params.filterValues = {
                 col3: null
             };
-            ({ filteredData, filteredIndicies } = filter(params));
-            expect(filteredData).toStrictEqual(params.data);
-            expect(filteredIndicies).toStrictEqual([0, 1, 2, 3, 4]);
+            params.showFilter = true;
+            params.data[2].col3 = null;
+            const { filteredData, filteredIndicies } = filter(params);
+            expect(filteredData).toStrictEqual([params.data[2]]);
+            expect(filteredIndicies).toStrictEqual([2]);
         });
     });
 

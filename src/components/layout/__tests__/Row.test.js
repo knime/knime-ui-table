@@ -185,14 +185,11 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 props: {
                     ...props,
-                    row: ['data1', null, null, 'data4', null],
-                    cellMetadata: { col1: { missingCellErrorMessage: 'Col1' },
-                        col2: { missingCellErrorMessage: 'Col2' },
-                        col4: { missingCellErrorMessage: null } }
+                    row: ['data1', undefined, { metadata: 'Col2' }, 'data4', null]
                 }
             });
             expect(wrapper.findAll('.data-cell').at(0).attributes('title')).toBe('data1');
-            expect(wrapper.findAll('.data-cell').at(1).attributes('title')).toBe('Missing Value (Col1)');
+            expect(wrapper.findAll('.data-cell').at(1).attributes('title')).toBeUndefined();
             expect(wrapper.findAll('.data-cell').at(2).attributes('title')).toBe('Missing Value (Col2)');
             expect(wrapper.findAll('.data-cell').at(3).attributes('title')).toBe('data4');
             expect(wrapper.findAll('.data-cell').at(4).attributes('title')).toBe('Missing Value');

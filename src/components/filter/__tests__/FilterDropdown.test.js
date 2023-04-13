@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import FilterDropdown from '../FilterDropdown.vue';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 
 vi.mock('vue-clickaway2', () => ({
     mixin: {}
@@ -63,10 +64,27 @@ describe('FilterDropdown.vue', () => {
         let button = wrapper.find('[role=button]');
         expect(button.text()).toBe('Text 3');
 
-        await wrapper.setProps({ value: null });
+        await wrapper.setProps({ value: undefined });
         expect(button.text()).toBe(placeholder);
         await wrapper.setProps({ value: '' });
         expect(button.text()).toBe(placeholder);
+    });
+
+    it('renders a missing value icon if missing value set', async () => {
+        const wrapper = mount(FilterDropdown, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: null, text: null }],
+                value: 'test3'
+            }
+        });
+
+        const button = wrapper.find('[role=button]');
+        expect(button.text()).toBe('Text 3');
+        expect(button.findComponent(CircleHelpIcon).exists()).toBeFalsy();
+
+        await wrapper.setProps({ value: null });
+        expect(button.findComponent(CircleHelpIcon).exists()).toBeTruthy();
     });
 
     it('opens the listbox on click of button and emits event for clicked value', async () => {
@@ -89,6 +107,23 @@ describe('FilterDropdown.vue', () => {
         // listbox closed
         await wrapper.vm.$nextTick();
         expect(listbox.isVisible()).toBe(false);
+    });
+
+    it('renders a missing value icon when item.id is null, else it renders the item.text within the options', () => {
+        const wrapper = mount(FilterDropdown, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: null, text: null }],
+                value: 'test3'
+            }
+        });
+        const options = wrapper.findAll('[role=option]');
+        expect(options[0].find('span').text()).toBe('Text 1');
+        expect(options[0].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[4].find('span').text()).toBe('Text 5');
+        expect(options[4].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[5].find('span').exists()).toBeFalsy();
+        expect(options[5].findComponent(CircleHelpIcon).exists()).toBeTruthy();
     });
 
     describe('keyboard navigation', () => {

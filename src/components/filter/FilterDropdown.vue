@@ -1,7 +1,9 @@
 <script>
 import { mixin as VueClickAway } from 'vue3-click-away';
 
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import { isMissingValue } from '@/util';
 
 const KEY_DOWN = 40;
 const KEY_UP = 38;
@@ -19,6 +21,7 @@ const KEY_SPACE = 32;
  */
 export default {
     components: {
+        CircleHelpIcon,
         DropdownIcon
     },
     mixins: [VueClickAway],
@@ -82,7 +85,7 @@ export default {
             return this.possibleValues.map(x => x.id).indexOf(this.realValue);
         },
         showPlaceholder() {
-            return !this.realValue;
+            return !this.realValue && !isMissingValue(this.realValue);
         },
         displayTextMap() {
             let map = {};
@@ -105,6 +108,7 @@ export default {
         isCurrentValue(candidate) {
             return this.realValue === candidate;
         },
+        isMissingValue,
         setSelected(value) {
             consola.trace('ListBox setSelected on', value);
             /**
@@ -247,7 +251,11 @@ export default {
       @click="toggleExpanded"
       @keydown="handleKeyDownButton"
     >
-      {{ displayText }}
+      <CircleHelpIcon
+        v-if="isMissingValue(displayText)"
+        class="missing-value-icon"
+      />
+      <span v-else>{{ displayText }}</span>
       <DropdownIcon class="icon" />
     </div>
     <ul
@@ -265,11 +273,15 @@ export default {
         ref="options"
         role="option"
         :title="item.text"
-        :class="{ 'focused': isCurrentValue(item.id), 'noselect': true, 'empty': item.text.trim() === '' }"
+        :class="{ 'focused': isCurrentValue(item.id), 'noselect': true, 'empty': item.text?.trim() === '' }"
         :aria-selected="isCurrentValue(item.id)"
         @click="onOptionClick(item.id)"
       >
-        {{ item.text }}
+        <CircleHelpIcon
+          v-if="isMissingValue(item.id)"
+          class="missing-value-icon"
+        />
+        <span v-else>{{ item.text }}</span>
       </li>
     </ul>
   </div>
@@ -282,6 +294,13 @@ export default {
 
   & .placeholder {
     color: var(--knime-stone-gray);
+  }
+
+  & .missing-value-icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: calc(32px / 14);
+    stroke: var(--theme-color-kudos);
   }
 
   & [role="button"] {
@@ -301,6 +320,12 @@ export default {
       border-color: var(--knime-masala);
       outline: none;
     }
+
+    & .missing-value-icon {
+        position: absolute;
+        left: 10px;
+        top: 7px;
+    }
   }
 
   &:not(.collapsed) [role="button"] {
@@ -318,7 +343,7 @@ export default {
     stroke: var(--knime-masala);
     position: absolute;
     right: 7px;
-    top: 9px;
+    top: 8px;
     pointer-events: none;
     transition: transform 0.2s ease-in-out;
   }
@@ -378,6 +403,10 @@ export default {
     &.focused {
       background: var(--theme-dropdown-background-color-selected);
       color: var(--theme-dropdown-foreground-color-selected);
+    }
+
+    & .missing-value-icon {
+        vertical-align: middle;
     }
   }
 

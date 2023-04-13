@@ -1,4 +1,5 @@
 import { columnTypes } from '@/config/table.config';
+import { isMissingValue } from '..';
 
 /**
  * Utility function for sorting a data set. This functionality sorts the entire dataset, but also performs sorts within
@@ -49,14 +50,14 @@ export const sort = sortConfig => {
                 let columnType = currentColumnTypes[sortColumn];
                 let rawVal1 = row1[columnKey];
                 let rawVal2 = row2[columnKey];
-                let val1Missing = typeof rawVal1 === 'undefined' || rawVal1 === null;
-                let val2Missing = typeof rawVal2 === 'undefined' || rawVal2 === null;
+                const val1EmptyOrMissing = typeof rawVal1 === 'undefined' || isMissingValue(rawVal1);
+                const val2EmptyOrMissing = typeof rawVal2 === 'undefined' || isMissingValue(rawVal2);
 
-                if (val1Missing && val2Missing) {
+                if (val1EmptyOrMissing && val2EmptyOrMissing) {
                     return 0;
-                } else if (val1Missing) {
+                } else if (val1EmptyOrMissing) {
                     return 1;
-                } else if (val2Missing) {
+                } else if (val2EmptyOrMissing) {
                     return -1;
                 } else {
                     let order = 0;

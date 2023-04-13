@@ -7,6 +7,7 @@ import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
+import { isMissingValue } from '@/util';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -82,10 +83,6 @@ export default {
         marginBottom: {
             type: Number,
             default: 0
-        },
-        cellMetadata: {
-            type: Object,
-            default: () => ({})
         }
     },
     emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
@@ -134,6 +131,7 @@ export default {
         getPropertiesFromColumns(key) {
             return this.columnConfigs.map(colConfig => colConfig[key]);
         },
+        isMissingValue,
         onRowExpand() {
             this.showContent = !this.showContent;
             this.$nextTick(() => this.$emit('rowExpand', this.showContent));
@@ -173,12 +171,10 @@ export default {
             return `cellContent-${columnKeys[columnId]}`;
         },
         getCellTitle(data, ind) {
-            if (data === null) {
-                let errorMessage = null;
-                if (this.cellMetadata !== null) {
-                    errorMessage = this.cellMetadata[this.columnKeys[ind]]?.missingCellErrorMessage;
-                }
-                return `Missing Value${errorMessage ? ` (${errorMessage})` : ''}`;
+            const formattedValue = this.formatters[ind](data);
+            if (this.isMissingValue(formattedValue)) {
+                const missingValueMsg = formattedValue === null ? '' : ` (${formattedValue.metadata})`;
+                return `Missing Value${missingValueMsg}`;
             }
             return this.isClickable(data, ind) ? null : data;
         }
@@ -227,7 +223,7 @@ export default {
         @input="(val) => onInput(val, ind)"
       >
         <CircleHelpIcon
-          v-if="data === null"
+          v-if="isMissingValue(formatters[ind](data))"
           class="missing-value-icon"
         />
         <slot

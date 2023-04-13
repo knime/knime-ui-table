@@ -1,4 +1,5 @@
 import { months } from './time.config';
+import { isMissingValue } from '../util';
 
 export const defaultPageSize = 10;
 
@@ -50,7 +51,7 @@ export const columnFilterConfigs = {
     }
 };
 
-export const typeFormatters = {
+export const valueTypeFormatters = {
     Nominal: val => val,
     String: val => val,
     DateTime: val => {
@@ -86,3 +87,5 @@ export const typeFormatters = {
     Array: val => val?.length ? `${val.length} items` : '-',
     Object: val => val ? `${Object.keys(val).length} items` : '-'
 };
+
+export const typeFormatters = (type) => (val) => isMissingValue(val) ? val : valueTypeFormatters[type](val);
