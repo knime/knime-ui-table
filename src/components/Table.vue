@@ -427,12 +427,9 @@ export default {
             deep: true
         },
         filterHash: {
-            handler(newHash, oldHash) {
+            handler() {
                 consola.trace('New filter hash (watcher called).');
-                let x = Object.keys(newHash).filter(changeKey => oldHash[changeKey] !== newHash[changeKey]) || [];
-                let shouldUpdate = x.length === 1 ? x[0] !== 'showKey' : x.length;
-                let isBlocked = this.processLevel !== null && this.processLevel <= 1;
-                if (shouldUpdate && !isBlocked) {
+                if (this.processLevel === null || this.processLevel > 1) {
                     this.processLevel = 1;
                     this.filterLevelUpdate();
                     this.processLevel = null;

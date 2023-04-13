@@ -404,6 +404,17 @@ describe('Table.vue', () => {
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '10', b: '' });
             });
 
+            it('adjusts data on filter event if filters are active', async () => {
+                const { wrapper } = doMount();
+                expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
+                wrapper.vm.onToggleFilter();
+                expect(wrapper.vm.paginatedData[0].length).toBe(1);
+                wrapper.findComponent(TableUI).vm.$emit('toggleFilter', true);
+                wrapper.findComponent(TableUI).vm.$emit('columnFilter', 0, '10');
+                await wrapper.vm.$nextTick();
+                expect(wrapper.vm.paginatedData[0].length).toBe(0);
+            });
+
             it('resets filter to default if value is empty', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
