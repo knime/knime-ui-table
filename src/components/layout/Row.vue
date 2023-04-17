@@ -155,7 +155,7 @@ export default {
             event.preventDefault();
             return false;
         },
-        onSubMenuToggle(callback) {
+        onSubMenuToggle(_event, callback) {
             this.$emit('rowSubMenuExpand', callback);
         },
         isClickable(data, ind) {
