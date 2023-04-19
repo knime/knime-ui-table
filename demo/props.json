@@ -1145,7 +1145,23 @@
       "configuration": null,
       "status": null,
       "id": null
-    }
+    },
+    {
+      "targetName": {
+        "metadata": "Another message for User"
+      },
+      "user": {
+        "metadata": "Another message for User"
+      }
+    },
+    {
+      "targetName": null,
+      "user": null
+    },
+    {
+      "user": "Missing"
+    },
+    {}
   ],
   "allColumnHeaders": [
     "Last run",

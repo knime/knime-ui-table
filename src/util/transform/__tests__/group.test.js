@@ -121,18 +121,18 @@ describe('group', () => {
         });
     });
 
-    it('groups data missing group column value and sorts the missing group last', () => {
+    it('groups data missing group column values and sorts the missing group last', () => {
         let groupConfig = {
             filteredData: [
                 { col1: 8, col2: 9 },
                 { col1: 1, col2: 2, col3: 'C' },
                 { col1: 1, col2: 2, col3: 'A' },
-                { col1: 8, col2: 9 },
+                { col1: 8, col2: 9, col3: null },
                 { col1: 1, col2: 2, col3: 'B' },
                 { col1: 1, col2: 2, col3: 'B' },
-                { col1: 8, col2: 9 },
+                { col1: 8, col2: 9, col3: { metadata: 'Dummy message' } },
                 { col1: 1, col2: 2, col3: 'A' },
-                { col1: 8, col2: 9 }
+                { col1: 8, col2: 9, col3: { metadata: 'Another message' } }
             ],
             groupColumnKey: 'col3',
             groupColumn: 'Column 3',
@@ -163,9 +163,9 @@ describe('group', () => {
                 {
                     data: [
                         { col1: 8, col2: 9 },
-                        { col1: 8, col2: 9 },
-                        { col1: 8, col2: 9 },
-                        { col1: 8, col2: 9 }
+                        { col1: 8, col2: 9, col3: null },
+                        { col1: 8, col2: 9, col3: { metadata: 'Dummy message' } },
+                        { col1: 8, col2: 9, col3: { metadata: 'Another message' } }
                     ],
                     groupInd: 0
                 }

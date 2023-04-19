@@ -1,3 +1,8 @@
+import { isMissingValue } from '..';
+
+const missingValueSymbol = Symbol('Missing');
+const isEmpty = (group) => typeof group === 'undefined';
+
 /**
  * Utility function for grouping rows in the provided data based on nominal group membership. This group membership
  * is determined by the provided column name and key. If there is no group currently, the function will return a
@@ -39,8 +44,6 @@ export const group = groupConfig => {
         groupedIndicies: [],
         groupTitles: []
     };
-    let sortGroups = true;
-    let hasMissingGroup = false;
     if (!groupColumn || groupColumn === 'None') {
         returnValue.groupedIndicies.push(filteredIndicies);
         returnValue.groupTitles.push('None');
@@ -50,46 +53,45 @@ export const group = groupConfig => {
                 groupInd: 0
             }
         ];
-        sortGroups = false;
-    } else {
-        returnValue.groupedData = filteredData
-            .reduce((map, row, rowInd) => {
-                let rowGroup = row[groupColumnKey];
-                if (typeof rowGroup === 'undefined') {
-                    rowGroup = null;
-                } else if (rowGroup === 'Missing') {
-                    hasMissingGroup = true;
-                }
-                if (typeof map[rowGroup] === 'undefined') {
-                    returnValue.groupTitles.push(rowGroup);
-                    let indexTracker = returnValue.groupedIndicies.push([]);
-                    map[rowGroup] = {
-                        data: [],
-                        groupInd: indexTracker - 1
-                    };
-                }
-                returnValue.groupedIndicies[map[rowGroup].groupInd].push(filteredIndicies[rowInd]);
-                map[rowGroup].data.push(row);
-                return map;
-            }, {});
+        return returnValue;
     }
-    if (sortGroups) {
-        let orderedGroups = [];
-        returnValue.groupTitles = returnValue.groupTitles.sort((group1, group2) => {
-            if (group1 === null) {
-                return 1;
-            } else if (group2 === null) {
-                return -1;
+    let containsMissingGroupFromString = false;
+    returnValue.groupedData = filteredData
+        .reduce((map, row, rowInd) => {
+            let rowGroup = row[groupColumnKey];
+            if (isEmpty(rowGroup) || isMissingValue(rowGroup)) {
+                rowGroup = missingValueSymbol;
+            } else if (rowGroup === missingValueSymbol.description) {
+                containsMissingGroupFromString = true;
             }
-            return group1.toLowerCase() > group2.toLowerCase() ? 1 : -1;
-        }).map(group => {
-            orderedGroups.push(returnValue.groupedData[group]);
-            if (group === null) {
-                return hasMissingGroup ? 'No group' : 'Missing';
+            if (typeof map[rowGroup] === 'undefined') {
+                returnValue.groupTitles.push(rowGroup);
+                let indexTracker = returnValue.groupedIndicies.push([]);
+                map[rowGroup] = {
+                    data: [],
+                    groupInd: indexTracker - 1
+                };
             }
-            return group;
-        });
-        returnValue.groupedData = orderedGroups;
-    }
+            returnValue.groupedIndicies[map[rowGroup].groupInd].push(filteredIndicies[rowInd]);
+            map[rowGroup].data.push(row);
+            return map;
+        }, {});
+    let orderedGroups = [];
+    returnValue.groupTitles = returnValue.groupTitles.sort((group1, group2) => {
+        if (group1 === missingValueSymbol) {
+            return 1;
+        } else if (group2 === missingValueSymbol) {
+            return -1;
+        }
+        return group1.toLowerCase() > group2.toLowerCase() ? 1 : -1;
+    }).map(group => {
+        orderedGroups.push(returnValue.groupedData[group]);
+        if (group === missingValueSymbol) {
+            return containsMissingGroupFromString ? 'No group' : missingValueSymbol.description;
+        }
+        return group;
+    });
+    returnValue.groupedData = orderedGroups;
+
     return returnValue;
 };
