@@ -1,19 +1,20 @@
 <script lang = "ts">
 import RecycleScroller from 'vue-virtual-scroller/src/components/RecycleScroller.vue';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-import DynamicScroller from 'vue-virtual-scroller/src/components/DynamicScroller.vue';
-import DynamicScrollerItem from 'vue-virtual-scroller/src/components/DynamicScrollerItem.vue';
 
 export default {
     components: {
-        DynamicScroller,
-        DynamicScrollerItem
+        RecycleScroller
     },
     data() {
         return {
-            numRows: 20000,
-            numColumns: 200,
-            sizes: Array.from({ length: 20000 }, () => 50)
+            numRows: 200,
+            numColumns: 10,
+            sizesOverrides: {}
+        } as {
+          numRows: number,
+          numColumns: number,
+          sizesOverrides: Record<number, number>
         };
     },
     computed: {
@@ -25,47 +26,53 @@ export default {
         getRow(i: number) {
             return { id: `row${i}`,
                 index: i,
+                size: this.sizesOverrides[i] || 50,
                 data: Array.from({ length: this.numColumns }, (_v, j: number) => (
                     { id: `row${i}_${j}`, data: `row${i}_${j}` }
                 )) };
         },
         logSizes() {
-            console.log('sizes', this.sizes);
+            console.log('sizes', this.sizesOverrides);
         }
     }
 };
 </script>
 
 <template>
-  <DynamicScroller
+  <RecycleScroller
     class="body"
     :min-item-size="10"
     :items="scrollData"
+    :empty-item="{data: [{data: 'empty'}], size: 50, isEmpty: true}"
+    :num-items-above="20"
+    :num-items-below="200000"
   >
-    <template #default="{ item:row, active }">
-      <DynamicScrollerItem
-        :item="row"
-        :active="active"
+    <template #default="{ item:row }">
+      <button
+        v-if="row.isEmpty"
+        :style="{width: '1100px'}"
       >
-        <div
-          :style="{height: `${sizes[row.index]}px`}"
-          class="row"
-        >
-          <button>
-            <input
-              v-model="sizes[row.index]"
-              type="number"
-            >
-          </button>
-          <button
-            v-for="x in row.data"
+        empty row
+      </button>
+      <div
+        v-else
+        :style="{height: `${sizesOverrides[row.index] || 50}px`}"
+        class="row"
+      >
+        <button>
+          <input
+            v-model="sizesOverrides[row.index]"
+            type="number"
           >
-            {{ x.data }}
-          </button>
-        </div>
-      </DynamicScrollerItem>
+        </button>
+        <button
+          v-for="x in row.data"
+        >
+          {{ x.data }}
+        </button>
+      </div>
     </template>
-  </DynamicScroller>
+  </RecycleScroller>
   <button @click="logSizes">Log sizes</button>
 </template>
 
@@ -73,7 +80,9 @@ export default {
 <style>
   @import url("webapps-common/ui/css");
 
+
   button {
+    min-height: 50px;
     height: 100%;
     width: 100px;
   }
@@ -84,7 +93,7 @@ export default {
 
   .row {
     height: 50px;
-    width: 20100px;
+    width: 1100px;
   }
 
   .body {
