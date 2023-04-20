@@ -1,7 +1,7 @@
 import { columnTypes } from '@/config/table.config';
 import { tableTimeFilters, checkTimeFilter } from '@/config/time.config';
 import { searchRow, searchCell } from './search';
-import { isMissingValue } from '..';
+import { isEmpty, isMissingValue } from '..';
 
 /**
  * Utility function designed to consume an entire data set and output only the rows which match the provided
@@ -93,7 +93,7 @@ export const filter = filterConfig => {
                 if (typeof filterVal === 'undefined' || filterVal === null || filterVal.length === 0) {
                     return true;
                 }
-                if (typeof rowValue === 'undefined') {
+                if (isEmpty(rowValue)) {
                     return false;
                 }
                 switch (columnType) {

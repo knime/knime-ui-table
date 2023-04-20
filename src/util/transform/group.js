@@ -1,7 +1,6 @@
-import { isMissingValue } from '..';
+import { isMissingValue, isEmpty } from '..';
 
 const missingValueSymbol = Symbol('Missing');
-const isEmpty = (group) => typeof group === 'undefined';
 
 /**
  * Utility function for grouping rows in the provided data based on nominal group membership. This group membership
