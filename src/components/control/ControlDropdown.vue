@@ -1,7 +1,9 @@
 <script lang="ts">
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
 import { ref, computed, toRefs } from 'vue';
 import type { Ref, PropType } from 'vue';
+import { isMissingValue } from '@/util';
 import useDropdownPopper from '../../composables/useDropdownPopper';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
@@ -18,6 +20,7 @@ import useIdGeneration from '@/composables/useIdGeneration';
  */
 export default {
     components: {
+        CircleHelpIcon,
         DropdownIcon
     },
     props: {
@@ -124,7 +127,7 @@ export default {
         }, isExpanded);
         const { possibleValues, includePlaceholder, placeholder } = toRefs(props);
         const localValues = computed(() => {
-            let values = possibleValues.value;
+            let values = possibleValues.value.filter(({ id }) => typeof id !== 'undefined');
             if (includePlaceholder.value) {
                 values.unshift({
                     id: placeholder.value,
@@ -157,7 +160,12 @@ export default {
     },
     computed: {
         showPlaceholder() {
-            return !this.modelValue || this.modelValue === this.placeholder;
+            const noModelValuePresent = typeof this.modelValue === 'undefined' || this.modelValue === '';
+            if (this.includePlaceholder) {
+                return noModelValuePresent || this.modelValue === this.placeholder;
+            } else {
+                return noModelValuePresent;
+            }
         },
         displayTextMap() {
             let map: Record<string, string> = {};
@@ -180,6 +188,7 @@ export default {
         isCurrentValue(candidate: string) {
             return this.modelValue === candidate;
         },
+        isMissingValue,
         isFocusedValue(index: number) {
             return this.selectedIndex === index;
         },
@@ -199,9 +208,6 @@ export default {
             this.isExpanded = !this.isExpanded;
             this.resetNavigation();
             this.updatePopper();
-        },
-        hasSelection() {
-            return Boolean(this.selectedIndex);
         }
     }
 };
@@ -210,6 +216,7 @@ export default {
 <template>
   <div
     :class="['dropdown' , { filter: isFilter, collapsed: !isExpanded }]"
+    @keydown.space.prevent="toggleExpanded"
   >
     <div
       :id="buttonId"
@@ -224,10 +231,13 @@ export default {
       :aria-activedescendant="activeDescendantId"
       :aria-owns="activeDescendantId"
       @click="toggleExpanded"
-      @keydown.space="toggleExpanded"
-      @keydown="onKeydown"
+      @keydown="isExpanded && onKeydown($event)"
     >
-      {{ displayText }}
+      <CircleHelpIcon
+        v-if="isMissingValue(displayText)"
+        class="missing-value-icon"
+      />
+      <span v-else>{{ displayText }}</span>
       <DropdownIcon :class="['icon', { 'open-up': openUp }]" />
     </div>
     <Teleport to="body">
@@ -245,11 +255,20 @@ export default {
           ref="options"
           role="option"
           :title="item.text"
-          :class="{ 'focused': isFocusedValue(index), 'noselect': true, 'empty': item.text.trim() === '' }"
+          :class="{
+            'focused': isFocusedValue(index),
+            'selected': isCurrentValue(item.id),
+            'noselect': true,
+            'empty': item.text?.trim() === ''
+          }"
           :aria-selected="isCurrentValue(item.id)"
           @click="onOptionClick(item.id)"
         >
-          {{ item.text }}
+          <CircleHelpIcon
+            v-if="isMissingValue(item.id)"
+            class="missing-value-icon"
+          />
+          <span v-else-if="item.text !== undefined">{{ item.text }}</span>
         </li>
       </ul>
     </Teleport>
@@ -280,6 +299,16 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      position: absolute;
+      left: 10px;
+      top: 7px;
+    }
   }
 
   &.filter [role="button"] {
@@ -332,7 +361,7 @@ export default {
     stroke-width: calc(32px / 12);
     stroke: var(--knime-masala);
     right: 7px;
-    top: 9px;
+    top: 8px;
   }
 
   &:not(.filter) .icon {
@@ -401,19 +430,24 @@ export default {
       white-space: pre-wrap;
     }
 
-    &:hover {
+    &.selected {
+      background: var(--theme-dropdown-background-color-selected);
+      color: var(--theme-dropdown-foreground-color-selected);
+    }
+
+    &:hover,
+    &.focused {
       background: var(--theme-dropdown-background-color-hover);
       color: var(--theme-dropdown-foreground-color-hover);
     }
 
-    &:focus {
-      background: var(--theme-dropdown-background-color-focus);
-      color: var(--theme-dropdown-foreground-color-focus);
-    }
 
-    &.focused {
-      background: var(--theme-dropdown-background-color-selected);
-      color: var(--theme-dropdown-foreground-color-selected);
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      vertical-align: middle;
     }
   }
 

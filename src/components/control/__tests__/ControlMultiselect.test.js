@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
-
-import ControlMultiselect from '../ControlMultiselect.vue';
 import { ref, unref } from 'vue';
 
+import ControlMultiselect from '../ControlMultiselect.vue';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 
 const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onKeydown: vi.fn() };
 vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
@@ -19,25 +19,30 @@ import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavi
 window.scrollTo = vi.fn();
 
 describe('ControlMultiselect.vue', () => {
+    let props;
+    
+    
+    beforeEach(() => {
+        props = {
+            possibleValues: [{
+                id: 'test1',
+                text: 'Test1'
+            }, {
+                id: 'test2',
+                text: 'Test2'
+            }, {
+                id: 'test3',
+                text: 'Test3'
+            }]
+        };
+    });
+
     afterEach(() => {
         vi.restoreAllMocks();
     });
-
+        
     it('renders', () => {
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         expect(wrapper.html()).toBeTruthy();
         expect(wrapper.isVisible()).toBeTruthy();
         expect(wrapper.classes()).toContain('multiselect');
@@ -46,17 +51,7 @@ describe('ControlMultiselect.vue', () => {
     it('renders placeholder until options have been selected', async () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2',
-                    selectedText: 'Test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }],
+                ...props,
                 placeholder: 'Test Title'
             }
         });
@@ -67,29 +62,19 @@ describe('ControlMultiselect.vue', () => {
 
         wrapper.vm.onInput('test1', true);
         await wrapper.vm.$nextTick();
-        expect(button.text()).toBe('test1');
+        expect(button.text()).toBe('Test1');
         expect(button.classes()).not.toContain('placeholder');
         
         wrapper.vm.onInput('test2', true);
         await wrapper.vm.$nextTick();
-        expect(button.text()).toBe('test1, Test2');
+        expect(button.text()).toBe('Test1, Test2');
         expect(button.classes()).not.toContain('placeholder');
     });
 
     it('number of selected items if items are selected and isFilter is true', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2',
-                    selectedText: 'Test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }],
+                ...props,
                 placeholder: 'Test Title',
                 isFilter: true,
                 modelValue: ['test1', 'test3']
@@ -103,17 +88,7 @@ describe('ControlMultiselect.vue', () => {
     it('locks placeholder', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2',
-                    selectedText: 'Test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }],
+                ...props,
                 placeholder: 'Test Title',
                 lockPlaceholder: true
             }
@@ -132,40 +107,43 @@ describe('ControlMultiselect.vue', () => {
         expect(button.classes()).toContain('placeholder');
     });
 
-    it('emits update:modelValue events', () => {
+    it('renders a missing value icon when item.id is null, else it renders the item.text within the options', () => {
         const wrapper = mount(ControlMultiselect, {
             props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
+                possibleValues: [...props.possibleValues, { id: null, text: null }]
             }
         });
+        const popover = wrapper.find({ ref: 'optionsPopover' });
+        const options = popover.findAll('.boxes');
+        expect(options[0].find('span').text()).toBe('Test1');
+        expect(options[0].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[2].find('span').text()).toBe('Test3');
+        expect(options[2].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[3].findComponent(CircleHelpIcon).exists()).toBeTruthy();
+    });
+
+    it('excludes possible values with undefined id', () => {
+        const wrapper = mount(ControlMultiselect, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: undefined, text: undefined }],
+                value: 'test3'
+            }
+        });
+        const popover = wrapper.find({ ref: 'optionsPopover' });
+        const options = popover.findAll('.boxes');
+        expect(wrapper.vm.possibleValues).toHaveLength(4);
+        expect(options).toHaveLength(3);
+    });
+
+    it('emits update:modelValue events', () => {
+        const wrapper = mount(ControlMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.emitted()['update:modelValue']).toBeTruthy();
     });
 
     it('toggles properly', () => {
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         expect(wrapper.vm.isExpanded).toBe(false);
         wrapper.vm.toggle();
         expect(wrapper.vm.isExpanded).toBe(true);
@@ -174,39 +152,13 @@ describe('ControlMultiselect.vue', () => {
     });
 
     it('adds values to the checked values', () => {
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
     });
 
     it('removes values from the checked values', () => {
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         wrapper.vm.onInput('test1', true);
         expect(wrapper.vm.checkedValue).toContain('test1');
         expect(wrapper.vm.checkedValue).toHaveLength(1);
@@ -216,46 +168,25 @@ describe('ControlMultiselect.vue', () => {
 
 
     it('show options on space', () => {
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         let button = wrapper.find('[role=button]');
         button.trigger('keydown.space');
         expect(wrapper.vm.isExpanded).toBe(true);
     });
 
     describe('dropdown navigation', () => {
-        let props;
-
-        beforeEach(() => {
-            props = {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            };
-        });
-
-        it('calls keydown callback', () => {
+        it('does not call keydown callback when not expanded', () => {
             const wrapper = mount(ControlMultiselect, { props });
 
+            wrapper.find('[role="button"]').trigger('keydown');
+
+            expect(dropdownNavigation.onKeydown).toHaveBeenCalledTimes(0);
+        });
+
+        it('calls keydown callback when expanded', () => {
+            const wrapper = mount(ControlMultiselect, { props });
+
+            wrapper.find('[role="button"]').trigger('keydown.space');
             wrapper.find('[role="button"]').trigger('keydown');
 
             expect(dropdownNavigation.onKeydown).toHaveBeenCalled();
@@ -376,20 +307,7 @@ describe('ControlMultiselect.vue', () => {
 
     it('uses dropdown popper', () => {
         useDropdownPopper.reset();
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         const [{ popperTarget, referenceEl }] = useDropdownPopper.mock.calls[0];
         
         expect(unref(referenceEl)).toStrictEqual(wrapper.find('[role="button"]').element);
@@ -398,20 +316,7 @@ describe('ControlMultiselect.vue', () => {
 
     it('uses click outside', () => {
         useClickOutside.reset();
-        const wrapper = mount(ControlMultiselect, {
-            props: {
-                possibleValues: [{
-                    id: 'test1',
-                    text: 'test1'
-                }, {
-                    id: 'test2',
-                    text: 'test2'
-                }, {
-                    id: 'test3',
-                    text: 'test3'
-                }]
-            }
-        });
+        const wrapper = mount(ControlMultiselect, { props });
         const [{ targets, callback }, active] = useClickOutside.mock.calls[0];
         
         expect(targets.length).toBe(2);
@@ -427,20 +332,7 @@ describe('ControlMultiselect.vue', () => {
 
     describe('drag reordering', () => {
         it('reorders items on drag', () => {
-            const wrapper = mount(ControlMultiselect, {
-                props: {
-                    possibleValues: [{
-                        id: 'test1',
-                        text: 'test1'
-                    }, {
-                        id: 'test2',
-                        text: 'test2'
-                    }, {
-                        id: 'test3',
-                        text: 'test3'
-                    }]
-                }
-            });
+            const wrapper = mount(ControlMultiselect, { props });
             let dragEvent = {
                 dataTransfer: {
                     setDragImage: vi.fn()
@@ -476,20 +368,7 @@ describe('ControlMultiselect.vue', () => {
         });
 
         it('clears hover ind when drag leaves multiselect', () => {
-            const wrapper = mount(ControlMultiselect, {
-                props: {
-                    possibleValues: [{
-                        id: 'test1',
-                        text: 'test1'
-                    }, {
-                        id: 'test2',
-                        text: 'test2'
-                    }, {
-                        id: 'test3',
-                        text: 'test3'
-                    }]
-                }
-            });
+            const wrapper = mount(ControlMultiselect, { props });
             let dragEvent = {
                 dataTransfer: {
                     setDragImage: vi.fn()
@@ -518,16 +397,7 @@ describe('ControlMultiselect.vue', () => {
         it('does not allow reoridering if it is a filter', () => {
             const wrapper = mount(ControlMultiselect, {
                 props: {
-                    possibleValues: [{
-                        id: 'test1',
-                        text: 'test1'
-                    }, {
-                        id: 'test2',
-                        text: 'test2'
-                    }, {
-                        id: 'test3',
-                        text: 'test3'
-                    }],
+                    ...props,
                     isFilter: true
                 }
             });

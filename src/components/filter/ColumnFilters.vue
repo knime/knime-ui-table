@@ -89,7 +89,7 @@ export default {
         },
         getTransformedFilterConfig(filterConfig: FilterConfig) {
             let modelValue = filterConfig.value;
-            if (filterConfig.is === 'FilterDropdown' && Array.isArray(modelValue)) {
+            if (filterConfig.is === 'FilterDropdown' && modelValue !== null && Array.isArray(modelValue)) {
                 modelValue = modelValue[0];
             }
             return {

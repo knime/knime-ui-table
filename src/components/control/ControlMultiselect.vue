@@ -1,9 +1,11 @@
 <script lang="ts">
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import type { Ref, PropType } from 'vue';
 import { ref, toRefs, computed } from 'vue';
+import { isMissingValue } from '@/util';
 import useDropdownPopper from '../../composables/useDropdownPopper';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
@@ -22,6 +24,7 @@ export default {
     components: {
         Checkbox,
         DropdownIcon,
+        CircleHelpIcon,
         MenuOptionsIcon
     },
     props: {
@@ -107,11 +110,11 @@ export default {
             const pageYOffset = 20;
             const pageYMin = elementOffsetTotal - pageYOffset;
             const pageYMax = elementOffsetTotal + element.scrollHeight + pageYOffset;
-            if (window.pageYOffset + window.innerHeight < pageYMax) {
+            if (window.scrollY + window.innerHeight < pageYMax) {
                 const newYOffset = pageYMax - window.innerHeight;
-                window.scrollTo(window.pageXOffset, newYOffset);
-            } else if (window.pageYOffset > pageYMin) {
-                window.scrollTo(window.pageXOffset, pageYMin);
+                window.scrollTo(window.scrollX, newYOffset);
+            } else if (window.scrollY > pageYMin) {
+                window.scrollTo(window.scrollX, pageYMin);
             }
         };
 
@@ -202,6 +205,7 @@ export default {
                 toggleButtonElement.focus({ preventScroll: true });
             }
         },
+        isMissingValue,
         onInput(value: string, toggled: boolean) {
             if (toggled) {
                 if (this.checkedValue.indexOf(value) === -1) {
@@ -264,6 +268,7 @@ export default {
   <div
     :class="['multiselect', { collapsed: !isExpanded, filter: isFilter }]"
     @dragleave="onDragLeave"
+    @keydown.space.prevent="toggle"
   >
     <div
       ref="toggleButton"
@@ -273,9 +278,7 @@ export default {
       :aria-activedescendant="activeDescendantId"
       :aria-owns="activeDescendantId"
       @click="toggle"
-
-      @keydown="onKeydown"
-      @keydown.space.prevent="toggle"
+      @keydown="isExpanded && onKeydown($event)"
     >
       {{ optionText }}
     </div>
@@ -294,14 +297,14 @@ export default {
           class="drag-spacer drag-first"
         />
         <span
-          v-for="(item, ind) of possibleValues"
+          v-for="(item, ind) of possibleValues.filter(({id}) => typeof id !== 'undefined')"
           :id="generateOptionId(item.id)"
           :key="`multiselect-${item.id}`"
-          :class="{
+          :class="['item-container', {
             'hovered': dragInd !== ind && hoverInd === ind,
             'focused': selectedIndex === ind,
             'drag-item': dragInd === ind
-          }"
+          }]"
           @dragover.stop.prevent="onDragOver($event, ind)"
         >
           <div
@@ -321,9 +324,11 @@ export default {
             class="boxes"
             @update:model-value="onInput(item.id, $event)"
           >
-            <div>
-              {{ item.text }}
-            </div>
+            <CircleHelpIcon
+              v-if="isMissingValue(item.id)"
+              class="missing-value-icon"
+            />
+            <span v-else>{{ item.text }}</span>
           </Checkbox>
           <div
             v-if="withReorderEnabled && (dragInd !== null) && dragInd !== ind && dragInd - 1!== ind && hoverInd === ind"
@@ -421,7 +426,7 @@ export default {
   background: var(--knime-white);
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 
-  & span {
+  & .item-container {
     position: relative;
     padding: 0 10px;
     display: block;
@@ -438,6 +443,14 @@ export default {
     display: block;
     position: relative;
     color: var(--knime-masala);
+
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      vertical-align: text-top;
+    }
   }
 }
 
@@ -446,21 +459,15 @@ export default {
   z-index: 2;
   width: fit-content;
   margin-top: -1.5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 
   & .boxes {
     top: 5px;
-
-    & :deep(span) {
-      width: 100%;
-    }
   }
 }
 
 [role="options"]:not(.filter) {
-  & span {
+  & .item-container {
     padding-top: 5px;
   
     &.drag-item {

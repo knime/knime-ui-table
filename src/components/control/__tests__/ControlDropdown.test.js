@@ -3,6 +3,7 @@ import { mount, shallowMount } from '@vue/test-utils';
 import { ref, unref } from 'vue';
 
 import ControlDropdown from '../ControlDropdown.vue';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 
 const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onKeydown: vi.fn() };
 vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
@@ -86,10 +87,27 @@ describe('ControlDropdown.vue', () => {
         let button = wrapper.find('[role=button]');
         expect(button.text()).toBe('Text 3');
 
-        await wrapper.setProps({ modelValue: null });
+        await wrapper.setProps({ modelValue: undefined });
         expect(button.text()).toBe(placeholder);
         await wrapper.setProps({ modelValue: '' });
         expect(button.text()).toBe(placeholder);
+    });
+
+    it('renders a missing value icon if missing value set', async () => {
+        const wrapper = mount(ControlDropdown, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: null, text: null }],
+                modelValue: 'test3'
+            }
+        });
+
+        const button = wrapper.find('[role=button]');
+        expect(button.text()).toBe('Text 3');
+        expect(button.findComponent(CircleHelpIcon).exists()).toBeFalsy();
+
+        await wrapper.setProps({ modelValue: null });
+        expect(button.findComponent(CircleHelpIcon).exists()).toBeTruthy();
     });
 
     it('renders value text using a formatter function if provided', async () => {
@@ -128,15 +146,15 @@ describe('ControlDropdown.vue', () => {
         const wrapper = mount(ControlDropdown, {
             props
         });
-        let newValueIndex = 1;
-        let listbox = wrapper.find({ ref: 'ul' });
+        const newValueIndex = 1;
+        const listbox = wrapper.find({ ref: 'ul' });
 
         // open list
         wrapper.find('[role=button]').trigger('click');
         await wrapper.vm.$nextTick();
         expect(listbox.isVisible()).toBe(true);
 
-        let input = listbox.findAll('li[role=option]').at(newValueIndex);
+        const input = listbox.findAll('li[role=option]').at(newValueIndex);
         input.trigger('click');
 
         expect(wrapper.emitted()['update:modelValue'][0][0]).toEqual(props.possibleValues[newValueIndex].id);
@@ -146,6 +164,37 @@ describe('ControlDropdown.vue', () => {
         expect(listbox.isVisible()).toBe(false);
     });
 
+    it('renders a missing value icon when item.id is null, else it renders the item.text within the options', () => {
+        const wrapper = mount(ControlDropdown, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: null, text: null }],
+                value: 'test3'
+            }
+        });
+        const listbox = wrapper.find({ ref: 'ul' });
+        const options = listbox.findAll('[role=option]');
+        expect(options[0].find('span').text()).toBe('Text 1');
+        expect(options[0].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[4].find('span').text()).toBe('Text 5');
+        expect(options[4].findComponent(CircleHelpIcon).exists()).toBeFalsy();
+        expect(options[5].find('span').exists()).toBeFalsy();
+        expect(options[5].findComponent(CircleHelpIcon).exists()).toBeTruthy();
+    });
+
+    it('excludes possible values with undefined id', () => {
+        const wrapper = mount(ControlDropdown, {
+            props: {
+                ...props,
+                possibleValues: [...props.possibleValues, { id: undefined, text: undefined }],
+                value: 'test3'
+            }
+        });
+        const listbox = wrapper.find({ ref: 'ul' });
+        const options = listbox.findAll('[role=option]');
+        expect(wrapper.vm.possibleValues).toHaveLength(6);
+        expect(options).toHaveLength(5);
+    });
 
     describe('dropdown navigation', () => {
         let props;
@@ -166,9 +215,18 @@ describe('ControlDropdown.vue', () => {
             };
         });
 
-        it('calls keydown callback', () => {
+        it('does not call keydown callback when not expanded', () => {
             const wrapper = mount(ControlDropdown, { props });
 
+            wrapper.find('[role="button"]').trigger('keydown');
+
+            expect(dropdownNavigation.onKeydown).toHaveBeenCalledTimes(0);
+        });
+
+        it('calls keydown callback when expanded', () => {
+            const wrapper = mount(ControlDropdown, { props });
+
+            wrapper.find('[role="button"]').trigger('keydown.space');
             wrapper.find('[role="button"]').trigger('keydown');
 
             expect(dropdownNavigation.onKeydown).toHaveBeenCalled();
@@ -314,7 +372,6 @@ describe('ControlDropdown.vue', () => {
             expect(openUp).toBe(true);
         });
     });
-
 
     it('uses click outside', () => {
         useClickOutside.reset();
