@@ -20,25 +20,26 @@ export default {
     computed: {
         scrollData() {
             return Array.from({ length: this.numRows }, (_v, i: number) => this.getRow(i));
+        },
+        totalWidth() {
+            return this.numColumns * 100;
         }
     },
     methods: {
         getRow(i: number) {
             return { id: `row${i}`,
                 index: i,
-                size: this.sizesOverrides[i] || 50,
+                size: Math.max(this.sizesOverrides[i] || 50, 50),
                 data: Array.from({ length: this.numColumns }, (_v, j: number) => (
                     { id: `row${i}_${j}`, data: `row${i}_${j}` }
                 )) };
-        },
-        logSizes() {
-            console.log('sizes', this.sizesOverrides);
         }
     }
 };
 </script>
 
 <template>
+  <h4>Adjustable row height</h4>
   <RecycleScroller
     class="body"
     :min-item-size="10"
@@ -46,6 +47,7 @@ export default {
     :empty-item="{data: [{data: 'empty'}], size: 50, isEmpty: true}"
     :num-items-above="20"
     :num-items-below="200000"
+    :style="{'--current-body-width': `${totalWidth}px`}"
   >
     <template #default="{ item:row }">
       <button
@@ -56,7 +58,7 @@ export default {
       </button>
       <div
         v-else
-        :style="{height: `${sizesOverrides[row.index] || 50}px`}"
+        :style="{height: `${Math.max(sizesOverrides[row.index] || 50, 50)}px`}"
         class="row"
       >
         <button>
@@ -73,11 +75,10 @@ export default {
       </div>
     </template>
   </RecycleScroller>
-  <button @click="logSizes">Log sizes</button>
 </template>
 
 
-<style>
+<style scoped>
   @import url("webapps-common/ui/css");
 
 
@@ -100,8 +101,8 @@ export default {
     height: 800px;
   }
   
-  /*.body > .vue-recycle-scroller__item-wrapper {
-    width: 20000px !important;
-  }*/
+  .body > :deep(.vue-recycle-scroller__item-wrapper) {
+    width: var(--current-body-width)
+  }
 
 </style>
