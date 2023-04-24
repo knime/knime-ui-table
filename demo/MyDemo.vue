@@ -1,16 +1,18 @@
 <script lang = "ts">
 import TryHorizontalVirtualScrolling from './TryHorizontalVirtualScrolling.vue';
 import TryRowHeights from './TryRowHeights.vue';
+import TryKeyboardNav from './TryKeyboardNav.vue';
 
 export default {
     components: {
         TryHorizontalVirtualScrolling,
-        TryRowHeights
+        TryRowHeights,
+        TryKeyboardNav
     },
     data() {
         return {
             mode: 1,
-            numModes: 2
+            numModes: 3
         };
     },
     methods: {
@@ -31,6 +33,7 @@ export default {
   >
     <TryHorizontalVirtualScrolling v-if="mode == 1" />
     <TryRowHeights v-if="mode == 2" />
+    <TryKeyboardNav v-if="mode == 3" />
   </div>
 </template>
 
