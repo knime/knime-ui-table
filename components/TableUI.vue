@@ -604,6 +604,7 @@ export default {
             v-for="(row, rowInd) in dataGroup"
             v-else
             :key="row.data.id"
+            :row-data-raw="row"
             :row="columnKeys.map(column => row.data[column])"
             :table-config="tableConfig"
             :column-configs="dataConfig.columnConfigs"

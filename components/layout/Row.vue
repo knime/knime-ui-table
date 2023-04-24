@@ -51,6 +51,10 @@ export default {
         CircleHelpIcon
     },
     props: {
+        rowDataRaw: {
+            type: Object,
+            default: () => ({})
+        },
         row: {
             type: Array,
             default: () => []
@@ -119,6 +123,14 @@ export default {
                 }
                 return classItem;
             }));
+        },
+        filteredSubMenuItems() {
+            return this.tableConfig.subMenuItems.filter(item => {
+                if (item.filter && typeof item.filter === 'function') {
+                    return item.filter(this.row, this.rowDataRaw);
+                }
+                return true;
+            });
         }
     },
     mounted() {
@@ -169,7 +181,7 @@ export default {
     <tr
       v-if="row.length > 0"
       :class="['row', {
-        'no-sub-menu': !tableConfig.subMenuItems.length,
+        'no-sub-menu': !filteredSubMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
       :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
@@ -216,12 +228,12 @@ export default {
         </span>
       </td>
       <td
-        v-if="tableConfig.subMenuItems.length"
+        v-if="filteredSubMenuItems.length"
         button-title="actions"
         class="action"
       >
         <SubMenu
-          :items="tableConfig.subMenuItems"
+          :items="filteredSubMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
         >

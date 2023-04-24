@@ -4,6 +4,7 @@ import demoProps from './props.json';
 import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from '~/webapps-common/ui/assets/img/icons/trash.svg?inline';
 import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg?inline';
+import TeamGroupAdmin from '~/webapps-common/ui/assets/img/icons/team-group-admin.svg?inline';
 
 const numberOfColumns = 19;
 
@@ -25,6 +26,16 @@ const subMenuItems = [
         icon: LinkIcon,
         callback: (row, context) => {
             consola.debug(`Copy link called with row ${row}`, context);
+        }
+    },
+    {
+        name: 'manage',
+        text: 'Manage access',
+        icon: TeamGroupAdmin,
+        filter: (row, data) => {
+            consola.debug(`filter function called with ${row}`, data);
+            const propability = 0.5;
+            return Math.random() > propability;
         }
     }
 ];
