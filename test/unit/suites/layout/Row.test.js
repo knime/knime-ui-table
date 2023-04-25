@@ -7,6 +7,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
+import { Consola } from 'consola';
 
 describe('Row.vue', () => {
     let wrapper;
@@ -120,7 +121,7 @@ describe('Row.vue', () => {
             }, {
                 name: 'manage',
                 text: 'Manage access',
-                filter: () => true
+                filter: () => false
             }];
 
             wrapper = mount(Row, {
@@ -135,7 +136,32 @@ describe('Row.vue', () => {
 
             expect(wrapper.find(SubMenu).exists()).toBe(true);
             expect(wrapper.find(MenuItems).exists()).toBe(true);
-            expect(wrapper.findAll(MenuItems).length).toBe(1);
+            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length - 1);
+        });
+
+        it('does not hide submenu items if filter is not a function', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                filter: false
+            }];
+
+            wrapper = mount(Row, {
+                propsData: {
+                    ...propsData,
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            expect(wrapper.find(SubMenu).exists()).toBe(true);
+            expect(wrapper.find(MenuItems).exists()).toBe(true);
+            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length);
         });
 
         it('selectively generates slots for specific columns', () => {
