@@ -6,6 +6,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 describe('Row.vue', () => {
     let wrapper;
@@ -110,6 +111,31 @@ describe('Row.vue', () => {
 
             expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.find(SubMenu).exists()).toBe(false);
+        });
+
+        it('hides submenu items if if hidden function is given is set', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                filter: () => true
+            }];
+
+            wrapper = mount(Row, {
+                propsData: {
+                    ...propsData,
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            expect(wrapper.find(SubMenu).exists()).toBe(true);
+            expect(wrapper.find(MenuItems).exists()).toBe(true);
+            expect(wrapper.findAll(MenuItems).length).toBe(1);
         });
 
         it('selectively generates slots for specific columns', () => {
