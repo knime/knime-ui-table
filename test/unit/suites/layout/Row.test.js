@@ -113,7 +113,7 @@ describe('Row.vue', () => {
             expect(wrapper.find(SubMenu).exists()).toBe(false);
         });
 
-        it('hides submenu items if if hidden function is given is set', () => {
+        it('hides submenu items if filter function is given', () => {
             const subMenuItems = [{
                 name: 'delete',
                 text: 'Delete'
