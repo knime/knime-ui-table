@@ -145,7 +145,8 @@ export default {
         'allColumnsResize',
         'columnResizeStart',
         'columnResizeEnd',
-        'update:available-width'
+        'update:available-width',
+        'rowHeightUpdate'
     ],
     setup(props, { emit }) {
         const wrapper = ref(null);
@@ -373,6 +374,9 @@ export default {
             handler() {
                 this.resetRowHeight();
             }
+        },
+        currentRowHeight(newRowHeight) {
+            this.$emit('rowHeightUpdate', newRowHeight);
         }
     },
     methods: {
@@ -582,6 +586,20 @@ export default {
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnKeys[columnId]}`;
+        },
+        getHeaderComponent() {
+            return this.$refs.header;
+        },
+        getRowComponents() {
+            const rowComponents = [];
+            this.data.forEach(
+                (group, groupIndex) => {
+                    group.forEach(
+                        (_, rowIndex) => rowComponents.push(this.$refs[`group-${groupIndex}-row-${rowIndex}`][0])
+                    );
+                }
+            );
+            return rowComponents;
         }
     }
 };
@@ -613,6 +631,7 @@ export default {
       @scroll="closeExpandedSubMenu"
     >
       <Header
+        ref="header"
         :table-config="tableConfig"
         :column-headers="columnHeaders"
         :column-sub-headers="columnSubHeaders"
@@ -740,6 +759,7 @@ export default {
       >
         <Row
           v-for="(row, rowInd) in dataGroup"
+          :ref="`group-${groupInd}-row-${row.id}`"
           :key="row.data.id"
           :row-data="row"
           :row="columnKeys.map(column => row.data[column])"

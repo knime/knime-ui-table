@@ -3,6 +3,9 @@
 // the min-width of cells in the header and rows
 export const MIN_COLUMN_SIZE = 50;
 
+// the max-width of cells in the header and rows when using fit content column sizing
+export const MAX_AUTO_COLUMN_SIZE = 960;
+
 // the width of special (collapser, selection, filter) columns in the header and rows
 export const SPECIAL_COLUMNS_SIZE = 30;
 
@@ -23,5 +26,9 @@ export const MAX_SUB_MENU_WIDTH = 160;
 
 // after resizing rows, scroll is temporarily disabled until the resize is complete to prevent jumps
 export const ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY = 100;
+
+// the width of the column resize drag handle
+export const COLUMN_RESIZE_DRAG_HANDLE_WIDTH = 5;
+
 
 export default { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE };

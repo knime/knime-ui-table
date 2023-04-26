@@ -77,6 +77,8 @@ describe('Row.vue', () => {
             expect(wrapper.findComponent(OptionsIcon).exists()).toBeTruthy();
             expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
             expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
+            expect(wrapper.vm.$refs).toStrictEqual({ cell: expect.any(Object) });
+            expect(wrapper.vm.$refs.cell).toHaveLength(5);
         });
 
         it('shows the collapser toggle via prop', () => {

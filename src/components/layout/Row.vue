@@ -208,7 +208,7 @@ export default {
             this.$emit('rowSubMenuExpand', callback);
         },
         isClickable(data, ind) {
-            return this.tableConfig.showPopovers && data && data !== '-' && this.clickableColumns[ind];
+            return this.tableConfig.showPopovers && Boolean(data) && data !== '-' && this.clickableColumns[ind];
         },
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
@@ -264,7 +264,10 @@ export default {
         onLostPointerCapture: throttle(function () {
             // eslint-disable-next-line no-invalid-this
             this.activeDrag = false;
-        })
+        }),
+        getCellComponents() {
+            return this.$refs.cell;
+        }
     }
 };
 </script>
@@ -299,6 +302,7 @@ export default {
       </td>
       <Cell
         v-for="(data, ind) in row"
+        ref="cell"
         :key="ind"
         :title="getCellTitle(data, ind)"
         :clickable="isClickable(data, ind)"

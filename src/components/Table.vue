@@ -1,6 +1,6 @@
 <!-- eslint-disable max-lines -->
 <script>
-import TableUI from './TableUI.vue';
+import TableUIWithAutoSizeCalculation from './TableUIWithAutoSizeCalculation.vue';
 
 import { columnTypes, typeFormatters, tablePageSizes, defaultPageSize } from '@/config/table.config';
 import { defaultTimeFilter } from '@/config/time.config';
@@ -22,7 +22,7 @@ import { MIN_COLUMN_SIZE } from '@/util/constants';
  */
 export default {
     components: {
-        TableUI
+        TableUIWithAutoSizeCalculation
     },
     props: {
         /**
@@ -112,6 +112,8 @@ export default {
             type: Boolean,
             default: false
         },
+        autoSizeColumnsToContent: Boolean,
+        autoSizeColumnsToContentInclHeaders: Boolean,
         fixHeader: Boolean,
         /**
          * Additional configuration options.
@@ -212,7 +214,9 @@ export default {
                 }
                 let columnType = this.currentColumnTypes[ind];
                 let columnConfig = {
-                    key,
+                    // the id is used to keep track of which columns were removed/added in the TableUIForAutoSizeCalc
+                    id: key,
+                    key, // the key is used to get the data of the columns
                     header: this.currentHeaders[ind],
                     type: columnType,
                     size: this.currentColumnSizes[ind],
@@ -395,6 +399,11 @@ export default {
                 currentPage: this.currentPage,
                 currentPageSize: this.currentPageSize
             };
+        },
+        autoColumnSizesOptions() {
+            return { fixedSizes: {},
+                calculateForBody: this.autoSizeColumnsToContent,
+                calculateForHeader: this.autoSizeColumnsToContentInclHeaders };
         }
     },
     watch: {
@@ -477,6 +486,14 @@ export default {
                 this.pageLevelUpdate();
             },
             deep: true
+        },
+        // TODO: UIEXT-1111 Trigger calculation internally on prop change
+        autoSizeColumnsToContent() {
+            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
+        },
+        autoSizeColumnsToContentInclHeaders() {
+            this.$refs.tableUIWithAutoSizeCalc.
+                triggerCalculationOfAutoColumnSizes();
         }
     },
     mounted() {
@@ -484,6 +501,7 @@ export default {
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
         }
+        this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.onResize);
@@ -642,6 +660,7 @@ export default {
             consola.debug(`Table received: columnUpdate ${newColumnList}`);
             let x = newColumnList.map(col => this.allHeadersOrdered.indexOf(col)).sort((a, b) => a - b);
             this.currentColumns = x.map(colInd => this.currentAllColumnOrder[colInd]);
+            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         },
         onColumnReorder(colInd, newColInd) {
             consola.debug(`Table received: columnReorder ${colInd} ${newColInd}`);
@@ -676,6 +695,7 @@ export default {
             if (proposedPage > 0 && isWithinRange) {
                 this.currentPage = proposedPage;
             }
+            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         },
         onPageSizeUpdate(newPageSize) {
             consola.debug(`Table received: pageSizeUpdate ${newPageSize}`);
@@ -779,19 +799,26 @@ export default {
         getCellContentSlotName(columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnId}`;
+        },
+        onAutoColumnSizesUpdate(newAutoColumnSizes) {
+            this.allColumnKeys.forEach((columnKey, columnIndex) => {
+                this.currentAllColumnSizes[columnIndex] =
+                    newAutoColumnSizes[columnKey] || -1;
+            });
         }
     }
 };
 </script>
 
 <template>
-  <TableUI
-    ref="tableUI"
+  <TableUIWithAutoSizeCalculation
+    ref="tableUIWithAutoSizeCalc"
     :data="paginatedData"
     :current-selection="paginatedSelection"
     :total-selected="totalSelected"
     :data-config="dataConfig"
     :table-config="tableConfig"
+    :auto-column-sizes-options="autoColumnSizesOptions"
     @time-filter-update="onTimeFilterUpdate"
     @column-update="onColumnUpdate"
     @column-reorder="onColumnReorder"
@@ -810,6 +837,7 @@ export default {
     @all-columns-resize="onAllColumnsResize"
     @update:available-width="updateAvailableWidth"
     @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
+    @auto-column-sizes-update="onAutoColumnSizesUpdate"
   >
     <!-- eslint-disable vue/valid-v-slot -->
     <template
@@ -837,5 +865,5 @@ export default {
         :popover-column="popoverColumn"
       />
     </template>
-  </TableUI>
+  </TableUIWithAutoSizeCalculation>
 </template>

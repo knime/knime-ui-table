@@ -87,7 +87,9 @@ export default {
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
             setInitialFiltering: false,
-            fitToWindow: false
+            fitToWindow: false,
+            autoSizeColumnsToContent: true,
+            autoSizeColumnsToContentInclHeaders: false
         };
     },
     computed: {
@@ -113,7 +115,9 @@ export default {
                 enableVirtualScrolling: this.enableVirtualScrolling,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
-                ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
+                ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {},
+                autoSizeColumnsToContent: this.autoSizeColumnsToContent,
+                autoSizeColumnsToContentInclHeaders: this.autoSizeColumnsToContentInclHeaders
             };
         }
     },
@@ -129,11 +133,11 @@ export default {
             consola.log('TableUI DataConfig prop:', this.$refs?.knimeTable.dataConfig);
             consola.log('TableUI TableConfig prop:', this.$refs?.knimeTable.tableConfig);
         },
-        onShowHeaderSubMenu(checked) {
-            this.headerSubMenuItems = checked ? headerSubMenuItems : [];
+        onShowHeaderSubMenu(event) {
+            this.headerSubMenuItems = event.target.checked ? headerSubMenuItems : [];
         },
-        onDisableSortOfSpecificColumns(checked) {
-            this.allColumnSpecificSortConfigs = checked ? allColumnSpecificSortConfigs : [];
+        onDisableSortOfSpecificColumns(event) {
+            this.allColumnSpecificSortConfigs = event.target.checked ? allColumnSpecificSortConfigs : [];
         },
         forceRerender() {
             this.renderComponent = false;
@@ -190,6 +194,8 @@ export default {
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>
       <Checkbox v-model="fitToWindow">Fit table inside the current window</Checkbox>
+      <Checkbox v-model="autoSizeColumnsToContent">Auto size columns to content</Checkbox>
+      <Checkbox v-model="autoSizeColumnsToContentInclHeaders">Auto size including headers</Checkbox>
     </div>
     <br>
     <Table

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import type { CellProps } from './CellProps';
 
@@ -42,6 +42,16 @@ const classes = computed(() => {
         }
         return classItem;
     }).filter(obj => obj !== null);
+});
+
+const dataCell = ref(null);
+const getCellContentWidth = function () {
+    const widthDataCellFirstChild = Math.ceil(dataCell.value.firstElementChild.getBoundingClientRect().width);
+    return paddingLeft.value + widthDataCellFirstChild;
+};
+
+defineExpose({
+    getCellContentWidth
 });
 </script>
 

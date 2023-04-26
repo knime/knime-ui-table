@@ -37,6 +37,7 @@ const getProps = ({
     showSubMenuItems = false,
     showColumnFilters = true,
     showBottomControls = true,
+    showPopovers = false,
     enableVirtualScrolling = false,
     rowHeight = null,
     actionButtonConfig = null,
@@ -108,6 +109,7 @@ const getProps = ({
         showSelection,
         showCollapser,
         showBottomControls,
+        showPopovers,
         searchConfig: {
             searchQuery: ''
         },
@@ -504,7 +506,7 @@ describe('TableUI.vue', () => {
                     expect(resizeRowSpy).not.toHaveBeenCalled();
                 });
 
-                it('handles resize all rows event', () => {
+                it('handles resize all rows event', async () => {
                     const { wrapper } = doMount();
                     const row = wrapper.findComponent(Row);
                     const scrollIntoViewSpy = vi.fn();
@@ -513,6 +515,10 @@ describe('TableUI.vue', () => {
                     expect(wrapper.vm.currentRowSizeDelta).toBe(0);
                     expect(wrapper.vm.currentRowHeight).toBe(123);
                     expect(scrollIntoViewSpy).toHaveBeenCalled();
+                    await wrapper.vm.$nextTick();
+                    expect(wrapper.emitted()).toHaveProperty('rowHeightUpdate');
+                    expect(wrapper.emitted().rowHeightUpdate).toHaveLength(1);
+                    expect(wrapper.emitted().rowHeightUpdate[0]).toStrictEqual([123]);
                 });
             });
 

@@ -6,7 +6,7 @@ import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
 import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH } from '@/util/constants';
+import { MIN_COLUMN_SIZE, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH, COLUMN_RESIZE_DRAG_HANDLE_WIDTH } from '@/util/constants';
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -111,6 +111,9 @@ export default {
         },
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
+        },
+        resizeDragHandleWidth() {
+            return this.enableColumnResizing ? COLUMN_RESIZE_DRAG_HANDLE_WIDTH : 0;
         }
     },
     methods: {
@@ -184,6 +187,18 @@ export default {
         },
         onSubMenuItemSelection(item, ind) {
             this.$emit('subMenuItemSelection', item, ind);
+        },
+        getHeaderCellWidths() {
+            return this.columnHeaders.map((_, columnIndex) => {
+                const widthCompleteHeader =
+                  Math.ceil(this.$refs[`columnHeader-${columnIndex}`][0].getBoundingClientRect().width);
+                const widthHeaderTextContainer =
+                    this.$refs[`headerTextContainer-${columnIndex}`][0].getBoundingClientRect().width;
+                const widthHeaderText =
+                  this.$refs[`headerText-${columnIndex}`][0].getBoundingClientRect().width;
+                const textContainerOverflow = Math.ceil(widthHeaderText - widthHeaderTextContainer);
+                return widthCompleteHeader + textContainerOverflow + this.resizeDragHandleWidth;
+            });
         }
     }
 };
@@ -209,6 +224,7 @@ export default {
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
+        :ref="`columnHeader-${ind}`"
         :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
         class="column-header"
       >
@@ -223,10 +239,11 @@ export default {
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
             <div
+              :ref="`headerTextContainer-${ind}`"
               class="header-text-container"
               :title="header"
             >
-              {{ header }}
+              <span :ref="`headerText-${ind}`">{{ header }}</span>
             </div>
           </div>
           <div
@@ -255,7 +272,7 @@ export default {
         <div
           v-if="enableColumnResizing"
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
-          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`}"
+          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`, width: `${resizeDragHandleWidth}px`}"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
           @pointerdown.passive="onPointerDown($event, ind)"
@@ -368,7 +385,7 @@ thead {
           width: 100%;
 
           &.with-sub-menu {
-            width: calc(100% - 27px); /* due to .sub-menu-select-header: width + padding */
+            width: calc(100% - 22px); /* due to .sub-menu-select-header: width */
           }
 
           &:not(.inverted) .icon.active {
@@ -455,7 +472,6 @@ thead {
           position: absolute;
           background-color: var(--knime-dove-gray);
           right: 0;
-          width: 5px;
           opacity: 0;
           cursor: col-resize;
 

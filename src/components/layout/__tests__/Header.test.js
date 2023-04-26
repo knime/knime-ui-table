@@ -348,4 +348,27 @@ describe('Header.vue', () => {
         wrapper.findAll('th > .column-header-content')[0].trigger('click', 0);
         expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
     });
+
+    it('computes the correct sizes such that the header size fits its content', () => {
+        wrapper = shallowMount(Header, { props });
+        expect(wrapper.vm.$refs).toHaveProperty('columnHeader-0');
+        expect(wrapper.vm.$refs).toHaveProperty('headerTextContainer-0');
+        expect(wrapper.vm.$refs).toHaveProperty('headerText-0');
+        expect(wrapper.vm.$refs).toHaveProperty('columnHeader-4');
+        expect(wrapper.vm.$refs).toHaveProperty('headerTextContainer-4');
+        expect(wrapper.vm.$refs).toHaveProperty('headerText-4');
+        Element.prototype.getBoundingClientRect = vi.fn().mockReturnValueOnce({ width: 50 })
+            .mockReturnValueOnce({ width: 30 }).mockReturnValue({ width: 40 });
+        
+        expect(wrapper.vm.getHeaderCellWidths()).toEqual([65, 45, 45, 45, 45]);
+    });
+
+    it('computes the correct sizes such that the header size fits its content wit activated dragHanlde', () => {
+        props.tableConfig.enableColumnResizing = false;
+        wrapper = shallowMount(Header, { props });
+        Element.prototype.getBoundingClientRect = vi.fn().mockReturnValueOnce({ width: 50 })
+            .mockReturnValueOnce({ width: 30 }).mockReturnValue({ width: 40 });
+        
+        expect(wrapper.vm.getHeaderCellWidths()).toEqual([60, 40, 40, 40, 40]);
+    });
 });
