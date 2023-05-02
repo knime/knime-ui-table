@@ -3,6 +3,7 @@ import { markRaw } from 'vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 import LinkIcon from 'webapps-common/ui/assets/img/icons/link.svg';
+import TeamGroupAdmin from 'webapps-common/ui/assets/img/icons/team-group-admin.svg';
 
 import Table from '@/components/Table.vue';
 import demoProps from './props.json';
@@ -27,6 +28,16 @@ const subMenuItems = [
         icon: markRaw(LinkIcon),
         callback: (row, context) => {
             consola.debug(`Copy link called with row ${row}`, context);
+        }
+    },
+    {
+        name: 'manage',
+        text: 'Manage access',
+        icon: TeamGroupAdmin,
+        hideOn: (row, data) => {
+            consola.debug(`hideOn function called with ${row}`, data);
+            const propability = 0.5;
+            return Math.random() > propability;
         }
     }
 ];

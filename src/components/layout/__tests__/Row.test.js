@@ -8,6 +8,7 @@ import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 describe('Row.vue', () => {
     let wrapper;
@@ -112,6 +113,54 @@ describe('Row.vue', () => {
 
             expect(wrapper.findComponent(Row).exists()).toBe(true);
             expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
+        });
+
+        it('hides submenu items if filter function is given', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                hideOn: () => false
+            }];
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    tableConfig: {
+                        ...props.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            const menuItems = wrapper.findComponent(MenuItems);
+            const listItem = menuItems.findAll('.list-item');
+            expect(listItem.length).toBe(subMenuItems.length - 1);
+        });
+
+        it('does not hide submenu items if filter is not a function', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                filter: false
+            }];
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    tableConfig: {
+                        ...props.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            const menuItems = wrapper.findComponent(MenuItems);
+            const listItem = menuItems.findAll('.list-item');
+            expect(listItem.length).toBe(subMenuItems.length);
         });
 
         it('selectively generates slots for specific columns', () => {
