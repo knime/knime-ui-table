@@ -6,6 +6,7 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 describe('Row.vue', () => {
     let wrapper;
@@ -110,6 +111,56 @@ describe('Row.vue', () => {
 
             expect(wrapper.find(Row).exists()).toBe(true);
             expect(wrapper.find(SubMenu).exists()).toBe(false);
+        });
+
+        it('hides submenu items if filter function is given', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                hideOn: () => false
+            }];
+
+            wrapper = mount(Row, {
+                propsData: {
+                    ...propsData,
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            expect(wrapper.find(SubMenu).exists()).toBe(true);
+            expect(wrapper.find(MenuItems).exists()).toBe(true);
+            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length - 1);
+        });
+
+        it('does not hide submenu items if filter is not a function', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                filter: false
+            }];
+
+            wrapper = mount(Row, {
+                propsData: {
+                    ...propsData,
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            expect(wrapper.find(SubMenu).exists()).toBe(true);
+            expect(wrapper.find(MenuItems).exists()).toBe(true);
+            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length);
         });
 
         it('selectively generates slots for specific columns', () => {

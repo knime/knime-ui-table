@@ -51,6 +51,17 @@ export default {
         CircleHelpIcon
     },
     props: {
+        /**
+         * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
+         * property rowData contains the complete set and not just the part that is displayed per column.
+         */
+        rowData: {
+            type: Object,
+            default: () => ({})
+        },
+        /**
+         * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
+         */
         row: {
             type: Array,
             default: () => []
@@ -119,6 +130,14 @@ export default {
                 }
                 return classItem;
             }));
+        },
+        filteredSubMenuItems() {
+            return this.tableConfig.subMenuItems.filter(item => {
+                if (typeof item.hideOn === 'function') {
+                    return item.hideOn(this.row, this.rowData);
+                }
+                return true;
+            });
         }
     },
     mounted() {
@@ -169,7 +188,7 @@ export default {
     <tr
       v-if="row.length > 0"
       :class="['row', {
-        'no-sub-menu': !tableConfig.subMenuItems.length,
+        'no-sub-menu': !filteredSubMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
       :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
@@ -216,12 +235,12 @@ export default {
         </span>
       </td>
       <td
-        v-if="tableConfig.subMenuItems.length"
+        v-if="filteredSubMenuItems.length"
         button-title="actions"
         class="action"
       >
         <SubMenu
-          :items="tableConfig.subMenuItems"
+          :items="filteredSubMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
         >
