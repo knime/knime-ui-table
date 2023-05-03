@@ -120,7 +120,7 @@ describe('Row.vue', () => {
             }, {
                 name: 'manage',
                 text: 'Manage access',
-                hideOn: () => false
+                hideOn: () => true
             }];
 
             wrapper = mount(Row, {
@@ -145,7 +145,7 @@ describe('Row.vue', () => {
             }, {
                 name: 'manage',
                 text: 'Manage access',
-                filter: false
+                hideOn: true
             }];
 
             wrapper = mount(Row, {
