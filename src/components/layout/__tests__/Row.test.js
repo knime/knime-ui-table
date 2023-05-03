@@ -115,14 +115,14 @@ describe('Row.vue', () => {
             expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
         });
 
-        it('hides submenu items if filter function is given', () => {
+        it('hides submenu items if hideOn function is given', () => {
             const subMenuItems = [{
                 name: 'delete',
                 text: 'Delete'
             }, {
                 name: 'manage',
                 text: 'Manage access',
-                hideOn: () => false
+                hideOn: () => true
             }];
             wrapper = mount(Row, {
                 props: {
@@ -139,14 +139,14 @@ describe('Row.vue', () => {
             expect(listItem.length).toBe(subMenuItems.length - 1);
         });
 
-        it('does not hide submenu items if filter is not a function', () => {
+        it('does not hide submenu items if hideOn is not a function', () => {
             const subMenuItems = [{
                 name: 'delete',
                 text: 'Delete'
             }, {
                 name: 'manage',
                 text: 'Manage access',
-                filter: false
+                hideOn: false
             }];
             wrapper = mount(Row, {
                 props: {

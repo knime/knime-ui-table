@@ -136,7 +136,7 @@ export default {
         filteredSubMenuItems() {
             return this.tableConfig.subMenuItems.filter(item => {
                 if (typeof item.hideOn === 'function') {
-                    return item.hideOn(this.row, this.rowData);
+                    return !item.hideOn(this.row, this.rowData);
                 }
                 return true;
             });
