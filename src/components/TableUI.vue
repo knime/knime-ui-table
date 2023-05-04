@@ -595,7 +595,7 @@ export default {
               v-else
               :key="item.id"
               :ref="`row-${item.id}`"
-              :row-data="row"
+              :row-data="item.data"
               :row="columnKeys.map(column => item.data[column])"
               :table-config="item.tableConfig || tableConfig"
               :column-configs="dataConfig.columnConfigs"
