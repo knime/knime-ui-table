@@ -11,12 +11,10 @@ describe('getFilterConfigs', () => {
         let mockColumnName = `column-${ind}`;
         mockColumns.push(mockColumnName);
         mockTypes[mockColumnName] = colType;
-        let expectedValue = '';
         if ([columnTypes.Nominal, columnTypes.Boolean].includes(colType)) {
-            expectedValue = [];
             mockDomains[mockColumnName] = ['test1', 'test2'];
         }
-        mockValues[mockColumnName] = expectedValue;
+        mockValues[mockColumnName] = colType === columnTypes.Nominal ? [] : '';
     });
 
     it('gets default filter values', () => {
@@ -37,28 +35,28 @@ describe('getFilterConfigs', () => {
             domains: mockDomains, columns: mockColumns, types: mockTypes, values: mockValues
         });
         expect(filterConfigs).toStrictEqual([{
-            is: 'FilterMultiselect',
+            is: 'ControlMultiselect',
             possibleValues: [{ id: 'test1', text: 'test1' }, { id: 'test2', text: 'test2' }],
-            value: []
+            modelValue: []
         }, {
             is: 'FilterInputField',
-            value: ''
+            modelValue: ''
         }, {
             is: 'FilterInputField',
-            value: ''
+            modelValue: ''
         }, {
             is: 'FilterInputField',
-            value: ''
+            modelValue: ''
         }, {
-            is: 'FilterDropdown',
+            is: 'ControlDropdown',
             possibleValues: [{ id: 'test1', text: 'test1' }, { id: 'test2', text: 'test2' }],
-            value: []
+            modelValue: ''
         }, {
             is: 'FilterInputField',
-            value: ''
+            modelValue: ''
         }, {
             is: 'FilterInputField',
-            value: ''
+            modelValue: ''
         }]);
     });
 });

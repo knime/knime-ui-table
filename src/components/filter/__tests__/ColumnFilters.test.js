@@ -14,8 +14,8 @@ describe('ColumnFilters.vue', () => {
         columnSizes: [33, 33, 33],
         filterConfigs: [
             {
-                is: 'FilterMultiselect',
-                value: [],
+                is: 'ControlMultiselect',
+                modelValue: [],
                 possibleValues: [
                     { id: 'Root', text: 'Root' },
                     { id: 'Alice', text: 'Alice' },
@@ -23,10 +23,10 @@ describe('ColumnFilters.vue', () => {
                 ],
                 placeholder: 'Column1'
             },
-            { is: 'FilterInputField', value: '', placeholder: 'Column2' },
+            { is: 'FilterInputField', modelValue: '', placeholder: 'Column2' },
             {
-                is: 'FilterDropdown',
-                value: [],
+                is: 'ControlDropdown',
+                modelValue: '',
                 possibleValues: [
                     { id: 'Yes', text: 'Yes' },
                     { id: 'No', text: 'No' },
