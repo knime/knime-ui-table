@@ -1,10 +1,12 @@
-<script>
-import FilterMultiselect from './FilterMultiselect.vue';
+<script lang="ts">
+import ControlMultiselect from '../control/ControlMultiselect.vue';
 import FilterInputField from './FilterInputField.vue';
-import FilterDropdown from './FilterDropdown.vue';
+import ControlDropdown from '../control/ControlDropdown.vue';
+import type FilterConfig from '../../types/FilterConfig';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 import { MIN_COLUMN_SIZE } from '@/util/constants';
+import type { PropType } from 'vue';
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -16,15 +18,15 @@ import { MIN_COLUMN_SIZE } from '@/util/constants';
  */
 export default {
     components: {
-        FilterMultiselect,
+        ControlMultiselect,
         FilterInputField,
-        FilterDropdown,
+        ControlDropdown,
         FunctionButton,
         TrashIcon
     },
     props: {
         filterConfigs: {
-            type: Array,
+            type: Array as PropType<Array<FilterConfig>>,
             default: () => []
         },
         columnHeaders: {
@@ -46,16 +48,54 @@ export default {
     },
     emits: ['columnFilter', 'clearFilter'],
     data() {
-        return { MIN_COLUMN_SIZE };
+        return {
+            transformedFilterConfigs: [],
+            targetFilterComponents: [],
+            MIN_COLUMN_SIZE
+        };
+    },
+    watch: {
+        filterConfigs: {
+            deep: true,
+            immediate: true,
+            handler(newValue) {
+                this.transformedFilterConfigs = newValue.map(this.getTransformedFilterConfig);
+                this.targetFilterComponents = newValue.map(this.getTargetFilterComponent);
+            }
+        }
     },
     methods: {
-        onInput(colInd, value) {
+        onInput(colInd: number, value: FilterConfig['value']) {
             consola.debug('Updated table column filter: ', value);
             this.$emit('columnFilter', colInd, value);
         },
         onClearFilter() {
             consola.debug('Table column filter cleared.');
             this.$emit('clearFilter');
+        },
+        getTargetFilterComponent(filterConfig: FilterConfig) {
+            const { is } = filterConfig;
+            switch (is) {
+                case 'FilterDropdown': {
+                    return 'ControlDropdown';
+                }
+                case 'FilterMultiselect': {
+                    return 'ControlMultiselect';
+                }
+                default: {
+                    return is;
+                }
+            }
+        },
+        getTransformedFilterConfig(filterConfig: FilterConfig) {
+            let modelValue = filterConfig.value;
+            if (filterConfig.is === 'FilterDropdown' && modelValue !== null && Array.isArray(modelValue)) {
+                modelValue = modelValue[0];
+            }
+            return {
+                ...filterConfig,
+                modelValue
+            };
         }
     }
 };
@@ -80,11 +120,12 @@ export default {
         class="filter"
       >
         <Component
-          :is="filterConfigs[ind].is"
-          v-bind="filterConfigs[ind]"
+          :is="targetFilterComponents[ind]"
+          is-filter
+          v-bind="transformedFilterConfigs[ind]"
           :placeholder="column"
           :aria-label="`filter-${column}`"
-          @input="onInput(ind, $event)"
+          @update:model-value="onInput(ind, $event)"
         />
       </th>
       <th class="action">
@@ -98,7 +139,7 @@ export default {
 
 <style lang="postcss" scoped>
 tr {
-  margin-top: -2px;
+  display: flex;
   height: 40px;
   overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
@@ -128,6 +169,9 @@ tr {
   }
 
   & th.action {
+    position: sticky;
+    right: 0;
+    background-color: var(--knime-porcelain);
     align-items: center;
     display: flex;
     overflow: visible;

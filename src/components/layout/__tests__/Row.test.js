@@ -8,6 +8,7 @@ import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 describe('Row.vue', () => {
     let wrapper;
@@ -24,7 +25,7 @@ describe('Row.vue', () => {
         columnConfigs: []
     };
     props.row.forEach((data, i) => props.columnConfigs.push({
-        key: i.toString(),
+        key: `col${i.toString()}`,
         formatter: f,
         classGenerator: [],
         size: 20,
@@ -114,6 +115,54 @@ describe('Row.vue', () => {
             expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
         });
 
+        it('hides submenu items if hideOn function is given', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                hideOn: () => true
+            }];
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    tableConfig: {
+                        ...props.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            const menuItems = wrapper.findComponent(MenuItems);
+            const listItem = menuItems.findAll('.list-item');
+            expect(listItem.length).toBe(subMenuItems.length - 1);
+        });
+
+        it('does not hide submenu items if hideOn is not a function', () => {
+            const subMenuItems = [{
+                name: 'delete',
+                text: 'Delete'
+            }, {
+                name: 'manage',
+                text: 'Manage access',
+                hideOn: false
+            }];
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    tableConfig: {
+                        ...props.tableConfig,
+                        subMenuItems
+                    }
+                }
+            });
+
+            const menuItems = wrapper.findComponent(MenuItems);
+            const listItem = menuItems.findAll('.list-item');
+            expect(listItem.length).toBe(subMenuItems.length);
+        });
+
         it('selectively generates slots for specific columns', () => {
             let props = getUpdatedProps('hasSlotContent', [
                 false, false, true, false, false
@@ -121,7 +170,7 @@ describe('Row.vue', () => {
             wrapper = shallowMount(Row, {
                 props,
                 slots: {
-                    'cellContent-2': '<iframe> Custom content </iframe>'
+                    'cellContent-col2': '<iframe> Custom content </iframe>'
                 }
             });
 
@@ -136,7 +185,7 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 props,
                 slots: {
-                    'cellContent-2': props => `<div>${props.row}</div>`
+                    'cellContent-col2': props => `<div>${props.row}</div>`
                 }
             });
 
@@ -179,6 +228,20 @@ describe('Row.vue', () => {
             expect(wrapper.find('.expandable-content').exists()).toBe(false);
             await wrapper.setData({ showContent: true });
             expect(wrapper.find('.expandable-content').exists()).toBe(true);
+        });
+
+        it('renders the correct title', () => {
+            wrapper = mount(Row, {
+                props: {
+                    ...props,
+                    row: ['data1', undefined, { metadata: 'Col2' }, 'data4', null]
+                }
+            });
+            expect(wrapper.findAll('.data-cell').at(0).attributes('title')).toBe('data1');
+            expect(wrapper.findAll('.data-cell').at(1).attributes('title')).toBeUndefined();
+            expect(wrapper.findAll('.data-cell').at(2).attributes('title')).toBe('Missing Value (Col2)');
+            expect(wrapper.findAll('.data-cell').at(3).attributes('title')).toBe('data4');
+            expect(wrapper.findAll('.data-cell').at(4).attributes('title')).toBe('Missing Value');
         });
     });
 

@@ -113,10 +113,6 @@ export default {
             type: Boolean,
             default: false
         },
-        fitToContainer: {
-            type: Boolean,
-            default: false
-        },
         fixHeader: Boolean,
         /**
          * Additional configuration options.
@@ -246,7 +242,6 @@ export default {
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
                 enableVirtualScrolling: this.enableVirtualScrolling,
-                fitToContainer: this.fitToContainer,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,
@@ -302,7 +297,7 @@ export default {
         defaultFormatters() {
             return this.allColumnKeys.reduce((formatters, colKey) => {
                 formatters[colKey] = this.allFormatters[colKey] ||
-                    typeFormatters[this.allColumnTypes[colKey]] ||
+                    typeFormatters(this.allColumnTypes[colKey]) ||
                     (item => item);
                 return formatters;
             }, {});
@@ -427,12 +422,9 @@ export default {
             deep: true
         },
         filterHash: {
-            handler(newHash, oldHash) {
+            handler() {
                 consola.trace('New filter hash (watcher called).');
-                let x = Object.keys(newHash).filter(changeKey => oldHash[changeKey] !== newHash[changeKey]) || [];
-                let shouldUpdate = x.length === 1 ? x[0] !== 'showKey' : x.length;
-                let isBlocked = this.processLevel !== null && this.processLevel <= 1;
-                if (shouldUpdate && !isBlocked) {
+                if (this.processLevel === null || this.processLevel > 1) {
                     this.processLevel = 1;
                     this.filterLevelUpdate();
                     this.processLevel = null;

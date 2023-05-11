@@ -15,7 +15,7 @@ describe('CollapserToggle.vue', () => {
 
     it('emit a collapserExpand event when clicked', () => {
         wrapper = mount(CollapserToggle);
-        wrapper.find('.button').trigger('click');
+        wrapper.find('button').trigger('click');
         expect(wrapper.emitted().collapserExpand).toBeTruthy();
     });
 

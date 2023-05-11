@@ -7,6 +7,7 @@ import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
+import { isMissingValue } from '@/util';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -51,6 +52,17 @@ export default {
         CircleHelpIcon
     },
     props: {
+        /**
+         * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
+         * property rowData contains the complete set and not just the part that is displayed per column.
+         */
+        rowData: {
+            type: Object,
+            default: () => ({})
+        },
+        /**
+         * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
+         */
         row: {
             type: Array,
             default: () => []
@@ -84,7 +96,7 @@ export default {
             default: 0
         }
     },
-    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowExpand'],
+    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
     data() {
         return {
             showContent: false
@@ -120,6 +132,17 @@ export default {
                 }
                 return classItem;
             }));
+        },
+        filteredSubMenuItems() {
+            if (!this.tableConfig.subMenuItems) {
+                return [];
+            }
+            return this.tableConfig.subMenuItems.filter(item => {
+                if (typeof item.hideOn === 'function') {
+                    return !item.hideOn(this.row, this.rowData);
+                }
+                return true;
+            });
         }
     },
     mounted() {
@@ -130,6 +153,7 @@ export default {
         getPropertiesFromColumns(key) {
             return this.columnConfigs.map(colConfig => colConfig[key]);
         },
+        isMissingValue,
         onRowExpand() {
             this.showContent = !this.showContent;
             this.$nextTick(() => this.$emit('rowExpand', this.showContent));
@@ -155,6 +179,9 @@ export default {
             event.preventDefault();
             return false;
         },
+        onSubMenuToggle(callback) {
+            this.$emit('rowSubMenuExpand', callback);
+        },
         isClickable(data, ind) {
             if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
                 return false;
@@ -164,6 +191,14 @@ export default {
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnKeys[columnId]}`;
+        },
+        getCellTitle(data, ind) {
+            const formattedValue = this.formatters[ind](data);
+            if (this.isMissingValue(formattedValue)) {
+                const missingValueMsg = formattedValue === null ? '' : ` (${formattedValue.metadata})`;
+                return `Missing Value${missingValueMsg}`;
+            }
+            return this.isClickable(data, ind) ? null : data;
         }
     }
 };
@@ -174,7 +209,7 @@ export default {
     <tr
       v-if="row.length > 0"
       :class="['row', {
-        'no-sub-menu': !tableConfig.subMenuItems.length,
+        'no-sub-menu': !filteredSubMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
       :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
@@ -205,12 +240,12 @@ export default {
           { clickable: isClickable(data, ind)}
         ]"
         :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
-        :title="!isClickable(data, ind) ? data : null"
+        :title="getCellTitle(data, ind)"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
         @input="(val) => onInput(val, ind)"
       >
         <CircleHelpIcon
-          v-if="data === null"
+          v-if="isMissingValue(formatters[ind](data))"
           class="missing-value-icon"
         />
         <slot
@@ -224,14 +259,16 @@ export default {
         </span>
       </td>
       <td
-        v-if="tableConfig.subMenuItems.length"
+        v-if="filteredSubMenuItems.length"
         button-title="actions"
         class="action"
       >
         <SubMenu
-          :items="tableConfig.subMenuItems"
+          teleport-to-body
+          :items="filteredSubMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
+          @toggle="onSubMenuToggle"
         >
           <OptionsIcon />
         </SubMenu>
@@ -263,6 +300,11 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
+tr {
+  display: flex;
+}
+
 tr.row {
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);

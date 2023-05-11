@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
 import ColumnFilters from '../ColumnFilters.vue';
-import FilterMultiselect from '../FilterMultiselect.vue';
+import ControlMultiselect from '../../control/ControlMultiselect.vue';
 import FilterInputField from '../FilterInputField.vue';
-import FilterDropdown from '../FilterDropdown.vue';
+import ControlDropdown from '../../control/ControlDropdown.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 
@@ -41,8 +41,8 @@ describe('ColumnFilters.vue', () => {
         let wrapper = shallowMount(ColumnFilters, { props });
 
         expect(wrapper.findComponent(ColumnFilters).exists()).toBe(true);
-        expect(wrapper.findComponent(FilterMultiselect).exists()).toBe(true);
-        expect(wrapper.findComponent(FilterDropdown).exists()).toBe(true);
+        expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(true);
+        expect(wrapper.findComponent(ControlDropdown).exists()).toBe(true);
         expect(wrapper.findComponent(FilterInputField).exists()).toBe(true);
         expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
         expect(wrapper.findComponent(TrashIcon).exists()).toBe(true);
@@ -51,7 +51,7 @@ describe('ColumnFilters.vue', () => {
     it('emits columnFilter events', () => {
         let wrapper = shallowMount(ColumnFilters, { props });
         expect(wrapper.emitted().columnFilter).toBeFalsy();
-        wrapper.findComponent(FilterInputField).vm.$emit('input', 'New Value');
+        wrapper.findComponent(FilterInputField).vm.$emit('update:modelValue', 'New Value');
         expect(wrapper.emitted().columnFilter).toBeTruthy();
         expect(wrapper.emitted().columnFilter[0]).toStrictEqual([1, 'New Value']);
     });

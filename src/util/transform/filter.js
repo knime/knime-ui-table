@@ -1,6 +1,7 @@
-import { columnTypes } from '../../config/table.config';
-import { tableTimeFilters, checkTimeFilter } from '../../config/time.config';
+import { columnTypes } from '@/config/table.config';
+import { tableTimeFilters, checkTimeFilter } from '@/config/time.config';
 import { searchRow, searchCell } from './search';
+import { isEmpty, isMissingValue } from '..';
 
 /**
  * Utility function designed to consume an entire data set and output only the rows which match the provided
@@ -82,15 +83,23 @@ export const filter = filterConfig => {
                 let columnType = localColumnTypes[colInd];
                 let colFormatter = columnFormatters[colInd];
                 let rowValue = row[colKey];
+                const formattedRowValue = colFormatter ? colFormatter(rowValue) : rowValue;
+                if ((filterVal === null || filterVal?.includes(null)) && isMissingValue(formattedRowValue)) {
+                    return true;
+                }
+                if (filterVal === null && !isMissingValue(formattedRowValue)) {
+                    return false;
+                }
                 if (typeof filterVal === 'undefined' || filterVal === null || filterVal.length === 0) {
                     return true;
                 }
-                if (typeof rowValue === 'undefined') {
+                if (isEmpty(rowValue)) {
                     return false;
                 }
                 switch (columnType) {
-                    case columnTypes.Nominal:
-                        return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue);
+                    case columnTypes.Nominal: {
+                        return filterVal.includes(formattedRowValue);
+                    }
                     case columnTypes.Number:
                     case columnTypes.String:
                     case columnTypes.DateTime:

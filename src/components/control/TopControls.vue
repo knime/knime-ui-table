@@ -7,7 +7,7 @@ import FilterInputField from '../filter/FilterInputField.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SearchIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 
-import { tableTimeFilters } from '../../config/time.config';
+import { tableTimeFilters } from '@/config/time.config';
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,
@@ -50,19 +50,19 @@ export default {
     },
     computed: {
         showTimeFilter() {
-            return this.tableConfig?.timeFilterConfig;
+            return Boolean(this.tableConfig?.timeFilterConfig);
         },
         timeFilter() {
             return this.tableConfig?.timeFilterConfig?.currentTimeFilter;
         },
         showColumnSelection() {
-            return this.tableConfig?.columnSelectionConfig;
+            return Boolean(this.tableConfig?.columnSelectionConfig);
         },
         possibleColumns() {
             return this.tableConfig?.columnSelectionConfig?.possibleColumns;
         },
         showGroupBy() {
-            return this.tableConfig?.groupByConfig;
+            return Boolean(this.tableConfig?.groupByConfig);
         },
         currentGroup() {
             return this.tableConfig?.groupByConfig?.currentGroup;
@@ -126,50 +126,56 @@ export default {
     class="base-controls"
     v-bind="$attrs"
     :page-config="tableConfig.pageConfig"
+    :has-carousel="showTimeFilter || showGroupBy || showColumnSelection"
   >
-    <ControlDropdown
-      v-if="showTimeFilter"
-      :model-value="timeFilter"
-      :possible-values="getSelectItems(timeFilters)"
-      :placeholder="timeFilter"
-      :aria-label="'Filter by time'"
-      @update:model-value="onTimeFilterSelect"
-    />
-    <ControlMultiselect
-      v-if="showColumnSelection"
-      lock-placeholder
-      :model-value="columnHeaders"
-      :possible-values="getSelectItems(possibleColumns)"
-      placeholder="Select columns"
-      @update:model-value="onColumnSelect"
-      @column-reorder="onColumnReorder"
-    />
-    <ControlDropdown
-      v-if="showGroupBy"
-      include-placeholder
-      :model-value="currentGroup || ''"
-      :possible-values="getSelectItems(possibleGroups)"
-      :placeholder="'Group by…'"
-      :aria-label="'Group by category'"
-      :formatter="group => `Grouped by '${group}'`"
-      @update:model-value="onGroupSelect"
-    />
-    <FilterInputField
-      v-if="showSearch && searchActive"
-      ref="searchField"
-      class="input-control"
-      :value="searchQuery"
-      :placeholder="'Search'"
-      @input="onSearch"
-      @blur="onSearchBlur"
-    />
-    <FunctionButton
-      v-if="showSearch"
-      class="search-toggle"
-      @click="onSearchClick"
-    >
-      <SearchIcon />
-    </FunctionButton>
+    <template #carousel>
+      <ControlDropdown
+        v-if="showTimeFilter"
+        :model-value="timeFilter"
+        :possible-values="getSelectItems(timeFilters)"
+        :placeholder="timeFilter"
+        :aria-label="'Filter by time'"
+        @update:model-value="onTimeFilterSelect"
+      />
+      <ControlMultiselect
+        v-if="showColumnSelection"
+        lock-placeholder
+        :model-value="columnHeaders"
+        :possible-values="getSelectItems(possibleColumns)"
+        placeholder="Select columns"
+        @update:model-value="onColumnSelect"
+        @column-reorder="onColumnReorder"
+      />
+      <ControlDropdown
+        v-if="showGroupBy"
+        include-placeholder
+        :model-value="currentGroup || ''"
+        :possible-values="getSelectItems(possibleGroups)"
+        :placeholder="'Group by…'"
+        :aria-label="'Group by category'"
+        :formatter="group => `Grouped by '${group}'`"
+        @update:model-value="onGroupSelect"
+      />
+    </template>
+    <template #rightmost-control>
+      <FilterInputField
+        v-if="showSearch && searchActive"
+        ref="searchField"
+        class="input-control"
+        :value="searchQuery"
+        :placeholder="'Search'"
+        :style="{minWidth: '100px'}"
+        @update:model-value="onSearch"
+        @blur="onSearchBlur"
+      />
+      <FunctionButton
+        v-if="showSearch"
+        class="search-toggle"
+        @click="onSearchClick"
+      >
+        <SearchIcon />
+      </FunctionButton>
+    </template>
   </BaseControls>
 </template>
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import getColumnDomains from '../getColumnDomains';
-import { columnTypes } from '@/config/table.config';
+import { columnTypes, typeFormatters } from '@/config/table.config';
 
 describe('getColumnDomains', () => {
     let dataMock = [
@@ -81,6 +81,27 @@ describe('getColumnDomains', () => {
                 'Class E',
                 'No Data'
             ]
+        });
+    });
+
+    it('creates the entry null in the domain for missing values when using the default formatters', () => {
+        const dataMock = [
+            { col1: true, col2: 'A' },
+            { col1: true, col2: 'B' },
+            { col1: null, col2: 'C' },
+            { col1: undefined, col2: 'D' },
+            { col1: { metadata: 'Dummy message' }, col2: 'E' },
+            { col1: false, col2: 'Missing label' }
+        ];
+
+        const formatters = {
+            col1: typeFormatters.Boolean,
+            col2: typeFormatters.Nominal
+        };
+
+        expect(getColumnDomains({ data: dataMock, formatters, types })).toStrictEqual({
+            col1: [true, null, undefined, false],
+            col2: ['A', 'B', 'C', 'D', 'E', 'Missing label']
         });
     });
 });

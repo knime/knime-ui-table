@@ -3,6 +3,7 @@ import { markRaw } from 'vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DeleteIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
 import LinkIcon from 'webapps-common/ui/assets/img/icons/link.svg';
+import TeamGroupAdmin from 'webapps-common/ui/assets/img/icons/team-group-admin.svg';
 
 import Table from '@/components/Table.vue';
 import demoProps from './props.json';
@@ -27,6 +28,16 @@ const subMenuItems = [
         icon: markRaw(LinkIcon),
         callback: (row, context) => {
             consola.debug(`Copy link called with row ${row}`, context);
+        }
+    },
+    {
+        name: 'manage',
+        text: 'Manage access',
+        icon: TeamGroupAdmin,
+        hideOn: (row, data) => {
+            consola.debug(`hideOn function called with ${row}`, data);
+            const propability = 0.5;
+            return Math.random() > propability;
         }
     }
 ];
@@ -70,14 +81,13 @@ export default {
             showSorting: true,
             showPopovers: true,
             compactMode: true,
-            fixHeader: true,
             showActionButton: false,
             enableVirtualScrolling: false,
             headerSubMenuItems: [],
-            fitToContainer: false,
             allColumnSpecificSortConfigs: [],
             setInitialSorting: false,
-            setInitialFiltering: false
+            setInitialFiltering: false,
+            fitToWindow: false
         };
     },
     computed: {
@@ -97,12 +107,10 @@ export default {
                 showSorting: this.showSorting,
                 showPopovers: this.showPopovers,
                 compactMode: this.compactMode,
-                fixHeader: this.fixHeader,
                 showActionButton: this.showActionButton,
                 headerSubMenuItems: this.headerSubMenuItems,
                 allColumnSpecificSortConfigs: this.allColumnSpecificSortConfigs,
                 enableVirtualScrolling: this.enableVirtualScrolling,
-                fitToContainer: this.fitToContainer,
                 ...this.setInitialSorting ? { defaultSortColumn: 1 } : {},
                 ...this.setInitialSorting ? { defaultSortColumnDirection: 1 } : {},
                 ...this.setInitialFiltering ? { initialFilterValues: { user: ['example-user2'] } } : {}
@@ -142,7 +150,7 @@ export default {
 </script>
 
 <template>
-  <div :class="{ 'fix-header': fixHeader }">
+  <div :class="['demo',{'fit-to-window': fitToWindow}]">
     <h2>
       KNIME UI TABLE
     </h2>
@@ -177,12 +185,11 @@ export default {
         compact mode
       </Checkbox>
       <Checkbox v-model="enableVirtualScrolling">virtual scrolling</Checkbox>
-      <Checkbox v-model="fitToContainer">fit to container</Checkbox>
-      <Checkbox v-model="fixHeader">fix header</Checkbox>
       <Checkbox @input="onShowHeaderSubMenu">header sub menu settings</Checkbox>
       <Checkbox @input="onDisableSortOfSpecificColumns">
         disable sort of specific columns (here: columns starting with workflow)
       </Checkbox>
+      <Checkbox v-model="fitToWindow">Fit table inside the current window</Checkbox>
     </div>
     <br>
     <Table
@@ -211,22 +218,26 @@ export default {
   }
 
   body {
-    background-color: var(--knime-silver-sand-semi);
+    background-color: var(--knime-porcelain);
     padding: 12px;
   }
 
-  .fix-header {
+  .fit-to-window {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 24px); /* 2 * -12px due to body padding of 12px */
     overflow: visible;
   }
 
-  .fix-header h2 {
+  .fit-to-window .table {
+      flex-grow: 1;
+    }
+
+  .demo h2 {
     margin-bottom: 0;
   }
 
-  .fix-header button {
+  .demo button {
     align-self: flex-start;
   }
 

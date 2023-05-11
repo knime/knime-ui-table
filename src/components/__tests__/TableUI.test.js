@@ -12,10 +12,7 @@ import Row from '@/components/layout/Row.vue';
 import ActionButton from '@/components/ui/ActionButton.vue';
 import TablePopover from '@/components/popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
-
-
 import { columnTypes } from '@/config/table.config';
-require('consola');
 
 const expectedNormalRowHeight = 41;
 
@@ -123,7 +120,6 @@ describe('TableUI.vue', () => {
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
-        fitToContainer = false,
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
@@ -173,7 +169,7 @@ describe('TableUI.vue', () => {
 
     beforeEach(() => {
         bodySizeEvent = [];
-        Object.defineProperty(global, 'ResizeObserver', {
+        Object.defineProperty(window, 'ResizeObserver', {
             writable: true,
             value: vi.fn().mockImplementation((callback) => ({
                 observe: vi.fn(() => {
@@ -347,22 +343,56 @@ describe('TableUI.vue', () => {
             });
         });
 
-        it('handles group sub menu items', () => {
-            const { wrapper } = doMount();
+        describe('row and group submenus', () => {
+            beforeEach(() => {
+                vi.useFakeTimers();
+            });
 
-            let callbackMock = vi.fn();
-            wrapper.findComponent(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
-            expect(callbackMock).toHaveBeenCalledWith(
-                [{
-                    data: { a: 'cellA', b: 'cellB' },
-                    id: '0',
-                    index: 0,
-                    size: expectedNormalRowHeight,
-                    scrollIndex: 0,
-                    isTop: true
-                }], expect.anything()
-            );
+            it('handles row sub menu clicks', () => {
+                const { wrapper, props } = doMount();
+
+                let callbackMock = vi.fn();
+                wrapper.findComponent(Row).vm.$emit('rowSubMenuClick', { callback: callbackMock });
+                expect(callbackMock).toHaveBeenCalledWith(props.data[0][0], expect.anything());
+            });
+            
+            it('handles group sub menu clicks', () => {
+                const { wrapper } = doMount();
+    
+                let callbackMock = vi.fn();
+                wrapper.findComponent(Group).vm.$emit('groupSubMenuClick', { callback: callbackMock });
+                expect(callbackMock).toHaveBeenCalledWith(
+                    [{
+                        data: { a: 'cellA', b: 'cellB' },
+                        id: '0',
+                        index: 0,
+                        size: expectedNormalRowHeight,
+                        scrollIndex: 0,
+                        isTop: true
+                    }], expect.anything()
+                );
+            });
+
+            it('collapses expanded submenu on scroll', () => {
+                const { wrapper } = doMount();
+    
+                let callbackMockRow = vi.fn();
+                wrapper.findComponent(Row).vm.$emit('rowSubMenuExpand', callbackMockRow);
+                vi.advanceTimersToNextTimer();
+                expect(callbackMockRow).toHaveBeenCalledTimes(0);
+                wrapper.find('.vertical-scroll').element.dispatchEvent(new Event('scroll'));
+                expect(callbackMockRow).toHaveBeenCalledTimes(1);
+
+                let callbackMockGroup = vi.fn();
+                wrapper.findComponent(Group).vm.$emit('groupSubMenuExpand', callbackMockGroup);
+                vi.advanceTimersToNextTimer();
+                expect(callbackMockGroup).toHaveBeenCalledTimes(0);
+                wrapper.find('.vertical-scroll').element.dispatchEvent(new Event('scroll'));
+                expect(callbackMockRow).toHaveBeenCalledTimes(1);
+                expect(callbackMockGroup).toHaveBeenCalledTimes(1);
+            });
         });
+
 
         describe('rows', () => {
             it('handles select events', () => {
@@ -382,14 +412,6 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toStrictEqual(
                     [[{ cell: true, rowInd: 0, groupInd: 0, id, isTop: true }]]
                 );
-            });
-
-            it('handles submenu clicks', () => {
-                const { wrapper, props } = doMount();
-
-                let callbackMock = vi.fn();
-                wrapper.findComponent(Row).vm.$emit('rowSubMenuClick', { callback: callbackMock });
-                expect(callbackMock).toHaveBeenCalledWith(props.data[0][0], expect.anything());
             });
         });
 
@@ -434,10 +456,10 @@ describe('TableUI.vue', () => {
                 });
                 await wrapper.vm.$nextTick();
                 expect(wrapper.findComponent(TablePopover).exists()).toBeTruthy();
-                expect(wrapper.vm.popoverColumn).toStrictEqual('b');
-                expect(wrapper.vm.popoverData).toStrictEqual('cellB');
+                expect(wrapper.vm.popoverColumn).toBe('b');
+                expect(wrapper.vm.popoverData).toBe('cellB');
                 expect(wrapper.vm.popoverRenderer).toStrictEqual(columnTypes.Number);
-                expect(wrapper.vm.popoverTarget).toStrictEqual('<td>1</td>');
+                expect(wrapper.vm.popoverTarget).toBe('<td>1</td>');
                 wrapper.findComponent(TablePopover).vm.$emit('close');
                 await wrapper.vm.$nextTick();
                 expect(wrapper.findComponent(TablePopover).exists()).toBeFalsy();
@@ -479,7 +501,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(180);
+            expect(wrapper.vm.currentBodyWidth).toBe(180);
         });
 
         it('gets the correct width of the table-body when selection & filtering are disabled', () => {
@@ -488,7 +510,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toEqual(120);
+            expect(wrapper.vm.currentBodyWidth).toBe(120);
         });
     });
 
@@ -506,11 +528,11 @@ describe('TableUI.vue', () => {
         });
     });
 
-    describe('the height of the rows, of the body and of the table', () => {
+    describe('the height of the rows', () => {
         it('sets default height of rows if no height is given', () => {
             const { wrapper } = doMount();
 
-            expect(wrapper.vm.rowHeight).toEqual(40);
+            expect(wrapper.vm.rowHeight).toBe(40);
         });
 
         it('sets given rowHeight', () => {
@@ -523,62 +545,7 @@ describe('TableUI.vue', () => {
         it('sets small height of rows on compact mode', () => {
             const { wrapper } = doMount({ compactMode: true });
 
-            expect(wrapper.vm.rowHeight).toEqual(24);
-        });
-
-
-        it('computes height from number of rows', () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            } });
-
-            expect(wrapper.vm.fullBodyHeight).toEqual(expectedNormalRowHeight);
-        });
-
-        it('sets current body height to zero if there is no available space', () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            },
-            wrapperHeight: 10 });
-
-            expect(wrapper.vm.currentBodyHeight).toEqual(0);
-        });
-
-        it('sets current body height to available space if it the full body size is larger than it', async () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            },
-            wrapperHeight: 150 });
-
-            expect(wrapper.vm.currentBodyHeight).toEqual(39);
-            await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentBodyHeight).toEqual(1);
-        });
-
-        it('increases computed table height if filters are visible', async () => {
-            const { wrapper } = doMount({ pageConfig: {
-                currentSize: 1,
-                tableSize: 1,
-                pageSize: 1,
-                possiblePageSizes: [1],
-                currentPage: 1
-            } });
-
-            expect(wrapper.vm.currentTableHeight).toEqual(81);
-            await wrapper.setData({ filterActive: true });
-            expect(wrapper.vm.currentTableHeight).toEqual(119);
+            expect(wrapper.vm.rowHeight).toBe(24);
         });
     });
 
@@ -705,11 +672,11 @@ describe('TableUI.vue', () => {
                 Object.defineProperty(scroller.vm.$el, 'clientHeight', { value: 1000 });
                 scroller.vm.updateVisibleItems();
                 await wrapper.vm.$nextTick();
-                const firstRow = wrapper.vm.$refs['row-0'][0];
+                const firstRow = wrapper.vm.$refs['row-0'];
                 firstRow.onRowExpand();
                 await wrapper.vm.$nextTick();
                 Object.defineProperty(firstRow.$el.children[1], 'clientHeight', { value: expandedContentHeight });
-                
+
                 expect(wrapper.vm.currentExpanded).toContain(0);
 
                 expect(wrapper.vm.scrollData).toStrictEqual([[
@@ -738,5 +705,12 @@ describe('TableUI.vue', () => {
                 expect(wrapper.vm.currentExpanded).not.toContain(0);
             });
         });
+    });
+
+    it('computes drag handle height', () => {
+        const { wrapper } = doMount();
+        expect(wrapper.vm.getDragHandleHeight()).toBeDefined();
+        const { wrapper: wrapperWithScroller } = doMount({ enableVirtualScrolling: true, shallow: false });
+        expect(wrapperWithScroller.vm.getDragHandleHeight()).toBeDefined();
     });
 });

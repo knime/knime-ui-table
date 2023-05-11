@@ -69,7 +69,7 @@ describe('Table.vue', () => {
 
     describe('configurations', () => {
         beforeEach(() => {
-            Object.defineProperty(global, 'ResizeObserver', {
+            Object.defineProperty(window, 'ResizeObserver', {
                 writable: true,
                 value: vi.fn().mockImplementation((callback) => ({
                     observe: vi.fn(),
@@ -113,7 +113,6 @@ describe('Table.vue', () => {
                 showPopovers: true,
                 showSelection: true,
                 enableVirtualScrolling: false,
-                fitToContainer: false,
                 pageConfig: {
                     tableSize: 1,
                     currentSize: 1,
@@ -330,19 +329,19 @@ describe('Table.vue', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.findComponent(TableUI).vm.$emit('search', '');
-                expect(wrapper.vm.searchQuery).toBe(null);
+                expect(wrapper.vm.searchQuery).toBeNull();
             });
 
             it('empties search query if search event value is missing', () => {
                 const { wrapper } = doMount();
                 expect(wrapper.vm.searchQuery).toBe('');
                 wrapper.findComponent(TableUI).vm.$emit('search');
-                expect(wrapper.vm.searchQuery).toBe(null);
+                expect(wrapper.vm.searchQuery).toBeNull();
             });
 
             it('registers groupUpdate events and updates the current group', () => {
                 const { wrapper } = doMount();
-                expect(wrapper.vm.currentGroup).toBe(null);
+                expect(wrapper.vm.currentGroup).toBeNull();
                 wrapper.findComponent(TableUI).vm.$emit('groupUpdate', 'a');
                 expect(wrapper.vm.currentGroup).toBe('a');
             });
@@ -363,7 +362,7 @@ describe('Table.vue', () => {
 
             it('registers timeFilterUpdate events and updates the time filter', () => {
                 const { wrapper } = doMount({ customProps: { timeFilterKey: 'a' } });
-                expect(wrapper.vm.currentTimeFilter).toBe('Last month');
+                expect(wrapper.vm.currentTimeFilter).toBe('All time');
                 wrapper.findComponent(TableUI).vm.$emit('timeFilterUpdate', 'Last year');
                 expect(wrapper.vm.currentTimeFilter).toBe('Last year');
             });
@@ -402,6 +401,17 @@ describe('Table.vue', () => {
                 wrapper.vm.onToggleFilter();
                 wrapper.findComponent(TableUI).vm.$emit('columnFilter', 0, '10');
                 expect(wrapper.vm.filterValues).toStrictEqual({ a: '10', b: '' });
+            });
+
+            it('adjusts data on filter event if filters are active', async () => {
+                const { wrapper } = doMount();
+                expect(wrapper.vm.filterValues).toStrictEqual({ a: '', b: '' });
+                wrapper.vm.onToggleFilter();
+                expect(wrapper.vm.paginatedData[0].length).toBe(1);
+                wrapper.findComponent(TableUI).vm.$emit('toggleFilter', true);
+                wrapper.findComponent(TableUI).vm.$emit('columnFilter', 0, '10');
+                await wrapper.vm.$nextTick();
+                expect(wrapper.vm.paginatedData[0].length).toBe(0);
             });
 
             it('resets filter to default if value is empty', () => {

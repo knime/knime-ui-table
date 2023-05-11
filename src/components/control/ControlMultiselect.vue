@@ -1,10 +1,17 @@
-<script>
-import { mixin as VueClickAway } from 'vue3-click-away';
+<script lang="ts">
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-
-const BLUR_TIMEOUT = 1;
+import type { Ref, PropType } from 'vue';
+import { ref, toRefs, computed } from 'vue';
+import { isMissingValue } from '@/util';
+import useDropdownPopper from '../../composables/useDropdownPopper';
+import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
+import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
+import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
+import useIdGeneration from '@/composables/useIdGeneration';
+import type PossibleValue from '@/types/PossibleValue';
 
 /**
  * A multi component specifically styled for use in the table controls. This component allows
@@ -17,9 +24,9 @@ export default {
     components: {
         Checkbox,
         DropdownIcon,
+        CircleHelpIcon,
         MenuOptionsIcon
     },
-    mixins: [VueClickAway],
     props: {
         /**
          * List of possible values. Each item must have an `id` and a `text` property, and optionally a `selectedText`
@@ -35,7 +42,7 @@ export default {
          * }]
          */
         possibleValues: {
-            type: Array,
+            type: Array as PropType<Array<PossibleValue>>,
             default: () => [],
             validator(values) {
                 if (!Array.isArray(values)) {
@@ -48,7 +55,7 @@ export default {
          * Selected value (which is a list of ids of entries).
          */
         modelValue: {
-            type: Array,
+            type: Array as PropType<Array<string>>,
             default: () => []
         },
         /**
@@ -64,56 +71,142 @@ export default {
         lockPlaceholder: {
             type: Boolean,
             default: false
+        },
+        isFilter: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:modelValue', 'columnReorder'],
+    setup(props) {
+        const { possibleValues } = toRefs(props);
+
+        const toggleButton: Ref<HTMLElement | null> = ref(null);
+        const optionsPopover = ref(null);
+        const option: Ref<{$el: HTMLElement}[]> = ref([]);
+
+
+        const isExpanded = ref(false);
+
+        const getOffsetTopToWindow = (element: HTMLElement | null) => {
+            let offsetTop = 0;
+            while (element) {
+                offsetTop += element.offsetTop;
+                element = element.offsetParent as HTMLElement | null;
+            }
+            return offsetTop;
+        };
+
+        const scrollWindowTo = (element: HTMLElement | null) => {
+            const toggleButtonElement = toggleButton.value;
+            if (element === null || toggleButtonElement === null) {
+                return;
+            }
+            const toggleButtonOffset = getOffsetTopToWindow(toggleButtonElement);
+            const toggleButtonHeight = toggleButtonElement.scrollHeight;
+            const elementOffsetToToggleButton = getOffsetTopToWindow(element);
+            const elementOffsetTotal = toggleButtonOffset + toggleButtonHeight + elementOffsetToToggleButton;
+            // We want a margin from the top / bottom of the screen to the current selected element
+            const pageYOffset = 20;
+            const pageYMin = elementOffsetTotal - pageYOffset;
+            const pageYMax = elementOffsetTotal + element.scrollHeight + pageYOffset;
+            if (window.scrollY + window.innerHeight < pageYMax) {
+                const newYOffset = pageYMax - window.innerHeight;
+                window.scrollTo(window.scrollX, newYOffset);
+            } else if (window.scrollY > pageYMin) {
+                window.scrollTo(window.scrollX, pageYMin);
+            }
+        };
+
+        const getNextElement = (current: number | null, direction: 1 | -1) => {
+            const listItems = option.value.map(({ $el }) => $el);
+            const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
+            scrollWindowTo(element);
+            const clickableInputElement = element.querySelector('input') as HTMLElement;
+            return { index, onClick: () => clickableInputElement.click() };
+        };
+        
+        const closeMenu = () => {
+            isExpanded.value = false;
+        };
+
+        const { updatePopper } = useDropdownPopper({ popperTarget: optionsPopover, referenceEl: toggleButton });
+        const { onKeydown, resetNavigation, currentIndex: selectedIndex } = useDropdownNavigation({
+            getNextElement,
+            getFirstElement: () => getNextElement(null, 1),
+            getLastElement: () => getNextElement(null, -1),
+            close: () => {
+                closeMenu();
+                resetNavigation();
+            }
+        });
+
+        useClickOutside({ targets: [toggleButton, optionsPopover], callback: closeMenu }, isExpanded);
+        const { activeDescendantId, generateOptionId } = useIdGeneration(
+            computed(() => possibleValues.value.map(({ id }) => id)),
+            selectedIndex,
+            'control-multiselect'
+        );
+        return {
+            updatePopper,
+            onKeydown,
+            resetNavigation,
+            selectedIndex,
+            isExpanded,
+            option,
+            optionsPopover,
+            toggleButton,
+            activeDescendantId,
+            generateOptionId
+        };
+    },
     data() {
         return {
             checkedValue: this.modelValue,
-            collapsed: true,
             dragGhost: null,
             dragInd: null,
             hoverInd: null,
-            hoverIndItem: null,
             listItemHeightCutoff: 15
+        } as {
+            checkedValue: string[],
+            dragGhost: Node | null,
+            dragInd: number | null,
+            hoverInd: number | null,
+            listItemHeightCutoff: number
         };
     },
     computed: {
-        /**
-         * @returns {Array<Element>} - HTML Elements to use for focus and events.
-         */
-        focusOptions() {
-            return this.$refs.option.map(ref => ref.$el.querySelector('input'));
-        },
         optionText() {
             if (this.checkedValue.length === 0 || this.lockPlaceholder) {
                 return this.placeholder;
+            }
+            if (this.isFilter) {
+                return `${this.checkedValue.length} selected`;
             }
             return this.possibleValues
                 .filter(({ id }) => this.checkedValue.indexOf(id) > -1)
                 .map(({ text, selectedText = text }) => selectedText)
                 .join(', ');
+        },
+        withReorderEnabled() {
+            // for filters, reordering of options does not make any sense
+            return !this.isFilter;
         }
     },
     watch: {
-        value(newValue) {
+        modelValue(newValue) {
             this.checkedValue = newValue;
         }
     },
     methods: {
-        /**
-         * Returns the next HTML Element from the list of items. If the current focused Element is at the top or bottom
-         * of the list, this method will return the opposite end.
-         *
-         * @param {Number} changeInd - the positive or negative index shift for the next Element (usually 1 || -1).
-         * @returns {Element} - the next option Element in the list of options.
-         */
-        getNextElement(changeInd) {
-            return this.focusOptions[this.focusOptions.indexOf(document.activeElement) + changeInd] || (changeInd < 0
-                ? this.focusOptions[this.focusOptions.length - 1]
-                : this.focusOptions[0]);
+        refocusToggleButton() {
+            const toggleButtonElement = this.toggleButton;
+            if (toggleButtonElement !== null) {
+                toggleButtonElement.focus({ preventScroll: true });
+            }
         },
-        onInput(value, toggled) {
+        isMissingValue,
+        onInput(value: string, toggled: boolean) {
             if (toggled) {
                 if (this.checkedValue.indexOf(value) === -1) {
                     this.checkedValue.push(value);
@@ -121,64 +214,41 @@ export default {
             } else {
                 this.checkedValue = this.checkedValue.filter(x => x !== value);
             }
+            this.refocusToggleButton();
             consola.trace('Multiselect value changed to', this.checkedValue);
 
             this.$emit('update:modelValue', this.checkedValue);
         },
         toggle() {
-            this.collapsed = !this.collapsed;
-            setTimeout(() => {
-                this.$refs.toggle.focus();
-            }, BLUR_TIMEOUT);
+            this.isExpanded = !this.isExpanded;
+            this.resetNavigation();
+            this.updatePopper();
         },
-        isChecked(itemId) {
+        isChecked(itemId: string) {
             return this.checkedValue.indexOf(itemId) > -1;
         },
-        /**
-         * Handle closing the options.
-         *
-         * @param {Boolean} [refocusToggle] - if the toggle button should be re-focused after closing.
-         * @return {undefined}
-         */
-        closeOptions(refocusToggle) {
-            this.collapsed = true;
-            // explicitly check for true because vue-clickaway passes an event
-            if (refocusToggle === true) {
-                setTimeout(() => {
-                    this.$refs.toggle.focus();
-                }, BLUR_TIMEOUT);
-            }
-        },
-        /* Handle arrow key "up" events. */
-        onUp() {
-            if (document.activeElement === this.$refs.toggle) {
-                return;
-            }
-            this.getNextElement(-1).focus();
-        },
-        /* Handle arrow key "down" events. */
-        onDown() {
-            this.getNextElement(1).focus();
-        },
-        onDragStart(event, ind) {
+        onDragStart(event: Event, ind: number) {
             consola.trace('Drag triggered: ', event, ind);
             this.dragInd = ind;
-            this.dragGhost = this.$refs.item[ind].querySelector('label').cloneNode(true);
+            const dragElement = this.option[ind].$el;
+            this.dragGhost = dragElement.cloneNode(true);
             document.body.appendChild(this.dragGhost);
         },
         onDragEnd() {
+            if (this.hoverInd === null) {
+                return;
+            }
             let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
                 this.$emit('columnReorder', this.dragInd, this.hoverInd + offset);
             }
-            this.$refs.item[this.hoverInd + offset].focus();
             this.dragGhost = null;
             this.dragInd = null;
             this.hoverInd = null;
+            this.refocusToggleButton();
         },
-        onDragOver(event, ind) {
-            this.hoverIndItem = ind;
+        onDragOver(event: DragEvent, ind: number) {
             // detect when moving between options
             if (event.offsetY < this.listItemHeightCutoff) {
                 ind -= 1;
@@ -196,68 +266,79 @@ export default {
 
 <template>
   <div
-    v-click-away="closeOptions"
-    :class="['multiselect', { collapsed }]"
-    @keydown.esc.stop.prevent="closeOptions(true)"
-    @keydown.up.stop.prevent="onUp"
-    @keydown.down.stop.prevent="onDown"
+    :class="['multiselect', { collapsed: !isExpanded, filter: isFilter }]"
     @dragleave="onDragLeave"
+    @keydown.space.prevent="toggle"
   >
     <div
-      ref="toggle"
+      ref="toggleButton"
       role="button"
       tabindex="0"
       :class="{ placeholder: !checkedValue.length || lockPlaceholder }"
+      :aria-activedescendant="activeDescendantId"
+      :aria-owns="activeDescendantId"
       @click="toggle"
-      @keydown.space.prevent="toggle"
+      @keydown="isExpanded && onKeydown($event)"
     >
       {{ optionText }}
     </div>
     <DropdownIcon class="icon" />
-    <div
-      v-show="!collapsed"
-      class="options"
-      @dragleave.stop.prevent=""
-    >
+
+    <Teleport to="body">
       <div
-        v-if="dragInd !== 0 && hoverInd === -1"
-        class="drag-spacer drag-first"
-      />
-      <span
-        v-for="(item, ind) of possibleValues"
-        ref="item"
-        :key="`multiselect-${item.id}`"
-        :class="{'hovered': dragInd !== ind && hoverIndItem === ind, 'drag-item': dragInd === ind}"
-        @dragover.stop.prevent="onDragOver($event, ind)"
-        @keydown.esc.stop.prevent="closeOptions(true)"
+        v-show="isExpanded"
+        ref="optionsPopover"
+        role="options"
+        :class="{filter: isFilter}"
+        @dragleave.stop.prevent
       >
         <div
-          draggable="true"
-          :class="['item-' + ind, 'drag-handle']"
-          @dragstart="onDragStart($event, ind)"
-          @dragend="onDragEnd($event, ind)"
-        >
-          <MenuOptionsIcon class="drag left-drag" />
-          <MenuOptionsIcon class="drag right-drag" />
-        </div>
-        <Checkbox
-          ref="option"
-          :model-value="isChecked(item.id)"
-          :class="['boxes']"
-          @update:model-value="onInput(item.id, $event)"
-          @keydown.esc.stop.prevent="closeOptions(true)"
-        ><div>
-          {{ item.text }}
-        </div>
-        </Checkbox>
-        <div
-          v-if="dragInd !== ind && dragInd - 1!== ind && hoverInd === ind"
-          class="drag-spacer"
-          @dragover.stop.prevent=""
-          @dragenter.stop.prevent=""
+          v-if="withReorderEnabled && dragInd !== 0 && hoverInd === -1"
+          class="drag-spacer drag-first"
         />
-      </span>
-    </div>
+        <span
+          v-for="(item, ind) of possibleValues.filter(({id}) => typeof id !== 'undefined')"
+          :id="generateOptionId(item.id)"
+          :key="`multiselect-${item.id}`"
+          :class="['item-container', {
+            'hovered': dragInd !== ind && hoverInd === ind,
+            'focused': selectedIndex === ind,
+            'drag-item': dragInd === ind
+          }]"
+          @dragover.stop.prevent="onDragOver($event, ind)"
+        >
+          <div
+            v-if="withReorderEnabled"
+            draggable="true"
+            :class="['item-' + ind, 'drag-handle']"
+            @dragstart="onDragStart($event, ind)"
+            @dragend="onDragEnd()"
+          >
+            <MenuOptionsIcon class="drag left-drag" />
+            <MenuOptionsIcon class="drag right-drag" />
+          </div>
+          <Checkbox
+            ref="option"
+            :tabindex="-1"
+            :model-value="isChecked(item.id)"
+            class="boxes"
+            @update:model-value="onInput(item.id, $event)"
+          >
+            <CircleHelpIcon
+              v-if="isMissingValue(item.id)"
+              class="missing-value-icon"
+            />
+            <span v-else>{{ item.text }}</span>
+          </Checkbox>
+          <div
+            v-if="withReorderEnabled && (dragInd !== null) && dragInd !== ind && dragInd - 1!== ind && hoverInd === ind"
+            class="drag-spacer"
+            @dragover.stop.prevent
+            @dragenter.stop.prevent
+          />
+        </span>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -267,11 +348,7 @@ export default {
 
   & [role="button"] {
     margin: 0;
-    padding: 0 38px 0 10px;
     font-size: 13px;
-    font-weight: 500;
-    height: 40px;
-    line-height: 40px; /* to center text vertically */
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
@@ -285,21 +362,37 @@ export default {
     &:hover {
       outline: none;
       color: var(--knime-masala);
-
-      & :deep(svg) {
-        stroke: var(--knime-masala);
-      }
     }
   }
 
+  &:not(.filter) [role="button"] {
+      padding: 0 38px 0 10px;
+      font-weight: 500;
+      height: 40px;
+      line-height: 40px; /* to center text vertically */
+  }
+
+  &.filter [role="button"]{
+      background-color: var(--knime-white);
+      border: 1px solid var(--knime-stone-gray);
+      padding: 0 24px 0 10px;
+      font-weight: 400;
+      height: 27px;
+      line-height: 25px; /* to center text vertically */
+      overflow-x: hidden;
+  }
+
+  &:not(.collapsed).filter [role="button"] {
+    border-color: var(--knime-masala);
+  }
+
+  &.collapsed.filter:hover [role="button"] {
+    background: var(--knime-silver-sand-semi);
+  }
+
+
   & .icon {
-    width: 18px;
-    height: 18px;
-    stroke-width: calc(32px / 18);
-    stroke: var(--knime-dove-gray);
     position: absolute;
-    right: 10px;
-    top: 11px;
     pointer-events: none;
     transition: transform 0.2s ease-in-out;
   }
@@ -308,78 +401,123 @@ export default {
     transform: scaleY(-1);
   }
 
-  & .options {
-    position: absolute;
-    z-index: 2;
-    min-width: 100%;
-    width: fit-content;
-    margin-top: -1px;
-    background: var(--knime-white);
-    box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
+  &:not(.filter) .icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: calc(32px / 18);
+    stroke: var(--knime-dove-gray);
+    right: 10px;
+    top: 11px;
+  }
 
+  &.filter .icon {
+    width: 12px;
+    height: 12px;
+    stroke-width: calc(32px / 12);
+    stroke: var(--knime-masala);
+    right: 7px;
+    top: 8px;
+  }
+}
 
-    & span {
-      position: relative;
-      padding: 5px 10px 0;
-      display: block;
+[role="options"] {
+  width: fit-content;
+  margin-top: -1px;
+  background: var(--knime-white);
+  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 
-      &.drag-item {
-        background-color: var(--knime-silver-sand);
-        opacity: 0.5;
-      }
+  & .item-container {
+    position: relative;
+    padding: 0 10px;
+    display: block;
 
-      &.hovered {
-        background-color: var(--knime-silver-sand-semi);
-      }
-
-      & .drag-handle {
-        cursor: move;
-        height: 0;
-        width: 0;
-
-        & .drag {
-          position: absolute;
-          height: 22px;
-          top: 5px;
-
-          &.left-drag {
-            left: -1px;
-          }
-
-          &.right-drag {
-            left: 5px;
-          }
-        }
-      }
-
-      & .boxes {
-        display: block;
-        position: relative;
-        margin-left: 16px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--knime-masala);
-      }
+    &.focused,
+    &.hovered,
+    &:hover {
+      background-color: var(--knime-silver-sand-semi);
     }
 
-    & .drag-spacer {
-      height: 1px;
-      margin: auto;
-      right: 0;
-      left: 0;
-      width: 75%;
-      position: absolute;
-      bottom: 0;
-      background-color: var(--knime-dove-gray);
+  }
 
-      &.drag-first {
-        top: 0;
-        z-index: 2;
-        margin-top: unset;
-        margin-bottom: unset;
-      }
+  & .boxes {
+    display: block;
+    position: relative;
+    color: var(--knime-masala);
+
+    & .missing-value-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: calc(32px / 14);
+      stroke: var(--theme-color-kudos);
+      vertical-align: text-top;
     }
   }
 }
 
+[role="options"].filter {
+  position: absolute;
+  z-index: 2;
+  width: fit-content;
+  margin-top: -1.5px;
+  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
+
+  & .boxes {
+    top: 5px;
+  }
+}
+
+[role="options"]:not(.filter) {
+  & .item-container {
+    padding-top: 5px;
+  
+    &.drag-item {
+      background-color: var(--knime-silver-sand);
+      opacity: 0.5;
+    }
+
+    & .drag-handle {
+      cursor: move;
+      height: 0;
+      width: 0;
+  
+      & .drag {
+        position: absolute;
+        height: 22px;
+        top: 5px;
+  
+        &.left-drag {
+          left: -1px;
+        }
+  
+        &.right-drag {
+          left: 5px;
+        }
+      }
+    }
+  
+    & .boxes {
+      margin-left: 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+
+  & .drag-spacer {
+   height: 1px;
+   margin: auto;
+   right: 0;
+   left: 0;
+   width: 75%;
+   position: absolute;
+   bottom: 0;
+   background-color: var(--knime-dove-gray);
+
+   &.drag-first {
+     top: 0;
+     z-index: 2;
+     margin-top: unset;
+     margin-bottom: unset;
+   }
+ }
+}
 </style>
