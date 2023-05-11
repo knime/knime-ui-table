@@ -66,7 +66,6 @@ export default (
         searchQuery.value = input || null;
     };
 
-
     const currentFilterConfigs = computed(() => getFilterConfigs({
         domains: domains.value,
         columns: currentColumns.value,

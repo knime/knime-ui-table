@@ -7,7 +7,7 @@ export default ({ allColumnsData: { allColumnTypes, allColumnKeys, allFormatters
     const domains = ref([]);
     const defaultFormatters = allColumnKeys.reduce((formatters, colKey) => {
         formatters[colKey] = allFormatters[colKey] ||
-           typeFormatters[allColumnTypes[colKey]] ||
+           typeFormatters(allColumnTypes[colKey]) ||
            (item => item);
         return formatters;
     }, {});

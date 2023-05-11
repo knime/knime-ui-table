@@ -1106,7 +1106,62 @@
       },
       "status": true,
       "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]"
-    }
+    },
+    {
+      "lastRun": {
+        "metadata": "Dummy message for Last run"
+      },
+      "nextScheduledExecution": {
+        "metadata": "Dummy message for Next run"
+      },
+      "targetName": {
+        "metadata": "Dummy message for Workflow"
+      },
+      "workflowPath": {
+        "metadata": "Dummy message for Workflow Path"
+      },
+      "user": {
+        "metadata": "Dummy message for User"
+      },
+      "schedule": {
+        "metadata": "Dummy message for Interval"
+      },
+      "inputParameters": {
+        "metadata": "Dummy message for Parameters"
+      },
+      "reset": {
+        "metadata": "Dummy message for Reset"
+      },
+      "discard": {
+        "metadata": "Dummy message for Discard"
+      },
+      "numFailures": null,
+      "discardAfterSuccessfulExec": null,
+      "discardAfterFailedExec": null,
+      "notifications": null,
+      "actions": null,
+      "configurationWithPasswords": null,
+      "lastJob": null,
+      "configuration": null,
+      "status": null,
+      "id": null
+    },
+    {
+      "targetName": {
+        "metadata": "Another message for User"
+      },
+      "user": {
+        "metadata": "Another message for User"
+      }
+    },
+    {
+      "targetName": null,
+      "user": null
+    },
+    {
+      "user": "Missing"
+    },
+    {}
   ],
   "allColumnHeaders": [
     "Last run",
@@ -1191,6 +1246,9 @@
     "id"
   ],
   "defaultTimeFilter": "Last month",
+  "parentSelected": [],
+  "pageSize": 10,
+  "actionButtonText": "",
   "allPopoverRenderers": {
     "status": {
       "type": "StringRenderer"
@@ -1202,25 +1260,5 @@
     "configurationWithPasswords": true,
     "configuration": true
   },
-  "allColumnSpecificSortConfigs": [
-    true,
-    true,
-    false,
-    false,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true
-  ]
+  "compactMode": false
 }

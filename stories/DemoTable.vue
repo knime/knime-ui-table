@@ -95,7 +95,7 @@ const { currentColumnSizes, onColumnResize, boundingBoxElement: root } = useColu
     currentColumnIndices: currentColumns.indices,
     spacerSettings: props
 });
-        
+
 const { domains, updateDomains, currentFormatters } = useFormatters({
     allColumnsData: demoProps,
     currentColumnKeys: currentColumns.keys

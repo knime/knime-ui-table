@@ -17,6 +17,7 @@ export const getFilterConfigs = ({ domains, columns, types, values }) => columns
         ...columnFilterConfigs[types[col]],
         value: values[col]
     };
+
     if (domains[col]) {
         config.possibleValues = domains[col].map(val => ({ id: val, text: val }));
     }
