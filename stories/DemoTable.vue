@@ -109,6 +109,7 @@ const { filterData, filterHash, onTimeFilterUpdate, onColumnFilter, onClearFilte
     currentTimeFilter, currentFilterConfigs, currentTableSize } = useFilters({
     initialParameters: props,
     timeFilterKey: demoProps.timeFilterKey,
+    defaultTimeFilter: demoProps.defaultTimeFilter,
     formatterData: { domains, currentFormatters },
     currentColumns: currentColumns.keys,
     allColumns: demoProps

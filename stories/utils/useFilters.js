@@ -10,6 +10,7 @@ export default (
             withColumnFilters
         },
         timeFilterKey,
+        defaultTimeFilter,
         formatterData: { currentFormatters, domains },
         currentColumns,
         allColumns: { allColumnTypes, allColumnKeys }
@@ -18,7 +19,7 @@ export default (
     const filterValues = ref(withColumnFilters && Boolean(Object.keys(unref(initialFilterValues)).length)
         ? getInitialFilterValues(allColumnKeys, allColumnTypes, unref(initialFilterValues))
         : getDefaultFilterValues(allColumnKeys, allColumnTypes));
-    const currentTimeFilter = ref(timeFilterKey);
+    const currentTimeFilter = ref(defaultTimeFilter);
     const searchQuery = ref('');
     const showFilter = ref(withColumnFilters && Boolean(Object.keys(unref(initialFilterValues)).length));
 
