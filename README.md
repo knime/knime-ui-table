@@ -31,6 +31,12 @@ npm install
 npm run dev
 ```
 
+or, using storybook:
+
+```sh
+npm run storybook
+```
+
 ### Testing
 
 #### Running unit tests

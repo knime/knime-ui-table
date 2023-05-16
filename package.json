@@ -19,15 +19,13 @@
     "audit": "npm audit --omit dev",
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
-    "storybook": "NODE_OPTIONS=--openssl-legacy-provider sb dev"
+    "storybook": "sb dev"
   },
   "dependencies": {
-    "@popperjs/core": "2.5.4",
     "vue": "3.2.45",
     "raf-throttle": "2.0.6",
     "uuid": "9.0.0",
     "vue-virtual-scroller": "file:vue-virtual-scroller",
-    "vue3-click-away": "1.2.4",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
