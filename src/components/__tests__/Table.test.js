@@ -85,7 +85,7 @@ describe('Table.vue', () => {
             expect(wrapper.vm.dataConfig).toStrictEqual({
                 columnConfigs: [{
                     classGenerator: [],
-                    filterConfig: { is: 'FilterInputField', value: '' },
+                    filterConfig: { is: 'FilterInputField', modelValue: '' },
                     formatter: expect.any(Function),
                     hasSlotContent: false,
                     header: 'A',
@@ -95,7 +95,7 @@ describe('Table.vue', () => {
                     type: columnTypes.Number
                 }, {
                     classGenerator: [],
-                    filterConfig: { is: 'FilterInputField', value: '' },
+                    filterConfig: { is: 'FilterInputField', modelValue: '' },
                     formatter: expect.any(Function),
                     hasSlotContent: false,
                     header: 'B',
@@ -176,8 +176,8 @@ describe('Table.vue', () => {
 
             expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(true);
             expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
-                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '4' } }),
-                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '10' } })
+                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', modelValue: '4' } }),
+                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', modelValue: '10' } })
             ]));
         });
 
@@ -191,8 +191,8 @@ describe('Table.vue', () => {
 
             expect(wrapper.vm.tableConfig.columnFilterInitiallyActive).toBe(false);
             expect(wrapper.vm.dataConfig.columnConfigs).toEqual(expect.arrayContaining([
-                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', value: '' } }),
-                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', value: '' } })
+                expect.objectContaining({ key: 'a', filterConfig: { is: 'FilterInputField', modelValue: '' } }),
+                expect.objectContaining({ key: 'b', filterConfig: { is: 'FilterInputField', modelValue: '' } })
             ]));
         });
     });

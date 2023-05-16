@@ -1,7 +1,11 @@
 import type PossibleValue from './PossibleValue';
 
+export enum FilterComponent {
+    ControlDropdown, ControlMultiselect, FilterInputField
+}
+
 interface FilterConfigBase {
-    placeholder: string
+    placeholder?: string
 }
 
 type FilterConfigDropdownBase = FilterConfigBase & {
@@ -9,21 +13,23 @@ type FilterConfigDropdownBase = FilterConfigBase & {
 }
 
 type FilterConfigDropdown = FilterConfigDropdownBase & {
-    is: 'FilterDropdown'
-    value: string
+    is: 'ControlDropdown'
+    modelValue?: string
 }
 
 type FilterConfigMultiselect = FilterConfigDropdownBase & {
-    is: 'FilterMultiselect'
-    value: Array<string>
+    is: 'ControlMultiselect'
+    modelValue?: Array<string>
 }
 
 type FilterConfigInput = FilterConfigBase & {
     is: 'FilterInputField'
     disabled?: boolean,
-    value: number | string
+    modelValue?: number | string
 }
 
-type FilterConfig = FilterConfigDropdown | FilterConfigMultiselect | FilterConfigInput;
+type FilterConfig = (FilterConfigDropdown | FilterConfigMultiselect | FilterConfigInput) & {
+    is: keyof typeof FilterComponent
+} ;
 
 export default FilterConfig;

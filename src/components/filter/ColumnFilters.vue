@@ -49,53 +49,17 @@ export default {
     emits: ['columnFilter', 'clearFilter'],
     data() {
         return {
-            transformedFilterConfigs: [],
-            targetFilterComponents: [],
             MIN_COLUMN_SIZE
         };
     },
-    watch: {
-        filterConfigs: {
-            deep: true,
-            immediate: true,
-            handler(newValue) {
-                this.transformedFilterConfigs = newValue.map(this.getTransformedFilterConfig);
-                this.targetFilterComponents = newValue.map(this.getTargetFilterComponent);
-            }
-        }
-    },
     methods: {
-        onInput(colInd: number, value: FilterConfig['value']) {
+        onInput(colInd: number, value: FilterConfig['modelValue']) {
             consola.debug('Updated table column filter: ', value);
             this.$emit('columnFilter', colInd, value);
         },
         onClearFilter() {
             consola.debug('Table column filter cleared.');
             this.$emit('clearFilter');
-        },
-        getTargetFilterComponent(filterConfig: FilterConfig) {
-            const { is } = filterConfig;
-            switch (is) {
-                case 'FilterDropdown': {
-                    return 'ControlDropdown';
-                }
-                case 'FilterMultiselect': {
-                    return 'ControlMultiselect';
-                }
-                default: {
-                    return is;
-                }
-            }
-        },
-        getTransformedFilterConfig(filterConfig: FilterConfig) {
-            let modelValue = filterConfig.value;
-            if (filterConfig.is === 'FilterDropdown' && modelValue !== null && Array.isArray(modelValue)) {
-                modelValue = modelValue[0];
-            }
-            return {
-                ...filterConfig,
-                modelValue
-            };
         }
     }
 };
@@ -120,9 +84,9 @@ export default {
         class="filter"
       >
         <Component
-          :is="targetFilterComponents[ind]"
+          :is="filterConfigs[ind].is"
           is-filter
-          v-bind="transformedFilterConfigs[ind]"
+          v-bind="filterConfigs[ind]"
           :placeholder="column"
           :aria-label="`filter-${column}`"
           @update:model-value="onInput(ind, $event)"
