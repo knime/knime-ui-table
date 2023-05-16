@@ -57,6 +57,10 @@ const props = defineProps({
         type: String,
         default: ''
     },
+    backgroundColor: {
+        type: String,
+        required: true
+    },
     withPagination: Boolean,
     pageSize: {
         type: Number,
@@ -252,7 +256,7 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
   <div
     ref="root"
     class="root"
-    :style="{height: containerHeight}"
+    :style="{height: containerHeight, backgroundColor: `var(${backgroundColor})`}"
   >
     <TableUI
       v-bind="tableProps"
@@ -316,9 +320,6 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
     font-size: 16px;
     line-height: 1.44;
     height: 100vh;
-  }
-
-  body {
-    background-color: var(--knime-silver-sand-semi);
+    background-color: var(--knime-porcelain);
   }
 </style>
