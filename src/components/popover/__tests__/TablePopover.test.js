@@ -107,7 +107,9 @@ describe('TablePopover.vue', () => {
                     offsetHeight: 8,
                     offsetWidth: 8,
                     offsetParent: {
-                        clientHeight: 10
+                        clientHeight: 10,
+                        offsetTop: 10,
+                        offsetLeft: 10
                     }
                 },
                 data: 1,
@@ -115,12 +117,12 @@ describe('TablePopover.vue', () => {
             }
         });
         expect(wrapper.vm.displayTop).toBe(false);
-        expect(wrapper.vm.top).toBe(5);
-        expect(wrapper.vm.left).toBe(5);
+        expect(wrapper.vm.top).toBe(15);
+        expect(wrapper.vm.left).toBe(15);
         expect(wrapper.vm.maxHeight).toBe(300);
         expect(wrapper.vm.style).toStrictEqual({
-            top: '5px',
-            left: '5px'
+            top: '15px',
+            left: '15px'
         });
         expect(wrapper.vm.contentStyle).toStrictEqual({
             top: '4px',
@@ -139,7 +141,9 @@ describe('TablePopover.vue', () => {
                     offsetHeight: 8,
                     offsetWidth: 8,
                     offsetParent: {
-                        clientHeight: 10
+                        clientHeight: 10,
+                        offsetTop: 10,
+                        offsetLeft: 10
                     }
                 },
                 data: 1,
@@ -147,12 +151,12 @@ describe('TablePopover.vue', () => {
             }
         });
         expect(wrapper.vm.displayTop).toBe(true);
-        expect(wrapper.vm.top).toBe(10);
-        expect(wrapper.vm.left).toBe(10);
+        expect(wrapper.vm.top).toBe(20);
+        expect(wrapper.vm.left).toBe(20);
         expect(wrapper.vm.maxHeight).toBe(300);
         expect(wrapper.vm.style).toStrictEqual({
-            top: '10px',
-            left: '10px'
+            top: '20px',
+            left: '20px'
         });
         expect(wrapper.vm.contentStyle).toStrictEqual({
             bottom: '8px',

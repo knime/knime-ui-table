@@ -64,6 +64,8 @@ export default {
             type: this.renderer?.type || this.renderer,
             offsetParentHeight: this.target.offsetParent.clientHeight,
             offsetTop: this.target.offsetTop,
+            offsetParentOffsetTop: this.target.offsetParent.offsetTop,
+            offsetParentOffsetLeft: this.target.offsetParent.offsetLeft,
             offsetLeft: this.target.offsetLeft,
             offsetHeight: this.target.offsetHeight,
             offsetWidth: this.target.offsetWidth,
@@ -98,10 +100,10 @@ export default {
             return this.displayTop ? 'bottom' : 'top';
         },
         top() {
-            return this.offsetTop + (this.offsetHeight / 2);
+            return this.offsetTop + (this.offsetHeight / 2) + this.offsetParentOffsetTop;
         },
         left() {
-            return this.offsetLeft + (this.offsetWidth / 2);
+            return this.offsetLeft + (this.offsetWidth / 2) + this.offsetParentOffsetLeft;
         },
         maxHeight() {
             return Math.max(this.displayTop ? this.top : this.offsetParentHeight - this.top, MAX_TOTAL_HEIGHT);
