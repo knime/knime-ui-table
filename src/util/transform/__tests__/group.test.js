@@ -175,6 +175,60 @@ describe('group', () => {
         });
     });
 
+    it('unpacks object representations before grouping', () => {
+        let groupConfig = {
+            filteredData: [
+                { col1: 8, col2: 9 },
+                { col1: 1, col2: 2, col3: { value: 'C', color: '#123456' } },
+                { col1: 1, col2: 2, col3: { value: 'A', color: '#abcdef' } },
+                { col1: 8, col2: 9, col3: null },
+                { col1: 1, col2: 2, col3: 'B' },
+                { col1: 1, col2: 2, col3: 'B' },
+                { col1: 8, col2: 9, col3: { metadata: 'Dummy message' } },
+                { col1: 1, col2: 2, col3: 'A' },
+                { col1: 8, col2: 9, col3: { metadata: 'Another message' } }
+            ],
+            groupColumnKey: 'col3',
+            groupColumn: 'Column 3',
+            filteredIndicies: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        };
+        expect(group(groupConfig)).toStrictEqual({
+            groupedData: [
+                {
+                    data: [
+                        { col1: 1, col2: 2, col3: { value: 'A', color: '#abcdef' } },
+                        { col1: 1, col2: 2, col3: 'A' }
+                    ],
+                    groupInd: 2
+                },
+                {
+                    data: [
+                        { col1: 1, col2: 2, col3: 'B' },
+                        { col1: 1, col2: 2, col3: 'B' }
+                    ],
+                    groupInd: 3
+                },
+                {
+                    data: [
+                        { col1: 1, col2: 2, col3: { value: 'C', color: '#123456' } }
+                    ],
+                    groupInd: 1
+                },
+                {
+                    data: [
+                        { col1: 8, col2: 9 },
+                        { col1: 8, col2: 9, col3: null },
+                        { col1: 8, col2: 9, col3: { metadata: 'Dummy message' } },
+                        { col1: 8, col2: 9, col3: { metadata: 'Another message' } }
+                    ],
+                    groupInd: 0
+                }
+            ],
+            groupedIndicies: [[0, 3, 6, 8], [1], [2, 7], [4, 5]],
+            groupTitles: ['A', 'B', 'C', 'Missing']
+        });
+    });
+
     it('uses fallback group if group column domain contains the value \'Missing\'', () => {
         let groupConfig = {
             filteredData: [

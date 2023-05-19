@@ -189,6 +189,18 @@ describe('filter', () => {
             expect(filteredData).toStrictEqual([params.data[2]]);
             expect(filteredIndicies).toStrictEqual([2]);
         });
+
+        it('filters columns which are present in object representation', () => {
+            const params = getParams();
+            params.filterValues = {
+                col3: 'myFilter'
+            };
+            params.showFilter = true;
+            params.data[2].col3 = { value: 'myFilter', color: '#123456' };
+            const { filteredData, filteredIndicies } = filter(params);
+            expect(filteredData).toStrictEqual([params.data[2]]);
+            expect(filteredIndicies).toStrictEqual([2]);
+        });
     });
 
     it('combines all filters', () => {

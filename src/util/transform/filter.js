@@ -1,7 +1,7 @@
 import { columnTypes } from '@/config/table.config';
 import { tableTimeFilters, checkTimeFilter } from '@/config/time.config';
 import { searchRow, searchCell } from './search';
-import { isEmpty, isMissingValue } from '..';
+import { isEmpty, unpackObjectRepresentation } from '..';
 
 /**
  * Utility function designed to consume an entire data set and output only the rows which match the provided
@@ -82,15 +82,12 @@ export const filter = filterConfig => {
                 let colInd = columnKeys.indexOf(colKey);
                 let columnType = localColumnTypes[colInd];
                 let colFormatter = columnFormatters[colInd];
-                let rowValue = row[colKey];
+                let rowValue = unpackObjectRepresentation(row[colKey]);
                 const formattedRowValue = colFormatter ? colFormatter(rowValue) : rowValue;
-                if ((filterVal === null || filterVal?.includes(null)) && isMissingValue(formattedRowValue)) {
-                    return true;
+                if (filterVal === null) {
+                    return rowValue === null;
                 }
-                if (filterVal === null && !isMissingValue(formattedRowValue)) {
-                    return false;
-                }
-                if (typeof filterVal === 'undefined' || filterVal === null || filterVal.length === 0) {
+                if (typeof filterVal === 'undefined' || (Array.isArray(filterVal) && filterVal.length === 0)) {
                     return true;
                 }
                 if (isEmpty(rowValue)) {

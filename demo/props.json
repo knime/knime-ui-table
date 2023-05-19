@@ -1147,6 +1147,24 @@
       "id": null
     },
     {
+      "lastRun": {
+        "metadata": "Dummy message for Last run",
+        "color": "#32a89e"
+      },
+      "nextScheduledExecution": {
+        "value": null,
+        "color": "#8f726d"
+      },
+      "targetName": {
+        "value": "dark target",
+        "color": "#5f2278"
+      },
+      "user": {
+        "value": "light user",
+        "color": "#c4ffc5"
+      }
+    },
+    {
       "targetName": {
         "metadata": "Another message for User"
       },

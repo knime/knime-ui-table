@@ -1,4 +1,4 @@
-import { isMissingValue, isEmpty } from '..';
+import { isMissingValue, isEmpty, unpackObjectRepresentation } from '..';
 
 const missingValueSymbol = Symbol('Missing');
 
@@ -57,7 +57,7 @@ export const group = groupConfig => {
     let containsMissingGroupFromString = false;
     returnValue.groupedData = filteredData
         .reduce((map, row, rowInd) => {
-            let rowGroup = row[groupColumnKey];
+            let rowGroup = unpackObjectRepresentation(row[groupColumnKey]);
             if (isEmpty(rowGroup) || isMissingValue(rowGroup)) {
                 rowGroup = missingValueSymbol;
             } else if (rowGroup === missingValueSymbol.description) {

@@ -5,9 +5,9 @@ import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
-import { isMissingValue } from '@/util';
+import { isMissingValue, getColor, unpackObjectRepresentation } from '@/util';
+import Cell from './Cell.vue';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -49,7 +49,7 @@ export default {
         FunctionButton,
         OptionsIcon,
         CloseIcon,
-        CircleHelpIcon
+        Cell
     },
     props: {
         /**
@@ -161,18 +161,17 @@ export default {
         onSelect(value) {
             this.$emit('rowSelect', value);
         },
-        onCellClick(event) {
-            if (event?.clickable) {
-                this.$emit('rowInput', {
-                    ...event,
-                    type: 'click',
-                    cell: this.$refs.dataCell[event.colInd],
-                    value: null
-                });
-            }
+        onCellClick(event, colInd, data) {
+            this.$emit('rowInput', {
+                ...event,
+                type: 'click',
+                value: null,
+                colInd,
+                data
+            });
         },
-        onInput(val, ind) {
-            this.$emit('rowInput', { type: 'input', cell: this.$refs.dataCell[ind], value: val });
+        onInput(event) {
+            this.$emit('rowInput', { type: 'input', ...event });
         },
         onSubMenuItemClick(event, clickedItem) {
             this.$emit('rowSubMenuClick', clickedItem);
@@ -183,23 +182,33 @@ export default {
             this.$emit('rowSubMenuExpand', callback);
         },
         isClickable(data, ind) {
-            if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
-                return false;
-            }
-            return true;
+            return this.tableConfig.showPopovers && data && data !== '-' && this.clickableColumns[ind];
         },
         getCellContentSlotName(columnKeys, columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnKeys[columnId]}`;
         },
         getCellTitle(data, ind) {
-            const formattedValue = this.formatters[ind](data);
-            if (this.isMissingValue(formattedValue)) {
-                const missingValueMsg = formattedValue === null ? '' : ` (${formattedValue.metadata})`;
+            if (this.isMissingValue(data)) {
+                const missingValueMsg = data === null ? '' : ` (${data.metadata})`;
                 return `Missing Value${missingValueMsg}`;
             }
-            return this.isClickable(data, ind) ? null : data;
-        }
+            if (this.isClickable(data, ind)) {
+                return null;
+            }
+            const formattedValue = this.getFormattedValue(data, ind);
+            if (typeof formattedValue === 'undefined') {
+                return null;
+            } else {
+                return String(formattedValue);
+            }
+        },
+        getFormattedValue(data, ind) {
+            const formatter = this.formatters[ind];
+            return formatter(unpackObjectRepresentation(data));
+        },
+        unpackObjectRepresentation,
+        getColor
     }
 };
 </script>
@@ -230,34 +239,27 @@ export default {
           @update:model-value="onSelect"
         />
       </td>
-      <td
+      <Cell
         v-for="(data, ind) in row"
-        ref="dataCell"
         :key="ind"
-        :class="[
-          classes[ind],
-          'data-cell',
-          { clickable: isClickable(data, ind)}
-        ]"
-        :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
         :title="getCellTitle(data, ind)"
-        @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
-        @input="(val) => onInput(val, ind)"
+        :clickable="isClickable(data, ind)"
+        :is-missing="isMissingValue(data)"
+        :is-slotted="slottedColumns[ind]"
+        :text="getFormattedValue(data, ind)"
+        :size="(columnSizes[ind] || 100)"
+        :background-color="getColor(data)"
+        :class-generators="classGenerators[ind]"
+        @click="onCellClick($event, ind, data)"
+        @input="onInput"
       >
-        <CircleHelpIcon
-          v-if="isMissingValue(formatters[ind](data))"
-          class="missing-value-icon"
-        />
         <slot
-          v-else-if="slottedColumns[ind]"
           :name="getCellContentSlotName(columnKeys,ind)"
           :row="row"
+          :cell="unpackObjectRepresentation(data)"
           :ind="ind"
         />
-        <span v-else>
-          {{ formatters[ind](data) }}
-        </span>
-      </td>
+      </Cell>
       <td
         v-if="filteredSubMenuItems.length"
         button-title="actions"
@@ -338,54 +340,8 @@ tr.row {
     }
 
     &.data-cell {
-      margin-left: 10px;
-
-      & .missing-value-icon {
-        vertical-align: middle;
-        width: 14px;
-        height: 14px;
-        stroke-width: calc(32px / 14);
-        stroke: var(--theme-color-kudos);
-      }
-    }
-
-    &.action {
-      align-items: center;
-      display: flex;
-      overflow: visible;
-      min-width: 30px;
-
-      & svg {
-        margin: 0 auto;
-        width: 25px;
-        height: 25px;
-        stroke-width: calc(32px / 25);
-        stroke: var(--knime-dove-gray);
-      }
-
-      & :deep(ul) {
-        margin-top: -10px;
-        right: 10px;
-      }
-
-      & :deep(.submenu-toggle) {
-        display: flex;
-        align-self: stretch;
-        align-items: center;
-        height: 40px;
-        width: 30px;
-        border-radius: 0;
-        transition: background-color 0.15s;
-      }
-    }
-
-    &.clickable {
-      cursor: pointer;
-      color: var(--knime-dove-gray);
-
-      &:hover {
-        color: var(--knime-masala);
-      }
+      padding-left: 10px;
+      background-clip: border-box
     }
   }
 

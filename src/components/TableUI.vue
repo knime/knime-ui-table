@@ -11,7 +11,7 @@ import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, DATA_COLUMNS_MARGIN, COMPACT_ROW_HEIGHT,
+import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, COMPACT_ROW_HEIGHT,
     ROW_MARGIN_BOTTOM } from '@/util/constants';
 
 /**
@@ -212,7 +212,7 @@ export default {
             }];
         },
         currentBodyWidth() {
-            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr + DATA_COLUMNS_MARGIN, 0);
+            const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr, 0);
             return (this.tableConfig.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
                 (this.tableConfig.showCollapser ? SPECIAL_COLUMNS_SIZE : 0) +
                 widthContentColumns + (this.tableConfig.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0);

@@ -162,7 +162,7 @@ export default {
         v-if="showSearch && searchActive"
         ref="searchField"
         class="input-control"
-        :value="searchQuery"
+        :model-value="searchQuery"
         :placeholder="'Search'"
         :style="{minWidth: '100px'}"
         @update:model-value="onSearch"

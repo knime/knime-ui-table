@@ -501,7 +501,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toBe(180);
+            expect(wrapper.vm.currentBodyWidth).toBe(160);
         });
 
         it('gets the correct width of the table-body when selection & filtering are disabled', () => {
@@ -510,7 +510,7 @@ describe('TableUI.vue', () => {
             });
 
             wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toBe(120);
+            expect(wrapper.vm.currentBodyWidth).toBe(100);
         });
     });
 

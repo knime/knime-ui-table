@@ -115,7 +115,8 @@ tr {
     text-align: left;
 
     &.filter {
-      margin: auto 0 auto 10px;
+      margin: auto 0;
+      padding-left: 10px
     }
 
     &.collapser-cell-spacer {

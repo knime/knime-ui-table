@@ -1,0 +1,126 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { mount, shallowMount } from '@vue/test-utils';
+
+import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
+import Cell from '../Cell.vue';
+import { CellProps } from '../CellProps';
+
+describe('Cell.vue', () => {
+    let props: CellProps;
+
+    beforeEach(() => {
+        props = {
+            text: 'Text',
+            title: 'Title',
+            isMissing: false,
+            clickable: false,
+            isSlotted: false,
+            size: 300,
+            backgroundColor: null
+        };
+    });
+
+    it('renders', () => {
+        const wrapper = mount(Cell, { props });
+        expect(wrapper.attributes('title')).toBe('Title');
+        expect(wrapper.text()).toBe('Text');
+        expect(wrapper.attributes('style')).toContain('width: calc(300px);');
+    });
+
+    it('renders slot if isSlotted is true', () => {
+        const slots = { default: '<h3>This is a Slot!</h3>' };
+        const wrapper = mount(Cell, { props, slots });
+        expect(wrapper.text()).toBe('Text');
+        props.isSlotted = true;
+        const slottedWrapper = mount(Cell, { props, slots });
+        expect(slottedWrapper.text()).toBe('This is a Slot!');
+    });
+
+    it('renders CircleHelpIcon if missing', () => {
+        props.isMissing = true;
+        const wrapper = mount(Cell, { props });
+        expect(wrapper.findComponent(CircleHelpIcon).exists()).toBeTruthy();
+        expect(wrapper.text()).toBe('');
+    });
+
+    it('emits event on input', () => {
+        const wrapper = mount(Cell, { props });
+        
+        wrapper.find('td').trigger('input');
+        // @ts-ignore
+        expect(wrapper.emitted().input[0][0]).toStrictEqual({ cell: wrapper.element, value: expect.anything() });
+    });
+
+    describe('onClick', () => {
+        it('does not emit click event if not clickable', () => {
+            props.clickable = false;
+            const wrapper = mount(Cell, { props });
+            wrapper.find('td').trigger('click');
+            expect(wrapper.emitted().click).toBeUndefined();
+        });
+
+        it('emits click event if clickable', () => {
+            props.clickable = true;
+            const wrapper = mount(Cell, { props });
+            expect(wrapper.classes()).toContain('clickable');
+            
+            wrapper.find('td').trigger('click');
+            // @ts-ignore
+            expect(wrapper.emitted().click[0][0]).toStrictEqual({ cell: wrapper.element, event: expect.anything() });
+        });
+    });
+
+    describe('coloring', () => {
+        it('does not set any additional color styles if no background color is given', () => {
+            props.backgroundColor = null;
+            const wrapper = mount(Cell, { props });
+            expect(wrapper.attributes('style')).not.toContain('color');
+        });
+
+        it('sets background color and black color for dark given background color', () => {
+            props.backgroundColor = '#123456';
+            const wrapper = mount(Cell, { props });
+            expect(wrapper.attributes('style')).toContain('background-color: rgb(18, 52, 86);');
+            expect(wrapper.attributes('style')).toContain('color: white;');
+        });
+
+        it('sets background color and black color for light given background color', () => {
+            props.backgroundColor = '#abcdef';
+            const wrapper = mount(Cell, { props });
+            expect(wrapper.attributes('style')).toContain('background-color: rgb(171, 205, 239);');
+            expect(wrapper.attributes('style')).toContain('color: black;');
+        });
+    });
+    
+    describe('classes and styles', () => {
+        it('applies object map class generators to the data', () => {
+            const classMap = {
+                data1: 'width-1',
+                data2: 'width-2',
+                data3: 'width-3',
+                data4: 'width-4',
+                data5: 'width-5'
+            };
+            props.text = 'data3';
+            props.classGenerators = [classMap];
+            const wrapper = shallowMount(Cell, { props });
+            expect(wrapper.element.classList.contains('width-1')).toBeFalsy();
+            expect(wrapper.element.classList.contains('width-3')).toBeTruthy();
+        });
+
+        it('applies function class generators to the data', () => {
+            const classFunction = (data: string) => `width-${data.slice(-1)}`;
+            props.text = 'data3';
+            props.classGenerators = [classFunction];
+            const wrapper = shallowMount(Cell, { props });
+            expect(wrapper.element.classList.contains('width-1')).toBeFalsy();
+            expect(wrapper.element.classList.contains('width-3')).toBeTruthy();
+        });
+
+        it('uses custom classes', () => {
+            props.classGenerators = ['width-3'];
+            const wrapper = shallowMount(Cell, { props });
+            expect(wrapper.element.classList.contains('width-3')).toBeTruthy();
+        });
+    });
+});

@@ -345,7 +345,7 @@ thead {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        margin-left: 10px;
+        padding-left: 10px;
 
         & .column-header-content {
           display: flex;

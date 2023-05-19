@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
 import Row from '../Row.vue';
+import Cell from '../Cell.vue';
 import CollapserToggle from '@/components/ui/CollapserToggle.vue';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
@@ -45,14 +46,14 @@ describe('Row.vue', () => {
         it('displays empty "tr" element if no data provided', () => {
             wrapper = shallowMount(Row);
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.findComponent(CollapserToggle).exists()).toBe(false);
-            expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
-            expect(wrapper.findComponent(Checkbox).exists()).toBe(false);
-            expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
-            expect(wrapper.findComponent(OptionsIcon).exists()).toBe(false);
-            expect(wrapper.findComponent(CloseIcon).exists()).toBe(false);
-            expect(wrapper.find('td.data-cell').exists()).toBe(false);
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findComponent(CollapserToggle).exists()).toBeFalsy();
+            expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
+            expect(wrapper.findComponent(Checkbox).exists()).toBeFalsy();
+            expect(wrapper.findComponent(FunctionButton).exists()).toBeFalsy();
+            expect(wrapper.findComponent(OptionsIcon).exists()).toBeFalsy();
+            expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
+            expect(wrapper.find('td.data-cell').exists()).toBeFalsy();
             expect(wrapper.find('tr td').text()).toBe('-');
         });
 
@@ -60,14 +61,14 @@ describe('Row.vue', () => {
             wrapper = shallowMount(Row, {
                 props
             });
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.findComponent(CollapserToggle).exists()).toBe(false);
-            expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
-            expect(wrapper.findComponent(Checkbox).exists()).toBe(true);
-            expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
-            expect(wrapper.findComponent(OptionsIcon).exists()).toBe(true);
-            expect(wrapper.findComponent(CloseIcon).exists()).toBe(false);
-            expect(wrapper.find('td.data-cell').exists()).toBe(true);
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findComponent(CollapserToggle).exists()).toBeFalsy();
+            expect(wrapper.findComponent(SubMenu).exists()).toBeTruthy();
+            expect(wrapper.findComponent(Checkbox).exists()).toBeTruthy();
+            expect(wrapper.findComponent(FunctionButton).exists()).toBeFalsy();
+            expect(wrapper.findComponent(OptionsIcon).exists()).toBeTruthy();
+            expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
+            expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
         });
 
         it('shows the collapser toggle via prop', () => {
@@ -81,8 +82,8 @@ describe('Row.vue', () => {
                 }
             });
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.findComponent(CollapserToggle).exists()).toBe(true);
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findComponent(CollapserToggle).exists()).toBeTruthy();
         });
 
         it('hides the checkbox via prop', () => {
@@ -96,8 +97,8 @@ describe('Row.vue', () => {
                 }
             });
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.findComponent(Checkbox).exists()).toBe(false);
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findComponent(Checkbox).exists()).toBeFalsy();
         });
 
         it('hides the submenu if no items are provided', () => {
@@ -111,8 +112,8 @@ describe('Row.vue', () => {
                 }
             });
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
         });
 
         it('hides submenu items if hideOn function is given', () => {
@@ -174,8 +175,8 @@ describe('Row.vue', () => {
                 }
             });
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.vm.$refs.dataCell[2].innerHTML).toBe('<iframe> Custom content </iframe>');
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findAllComponents(Cell)[2].element.innerHTML).toBe('<iframe> Custom content </iframe>');
         });
 
         it('provides column data to the slotted column', () => {
@@ -185,34 +186,67 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 props,
                 slots: {
-                    'cellContent-col2': props => `<div>${props.row}</div>`
+                    'cellContent-col2': props => `{cell:${props.cell},row:${props.row}}`
                 }
             });
 
-            expect(wrapper.findComponent(Row).exists()).toBe(true);
-            expect(wrapper.vm.$refs.dataCell[2].innerHTML).toContain('data3');
+            expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+            expect(wrapper.findAllComponents(Cell)[2].text()).toBe('{cell:data3,row:data1,data2,data3,data4,data5}');
         });
 
-        it('uses formatters for rendering', () => {
-            let props = getUpdatedProps('formatter', [
-                val => val.toUpperCase(),
-                val => val.value,
-                val => typeof val,
-                val => val || '-',
-                val => val % 33
-            ]);
-            wrapper = mount(Row, {
-                props: {
-                    ...props,
-                    row: ['val', { value: 'val' }, [null], false, 100]
-                }
+        describe('formatters', () => {
+            it('uses formatters for rendering', () => {
+                let props = getUpdatedProps('formatter', [
+                    val => val.toUpperCase(),
+                    val => val.val,
+                    val => typeof val,
+                    val => val || '-',
+                    val => val % 33
+                ]);
+                wrapper = mount(Row, {
+                    props: {
+                        ...props,
+                        row: ['val', { val: 'val' }, [null], false, 100]
+                    }
+                });
+                let cells = wrapper.findAllComponents(Cell);
+                expect(cells[0].text()).toBe('VAL');
+                expect(cells[1].text()).toBe('val');
+                expect(cells[2].text()).toBe('object');
+                expect(cells[3].text()).toBe('-');
+                expect(cells[4].text()).toBe('1');
             });
-            let cells = wrapper.vm.$refs.dataCell;
-            expect(cells[0].innerHTML).toContain('VAL');
-            expect(cells[1].innerHTML).toContain('val');
-            expect(cells[2].innerHTML).toContain('object');
-            expect(cells[3].innerHTML).toContain('-');
-            expect(cells[4].innerHTML).toContain('1');
+    
+            it('unpacks and formats values with object representation', () => {
+                let props = getUpdatedProps('formatter', [
+                    val => val.toUpperCase(),
+                    val => val.val,
+                    val => typeof val,
+                    val => val || '-',
+                    val => val % 33
+                ]);
+                wrapper = mount(Row, {
+                    props: {
+                        ...props,
+                        row: [{ value: 'val' }, { value: { val: 'val' } }, { color: '#123456' }, false, 100]
+                    }
+                });
+                let cells = wrapper.findAllComponents(Cell);
+                expect(cells[0].text()).toBe('VAL');
+                expect(cells[1].text()).toBe('val');
+                expect(cells[2].text()).toBe('undefined');
+                expect(cells[3].text()).toBe('-');
+                expect(cells[4].text()).toBe('1');
+            });
+        });
+
+        it('provides color to the cells', () => {
+            const propsWithColoredRows = { ...props, row: [{ value: 'Text', color: '#123456' }, ...props.row.slice(1)] };
+            const wrapper = mount(Row, { props: propsWithColoredRows });
+            const firstCell = wrapper.findComponent(Cell);
+            expect(firstCell.text()).toBe('Text');
+            expect(firstCell.attributes('style')).toContain('background-color: rgb(18, 52, 86);');
+            expect(firstCell.attributes('style')).toContain('color: white;');
         });
 
         it('conditionally renders expandable row content', async () => {
@@ -225,9 +259,9 @@ describe('Row.vue', () => {
                     }
                 }
             });
-            expect(wrapper.find('.expandable-content').exists()).toBe(false);
+            expect(wrapper.find('.expandable-content').exists()).toBeFalsy();
             await wrapper.setData({ showContent: true });
-            expect(wrapper.find('.expandable-content').exists()).toBe(true);
+            expect(wrapper.find('.expandable-content').exists()).toBeTruthy();
         });
 
         it('renders the correct title', () => {
@@ -254,14 +288,14 @@ describe('Row.vue', () => {
             expect(wrapper.findComponent(Row).emitted().rowSelect).toBeFalsy();
             wrapper.findComponent(Checkbox).vm.$emit('update:model-value', true);
             expect(wrapper.findComponent(Row).emitted().rowSelect).toBeTruthy();
-            expect(wrapper.findComponent(Row).emitted().rowSelect[0][0]).toBe(true);
+            expect(wrapper.findComponent(Row).emitted().rowSelect[0][0]).toBeTruthy();
         });
 
         it('emits a rowInput event when a cell is clicked if popover column', () => {
             let props = getUpdatedProps('popoverRenderer', [
                 true, false, false, false, false
             ]);
-            wrapper = shallowMount(Row, {
+            wrapper = mount(Row, {
                 props
             });
             let event = new MouseEvent('click');
@@ -271,16 +305,15 @@ describe('Row.vue', () => {
             expect(wrapper.findComponent(Row).emitted().rowInput).toBeTruthy();
             expect(wrapper.findComponent(Row).emitted().rowInput[0][0]).toStrictEqual({
                 ...clickEvent,
-                clickable: true,
                 event: expect.anything(),
-                cell: wrapper.vm.$refs.dataCell[0],
+                cell: wrapper.findComponent(Cell).element,
                 type: 'click',
                 value: null
             });
         });
 
         it('does not emit a rowInput event when a cell is clicked if not popover column', () => {
-            wrapper = shallowMount(Row, {
+            wrapper = mount(Row, {
                 props
             });
             let event = new MouseEvent('click');
@@ -291,7 +324,7 @@ describe('Row.vue', () => {
         });
 
         it('emits a rowInput event when a there is input in a cell', () => {
-            wrapper = shallowMount(Row, {
+            wrapper = mount(Row, {
                 props
             });
             expect(wrapper.findComponent(Row).emitted().rowInput).toBeFalsy();
@@ -309,11 +342,11 @@ describe('Row.vue', () => {
                     }
                 }
             });
-            expect(wrapper.vm.showContent).toBe(false);
+            expect(wrapper.vm.showContent).toBeFalsy();
             wrapper.findComponent(CollapserToggle).vm.$emit('collapserExpand');
             await wrapper.vm.$nextTick();
             expect(wrapper.vm.showContent).toBe(true);
-            expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
+            expect(wrapper.findComponent(CloseIcon).exists()).toBeTruthy();
             await wrapper.vm.$nextTick();
             expect(wrapper.emitted().rowExpand).toBeTruthy();
             expect(wrapper.emitted().rowExpand[0][0]).toBe(false);
@@ -332,75 +365,6 @@ describe('Row.vue', () => {
             );
             expect(wrapper.emitted().rowSubMenuClick).toBeTruthy();
             expect(wrapper.emitted().rowSubMenuClick[0][0]).toBe(props.tableConfig.subMenuItems[0]);
-        });
-    });
-
-    describe('classes and styles', () => {
-        it('applies object map class generators to the data', () => {
-            let classMap = {
-                data1: 'width-1',
-                data2: 'width-2',
-                data3: 'width-3',
-                data4: 'width-4',
-                data5: 'width-5'
-            };
-            let props = getUpdatedProps('classGenerator', [
-                [classMap],
-                [classMap],
-                [classMap],
-                [classMap],
-                [classMap]
-            ]);
-            wrapper = shallowMount(Row, { props });
-
-            expect(wrapper.vm.classes).toStrictEqual([
-                ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
-            ]);
-            let cells = wrapper.vm.$refs.dataCell;
-            expect(cells[0].classList.contains('width-1')).toBeTruthy();
-            expect(cells[1].classList.contains('width-2')).toBeTruthy();
-            expect(cells[2].classList.contains('width-3')).toBeTruthy();
-            expect(cells[3].classList.contains('width-4')).toBeTruthy();
-            expect(cells[4].classList.contains('width-5')).toBeTruthy();
-        });
-
-        it('applies function class generators to the data', () => {
-            let classFunction = data => `width-${data.slice(-1)}`;
-            let props = getUpdatedProps('classGenerator', [
-                [classFunction],
-                [classFunction],
-                [classFunction],
-                [classFunction],
-                [classFunction]
-            ]);
-            wrapper = shallowMount(Row, { props });
-
-            expect(wrapper.vm.classes).toStrictEqual([
-                ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
-            ]);
-            let cells = wrapper.vm.$refs.dataCell;
-            expect(cells[0].classList.contains('width-1')).toBeTruthy();
-            expect(cells[1].classList.contains('width-2')).toBeTruthy();
-            expect(cells[2].classList.contains('width-3')).toBeTruthy();
-            expect(cells[3].classList.contains('width-4')).toBeTruthy();
-            expect(cells[4].classList.contains('width-5')).toBeTruthy();
-        });
-
-        it('uses custom classes', () => {
-            let props = getUpdatedProps('classGenerator', [
-                ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
-            ]);
-            wrapper = shallowMount(Row, { props });
-
-            expect(wrapper.vm.classes).toStrictEqual([
-                ['width-1'], ['width-2'], ['width-3'], ['width-4'], ['width-5']
-            ]);
-            let cells = wrapper.vm.$refs.dataCell;
-            expect(cells[0].classList.contains('width-1')).toBeTruthy();
-            expect(cells[1].classList.contains('width-2')).toBeTruthy();
-            expect(cells[2].classList.contains('width-3')).toBeTruthy();
-            expect(cells[3].classList.contains('width-4')).toBeTruthy();
-            expect(cells[4].classList.contains('width-5')).toBeTruthy();
         });
     });
 });

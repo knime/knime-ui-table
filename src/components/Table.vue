@@ -12,7 +12,7 @@ import { filter } from '@/util/transform/filter';
 import { group } from '@/util/transform/group';
 import { sort } from '@/util/transform/sort';
 import { paginate } from '@/util/transform/paginate';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
 import throttle from 'raf-throttle';
 
 /**
@@ -320,7 +320,7 @@ export default {
             const specialColumnsSizeTotal = (this.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0) +
                 (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
                 (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
-            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal;
             const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
 
             const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)

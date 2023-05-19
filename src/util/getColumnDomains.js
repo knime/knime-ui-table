@@ -1,5 +1,5 @@
 import { columnTypes } from '../config/table.config';
-import { isMissingValue } from '.';
+import { unpackObjectRepresentation } from '.';
 
 export default ({ data, formatters, types }) => {
     let domainMap = {};
@@ -14,12 +14,10 @@ export default ({ data, formatters, types }) => {
     });
     data.forEach(row => {
         nominalColumns.forEach(col => {
-            let cellValue = formatters?.[col]?.(row[col]) || row[col];
-            if (isMissingValue(cellValue)) {
-                cellValue = null;
-            }
-            if (!domainMap[col].includes(cellValue)) {
-                domainMap[col].push(cellValue);
+            const cellValue = unpackObjectRepresentation(row[col]);
+            const formattedCellValue = formatters?.[col]?.(cellValue) || cellValue;
+            if (!domainMap[col].includes(formattedCellValue)) {
+                domainMap[col].push(formattedCellValue);
             }
         });
     });

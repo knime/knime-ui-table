@@ -5,7 +5,7 @@ import Table from '../Table.vue';
 import TableUI from '../TableUI.vue';
 
 import { columnTypes } from '@/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
 
 vi.mock('raf-throttle', () => ({
     default(func) {
@@ -513,7 +513,7 @@ describe('Table.vue', () => {
                 } else {
                     const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
                         (showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
-                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal - nColumns * DATA_COLUMNS_MARGIN;
+                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal;
                     const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
                     currentColumnSizes = Array(nColumns).fill(defaultColumnSize);
                 }

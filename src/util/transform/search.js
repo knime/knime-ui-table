@@ -1,4 +1,5 @@
 import { columnTypes } from '@/config/table.config';
+import { unpackObjectRepresentation } from '..';
 
 /**
  * Utility function to search a single cell. Formatters are required for the following table data types:
@@ -55,4 +56,4 @@ export const searchCell = (field, type, formatter, query) => {
  * @returns {Boolean} - if the query has been matched with an item in the row.
  */
 export const searchRow = (row, types, formatters, query) => row
-    .some((data, colInd) => searchCell(data, types[colInd], formatters[colInd], query));
+    .some((data, colInd) => searchCell(unpackObjectRepresentation(data), types[colInd], formatters[colInd], query));

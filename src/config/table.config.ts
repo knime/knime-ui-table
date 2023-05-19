@@ -1,5 +1,4 @@
 import { months } from './time.config';
-import { isMissingValue } from '../util';
 import type { FilterComponent } from '@/types/FilterConfig';
 
 export const defaultPageSize = 10;
@@ -84,4 +83,4 @@ export const valueTypeFormatters = {
 
 export const typeFormatters = (
     type: keyof typeof valueTypeFormatters
-) => (val: any) => isMissingValue(val) ? val : valueTypeFormatters[type](val);
+) => (val: any) => valueTypeFormatters[type](val);
