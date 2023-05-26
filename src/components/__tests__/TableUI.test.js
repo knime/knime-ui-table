@@ -38,6 +38,7 @@ const getProps = ({
     showColumnFilters = true,
     showBottomControls = true,
     enableVirtualScrolling = false,
+    showTopControls = true,
     rowHeight = null,
     actionButtonConfig = null,
     columnFilterInitiallyActive = null,
@@ -115,6 +116,7 @@ const getProps = ({
             currentTimeFilter: ''
         },
         enableVirtualScrolling,
+        showTopControls,
         subMenuItems: [],
         columnSelectionConfig: {
             possibleColumns: ['a', 'b'],
@@ -141,6 +143,7 @@ describe('TableUI.vue', () => {
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
+        showTopControls = true,
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
@@ -172,6 +175,7 @@ describe('TableUI.vue', () => {
             showColumnFilters,
             showBottomControls,
             enableVirtualScrolling,
+            showTopControls,
             rowHeight,
             actionButtonConfig,
             columnFilterInitiallyActive,
@@ -249,6 +253,18 @@ describe('TableUI.vue', () => {
             expect(wrapper.findComponent(TableUI).exists()).toBe(true);
             expect(wrapper.findComponent(BottomControls).exists()).toBe(false);
             expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+        });
+
+        it('hides TopControls when showTopControls is false', () => {
+            const { wrapper } = doMount({ showTopControls: false });
+
+            expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
+        });
+
+        it('shows TopControls when showTopControls is true', () => {
+            const { wrapper } = doMount({ showTopControls: true });
+
+            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
         });
     });
 

@@ -276,6 +276,9 @@ export default {
         showVirtualScroller() {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
+        showTopControls() {
+            return this.tableConfig.showTopControls;
+        },
         topDataLength() {
             if (this.data === null || this.data.length === 0) {
                 return 0;
@@ -590,7 +593,7 @@ export default {
 <template>
   <table ref="wrapper">
     <TopControls
-      v-if="tableConfig.pageConfig !== false"
+      v-if="showTopControls"
       :table-config="tableConfig"
       :column-headers="columnHeaders"
       @next-page="onPageChange(1)"
