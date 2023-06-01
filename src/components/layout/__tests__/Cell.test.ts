@@ -74,21 +74,16 @@ describe('Cell.vue', () => {
         it('does not set any additional color styles if no background color is given', () => {
             props.backgroundColor = null;
             const wrapper = mount(Cell, { props });
-            expect(wrapper.attributes('style')).not.toContain('color');
+            expect(wrapper.classes()).not.toContain('colored-cell');
+            expect(wrapper.attributes('style')).not.toContain('--cell-background-color');
         });
 
-        it('sets background color and black color for dark given background color', () => {
-            props.backgroundColor = '#123456';
-            const wrapper = mount(Cell, { props });
-            expect(wrapper.attributes('style')).toContain('background-color: rgb(18, 52, 86);');
-            expect(wrapper.attributes('style')).toContain('color: white;');
-        });
-
-        it('sets background color and black color for light given background color', () => {
+        it('sets background color and check for additional padding', () => {
             props.backgroundColor = '#abcdef';
             const wrapper = mount(Cell, { props });
-            expect(wrapper.attributes('style')).toContain('background-color: rgb(171, 205, 239);');
-            expect(wrapper.attributes('style')).toContain('color: black;');
+            expect(wrapper.classes()).toContain('colored-cell');
+            expect(wrapper.attributes('style')).toContain('--cell-background-color: #abcdef');
+            expect(wrapper.attributes('style')).toContain('padding-left: 20px');
         });
     });
     

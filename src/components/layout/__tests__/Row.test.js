@@ -245,8 +245,7 @@ describe('Row.vue', () => {
             const wrapper = mount(Row, { props: propsWithColoredRows });
             const firstCell = wrapper.findComponent(Cell);
             expect(firstCell.text()).toBe('Text');
-            expect(firstCell.attributes('style')).toContain('background-color: rgb(18, 52, 86);');
-            expect(firstCell.attributes('style')).toContain('color: white;');
+            expect(firstCell.attributes('style')).toContain('--cell-background-color: #123456');
         });
 
         it('conditionally renders expandable row content', async () => {

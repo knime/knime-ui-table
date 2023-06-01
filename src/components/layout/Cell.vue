@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
-import { isBright } from '@/util/color';
 import type { CellProps } from './CellProps';
 
 const emit = defineEmits(['click', 'input']);
@@ -13,8 +12,8 @@ const colorStyle = computed(
         return backgroundColor === null
             ? {}
             : {
-                backgroundColor,
-                '--data-cell-color': isBright(backgroundColor) ? 'black' : 'white'
+                '--cell-background-color': backgroundColor,
+                'padding-left': '20px'
             };
     }
 );
@@ -41,7 +40,7 @@ const classes = computed(() => {
     :class="[
       classes,
       'data-cell',
-      { clickable }
+      { clickable, 'colored-cell': backgroundColor }
     ]"
     :style="{ width: `calc(${size || 100}px)`, ...colorStyle }"
     :title="title === null ? undefined : title"
@@ -68,6 +67,13 @@ const classes = computed(() => {
 <style lang="postcss" scoped>
 & td {
     color: var(--data-cell-color);
+
+    &.colored-cell {
+      background-size: 4px;
+      background-repeat: no-repeat;
+      background-position: 10px 0;
+      background-image: linear-gradient(90deg, var(--cell-background-color), var(--cell-background-color));
+    }
 
     & .missing-value-icon {
       vertical-align: middle;
