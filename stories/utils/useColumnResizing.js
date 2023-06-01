@@ -1,7 +1,7 @@
 import { ref, unref, computed, onMounted } from 'vue';
 
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE, DATA_COLUMNS_MARGIN } from '@/util/constants';
+import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
 
 export default ({
     currentColumnIndices,
@@ -64,7 +64,7 @@ export default ({
         const specialColumnsSizeTotal = (unref(withColumnFilters) ? SPECIAL_COLUMNS_SIZE : 0) +
             (unref(withSelection) ? SPECIAL_COLUMNS_SIZE : 0) +
             (unref(showCollapser) ? SPECIAL_COLUMNS_SIZE : 0);
-        const dataColumnsSizeTotal = clientWidth.value - specialColumnsSizeTotal - n * DATA_COLUMNS_MARGIN;
+        const dataColumnsSizeTotal = clientWidth.value - specialColumnsSizeTotal;
         const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / n);
             
         const currentColumnSizes = currentColumnIndices.value.map(

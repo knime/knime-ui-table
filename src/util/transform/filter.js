@@ -87,7 +87,11 @@ export const filter = filterConfig => {
                 if (filterVal === null) {
                     return rowValue === null;
                 }
-                if (typeof filterVal === 'undefined' || (Array.isArray(filterVal) && filterVal.length === 0)) {
+                if (
+                    typeof filterVal === 'undefined' ||
+                    filterVal === '' ||
+                    (Array.isArray(filterVal) && filterVal.length === 0)
+                ) {
                     return true;
                 }
                 if (isEmpty(rowValue)) {

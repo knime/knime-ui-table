@@ -114,6 +114,19 @@ describe('filter', () => {
             expect(filteredIndicies).toStrictEqual([3, 4]);
         });
 
+
+        it('does not exclude any data when nominal filter is empty', () => {
+            let params = getParams();
+            params.filterValues = {
+                col2: '',
+                col3: ''
+            };
+            params.data.push({ col1: 1, col2: undefined, col3: null });
+            params.showFilter = true;
+            let { filteredData } = filter(params);
+            expect(filteredData).toHaveLength(params.data.length);
+        });
+
         it('filters DateTime data when provided filter', () => {
             let currentMonth = '2020-11-11T10:07:30.477Z';
             let lastMonth = '2020-10-10T10:07:30.477Z';

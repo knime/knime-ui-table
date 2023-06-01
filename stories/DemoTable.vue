@@ -51,7 +51,6 @@ const props = defineProps({
     showPopovers: Boolean,
     compactMode: Boolean,
     enableVirtualScrolling: Boolean,
-    fitToContainer: Boolean,
     fixHeader: Boolean,
     containerHeight: {
         type: String,
@@ -229,7 +228,6 @@ const tableConfig = reactive({
     subMenuItems: props.showSubMenus ? props.subMenuItems : [],
     groupSubMenuItems: props.showGroupSubMenus ? props.groupSubMenuItems : [],
     enableVirtualScrolling: props.enableVirtualScrolling,
-    fitToContainer: props.fitToContainer,
     groupByConfig,
     timeFilterConfig,
     searchConfig,

@@ -134,12 +134,6 @@ export default {
                 category: 'Body'
             }
         },
-        fitToContainer: {
-            name: 'Fit to container',
-            table: {
-                category: 'Body'
-            }
-        },
         containerHeight: {
             name: 'Height of container',
             table: {
@@ -258,7 +252,6 @@ Hub.args = {
     compactMode: false,
     backgroundColor: '--knime-porcelain',
     enableVirtualScrolling: false,
-    fitToContainer: false,
     fixHeader: false,
     actionButtonText: 'action',
     showGroupSubMenus: true,
@@ -322,7 +315,6 @@ TableView.args = {
     showPopovers: false,
     compactMode: false,
     enableVirtualScrolling: true,
-    fitToContainer: true,
     containerHeight: '100%',
     backgroundColor: '--knime-porcelain',
     fixHeader: true,
