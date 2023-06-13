@@ -150,6 +150,7 @@ export default {
             // the index of the column that is currently being resized and for which a border should be shown
             showBorderColumnIndex: null,
             lastScrollIndex: 0,
+            lastScrollIndex2: 0,
             newVal: null,
             scrollerKey: 0,
             resizeCount: 0,
@@ -160,7 +161,9 @@ export default {
             // used for temporarily hiding the vertical scrollbar while changing column sizes to avoid flickering
             hideVerticalScrollbar: false,
             closeExpandedSubMenu: () => {},
-            scrollerId: 'scroller'
+            scrollerId: 'scroller',
+            nRA: this.numRowsAbove,
+            nrB: 10
         };
     },
     computed: {
@@ -233,16 +236,28 @@ export default {
             if (this.data === null) {
                 return [];
             }
-            const data = this.data?.map(groupData => groupData.map(
-                (rowData, index) => ({
-                    id: (index + this.numRowsAbove).toString(),
-                    data: rowData,
-                    size: this.scrollerItemSize,
-                    index,
-                    scrollIndex: index + this.numRowsAbove,
+            const data = this.data?.map(groupData => [
+                ...Array.from({ length: this.nRA }, (_v, i) => ({
+                    id: i.toString(),
+                    data: { user: i },
+                    size: this.scrollerItemSize + (i % 10),
+                    index: i,
+                    scrollIndex: i,
                     isTop: true
-                })
-            ));
+                })),
+                ...groupData.map(
+                    (rowData, index) => ({
+                        id: (index + this.nRA).toString(),
+                        data: rowData,
+                        size: this.scrollerItemSize,
+                        index,
+                        scrollIndex: index + this.nRA,
+                        isTop: true
+                    })
+                )
+            ]);
+
+            console.log(this.lastScrollIndex2, 'new data');
             if (this.enableVirtualScrolling) {
                 if (this.bottomData.length > 0) {
                     let hasPlaceholder = this.topDataLength > 0;
@@ -250,7 +265,7 @@ export default {
                         data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
                     }
                     this.bottomData.forEach((rowData, index) => {
-                        const scrollIndex = index + this.numRowsAbove + this.topDataLength + (hasPlaceholder ? 1 : 0);
+                        const scrollIndex = index + this.nRA + this.topDataLength + (hasPlaceholder ? 1 : 0);
                         data[0].push({
                             id: scrollIndex.toString(),
                             data: rowData,
@@ -264,7 +279,7 @@ export default {
             }
             this.currentExpanded.forEach((scrollIndex) => {
                 const contentHeight = this.getContentHeight(scrollIndex);
-                data[0][scrollIndex - this.numRowsAbove].size += contentHeight;
+                data[0][scrollIndex - this.nRA].size += contentHeight;
             });
             return data;
         },
@@ -312,6 +327,10 @@ export default {
         onScroll(startIndex, endIndex) {
             if (this.lastScrollIndex === endIndex) {
                 return;
+            }
+            if (startIndex > this.lastScrollIndex2 + 300) {
+                console.log('refresh');
+                this.lastScrollIndex2 = startIndex;
             }
             const direction = this.lastScrollIndex < endIndex ? 1 : -1;
             this.lastScrollIndex = endIndex;
@@ -524,8 +543,8 @@ export default {
         #default="{ item }"
         :style="{ width: `${currentBodyWidth}px`}"
         :items="scrollData[0]"
-        :num-items-above="numRowsAbove"
-        :num-items-below="numRowsBelow"
+        :num-items-above="0"
+        :num-items-below="0"
         :empty-item="{
           data: [],
           size: scrollerItemSize,
