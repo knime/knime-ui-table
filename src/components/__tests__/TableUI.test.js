@@ -1,3 +1,4 @@
+/* eslint-disable vitest/max-nested-describe */
 /* eslint-disable max-lines */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
@@ -140,7 +141,7 @@ describe('TableUI.vue', () => {
         shallow = true,
         wrapperHeight = 1000,
         bottomData = []
-    } = {}) => {
+    } = {}, stubs = {}) => {
         const props = getProps({
             includeSubHeaders,
             compactMode,
@@ -162,7 +163,7 @@ describe('TableUI.vue', () => {
 
         bodySizeEvent.push({ contentRect: { height: wrapperHeight } });
 
-        const wrapper = mount(TableUI, { props, shallow });
+        const wrapper = mount(TableUI, { props, shallow, global: { stubs } });
 
         return { wrapper, props };
     };
@@ -413,6 +414,142 @@ describe('TableUI.vue', () => {
                     [[{ cell: true, rowInd: 0, groupInd: 0, id, isTop: true }]]
                 );
             });
+
+            describe('watches row config', () => {
+                it('updates row height if row height was changed in parent', async () => {
+                    const { wrapper } = doMount();
+                    const resetRowHeightSpy = vi.spyOn(wrapper.vm, 'resetRowHeight');
+                    const props = wrapper.vm.$props;
+                    wrapper.setProps({
+                        dataConfig: {
+                            ...props.dataConfig,
+                            rowConfig: {
+                                ...props.dataConfig.rowConfig,
+                                rowHeight: 999
+                            }
+                        }
+                    });
+                    await wrapper.vm.$nextTick();
+                    expect(resetRowHeightSpy).toHaveBeenCalled();
+                });
+
+                it('updates row height if compact mode was changed in parent', async () => {
+                    const { wrapper } = doMount();
+                    const resetRowHeightSpy = vi.spyOn(wrapper.vm, 'resetRowHeight');
+                    const props = wrapper.vm.$props;
+                    wrapper.setProps({
+                        dataConfig: {
+                            ...props.dataConfig,
+                            rowConfig: {
+                                ...props.dataConfig.rowConfig,
+                                compactMode: !props.dataConfig.rowConfig.compactMode
+                            }
+                        }
+                    });
+                    await wrapper.vm.$nextTick();
+                    expect(resetRowHeightSpy).toHaveBeenCalled();
+                });
+            });
+            
+            describe('row resize with virtual scrolling disabled', () => {
+                it('does not emit row resize event if virtual scrolling is disabled', () => {
+                    const { wrapper } = doMount();
+                    const resizeRowSpy = vi.spyOn(wrapper.vm, 'onResizeRow');
+                    const row = wrapper.findComponent(Row);
+                    expect(row.exists()).toBeTruthy();
+                    row.vm.$emit('resizeRow', 123);
+                    expect(resizeRowSpy).not.toHaveBeenCalled();
+                });
+
+                it('handles resize all rows event', () => {
+                    const { wrapper } = doMount();
+                    const row = wrapper.findComponent(Row);
+                    const scrollIntoViewSpy = vi.fn();
+                    row.vm.$el.scrollIntoView = scrollIntoViewSpy;
+                    row.vm.$emit('resizeAllRows', 123, row.vm.$el);
+                    expect(wrapper.vm.currentRowSizeDelta).toBe(0);
+                    expect(wrapper.vm.currentRowHeight).toBe(123);
+                    expect(scrollIntoViewSpy).toHaveBeenCalled();
+                });
+            });
+
+            describe('row resize with virtual scrolling enabled', () => {
+                const fillRecycleScroller = async (wrapper) => {
+                    const scroller = wrapper.findComponent(RecycleScroller);
+                    Object.defineProperty(scroller.vm.$el, 'clientHeight', { value: 1000 });
+                    scroller.vm.updateVisibleItems();
+                    await wrapper.vm.$nextTick();
+                };
+
+                it('handles rowResize event for single row', async () => {
+                    const { wrapper } = doMount({
+                        enableVirtualScrolling: true, shallow: false
+                    });
+                    const resizeRowSpy = vi.spyOn(wrapper.vm, 'onResizeRow');
+                    await fillRecycleScroller(wrapper);
+                    const row = wrapper.findComponent(Row);
+                    expect(row.exists()).toBeTruthy();
+                    row.vm.$emit('resizeRow', 123);
+                    expect(resizeRowSpy).toHaveBeenCalledWith(123, 0);
+                });
+
+                it('handles resizeAllRows event', async () => {
+                    const { wrapper } = doMount({
+                        enableVirtualScrolling: true, shallow: false
+                    });
+                    const resizeRowSpy = vi.spyOn(wrapper.vm, 'onResizeAllRows');
+                    await fillRecycleScroller(wrapper);
+                    const row = wrapper.findComponent(Row);
+                    row.vm.$emit('resizeAllRows', 123, row);
+                    expect(resizeRowSpy).toHaveBeenCalled();
+                });
+
+                it('onResizeAllRows updates all row sizes', () => {
+                    vi.useFakeTimers();
+                    const scrollToPosition = vi.fn();
+                    const start = 100;
+                    const stubs = {
+                        RecycleScroller: {
+                            template: '<span/>',
+                            methods: {
+                                getScroll: () => ({
+                                    start
+                                }),
+                                scrollToPosition
+                            }
+                            
+                        }
+                    };
+                    let resizeObserverCallback = () => {};
+                    window.ResizeObserver = vi.fn((callback) => {
+                        resizeObserverCallback = callback;
+                        return {
+                            observe: () => null,
+                            unobserve: () => null,
+                            disconnect: () => null
+                        };
+                    });
+                    const { wrapper } = doMount({
+                        enableVirtualScrolling: true, shallow: false
+                    }, stubs);
+    
+                    const oldSize = 99;
+                    const newSize = 123;
+                    const scrollIndex = 5;
+    
+                    wrapper.vm.resizedRowHeight = oldSize;
+                    wrapper.vm.currentResizedScrollIndex = 5;
+    
+                    wrapper.vm.onResizeAllRows(newSize, null, scrollIndex);
+                    expect(wrapper.vm.currentRowHeight).toBe(newSize);
+                    resizeObserverCallback();
+                    vi.runAllTimers();
+                    expect(wrapper.vm.currentResizedScrollIndex).toBeNull();
+                    const offset = scrollIndex * oldSize - start;
+                    expect(scrollToPosition).toHaveBeenCalledWith(scrollIndex * newSize - offset);
+                    vi.useRealTimers();
+                });
+            });
         });
 
         describe('bottom controls', () => {
@@ -602,7 +739,7 @@ describe('TableUI.vue', () => {
                     scrollIndex: 0,
                     isTop: true
                 },
-                { dots: true, id: 'dots', size: 41 },
+                { dots: true, id: 'dots', scrollIndex: 1, size: 41 },
                 { data: ['foo'], id: '2', index: 0, size: expectedNormalRowHeight, scrollIndex: 2, isTop: false },
                 { data: ['bar'], id: '3', index: 1, size: expectedNormalRowHeight, scrollIndex: 3, isTop: false }
             ]]);

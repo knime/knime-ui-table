@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, vi, it, expect } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
 import Row from '../Row.vue';
@@ -10,6 +10,15 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
+
+vi.mock('raf-throttle', () => ({
+    default(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
 describe('Row.vue', () => {
     let wrapper;
@@ -41,6 +50,7 @@ describe('Row.vue', () => {
         });
         return updatedProps;
     };
+    const rowDragHandleClass = '.row-drag-handle';
 
     const stubbedCell = `<div :width="100">
         <slot 
@@ -207,6 +217,11 @@ describe('Row.vue', () => {
             expect(text).toContain('"row":["data1","data2","data3","data4","data5"]');
             expect(text).toContain('"width":10');
             expect(text).toContain('"height":40');
+        });
+
+        it('displays drag handle for row resizing', () => {
+            wrapper = mount(Row, { props });
+            expect(wrapper.find(rowDragHandleClass).exists()).toBeTruthy();
         });
 
         describe('formatters', () => {
@@ -382,6 +397,79 @@ describe('Row.vue', () => {
             );
             expect(wrapper.emitted().rowSubMenuClick).toBeTruthy();
             expect(wrapper.emitted().rowSubMenuClick[0][0]).toBe(props.tableConfig.subMenuItems[0]);
+        });
+
+        describe('row resize', () => {
+            it('sets rowHeightOnDragStart and activeDrag on pointer down on drag handle', async () => {
+                wrapper = shallowMount(Row, {
+                    props,
+                    global: { stubs: { Cell: { template: stubbedCell } } }
+                });
+                const rowDragHandle = wrapper.find(rowDragHandleClass);
+                rowDragHandle.element.setPointerCapture = (pointerId) => null;
+                wrapper.find(rowDragHandleClass).trigger('pointerdown');
+                await wrapper.vm.$nextTick();
+                expect(wrapper.vm.activeDrag).toBeTruthy();
+                expect(wrapper.vm.rowHeightOnDragStart).toBeDefined();
+            });
+    
+            it('emits resizeRow event on drag handle move', () => {
+                wrapper = shallowMount(Row, {
+                    props,
+                    global: { stubs: { Cell: { template: stubbedCell } } }
+                });
+                const rowDragHandle = wrapper.find(rowDragHandleClass);
+                rowDragHandle.element.setPointerCapture = (pointerId) => null;
+    
+                rowDragHandle.trigger('pointermove');
+                expect(wrapper.emitted().resizeRow).toBeFalsy();
+                rowDragHandle.trigger('pointerdown');
+                expect(wrapper.vm.activeDrag).toBeTruthy();
+                rowDragHandle.trigger('pointermove');
+                expect(wrapper.emitted().resizeRow).toBeTruthy();
+            });
+    
+            it('emits resizeAllRows on pointer up on drag handle', () => {
+                wrapper = shallowMount(Row, {
+                    props,
+                    global: { stubs: { Cell: { template: stubbedCell } } }
+                });
+                const rowDragHandle = wrapper.find(rowDragHandleClass);
+                rowDragHandle.element.setPointerCapture = (pointerId) => null;
+    
+                // no resize event if there was no active drag
+                rowDragHandle.trigger('pointerup');
+                expect(wrapper.emitted().resizeAllRows).toBeFalsy();
+    
+                // resize event if there was active drag
+                rowDragHandle.trigger('pointerdown');
+                rowDragHandle.trigger('pointerup');
+                expect(wrapper.emitted().resizeAllRows).toBeTruthy();
+            });
+    
+            it('stops resizing if pointer is lost during drag', () => {
+                wrapper = shallowMount(Row, {
+                    props,
+                    global: { stubs: { Cell: { template: stubbedCell } } }
+                });
+                const rowDragHandle = wrapper.findAll(rowDragHandleClass).at(0);
+                rowDragHandle.element.setPointerCapture = (pointerId) => null;
+    
+                rowDragHandle.trigger('pointerdown', 0);
+                expect(wrapper.vm.activeDrag).toBeTruthy();
+                rowDragHandle.trigger('lostpointercapture');
+                expect(wrapper.vm.activeDrag).toBeFalsy();
+            });
+    
+            it('watches for row height changes from outside', async () => {
+                wrapper = shallowMount(Row, {
+                    props,
+                    global: { stubs: { Cell: { template: stubbedCell } } }
+                });
+                wrapper.setProps({ rowHeight: 999 });
+                await wrapper.vm.$nextTick();
+                expect(wrapper.find('.row').attributes('style')).contains('height: 999px');
+            });
         });
     });
 });

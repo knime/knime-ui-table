@@ -8,6 +8,7 @@ import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
 import { isMissingValue, getColor, unpackObjectRepresentation } from '@/util';
 import Cell from './Cell.vue';
+import throttle from 'raf-throttle';
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -94,12 +95,30 @@ export default {
         marginBottom: {
             type: Number,
             default: 0
+        },
+        minRowHeight: {
+            type: Number,
+            default: 0
+        },
+        showDragHandle: {
+            type: Boolean,
+            default: true
         }
     },
-    emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
+    emits: [
+        'rowSelect',
+        'rowInput',
+        'rowSubMenuClick',
+        'rowSubMenuExpand',
+        'rowExpand',
+        'resizeAllRows',
+        'resizeRow'
+    ],
     data() {
         return {
-            showContent: false
+            showContent: false,
+            currentRowHeight: this.rowHeight,
+            activeDrag: false
         };
     },
     computed: {
@@ -143,6 +162,13 @@ export default {
                 }
                 return true;
             });
+        }
+    },
+    watch: {
+        rowHeight: {
+            handler(newVal) {
+                this.currentRowHeight = newVal;
+            }
         }
     },
     mounted() {
@@ -208,20 +234,52 @@ export default {
             return formatter(unpackObjectRepresentation(data));
         },
         unpackObjectRepresentation,
-        getColor
+        getColor,
+        onPointerDown(event) {
+            consola.debug('Resize via row drag triggered: ', event);
+            // stop the event from propagating up the DOM tree
+            event.stopPropagation();
+            // capture move events until the pointer is released
+            event.target.setPointerCapture(event.pointerId);
+            this.activeDrag = true;
+            this.rowHeightOnDragStart = this.currentRowHeight;
+        },
+        onPointerUp(event) {
+            if (this.activeDrag) {
+                consola.debug('Resize via row drag ended: ', event);
+                this.activeDrag = false;
+                this.$emit('resizeAllRows', this.currentRowHeight, this.$el);
+            }
+        },
+        onPointerMove: throttle(function (event) {
+            /* eslint-disable no-invalid-this */
+            if (this.activeDrag) {
+                consola.debug('Resize via drag ongoing: ', event);
+                const newRowHeight = event.clientY - this.$el.getBoundingClientRect().top;
+                this.currentRowHeight = Math.max(newRowHeight, this.minRowHeight);
+                this.$emit('resizeRow', this.currentRowHeight - this.rowHeightOnDragStart);
+            }
+            /* eslint-enable no-invalid-this */
+        }),
+        onLostPointerCapture: throttle(function () {
+            // eslint-disable-next-line no-invalid-this
+            this.activeDrag = false;
+        })
     }
 };
 </script>
 
 <template>
-  <span>
+  <div>
     <tr
       v-if="row.length > 0"
       :class="['row', {
         'no-sub-menu': !filteredSubMenuItems.length,
         'compact-mode': rowConfig.compactMode
       }]"
-      :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
+      :style="{height: `${currentRowHeight}px`, marginBottom: `${marginBottom}px`,
+               ...activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' },
+      }"
     >
       <CollapserToggle
         v-if="tableConfig.showCollapser"
@@ -290,6 +348,15 @@ export default {
         -
       </td>
     </tr>
+    <div
+      v-if="showDragHandle"
+      class="row-drag-handle"
+      @pointerdown.passive="onPointerDown($event)"
+      @pointerup.passive="onPointerUp($event)"
+      @pointermove="onPointerMove"
+      @lostpointercapture="onLostPointerCapture"
+      @scroll="onScroll"
+    />
     <tr
       v-if="showContent"
       class="collapser-row"
@@ -304,7 +371,7 @@ export default {
         <slot name="rowCollapserContent" />
       </td>
     </tr>
-  </span>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -313,8 +380,21 @@ tr {
   display: flex;
 }
 
+.row-drag-handle {
+  height: 5px;
+  background-color: var(--knime-dove-gray);
+  opacity: 0;
+  bottom: 5px;
+  margin-bottom: -5px;
+  cursor: row-resize;
+  position: relative;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 tr.row {
-  transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);
 
   &.empty-row {

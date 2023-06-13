@@ -21,4 +21,7 @@ export const HEADER_HEIGHT = DEFAULT_ROW_HEIGHT;
 // the maximum width of the submenu in the header
 export const MAX_SUB_MENU_WIDTH = 160;
 
+// after resizing rows, scroll is temporarily disabled until the resize is complete to prevent jumps
+export const ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY = 100;
+
 export default { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE };

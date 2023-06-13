@@ -12,7 +12,8 @@ import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, COMPACT_ROW_HEIGHT,
-    ROW_MARGIN_BOTTOM } from '@/util/constants';
+    ROW_MARGIN_BOTTOM,
+    ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY } from '@/util/constants';
 
 /**
  * @see README.md
@@ -162,10 +163,21 @@ export default {
             // used for temporarily hiding the vertical scrollbar while changing column sizes to avoid flickering
             hideVerticalScrollbar: false,
             closeExpandedSubMenu: () => {},
-            scrollerId: 'scroller'
+            scrollerId: 'scroller',
+            resizedRowHeight: null,
+            currentResizedScrollIndex: null,
+            currentRowSizeDelta: null
         };
     },
     computed: {
+        currentRowHeight() {
+            return this.resizedRowHeight ?? this.initialRowHeight;
+        },
+        initialRowHeight() {
+            return this.dataConfig.rowConfig.compactMode
+                ? COMPACT_ROW_HEIGHT
+                : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
+        },
         /*
          * Current table config. E.g. if 4/10 columns displayed, 'current' fields return values w/ length 4.
          */
@@ -226,35 +238,44 @@ export default {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
         topDataLength() {
-            if (this.data === null) {
+            if (this.data === null || this.data.length === 0) {
                 return 0;
             }
             return this.data[0].length;
         },
         scrollData() {
-            if (this.data === null) {
+            if (this.data === null || this.data.length === 0) {
                 return [];
             }
             const data = this.data?.map(groupData => groupData.map(
-                (rowData, index) => ({
-                    id: (index + this.numRowsAbove).toString(),
-                    data: rowData,
-                    size: this.scrollerItemSize,
-                    index,
-                    scrollIndex: index + this.numRowsAbove,
-                    isTop: true
-                })
+                (rowData, index) => {
+                    const id = (index + this.numRowsAbove).toString();
+                    return {
+                        id,
+                        data: rowData,
+                        size: this.scrollerItemSize,
+                        index,
+                        scrollIndex: index + this.numRowsAbove,
+                        isTop: true
+                    };
+                }
             ));
             if (this.enableVirtualScrolling) {
                 if (this.bottomData.length > 0) {
                     let hasPlaceholder = this.topDataLength > 0;
                     if (hasPlaceholder) {
-                        data[0].push({ id: 'dots', size: this.scrollerItemSize, dots: true });
+                        data[0].push({
+                            id: 'dots',
+                            size: this.scrollerItemSize,
+                            scrollIndex: this.numRowsAbove + this.topDataLength,
+                            dots: true
+                        });
                     }
                     this.bottomData.forEach((rowData, index) => {
                         const scrollIndex = index + this.numRowsAbove + this.topDataLength + (hasPlaceholder ? 1 : 0);
+                        const id = scrollIndex.toString();
                         data[0].push({
-                            id: scrollIndex.toString(),
+                            id,
                             data: rowData,
                             size: this.scrollerItemSize,
                             index,
@@ -286,7 +307,7 @@ export default {
         scrollerItemSize() {
             // The virtual scroller does not support margins, hence we need to set a different height for the rows
             // instead
-            return this.rowHeight + ROW_MARGIN_BOTTOM;
+            return this.currentRowHeight + ROW_MARGIN_BOTTOM;
         }
     },
     watch: {
@@ -296,6 +317,16 @@ export default {
                     this.onToggleFilter();
                     this.onClearFilter();
                 }
+            }
+        },
+        'dataConfig.rowConfig.compactMode': {
+            handler() {
+                this.resetRowHeight();
+            }
+        },
+        'dataConfig.rowConfig.rowHeight': {
+            handler() {
+                this.resetRowHeight();
             }
         }
     },
@@ -310,9 +341,12 @@ export default {
         refreshScroller() {
             this.scrollerKey++;
         },
+        resetRowHeight() {
+            this.resizedRowHeight = null;
+        },
         // Event handling
         onScroll(startIndex, endIndex) {
-            if (this.lastScrollIndex === endIndex) {
+            if (this.lastScrollIndex === endIndex || this.currentResizedScrollIndex !== null) {
                 return;
             }
             const direction = this.lastScrollIndex < endIndex ? 1 : -1;
@@ -402,6 +436,35 @@ export default {
                     this.currentExpanded = new Set(this.currentExpanded);
                 }
             }
+        },
+        onResizeRow(rowSizeDelta, scrollIndex) {
+            this.currentRowSizeDelta = rowSizeDelta;
+            this.currentResizedScrollIndex = scrollIndex;
+        },
+        onResizeAllRows(currentSize, row, scrollIndex) {
+            this.currentRowSizeDelta = 0;
+            if (this.enableVirtualScrolling) {
+                const previousScrollTop = this.$refs.scroller.getScroll().start;
+                const heightAboveCurrentRow = scrollIndex * this.currentRowHeight;
+                const offset = heightAboveCurrentRow - previousScrollTop;
+                this.resizedRowHeight = currentSize;
+                const scrollPosition = scrollIndex * this.currentRowHeight - offset;
+                this.keepScrollerPositionOnRowResize(scrollPosition);
+            } else {
+                this.resizedRowHeight = currentSize;
+                row.scrollIntoView();
+            }
+        },
+        keepScrollerPositionOnRowResize(scrollPosition) {
+            const resizeObserver = new ResizeObserver(() => {
+                setTimeout(() => {
+                    // scroll was temporarily disabled to avoid sending scroll events during resize
+                    this.currentResizedScrollIndex = null;
+                }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
+                this.$refs.scroller.scrollToPosition(scrollPosition);
+                resizeObserver.disconnect();
+            });
+            resizeObserver.observe(this.$refs.scroller.$refs.wrapper);
         },
         onRowInput(event) {
             consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -530,16 +593,18 @@ export default {
       <RecycleScroller
         v-if="showVirtualScroller"
         :id="scrollerId"
+        ref="scroller"
         :key="scrollerKey"
         #default="{ item }"
-        :style="{ width: `${currentBodyWidth}px`}"
+        :style="{ width: `${currentBodyWidth}px`, overflowY: currentResizedScrollIndex === null ? 'auto' : 'hidden'}"
         :items="scrollData[0]"
         :num-items-above="numRowsAbove"
         :num-items-below="numRowsBelow"
         :empty-item="{
           data: [],
           size: scrollerItemSize,
-          tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false}
+          tableConfig: {showCollapser: false, showSelection: false, subMenuItems: [], showPopovers: false},
+          showDragHandle: false
         }"
         class="scroller"
         :emit-update="true"
@@ -552,6 +617,9 @@ export default {
         <PlaceholderRow
           v-if="item.dots"
           :height="item.size"
+          :style="{
+            transform: `translateY(${item.scrollIndex > currentResizedScrollIndex ? currentRowSizeDelta : 0}px)`
+          }"
         />
         <Row
           v-else
@@ -560,12 +628,17 @@ export default {
           :row-data="item.data"
           :row="columnKeys.map(column => item.data[column])"
           :table-config="item.tableConfig || tableConfig"
+          :show-drag-handle="item.showDragHandle ?? true"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
-          :row-height="rowHeight"
+          :row-height="currentRowHeight"
+          :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(item.index, item.isTop)"
           :show-border-column-index="showBorderColumnIndex"
+          :style="{
+            transform: `translateY(${item.scrollIndex > currentResizedScrollIndex ? currentRowSizeDelta : 0}px)`
+          }"
           @row-select="onRowSelect($event, item.index, 0, item.isTop)"
           @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
           @row-input="onRowInput(
@@ -573,6 +646,8 @@ export default {
           )"
           @row-sub-menu-expand="registerExpandedSubMenu"
           @row-sub-menu-click="event => onRowSubMenuClick(event, item.data)"
+          @resize-all-rows="(currentSize, row) => onResizeAllRows(currentSize, row, item.scrollIndex)"
+          @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, item.scrollIndex)"
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <!-- eslint-disable vue/valid-v-slot -->
@@ -615,7 +690,8 @@ export default {
           :table-config="tableConfig"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
-          :row-height="rowHeight"
+          :row-height="currentRowHeight"
+          :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelection[groupInd][rowInd]"
           :show-border-column-index="showBorderColumnIndex"
@@ -623,6 +699,7 @@ export default {
           @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
           @row-sub-menu-expand="registerExpandedSubMenu"
           @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
+          @resize-all-rows="onResizeAllRows"
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <!-- eslint-disable vue/valid-v-slot -->
