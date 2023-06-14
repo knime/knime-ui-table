@@ -277,7 +277,12 @@ describe('Table.vue', () => {
             expect(unobserve).toHaveBeenCalledWith(wrapper.vm.$el);
             expect(window.addEventListener).toHaveBeenCalledTimes(1);
             expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([50, 50]);
 
+            const allColumnsResizeSize = 123;
+            wrapper.vm.onAllColumnsResize(allColumnsResizeSize);
+            const firstColumnsResizeSize = 600;
+            wrapper.vm.onColumnResize(0, firstColumnsResizeSize);
             wrapper.vm.$el.getBoundingClientRect = function () {
                 return { width: 0 };
             };
@@ -288,6 +293,7 @@ describe('Table.vue', () => {
             expect(window.IntersectionObserver).toHaveBeenCalledTimes(2);
             expect(observe).toHaveBeenCalledTimes(2);
             expect(observe).toHaveBeenLastCalledWith(wrapper.vm.$el);
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize, allColumnsResizeSize]);
 
             callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
             expect(wrapper.vm.clientWidth).toBe(clientWidth);
@@ -295,6 +301,7 @@ describe('Table.vue', () => {
             expect(unobserve).toHaveBeenLastCalledWith(wrapper.vm.$el);
             expect(window.addEventListener).toHaveBeenCalledTimes(2);
             expect(window.addEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize, allColumnsResizeSize]);
 
             clientWidth = 200;
             wrapper.vm.$el.getBoundingClientRect = function () {
@@ -306,6 +313,7 @@ describe('Table.vue', () => {
             wrapper.unmount();
             expect(window.removeEventListener).toHaveBeenCalledTimes(2);
             expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize * 2, allColumnsResizeSize * 2]);
         });
 
         describe('page control', () => {
@@ -526,6 +534,23 @@ describe('Table.vue', () => {
             checkCurrentColumnSizes(200, true, false, null);
             checkCurrentColumnSizes(200, true, true, null);
             checkCurrentColumnSizes(200, true, true, 100);
+        });
+
+        it('computes currentColumnSizes correctly when resizing all columns', async () => {
+            const { wrapper } = doMount();
+            await wrapper.setData({ clientWidth: 200 });
+            wrapper.vm.onColumnResize(0, 1111); // This will be overwritten
+            const allColumnsSize = 123;
+            wrapper.vm.onAllColumnsResize(allColumnsSize);
+            const resizedCol = 1;
+            const resizedColSize = 200;
+            wrapper.vm.onColumnResize(resizedCol, resizedColSize); // This overwrites the allColumnsResize for this column
+            
+            const nColumns = wrapper.vm.currentColumns.length;
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual(
+                // eslint-disable-next-line vitest/no-conditional-tests
+                Array.from({ length: nColumns }, (_v, i) => i === resizedCol ? resizedColSize : allColumnsSize)
+            );
         });
 
         it('can deal with empty tables when computing currentColumnSizes', async () => {

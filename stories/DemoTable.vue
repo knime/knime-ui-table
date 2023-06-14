@@ -94,7 +94,7 @@ const { onColumnUpdate, onColumnReorder, filterByColumn, allHeadersOrdered, curr
     initialColumns: demoProps.defaultColumns
 });
 
-const { currentColumnSizes, onColumnResize, boundingBoxElement: root } = useColumnResizing({
+const { currentColumnSizes, onColumnResize, onAllColumnsResize, boundingBoxElement: root } = useColumnResizing({
     currentColumnIndices: currentColumns.indices,
     spacerSettings: props
 });
@@ -273,6 +273,7 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
       @select-all="onSelectAll"
       @row-select="onRowSelect"
       @column-resize="onColumnResize"
+      @all-columns-resize="onAllColumnsResize"
     >
       <template
         v-for="col in currentSlottedColumns"

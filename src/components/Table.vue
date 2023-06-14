@@ -164,6 +164,7 @@ export default {
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
             clientWidth: 0,
             currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
+            currentSetDefaultColumnSize: null,
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -321,7 +322,8 @@ export default {
                 (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
                 (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
             const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal;
-            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
+            const currentDefaultColumnSize = this.currentSetDefaultColumnSize || dataColumnsSizeTotal / nColumns;
+            const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, currentDefaultColumnSize);
 
             const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
@@ -754,6 +756,11 @@ export default {
             const resizedColumnIndex = this.currentColumns[columnIndex];
             this.currentAllColumnSizes[resizedColumnIndex] = newColumnSize;
         },
+        onAllColumnsResize(newColumnSize) {
+            consola.debug(`Table received: allColumnResize ${newColumnSize}`);
+            this.currentSetDefaultColumnSize = newColumnSize;
+            this.currentAllColumnSizes = Array(this.allColumnKeys.length).fill(-1);
+        },
         onHeaderSubMenuItemSelection(item, index) {
             consola.debug(`Table received: headerSubMenuItemSelection ${item} ${index}`);
             this.$emit('headerSubMenuSelect', item, index);
@@ -780,6 +787,9 @@ export default {
                 const ratio = updatedClientWidth / this.clientWidth;
                 this.currentAllColumnSizes = this.currentAllColumnSizes
                     .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
+                if (this.currentSetDefaultColumnSize !== null) {
+                    this.currentSetDefaultColumnSize *= ratio;
+                }
                 this.clientWidth = updatedClientWidth;
             } else {
                 this.observeTableIntersection();
@@ -830,6 +840,7 @@ export default {
     @row-select="onRowSelect"
     @table-input="onTableInput"
     @column-resize="onColumnResize"
+    @all-columns-resize="onAllColumnsResize"
     @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
   >
     <!-- eslint-disable vue/valid-v-slot -->

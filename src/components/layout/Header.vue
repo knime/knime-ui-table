@@ -75,7 +75,7 @@ export default {
         'hideColumnBorder',
         'subMenuItemSelection',
         'columnResizeEnd',
-        'columnResizeStart'
+        'columnResizeStart', 'allColumnsResize'
     ],
     data() {
         return {
@@ -143,8 +143,12 @@ export default {
             this.pageXOnDragStart = event.pageX;
             this.$emit('columnResizeStart');
         },
-        onPointerUp() {
+        onPointerUp(event) {
             this.$emit('columnResizeEnd');
+            if (this.dragIndex !== null && event.shiftKey) {
+                const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+                this.$emit('allColumnsResize', Math.max(newColumnSize, this.minimumColumnWidth));
+            }
         },
         onPointerMove: throttle(function (event) {
             /* eslint-disable no-invalid-this */

@@ -140,6 +140,7 @@ export default {
         'columnResize',
         'headerSubMenuItemSelection',
         'lazyload',
+        'allColumnsResize',
         'columnResizeStart',
         'columnResizeEnd'
     ],
@@ -504,6 +505,9 @@ export default {
         onColumnResize(columnIndex, newColumnSize) {
             this.$emit('columnResize', columnIndex, newColumnSize);
         },
+        onAllColumnsResize(newColumnSize) {
+            this.$emit('allColumnsResize', newColumnSize);
+        },
         onColumnResizeStart() {
             this.hideVerticalScrollbar = true;
             this.$emit('columnResizeStart');
@@ -573,6 +577,7 @@ export default {
         @column-sort="onColumnSort"
         @toggle-filter="onToggleFilter"
         @column-resize="onColumnResize"
+        @all-columns-resize="onAllColumnsResize"
         @column-resize-start="onColumnResizeStart"
         @column-resize-end="onColumnResizeEnd"
         @sub-menu-item-selection="onHeaderSubMenuItemSelection"

@@ -9,7 +9,7 @@ export default ({
 }) => {
     const clientWidth = ref(0);
     const currentAllColumnSizes = ref({});
-
+    const currentSetDefaultSize = ref(null);
     const boundingBoxElement = ref(null);
 
     let onResize;
@@ -37,6 +37,9 @@ export default ({
             Object.keys(currentAllColumnSizes).forEach(key => {
                 currentAllColumnSizes.value[key] *= ratio;
             });
+            if (currentSetDefaultSize.value !== null) {
+                currentSetDefaultSize.value *= ratio;
+            }
             clientWidth.value = updatedClientWidth;
         } else {
             observeTableIntersection();
@@ -65,7 +68,8 @@ export default ({
             (unref(withSelection) ? SPECIAL_COLUMNS_SIZE : 0) +
             (unref(showCollapser) ? SPECIAL_COLUMNS_SIZE : 0);
         const dataColumnsSizeTotal = clientWidth.value - specialColumnsSizeTotal;
-        const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / n);
+        const currentDefaultColumnSize = currentSetDefaultSize.value || dataColumnsSizeTotal / n;
+        const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, currentDefaultColumnSize);
             
         const currentColumnSizes = currentColumnIndices.value.map(
             column => currentAllColumnSizes.value[column] || defaultColumnSize
@@ -81,6 +85,12 @@ export default ({
         const resizedColumnIndex = currentColumnIndices.value[columnIndex];
         currentAllColumnSizes.value[resizedColumnIndex] = newColumnSize;
     };
+        
+    const onAllColumnsResize = (newColumnSize) => {
+        consola.debug(`Table received: allColumnsResize ${newColumnSize}`);
+        currentSetDefaultSize.value = newColumnSize;
+        currentAllColumnSizes.value = {};
+    };
 
-    return { currentColumnSizes, onColumnResize, boundingBoxElement };
+    return { currentColumnSizes, onColumnResize, onAllColumnsResize, boundingBoxElement };
 };
