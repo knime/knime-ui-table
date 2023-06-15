@@ -99,7 +99,8 @@ export default {
     emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
     data() {
         return {
-            showContent: false
+            showContent: false,
+            offset: 100
         };
     },
     computed: {
@@ -253,12 +254,18 @@ export default {
         @click="onCellClick($event, ind, data)"
         @input="onInput"
       >
-        <slot
-          :name="getCellContentSlotName(columnKeys,ind)"
-          :row="row"
-          :cell="unpackObjectRepresentation(data)"
-          :ind="ind"
-        />
+        <template
+          #default="{width}"
+        >
+          <slot
+            :name="getCellContentSlotName(columnKeys,ind)"
+            :row="row"
+            :cell="unpackObjectRepresentation(data)"
+            :height="rowHeight"
+            :width="width"
+            :ind="ind"
+          />
+        </template>
       </Cell>
       <td
         v-if="filteredSubMenuItems.length"
@@ -337,11 +344,6 @@ tr.row {
         bottom: 3px;
         left: 8px;
       }
-    }
-
-    &.data-cell {
-      padding-left: 10px;
-      background-clip: border-box
     }
   }
 

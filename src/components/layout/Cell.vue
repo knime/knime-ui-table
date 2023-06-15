@@ -3,17 +3,28 @@ import { computed } from 'vue';
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import type { CellProps } from './CellProps';
 
+
 const emit = defineEmits(['click', 'input']);
 const props = defineProps<CellProps>();
 
-const colorStyle = computed(
+const PADDING_LEFT_DEFAULT_CELL = 10;
+const PADDING_LEFT_COLORED_CELL = 20;
+const paddingLeft = computed(() => {
+    const { backgroundColor } = props;
+    return backgroundColor === null
+        ? PADDING_LEFT_DEFAULT_CELL
+        : PADDING_LEFT_COLORED_CELL;
+});
+
+const totalWidth = computed(() => props.size ?? 100);
+
+const cellBackgroundColorStyle = computed(
     () => {
         const { backgroundColor } = props;
         return backgroundColor === null
             ? {}
             : {
-                '--cell-background-color': backgroundColor,
-                'padding-left': '20px'
+                '--cell-background-color': backgroundColor
             };
     }
 );
@@ -42,7 +53,7 @@ const classes = computed(() => {
       'data-cell',
       { clickable, 'colored-cell': backgroundColor }
     ]"
-    :style="{ width: `calc(${size || 100}px)`, ...colorStyle }"
+    :style="{ width: `calc(${totalWidth}px)`, paddingLeft: `${paddingLeft}px`, ...cellBackgroundColorStyle }"
     :title="title === null ? undefined : title"
     @click="(event: Event) => {
       if (clickable) {
@@ -57,6 +68,7 @@ const classes = computed(() => {
     />
     <slot
       v-else-if="isSlotted"
+      :width="totalWidth-paddingLeft"
     />
     <span v-else>
       {{ text }}
@@ -67,6 +79,7 @@ const classes = computed(() => {
 <style lang="postcss" scoped>
 & td {
     color: var(--data-cell-color);
+    background-clip: border-box;
 
     &.colored-cell {
       background-size: 4px;

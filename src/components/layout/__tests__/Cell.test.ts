@@ -3,7 +3,7 @@ import { mount, shallowMount } from '@vue/test-utils';
 
 import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
 import Cell from '../Cell.vue';
-import { CellProps } from '../CellProps';
+import type { CellProps } from '../CellProps';
 
 describe('Cell.vue', () => {
     let props: CellProps;
@@ -76,6 +76,7 @@ describe('Cell.vue', () => {
             const wrapper = mount(Cell, { props });
             expect(wrapper.classes()).not.toContain('colored-cell');
             expect(wrapper.attributes('style')).not.toContain('--cell-background-color');
+            expect(wrapper.attributes('style')).toContain('padding-left: 10px');
         });
 
         it('sets background color and check for additional padding', () => {
@@ -84,6 +85,34 @@ describe('Cell.vue', () => {
             expect(wrapper.classes()).toContain('colored-cell');
             expect(wrapper.attributes('style')).toContain('--cell-background-color: #abcdef');
             expect(wrapper.attributes('style')).toContain('padding-left: 20px');
+        });
+    });
+
+    describe('width computation', () => {
+        it('sets the correct width', () => {
+            const wrapper = mount(Cell, { props });
+            expect(wrapper.attributes('style')).toContain(`width: calc(${props.size}px)`);
+        });
+
+        it('sets width property for slot', () => {
+            props.isSlotted = true;
+            props.size = 300;
+            const wrapper = mount(Cell, {
+                props,
+                slots: { default: props => `${JSON.stringify(props)}` }
+            });
+            expect(wrapper.text()).toContain(`"width":290`);
+        });
+
+        it('sets width property for slot with color', () => {
+            props.isSlotted = true;
+            props.backgroundColor = '#abcdef';
+            props.size = 300;
+            const wrapper = mount(Cell, {
+                props,
+                slots: { default: props => `${JSON.stringify(props)}` }
+            });
+            expect(wrapper.text()).toContain(`"width":280`);
         });
     });
     

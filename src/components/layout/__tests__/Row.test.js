@@ -42,6 +42,12 @@ describe('Row.vue', () => {
         return updatedProps;
     };
 
+    const stubbedCell = `<div :width="100">
+        <slot 
+            :width="100"
+        />
+    </div>`;
+
     describe('rendering', () => {
         it('displays empty "tr" element if no data provided', () => {
             wrapper = shallowMount(Row);
@@ -59,7 +65,8 @@ describe('Row.vue', () => {
 
         it('renders default table row', () => {
             wrapper = shallowMount(Row, {
-                props
+                props,
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
             expect(wrapper.findComponent(CollapserToggle).exists()).toBeFalsy();
@@ -79,7 +86,8 @@ describe('Row.vue', () => {
                         ...props.tableConfig,
                         showCollapser: true
                     }
-                }
+                },
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
 
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -94,7 +102,8 @@ describe('Row.vue', () => {
                         ...props.tableConfig,
                         showSelection: false
                     }
-                }
+                },
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
 
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -109,7 +118,8 @@ describe('Row.vue', () => {
                         ...props.tableConfig,
                         subMenuItems: []
                     }
-                }
+                },
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
 
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -172,7 +182,8 @@ describe('Row.vue', () => {
                 props,
                 slots: {
                     'cellContent-col2': '<iframe> Custom content </iframe>'
-                }
+                },
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
 
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -186,12 +197,16 @@ describe('Row.vue', () => {
             wrapper = mount(Row, {
                 props,
                 slots: {
-                    'cellContent-col2': props => `{cell:${props.cell},row:${props.row}}`
+                    'cellContent-col2': props => `${JSON.stringify(props)}`
                 }
             });
 
             expect(wrapper.findComponent(Row).exists()).toBeTruthy();
-            expect(wrapper.findAllComponents(Cell)[2].text()).toBe('{cell:data3,row:data1,data2,data3,data4,data5}');
+            const text = wrapper.findAllComponents(Cell)[2].text();
+            expect(text).toContain('"cell":"data3"');
+            expect(text).toContain('"row":["data1","data2","data3","data4","data5"]');
+            expect(text).toContain('"width":10');
+            expect(text).toContain('"height":40');
         });
 
         describe('formatters', () => {
@@ -281,7 +296,8 @@ describe('Row.vue', () => {
     describe('events', () => {
         it('emits a rowSelect event when the checkbox is clicked', () => {
             wrapper = shallowMount(Row, {
-                props
+                props,
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
 
             expect(wrapper.findComponent(Row).emitted().rowSelect).toBeFalsy();
@@ -339,7 +355,8 @@ describe('Row.vue', () => {
                         ...props.tableConfig,
                         showCollapser: true
                     }
-                }
+                },
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
             expect(wrapper.vm.showContent).toBeFalsy();
             wrapper.findComponent(CollapserToggle).vm.$emit('collapserExpand');
@@ -354,7 +371,8 @@ describe('Row.vue', () => {
 
         it('emits a rowSubMenuClick event when the submenu is clicked', () => {
             wrapper = shallowMount(Row, {
-                props
+                props,
+                global: { stubs: { Cell: { template: stubbedCell } } }
             });
             expect(wrapper.emitted().rowSubMenuClick).toBeFalsy();
             wrapper.findComponent(SubMenu).vm.$emit(
