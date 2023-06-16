@@ -43,26 +43,12 @@ export default {
     },
     emits: ['nextPage', 'prevPage'],
     computed: {
-        rangeText() {
-            if (this.currentItems) {
-                let baseInfo;
-                if (this.pageSize === this.currentItems) {
-                    baseInfo = `Rows: ${this.currentItems}`;
-                } else {
-                    baseInfo = `Rows: ${this.pageRangeStart}-${this.pageRangeEnd} of ${this.currentItems}`;
-                }
-                if (this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0) {
-                    baseInfo += ` (${this.totalItems} total)`;
-                }
-                return baseInfo;
-            }
-            return `No data${this.totalItems ? ` (${this.totalItems} hidden)` : ''}`;
+        isPaginationEnabled() {
+            // FIXME handle case pageSize bigger than currentItems (currentItems still shown when pagination with one page is enabled)
+            return this.currentItems !== this.pageSize;
         },
-        dimensionText() {
-            if (this.columnCount) {
-                return `   |   Columns: ${this.columnCount}`;
-            }
-            return '';
+        shouldAppendTotalItems() {
+            return this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0;
         },
         pageRangeStart() {
             return 1 + ((this.currentPage * this.pageSize) - this.pageSize);
@@ -92,8 +78,22 @@ export default {
 
 <template>
   <th class="left-controls">
-    <span v-if="showTableSize">
-      {{ rangeText + dimensionText }}
+    <template v-if="currentItems">
+      <span v-if="showTableSize && !isPaginationEnabled">
+        Rows: {{ currentItems }}
+      </span>
+      <span v-else-if="isPaginationEnabled">
+        Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
+      </span>
+      <span v-if="shouldAppendTotalItems">
+        ({{ totalItems }} total)
+      </span>
+    </template>
+    <span v-else>
+      No data {{ `${totalItems ? `(${totalItems} hidden)` : ''}` }}
+    </span>
+    <span v-if="columnCount && showTableSize">
+      {{ `   |   Columns: ${columnCount}` }}
     </span>
     <FunctionButton
       v-if="hasNextPage || hasPreviousPage"
@@ -132,5 +132,4 @@ th.left-controls {
     transition: background-color 0.15s;
   }
 }
-
 </style>

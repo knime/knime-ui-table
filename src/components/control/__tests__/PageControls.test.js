@@ -27,13 +27,13 @@ describe('PageControls.vue', () => {
                 currentPage: 1
             }
         });
-        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 100');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 1-25 of 100');
         await wrapper.setProps({ currentItems: 50 });
-        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 50 (100 total)');
+        expect(wrapper.findAll('span').at(1).text()).toBe('(100 total)');
         await wrapper.setProps({ currentPage: 2 });
-        expect(wrapper.find('span').text()).toBe('Rows: 26-50 of 50 (100 total)');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 26-50 of 50');
         await wrapper.setProps({ currentItems: 0 });
-        expect(wrapper.find('span').text()).toBe('No data (100 hidden)');
+        expect(wrapper.findAll('span').at(0).text()).toBe('No data (100 hidden)');
     });
 
     it('has dynamic range text with dimension information', async () => {
@@ -46,15 +46,22 @@ describe('PageControls.vue', () => {
                 columnCount: 10
             }
         });
-        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 100   |   Columns: 10');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 1-25 of 100');
+        expect(wrapper.findAll('span').at(1).text()).toBe('|   Columns: 10');
         await wrapper.setProps({ currentItems: 50 });
-        expect(wrapper.find('span').text()).toBe('Rows: 1-25 of 50 (100 total)   |   Columns: 10');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 1-25 of 50');
+        expect(wrapper.findAll('span').at(1).text()).toBe('(100 total)');
+        expect(wrapper.findAll('span').at(2).text()).toBe('|   Columns: 10');
         await wrapper.setProps({ currentPage: 2 });
-        expect(wrapper.find('span').text()).toBe('Rows: 26-50 of 50 (100 total)   |   Columns: 10');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 26-50 of 50');
+        expect(wrapper.findAll('span').at(1).text()).toBe('(100 total)');
+        expect(wrapper.findAll('span').at(2).text()).toBe('|   Columns: 10');
         await wrapper.setProps({ currentItems: 0 });
-        expect(wrapper.find('span').text()).toBe('No data (100 hidden)   |   Columns: 10');
+        expect(wrapper.findAll('span').at(0).text()).toBe('No data (100 hidden)');
+        expect(wrapper.findAll('span').at(1).text()).toBe('|   Columns: 10');
         await wrapper.setProps({ pageSize: 10, totalItems: 10, currentItems: 10 });
-        expect(wrapper.find('span').text()).toBe('Rows: 10   |   Columns: 10');
+        expect(wrapper.findAll('span').at(0).text()).toBe('Rows: 10');
+        expect(wrapper.findAll('span').at(1).text()).toBe('|   Columns: 10');
     });
 
     it('hides "total" count if 0 rows', () => {
