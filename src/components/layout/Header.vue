@@ -75,7 +75,8 @@ export default {
         'hideColumnBorder',
         'subMenuItemSelection',
         'columnResizeEnd',
-        'columnResizeStart', 'allColumnsResize'
+        'columnResizeStart',
+        'allColumnsResize'
     ],
     data() {
         return {
@@ -145,7 +146,7 @@ export default {
         },
         onPointerUp(event) {
             this.$emit('columnResizeEnd');
-            if (this.dragIndex !== null && event.shiftKey) {
+            if (event.shiftKey) {
                 const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
                 this.$emit('allColumnsResize', Math.max(newColumnSize, this.minimumColumnWidth));
             }

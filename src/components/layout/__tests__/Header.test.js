@@ -181,8 +181,23 @@ describe('Header.vue', () => {
         dragHandle.element.setPointerCapture = (pointerId) => null;
         dragHandle.trigger('pointerup', 0);
         expect(wrapper.emitted('columnResizeEnd')).toBeDefined();
+        expect(wrapper.emitted('allColumnsResize')).toBeUndefined();
     });
 
+    it('emits allColumnsResize on pointerup when shift is pressed', () => {
+        wrapper = shallowMount(Header, { props });
+        const dragHandle = wrapper.findAll('.drag-handle').at(0);
+        dragHandle.element.setPointerCapture = (pointerId) => null;
+        wrapper.setData({
+            pageXOnDragStart: 80,
+            columnSizeOnDragStart: 40
+        });
+        dragHandle.trigger('pointerup', { shiftKey: true, pageX: 100 });
+        expect(wrapper.emitted('columnResizeEnd')).toBeDefined();
+        expect(wrapper.emitted('allColumnsResize')[0][0]).toBe(60);
+        dragHandle.trigger('pointerup', { shiftKey: true, pageX: 10 });
+        expect(wrapper.emitted('allColumnsResize')[1][0]).toBe(50);
+    });
 
     it('calls getDragHandleHeight on pointerdown', async () => {
         const dragHandlerHeightMock = 100;

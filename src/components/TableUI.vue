@@ -162,7 +162,7 @@ export default {
             rowMarginBottom: ROW_MARGIN_BOTTOM,
             wrapperWidth: 0,
             // used for temporarily hiding the vertical scrollbar while changing column sizes to avoid flickering
-            hideVerticalScrollbar: false,
+            columnResizeActive: false,
             closeExpandedSubMenu: () => {},
             scrollerId: 'scroller',
             resizedRowHeight: null,
@@ -509,11 +509,11 @@ export default {
             this.$emit('allColumnsResize', newColumnSize);
         },
         onColumnResizeStart() {
-            this.hideVerticalScrollbar = true;
+            this.columnResizeActive = true;
             this.$emit('columnResizeStart');
         },
         onColumnResizeEnd() {
-            this.hideVerticalScrollbar = false;
+            this.columnResizeActive = false;
             this.$emit('columnResizeEnd');
         },
         // Find the additional height added by expanded content of a row
@@ -558,7 +558,8 @@ export default {
     />
     <div
       ref="scroll-wrapper"
-      :class="['horizontal-scroll', {'vertical-scroll': !showVirtualScroller && !hideVerticalScrollbar}]"
+      :class="['horizontal-scroll', {'vertical-scroll': !showVirtualScroller && !columnResizeActive}]"
+      :style="{overflowX: columnResizeActive ? 'hidden': 'auto'}"
       @scroll="closeExpandedSubMenu"
     >
       <Header
