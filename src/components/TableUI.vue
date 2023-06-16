@@ -138,7 +138,9 @@ export default {
         'tableInput',
         'columnResize',
         'headerSubMenuItemSelection',
-        'lazyload'
+        'lazyload',
+        'columnResizeStart',
+        'columnResizeEnd'
     ],
     data() {
         return {
@@ -439,6 +441,14 @@ export default {
         onColumnResize(columnIndex, newColumnSize) {
             this.$emit('columnResize', columnIndex, newColumnSize);
         },
+        onColumnResizeStart() {
+            this.hideVerticalScrollbar = true;
+            this.$emit('columnResizeStart');
+        },
+        onColumnResizeEnd() {
+            this.hideVerticalScrollbar = false;
+            this.$emit('columnResizeEnd');
+        },
         // Find the additional height added by expanded content of a row
         getContentHeight(index) {
             // The second child of the dom element referenced by the row is the expanded content.
@@ -500,8 +510,8 @@ export default {
         @column-sort="onColumnSort"
         @toggle-filter="onToggleFilter"
         @column-resize="onColumnResize"
-        @column-resize-start="() => {hideVerticalScrollbar = true}"
-        @column-resize-end="() => {hideVerticalScrollbar = false}"
+        @column-resize-start="onColumnResizeStart"
+        @column-resize-end="onColumnResizeEnd"
         @sub-menu-item-selection="onHeaderSubMenuItemSelection"
       />
       <ColumnFilters

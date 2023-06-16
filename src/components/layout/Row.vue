@@ -99,8 +99,7 @@ export default {
     emits: ['rowSelect', 'rowInput', 'rowSubMenuClick', 'rowSubMenuExpand', 'rowExpand'],
     data() {
         return {
-            showContent: false,
-            offset: 100
+            showContent: false
         };
     },
     computed: {

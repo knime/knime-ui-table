@@ -68,7 +68,7 @@ const classes = computed(() => {
     />
     <slot
       v-else-if="isSlotted"
-      :width="totalWidth-paddingLeft"
+      :width="totalWidth - paddingLeft"
     />
     <span v-else>
       {{ text }}
