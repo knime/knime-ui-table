@@ -30,16 +30,6 @@ describe('BaseControls.vue', () => {
         expect(wrapper.find('h3').exists()).toBe(true);
     });
 
-    it('does not render page controls if pageConfig is undefined', () => {
-        wrapper = mount(BaseControls, {
-            props: {
-                pageConfig: false
-            }
-        });
-
-        expect(wrapper.findComponent(PageControls).exists()).toBe(false);
-    });
-
     it('emits next and previous page events', () => {
         wrapper = shallowMount(BaseControls, {
             props: {

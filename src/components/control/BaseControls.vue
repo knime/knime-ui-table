@@ -50,7 +50,6 @@ export default {
   <thead>
     <tr>
       <PageControls
-        v-if="pageConfig"
         :total-items="pageConfig.tableSize"
         :current-items="pageConfig.currentSize"
         :page-size="pageConfig.pageSize"
@@ -60,8 +59,6 @@ export default {
         @next-page="onNextPage"
         @prev-page="onPrevPage"
       />
-      <!-- This empty div is necessary for placing the right controls with space-between-->
-      <div v-else />
       <th class="right-controls">
         <div
           v-if="hasCarousel"
