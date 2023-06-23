@@ -281,8 +281,8 @@ export default {
 
 <style lang="postcss" scoped>
 thead {
-  height: 40px;
-
+  height: 41px;
+  
   & tr {
     display: flex;
     height: 100%;
