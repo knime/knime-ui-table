@@ -20,6 +20,7 @@ const expectedNormalRowHeight = 41;
 const getProps = ({
     includeSubHeaders = true,
     compactMode = false,
+    disableRowResize = false,
     showSelection = true,
     showColumnFilters = true,
     showBottomControls = true,
@@ -84,6 +85,7 @@ const getProps = ({
         }],
         rowConfig: {
             compactMode,
+            disableResizing: disableRowResize,
             ...rowHeight ? { rowHeight } : {}
         }
     },
@@ -117,6 +119,7 @@ describe('TableUI.vue', () => {
     const doMount = ({
         includeSubHeaders = true,
         compactMode = false,
+        disableRowResize = false,
         showSelection = true,
         showColumnFilters = true,
         showBottomControls = true,
@@ -145,6 +148,7 @@ describe('TableUI.vue', () => {
         const props = getProps({
             includeSubHeaders,
             compactMode,
+            disableRowResize,
             showSelection,
             showColumnFilters,
             showBottomControls,
@@ -231,6 +235,11 @@ describe('TableUI.vue', () => {
 
     describe('events', () => {
         describe('top controls', () => {
+            it('does not show top controls if there are no page controls', () => {
+                const { wrapper } = doMount({ pageConfig: false });
+                expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
+            });
+
             it('handles next page events', () => {
                 const { wrapper } = doMount();
 
@@ -413,6 +422,12 @@ describe('TableUI.vue', () => {
                 expect(wrapper.emitted().tableInput).toStrictEqual(
                     [[{ cell: true, rowInd: 0, groupInd: 0, id, isTop: true }]]
                 );
+            });
+
+
+            it('disables row resize if wanted', async () => {
+                const { wrapper } = await doMount({ disableRowResize: true });
+                expect(wrapper.findComponent(Row).vm.$props.showDragHandle).toBeFalsy();
             });
 
             describe('watches row config', () => {
@@ -796,6 +811,17 @@ describe('TableUI.vue', () => {
             expect(selectionMap(0, false)).toBe(true);
             expect(selectionMap(1, false)).toBe(true);
             expect(selectionMap(undefined, true)).toBe(false);
+        });
+
+        it('selects nothing when selection is not shown', () => {
+            const { wrapper } = doMount({
+                showSelection: false
+            });
+            const selectionMap = wrapper.vm.currentSelectionMap;
+
+            expect(selectionMap(0, true)).toBe(false);
+            expect(selectionMap(1, true)).toBe(false);
+            expect(selectionMap(2, true)).toBe(false);
         });
 
         describe('supports expanding and collapsing rows', () => {

@@ -95,6 +95,14 @@ export default {
             // do not enable sorting when currently resizing or hovering over a drag handle
             return Boolean(this.tableConfig?.sortConfig) && this.hoverIndex === null && this.dragIndex === null;
         },
+        enableColumnResizing() {
+            const enableColumnResizingSetting = this.tableConfig?.enableColumnResizing;
+            if (typeof enableColumnResizingSetting === 'undefined') {
+                return true;
+            } else {
+                return enableColumnResizingSetting;
+            }
+        },
         sortColumn() {
             return this.tableConfig?.sortConfig?.sortColumn;
         },
@@ -245,6 +253,7 @@ export default {
           </SubMenu>
         </div>
         <div
+          v-if="enableColumnResizing"
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
           :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`}"
           @pointerover="onPointerOver($event, ind)"

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
 
 import Header from '../Header.vue';
@@ -24,26 +24,30 @@ const columnSubMenuItems = [
 ];
 
 describe('Header.vue', () => {
-    let wrapper;
+    let wrapper,
 
-    let props = {
-        tableConfig: {
-            sortConfig: {
-                sortColumn: '',
-                sortDirection: ''
+        props;
+    
+    beforeEach(() => {
+        props = {
+            tableConfig: {
+                sortConfig: {
+                    sortColumn: '',
+                    sortDirection: ''
+                },
+                showCollapser: false,
+                showSelection: true,
+                showColumnFilters: true
             },
-            showCollapser: false,
-            showSelection: true,
-            showColumnFilters: true
-        },
-        columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
-        columnSubHeaders: [],
-        columnSizes: [75, 75, 75, 75, 75],
-        columnSubMenuItems: [],
-        columnSortConfigs: [true, true, true, true, true],
-        isSelected: false,
-        filtersActive: false
-    };
+            columnHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4', 'Column 5'],
+            columnSubHeaders: [],
+            columnSizes: [75, 75, 75, 75, 75],
+            columnSubMenuItems: [],
+            columnSortConfigs: [true, true, true, true, true],
+            isSelected: false,
+            filtersActive: false
+        };
+    });
 
     it('renders default table header', () => {
         wrapper = shallowMount(Header, { props });
@@ -240,6 +244,14 @@ describe('Header.vue', () => {
         wrapper.findAllComponents(SubMenu).at(1).vm.$emit('item-click', {}, subMenuClickedItem);
         expect(wrapper.findComponent(Header).emitted().subMenuItemSelection).toBeTruthy();
         expect(wrapper.findComponent(Header).emitted().subMenuItemSelection).toStrictEqual([[subMenuClickedItem, 1]]);
+    });
+
+
+    it('does not display the drag handler if column resizing is disabled', () => {
+        props.tableConfig = { ...props.tableConfig, enableColumnResizing: false };
+        wrapper = shallowMount(Header, { props });
+
+        expect(wrapper.find('.drag-handle').exists()).toBeFalsy();
     });
 
     it('sets hover index on drag handle pointerover', () => {

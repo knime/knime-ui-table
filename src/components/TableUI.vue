@@ -293,6 +293,9 @@ export default {
             return data;
         },
         currentSelectionMap() {
+            if (!this.tableConfig.showSelection) {
+                return () => false;
+            }
             return (index, isTop) => {
                 if (typeof index === 'undefined') {
                     return false;
@@ -546,6 +549,7 @@ export default {
 <template>
   <table>
     <TopControls
+      v-if="tableConfig.pageConfig !== false"
       :table-config="tableConfig"
       :column-headers="columnHeaders"
       @next-page="onPageChange(1)"
@@ -634,7 +638,7 @@ export default {
           :row-data="item.data"
           :row="columnKeys.map(column => item.data[column])"
           :table-config="item.tableConfig || tableConfig"
-          :show-drag-handle="item.showDragHandle ?? true"
+          :show-drag-handle="!dataConfig.rowConfig.disableResizing && (item.showDragHandle ?? true)"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
@@ -699,8 +703,9 @@ export default {
           :row-height="currentRowHeight"
           :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
-          :is-selected="currentSelection[groupInd][rowInd]"
+          :is-selected="currentSelection[groupInd] === undefined ? false : currentSelection[groupInd][rowInd] || false"
           :show-border-column-index="showBorderColumnIndex"
+          :show-drag-handle="!dataConfig.rowConfig.disableResizing"
           @row-select="onRowSelect($event, rowInd, groupInd, true)"
           @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
           @row-sub-menu-expand="registerExpandedSubMenu"
