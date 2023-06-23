@@ -38,7 +38,6 @@ const getProps = ({
     showColumnFilters = true,
     showBottomControls = true,
     enableVirtualScrolling = false,
-    showTopControls = true,
     rowHeight = null,
     actionButtonConfig = null,
     columnFilterInitiallyActive = null,
@@ -53,8 +52,10 @@ const getProps = ({
         visibleSize: 5,
         possiblePageSizes: [5, 10, 25],
         currentPage: 1,
-        fixHeader: false
+        fixHeader: false,
+        showTableSize: true
     },
+    searchConfig = { searchQuery: '' },
     numRowsAbove = 0,
     bottomData = []
 }) => ({
@@ -109,14 +110,11 @@ const getProps = ({
         showSelection,
         showCollapser,
         showBottomControls,
-        searchConfig: {
-            searchQuery: ''
-        },
+        searchConfig,
         timeFilterConfig: {
             currentTimeFilter: ''
         },
         enableVirtualScrolling,
-        showTopControls,
         subMenuItems: [],
         columnSelectionConfig: {
             possibleColumns: ['a', 'b'],
@@ -143,7 +141,6 @@ describe('TableUI.vue', () => {
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
-        showTopControls = true,
         rowHeight = null,
         actionButtonConfig = {},
         columnFilterInitiallyActive = false,
@@ -158,8 +155,10 @@ describe('TableUI.vue', () => {
             visibleSize: 5,
             possiblePageSizes: [5, 10, 25],
             currentPage: 1,
-            fixHeader: false
+            fixHeader: false,
+            showTableSize: true
         },
+        searchConfig = { searchQuery: '' },
         numRowsAbove = 0,
         shallow = true,
         wrapperHeight = 1000,
@@ -175,7 +174,6 @@ describe('TableUI.vue', () => {
             showColumnFilters,
             showBottomControls,
             enableVirtualScrolling,
-            showTopControls,
             rowHeight,
             actionButtonConfig,
             columnFilterInitiallyActive,
@@ -184,6 +182,7 @@ describe('TableUI.vue', () => {
             currentSelection,
             currentBottomSelection,
             pageConfig,
+            searchConfig,
             numRowsAbove,
             bottomData
         });
@@ -255,15 +254,77 @@ describe('TableUI.vue', () => {
             expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
         });
 
-        it('hides TopControls when showTopControls is false', () => {
-            const { wrapper } = doMount({ showTopControls: false });
+        it('hides TopControls when no data to be displayed', async () => {
+            const { wrapper } = doMount({
+                pageConfig: {
+                    showTableSize: false,
+                    pageSize: 10,
+                    currentSize: 10
+                }
+            });
+
+            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
+
+            await wrapper.setProps({
+                ...wrapper.props(),
+                tableConfig: {
+                    ...wrapper.props().tableConfig,
+                    searchConfig: null
+                }
+            });
 
             expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
         });
 
-        it('shows TopControls when showTopControls is true', () => {
-            const { wrapper } = doMount({ showTopControls: true });
+        it('shows TopControls when search is on and table size and pagination are off', () => {
+            const { wrapper } = doMount({
+                pageConfig: {
+                    showTableSize: false,
+                    pageSize: 10,
+                    currentSize: 10
+                }
+            });
 
+            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when showTableSize is on and pagination and search are off', async () => {
+            const { wrapper } = doMount({
+                pageConfig: {
+                    showTableSize: true,
+                    pageSize: 10,
+                    currentSize: 10
+                }
+            });
+
+            await wrapper.setProps({
+                ...wrapper.props(),
+                tableConfig: {
+                    ...wrapper.props().tableConfig,
+                    searchConfig: null
+                }
+            });
+    
+            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when pagination is on and search and showTableSize are off', async () => {
+            const { wrapper } = doMount({
+                pageConfig: {
+                    showTableSize: false,
+                    pageSize: 10,
+                    currentSize: 4
+                }
+            });
+
+            await wrapper.setProps({
+                ...wrapper.props(),
+                tableConfig: {
+                    ...wrapper.props().tableConfig,
+                    searchConfig: null
+                }
+            });
+    
             expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
         });
     });

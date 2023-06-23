@@ -277,7 +277,8 @@ export default {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
         showTopControls() {
-            return this.tableConfig.showTopControls;
+            return this.tableConfig.pageConfig.showTableSize || this.tableConfig.searchConfig ||
+              this.tableConfig.pageConfig.pageSize !== this.tableConfig.pageConfig.currentSize;
         },
         topDataLength() {
             if (this.data === null || this.data.length === 0) {
