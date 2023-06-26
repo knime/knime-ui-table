@@ -55,6 +55,7 @@ export default {
         :page-size="pageConfig.pageSize"
         :current-page="pageConfig.currentPage"
         :column-count="pageConfig.columnCount"
+        :show-table-size="pageConfig.showTableSize"
         @next-page="onNextPage"
         @prev-page="onPrevPage"
       />

@@ -35,6 +35,10 @@ export default {
         columnCount: {
             type: Number,
             default: null
+        },
+        showTableSize: {
+            type: Boolean,
+            default: true
         }
     },
     emits: ['nextPage', 'prevPage'],
@@ -88,7 +92,7 @@ export default {
 
 <template>
   <th class="left-controls">
-    <span>
+    <span v-if="showTableSize">
       {{ rangeText + dimensionText }}
     </span>
     <FunctionButton
