@@ -243,6 +243,7 @@ export default {
                 subMenuItems: this.subMenuItems,
                 groupSubMenuItems: this.groupSubMenuItems,
                 enableVirtualScrolling: this.enableVirtualScrolling,
+                enableColumnResizing: false,
                 pageConfig: {
                     tableSize: this.totalTableSize,
                     currentSize: this.currentTableSize,
