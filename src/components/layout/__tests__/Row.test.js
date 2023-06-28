@@ -1,4 +1,4 @@
-import { describe, vi, it, expect } from 'vitest';
+import { describe, vi, it, expect, beforeEach } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
 import Row from '../Row.vue';
@@ -219,8 +219,14 @@ describe('Row.vue', () => {
             expect(text).toContain('"height":40');
         });
 
-        it('displays drag handle for row resizing', () => {
+        it('does not display drag handle for row resizing per default', () => {
             wrapper = mount(Row, { props });
+            expect(wrapper.find(rowDragHandleClass).exists()).toBeFalsy();
+        });
+
+
+        it('displays drag handle for row resizing if enabled', () => {
+            wrapper = mount(Row, { props: { ...props, showDragHandle: true } });
             expect(wrapper.find(rowDragHandleClass).exists()).toBeTruthy();
         });
 
@@ -400,6 +406,10 @@ describe('Row.vue', () => {
         });
 
         describe('row resize', () => {
+            beforeEach(() => {
+                props.showDragHandle = true;
+            });
+
             it('sets rowHeightOnDragStart and activeDrag on pointer down on drag handle', async () => {
                 wrapper = shallowMount(Row, {
                     props,

@@ -102,7 +102,7 @@ export default {
         },
         showDragHandle: {
             type: Boolean,
-            default: true
+            default: false
         }
     },
     emits: [

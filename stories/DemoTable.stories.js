@@ -128,6 +128,18 @@ export default {
                 category: 'Rows'
             }
         },
+        enableRowResize: {
+            name: 'Enable row resize',
+            table: {
+                category: 'Rows'
+            }
+        },
+        enableColumnResize: {
+            name: 'Enable column resize',
+            table: {
+                category: 'Header'
+            }
+        },
         enableVirtualScrolling: {
             name: 'Virtual scrolling',
             table: {
@@ -262,6 +274,8 @@ Hub.args = {
     showActionButton: true,
     showPopovers: true,
     compactMode: false,
+    enableRowResize: false,
+    enableColumnResize: true,
     backgroundColor: '--knime-porcelain',
     enableVirtualScrolling: false,
     fixHeader: false,
@@ -328,6 +342,8 @@ TableView.args = {
     showActionButton: false,
     showPopovers: false,
     compactMode: false,
+    enableRowResize: true,
+    enableColumnResize: true,
     enableVirtualScrolling: true,
     containerHeight: '100%',
     backgroundColor: '--knime-porcelain',

@@ -20,8 +20,8 @@ const expectedNormalRowHeight = 41;
 
 const getProps = ({
     includeSubHeaders = true,
+    enableRowResize = true,
     compactMode = false,
-    disableRowResize = false,
     showSelection = true,
     showColumnFilters = true,
     showBottomControls = true,
@@ -86,8 +86,8 @@ const getProps = ({
         }],
         rowConfig: {
             compactMode,
-            disableResizing: disableRowResize,
-            ...rowHeight ? { rowHeight } : {}
+            ...rowHeight ? { rowHeight } : {},
+            enableResizing: enableRowResize
         }
     },
     tableConfig: {
@@ -119,8 +119,8 @@ describe('TableUI.vue', () => {
     let bodySizeEvent;
     const doMount = ({
         includeSubHeaders = true,
+        enableRowResize = true,
         compactMode = false,
-        disableRowResize = false,
         showSelection = true,
         showColumnFilters = true,
         showBottomControls = true,
@@ -147,9 +147,9 @@ describe('TableUI.vue', () => {
         bottomData = []
     } = {}, stubs = {}) => {
         const props = getProps({
+            enableRowResize,
             includeSubHeaders,
             compactMode,
-            disableRowResize,
             showSelection,
             showColumnFilters,
             showBottomControls,
@@ -435,10 +435,9 @@ describe('TableUI.vue', () => {
                 );
             });
 
-
-            it('disables row resize if wanted', async () => {
-                const { wrapper } = await doMount({ disableRowResize: true });
-                expect(wrapper.findComponent(Row).vm.$props.showDragHandle).toBeFalsy();
+            it('disables row resizing via row config', () => {
+                const { wrapper } = doMount({ enableRowResize: false });
+                expect(wrapper.findComponent(Row).props().showDragHandle).toBe(false);
             });
 
             describe('watches row config', () => {

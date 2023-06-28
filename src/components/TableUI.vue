@@ -303,6 +303,9 @@ export default {
                 return isTop ? this.currentSelection[0][index] : this.currentBottomSelection[index];
             };
         },
+        enableRowResize() {
+            return this.dataConfig.rowConfig.enableResizing;
+        },
         rowHeight() {
             return this.dataConfig.rowConfig.compactMode
                 ? COMPACT_ROW_HEIGHT
@@ -638,7 +641,7 @@ export default {
           :row-data="item.data"
           :row="columnKeys.map(column => item.data[column])"
           :table-config="item.tableConfig || tableConfig"
-          :show-drag-handle="!dataConfig.rowConfig.disableResizing && (item.showDragHandle ?? true)"
+          :show-drag-handle="enableRowResize && (item.showDragHandle ?? true)"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
@@ -705,7 +708,7 @@ export default {
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelection[groupInd] === undefined ? false : currentSelection[groupInd][rowInd] || false"
           :show-border-column-index="showBorderColumnIndex"
-          :show-drag-handle="!dataConfig.rowConfig.disableResizing"
+          :show-drag-handle="dataConfig.rowConfig.enableRowResize"
           @row-select="onRowSelect($event, rowInd, groupInd, true)"
           @row-input="onRowInput({ ...$event, rowInd, id: row.data.id, groupInd, isTop: true })"
           @row-sub-menu-expand="registerExpandedSubMenu"

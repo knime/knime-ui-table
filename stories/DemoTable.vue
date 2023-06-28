@@ -50,6 +50,8 @@ const props = defineProps({
     },
     showPopovers: Boolean,
     compactMode: Boolean,
+    enableRowResize: Boolean,
+    enableColumnResize: Boolean,
     enableVirtualScrolling: Boolean,
     fixHeader: Boolean,
     showTableSize: Boolean,
@@ -159,7 +161,8 @@ const dataConfig = computed(() => {
     let dataConfig = {
         columnConfigs: [],
         rowConfig: {
-            compactMode: props.compactMode
+            compactMode: props.compactMode,
+            enableResizing: props.enableRowResize
         }
     };
     currentColumns.keys.value.forEach((key, ind) => {
@@ -233,6 +236,7 @@ const tableConfig = reactive({
     subMenuItems: props.showSubMenus ? props.subMenuItems : [],
     groupSubMenuItems: props.showGroupSubMenus ? props.groupSubMenuItems : [],
     enableVirtualScrolling: props.enableVirtualScrolling,
+    enableColumnResizing: props.enableColumnResize,
     groupByConfig,
     timeFilterConfig,
     searchConfig,
