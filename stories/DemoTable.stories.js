@@ -158,6 +158,18 @@ export default {
                 category: 'Pagination'
             }
         },
+        showTableSize: {
+            name: 'Show table size',
+            table: {
+                category: 'Header'
+            }
+        },
+        showTopControls: {
+            name: 'Show top controls',
+            table: {
+                category: 'Header'
+            }
+        },
         actionButtonText: {
             name: 'Action button text',
             table: {
@@ -253,6 +265,8 @@ Hub.args = {
     backgroundColor: '--knime-porcelain',
     enableVirtualScrolling: false,
     fixHeader: false,
+    showTableSize: true,
+    showTopControls: true,
     actionButtonText: 'action',
     showGroupSubMenus: true,
     showSubMenus: true,
@@ -318,6 +332,8 @@ TableView.args = {
     containerHeight: '100%',
     backgroundColor: '--knime-porcelain',
     fixHeader: true,
+    showTableSize: true,
+    showTopControls: true,
     showSubMenus: false,
     showGroupSubMenus: false,
     numRowsAbove: 5,

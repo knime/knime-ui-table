@@ -5,6 +5,7 @@ import { mount } from '@vue/test-utils';
 
 import TableUI from '../TableUI.vue';
 import TopControls from '@/components/control/TopControls.vue';
+import PageControls from '@/components/control/PageControls.vue';
 import BottomControls from '@/components/control/BottomControls.vue';
 import ColumnFilters from '@/components/filter/ColumnFilters.vue';
 import Header from '@/components/layout/Header.vue';
@@ -238,6 +239,16 @@ describe('TableUI.vue', () => {
             it('does not show top controls if there are no page controls', () => {
                 const { wrapper } = doMount({ pageConfig: false });
                 expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
+            });
+
+            it('does not show top controls text if there showTableSize is false', () => {
+                const { wrapper } = doMount({ shallow: false,
+                    pageConfig: {
+                        showTableSize: false,
+                        pageSize: 1,
+                        possiblePageSizes: []
+                    } });
+                expect(wrapper.findComponent(PageControls).text()).toBe('');
             });
 
             it('handles next page events', () => {
