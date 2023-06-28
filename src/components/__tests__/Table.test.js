@@ -113,6 +113,7 @@ describe('Table.vue', () => {
                 showPopovers: true,
                 showSelection: true,
                 enableVirtualScrolling: false,
+                enableColumnResizing: false,
                 pageConfig: {
                     tableSize: 1,
                     currentSize: 1,
