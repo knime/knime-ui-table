@@ -424,6 +424,36 @@ tr.row {
         left: 8px;
       }
     }
+
+    &.action {
+      align-items: center;
+      display: flex;
+      overflow: visible;
+      min-width: 30px;
+
+      & svg {
+        margin: 0 auto;
+        width: 25px;
+        height: 25px;
+        stroke-width: calc(32px / 25);
+        stroke: var(--knime-dove-gray);
+      }
+
+      & :deep(ul) {
+        margin-top: -10px;
+        right: 10px;
+      }
+
+      & :deep(.submenu-toggle) {
+        display: flex;
+        align-self: stretch;
+        align-items: center;
+        height: 40px;
+        width: 30px;
+        border-radius: 0;
+        transition: background-color 0.15s;
+      }
+    }
   }
 
   &.compact-mode {
