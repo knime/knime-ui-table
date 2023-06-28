@@ -796,9 +796,11 @@ table {
     flex-direction: column;
     overflow-x: auto;
     overflow-y: hidden;
+
     &.expand-content {
         flex: 1;
     }
+
     &.vertical-scroll {
       overflow-y: auto;
     }

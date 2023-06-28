@@ -487,8 +487,8 @@ tr.collapser-row {
   position: relative;
 
   & td.expandable-content {
-
     width: 100%;
+
     & .collapser-button {
       position: absolute;
       right: 50px;
