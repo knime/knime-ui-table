@@ -565,7 +565,12 @@ export default {
     />
     <div
       ref="scroll-wrapper"
-      :class="['horizontal-scroll', {'vertical-scroll': !showVirtualScroller && !columnResizeActive}]"
+      :class="[
+        'horizontal-scroll',
+        {
+          'vertical-scroll': !showVirtualScroller && !columnResizeActive,
+          'expand-content': showVirtualScroller
+        }]"
       :style="{overflowX: columnResizeActive ? 'hidden': 'auto'}"
       @scroll="closeExpandedSubMenu"
     >
@@ -790,9 +795,10 @@ table {
     display: flex;
     flex-direction: column;
     overflow-x: auto;
-    flex: 1;
     overflow-y: hidden;
-
+    &.expand-content {
+        flex: 1;
+    }
     &.vertical-scroll {
       overflow-y: auto;
     }
