@@ -108,7 +108,7 @@ tr {
   overflow-x: clip;
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-silver-sand-semi);
-
+  
   & th {
     white-space: nowrap;
     text-overflow: ellipsis;

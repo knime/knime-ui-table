@@ -1,82 +1,48 @@
-import { ref, unref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
 import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
+import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 export default ({
     currentColumnIndices,
     spacerSettings: { showCollapser, withSelection, withColumnFilters }
 }) => {
-    const clientWidth = ref(0);
+    const currentAvailableWidth = ref(0);
     const currentAllColumnSizes = ref({});
     const currentSetDefaultSize = ref(null);
-    const boundingBoxElement = ref(null);
 
-    let onResize;
-
-    const observeTableIntersection = () => {
-        if (boundingBoxElement.value) {
-            new IntersectionObserver((entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.target === boundingBoxElement.value && entry.boundingClientRect.width) {
-                        clientWidth.value = entry.boundingClientRect.width;
-                        // observer is either removed here or on garbage collection
-                        observer.unobserve(entry.target);
-                        window.addEventListener('resize', onResize);
-                    }
-                });
-            }).observe(boundingBoxElement.value);
-        }
-    };
-
-    onResize = throttle(() => {
-        const updatedClientWidth = boundingBoxElement.value?.getBoundingClientRect().width;
-        if (updatedClientWidth) {
+    const updateAvailableWidth = (newAvaliableWidth) => {
+        console.log(newAvaliableWidth);
+        if (currentAvailableWidth.value) {
             // update all non-default column widths according to the relative change in client width
-            const ratio = updatedClientWidth / clientWidth.value;
+            const ratio = newAvaliableWidth / currentAvailableWidth.value;
             Object.keys(currentAllColumnSizes).forEach(key => {
                 currentAllColumnSizes.value[key] *= ratio;
             });
             if (currentSetDefaultSize.value !== null) {
                 currentSetDefaultSize.value *= ratio;
             }
-            clientWidth.value = updatedClientWidth;
-        } else {
-            observeTableIntersection();
-            window.removeEventListener('resize', onResize);
+            currentAvailableWidth.value = newAvaliableWidth;
         }
-    });
-
-    onMounted(() => {
-        const initialClientWidth = boundingBoxElement.value?.getBoundingClientRect().width;
-        // clientWidth can be 0, e.g., if table is not visible (yet)
-        if (initialClientWidth) {
-            clientWidth.value = initialClientWidth;
-            window.addEventListener('resize', onResize);
-        } else {
-            observeTableIntersection();
-        }
-    });
+        currentAvailableWidth.value = newAvaliableWidth;
+    };
 
     const currentColumnSizes = computed(() => {
         const n = currentColumnIndices.value.length;
         if (n < 1) {
             return [];
         }
-            
-        const specialColumnsSizeTotal = (unref(withColumnFilters) ? SPECIAL_COLUMNS_SIZE : 0) +
-            (unref(withSelection) ? SPECIAL_COLUMNS_SIZE : 0) +
-            (unref(showCollapser) ? SPECIAL_COLUMNS_SIZE : 0);
-        const dataColumnsSizeTotal = clientWidth.value - specialColumnsSizeTotal;
-        const currentDefaultColumnSize = currentSetDefaultSize.value || dataColumnsSizeTotal / n;
+        const currentDefaultColumnSize = currentSetDefaultSize.value || currentAvailableWidth.value / n;
         const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, currentDefaultColumnSize);
             
         const currentColumnSizes = currentColumnIndices.value.map(
             column => currentAllColumnSizes.value[column] || defaultColumnSize
         );
-        const lastColumnMinSize = dataColumnsSizeTotal -
+        const lastColumnMinSize = currentAvailableWidth.value -
             currentColumnSizes.slice(0, n - 1).reduce((partialSum, size) => partialSum + size, 0);
         currentColumnSizes[n - 1] = Math.max(lastColumnMinSize, currentColumnSizes[n - 1]);
+        console.log('Sum of current column sizes:', currentColumnSizes.reduce((partialSum, size) => partialSum + size, 0));
+        console.log(currentColumnSizes);
         return currentColumnSizes;
     });
         
@@ -92,5 +58,5 @@ export default ({
         currentAllColumnSizes.value = {};
     };
 
-    return { currentColumnSizes, onColumnResize, onAllColumnsResize, boundingBoxElement };
+    return { currentColumnSizes, onColumnResize, onAllColumnsResize, updateAvailableWidth };
 };

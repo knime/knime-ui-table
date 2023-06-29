@@ -11,9 +11,11 @@ import ActionButton from './ui/ActionButton.vue';
 import TablePopover from './popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-import { SPECIAL_COLUMNS_SIZE, DEFAULT_ROW_HEIGHT, COMPACT_ROW_HEIGHT,
-    ROW_MARGIN_BOTTOM,
-    ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY } from '@/util/constants';
+import useAvailableWidthDetection from './composables/useAvailableWidth.ts';
+import { DEFAULT_ROW_HEIGHT, COMPACT_ROW_HEIGHT, ROW_MARGIN_BOTTOM,
+    ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
+    SPECIAL_COLUMNS_SIZE } from '@/util/constants';
+import { computed, ref, toRefs } from 'vue';
 
 /**
  * @see README.md
@@ -142,8 +144,48 @@ export default {
         'lazyload',
         'allColumnsResize',
         'columnResizeStart',
-        'columnResizeEnd'
+        'columnResizeEnd',
+        'update:available-width'
     ],
+    setup(props, { emit }) {
+        const wrapper = ref(null);
+        const scroller = ref(null);
+        const scrollWrapper = ref(null);
+
+        
+        const enableVirtualScrolling = computed(() => props.tableConfig.enableVirtualScrolling);
+        const scrolledElement = computed(() => {
+            if (enableVirtualScrolling.value) {
+                return scroller.value === null ? null : scroller.value.$el;
+            }
+            return scrollWrapper.value;
+        });
+        
+        const availableWidth = ref(0); // Only for demo purposes
+        const dummyUpdate = (newWidth) => {
+            availableWidth.value = newWidth;
+            emit('update:available-width', newWidth);
+        };
+        const { tableConfig } = toRefs(props);
+
+        const collapserSize = computed(() => tableConfig.value.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
+        const selectionSize = computed(() => tableConfig.value.showSelection ? SPECIAL_COLUMNS_SIZE : 0);
+        const rightSideSize = computed(
+            () => tableConfig.value.showColumnFilters || tableConfig.value.subMenuItems.length > 0
+                ? SPECIAL_COLUMNS_SIZE
+                : 0
+        );
+
+        const { innerWidthToBodyWidth } = useAvailableWidthDetection({
+            emitAvailableWidth: dummyUpdate,
+            specialColumnsSizeTotal: computed(() => collapserSize.value + selectionSize.value + rightSideSize.value),
+            refs: {
+                root: wrapper,
+                scrolledElement
+            }
+        });
+        return { wrapper, scroller, availableWidth, scrollWrapper, enableVirtualScrolling, innerWidthToBodyWidth };
+    },
     data() {
         return {
             filterActive: this.tableConfig.columnFilterInitiallyActive || false,
@@ -228,12 +270,8 @@ export default {
         },
         currentBodyWidth() {
             const widthContentColumns = this.columnSizes.reduce((prev, curr) => prev + curr, 0);
-            return (this.tableConfig.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
-                (this.tableConfig.showCollapser ? SPECIAL_COLUMNS_SIZE : 0) +
-                widthContentColumns + (this.tableConfig.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0);
-        },
-        enableVirtualScrolling() {
-            return this.tableConfig.enableVirtualScrolling;
+            const useScrollbarSize = this.enableVirtualScrolling;
+            return this.innerWidthToBodyWidth(widthContentColumns, useScrollbarSize);
         },
         showVirtualScroller() {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
@@ -529,7 +567,7 @@ export default {
             return contentHeight || 0;
         },
         getDragHandleHeight() {
-            const scroller = this.$refs['scroll-wrapper'];
+            const scroller = this.$refs.scrollWrapper;
             return Array(...scroller.children).reduce(
                 (prev, cur) => {
                     if (cur.id === this.scrollerId) {
@@ -550,7 +588,32 @@ export default {
 </script>
 
 <template>
-  <table>
+  <table ref="wrapper">
+    <div
+      :style="{display: 'flex', flexDirection: 'row', overflow: auto}"
+    >
+      <div
+        v-if="tableConfig.showCollapser"
+        :style="{width: 30 + 'px', backgroundColor: 'red' ,flexShrink: 0}"
+      />
+      <div
+        v-if="tableConfig.showSelection"
+        :style="{width: 30 + 'px', backgroundColor: 'orange', flexShrink: 0}"
+      />
+      <div
+        :style="{
+          width: availableWidth + 'px',
+          backgroundColor: 'green',
+          flexShrink: 0
+        }"
+      >
+        AvailableWidth: {{ availableWidth }}
+      </div>
+      <div
+        v-if="tableConfig.showColumnFilters || tableConfig.subMenuItems.length > 0"
+        :style="{width: 30 + 'px', backgroundColor: 'blue', flexShrink: 0}"
+      />
+    </div>
     <TopControls
       v-if="tableConfig.pageConfig !== false"
       :table-config="tableConfig"
@@ -564,7 +627,7 @@ export default {
       @time-filter-update="onTimeFilterUpdate"
     />
     <div
-      ref="scroll-wrapper"
+      ref="scrollWrapper"
       :class="[
         'horizontal-scroll',
         {

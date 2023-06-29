@@ -15,14 +15,26 @@ import ActionButton from '@/components/ui/ActionButton.vue';
 import TablePopover from '@/components/popover/TablePopover.vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import { columnTypes } from '@/config/table.config';
+import useAvailableWidth from '../composables/useAvailableWidth';
+import { unref } from 'vue';
+import { SPECIAL_COLUMNS_SIZE } from '@/util/constants';
 
 const expectedNormalRowHeight = 41;
+
+const bodyWidthResult = 123;
+const availableWidthMock = {
+    innerWidthToBodyWidth: vi.fn(() => bodyWidthResult)
+};
+vi.mock('../composables/useAvailableWidth', () => ({ default: vi.fn(() => availableWidthMock) }));
+
 
 const getProps = ({
     includeSubHeaders = true,
     enableRowResize = true,
     compactMode = false,
     showSelection = true,
+    showCollapser = false,
+    showSubMenuItems = false,
     showColumnFilters = true,
     showBottomControls = true,
     enableVirtualScrolling = false,
@@ -94,6 +106,7 @@ const getProps = ({
         pageConfig,
         showColumnFilters,
         showSelection,
+        showCollapser,
         showBottomControls,
         searchConfig: {
             searchQuery: ''
@@ -111,7 +124,8 @@ const getProps = ({
             currentGroup: null
         },
         ...columnFilterInitiallyActive === null ? {} : { columnFilterInitiallyActive },
-        ...actionButtonConfig ? { actionButtonConfig } : {}
+        ...actionButtonConfig ? { actionButtonConfig } : {},
+        ...showSubMenuItems ? { subMenuItems: [{ text: 'test' }] } : {}
     }
 });
 
@@ -122,6 +136,8 @@ describe('TableUI.vue', () => {
         enableRowResize = true,
         compactMode = false,
         showSelection = true,
+        showCollapser = false,
+        showSubMenuItems = false,
         showColumnFilters = true,
         showBottomControls = true,
         enableVirtualScrolling = false,
@@ -151,6 +167,8 @@ describe('TableUI.vue', () => {
             includeSubHeaders,
             compactMode,
             showSelection,
+            showCollapser,
+            showSubMenuItems,
             showColumnFilters,
             showBottomControls,
             enableVirtualScrolling,
@@ -657,22 +675,104 @@ describe('TableUI.vue', () => {
     });
 
     describe('the width of the table, its header and its body', () => {
-        it('gets the correct width of the table-body when selection & filtering are enabled', () => {
-            const { wrapper } = doMount({
-                showSelection: true, showColumnFilters: true
-            });
+        it('uses available width composable navigation', async () => {
+            useAvailableWidth.reset();
+            const { wrapper } = doMount();
+            const [{
+                emitAvailableWidth,
+                refs: {
+                    scrolledElement,
+                    root: providedWrapper
+                }
+            }] = useAvailableWidth.mock.calls[0];
+            await wrapper.vm.$nextTick();
+            expect(unref(providedWrapper)).toBe(wrapper.find('table').wrapperElement);
+            expect(unref(scrolledElement)).toStrictEqual(wrapper.find('.vertical-scroll').element);
 
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toBe(160);
+            emitAvailableWidth(123);
+            expect(wrapper.emitted()['update:available-width']).toStrictEqual([[123]]);
         });
 
-        it('gets the correct width of the table-body when selection & filtering are disabled', () => {
-            const { wrapper } = doMount({
-                showSelection: false, showColumnFilters: false
+        describe('specialColumnsTotalWidth', () => {
+            const getSpecialColumnsSizeTotal = (settings) => {
+                useAvailableWidth.reset();
+                doMount(settings);
+                const [{ specialColumnsSizeTotal }] = useAvailableWidth.mock.calls[0];
+                return specialColumnsSizeTotal;
+            };
+
+            let specialColumnsSettings;
+
+            beforeEach(() => {
+                specialColumnsSettings = {
+                    showColumnFilters: false,
+                    showCollapser: false,
+                    showSelection: false,
+                    showSubMenuItems: false
+                };
             });
 
-            wrapper.vm.onToggleFilter();
-            expect(wrapper.vm.currentBodyWidth).toBe(100);
+            it('is 0 for no special columns', () => {
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(0);
+            });
+
+            it('respects collapsers', () => {
+                specialColumnsSettings.showCollapser = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE);
+            });
+
+            it('respects selection', () => {
+                specialColumnsSettings.showSelection = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE);
+            });
+
+            it('respects column filters', () => {
+                specialColumnsSettings.showColumnFilters = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE);
+            });
+
+            it('respects sub menus', () => {
+                specialColumnsSettings.showSubMenuItems = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE);
+            });
+
+            it('respects multiple special columns', () => {
+                specialColumnsSettings.showColumnFilters = true;
+                specialColumnsSettings.showSelection = true;
+                specialColumnsSettings.showCollapser = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE * 3);
+            });
+
+            it('uses the same space for menu items and column filters', () => {
+                specialColumnsSettings.showColumnFilters = true;
+                specialColumnsSettings.showSubMenuItems = true;
+                expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(SPECIAL_COLUMNS_SIZE);
+            });
+        });
+
+
+        it('computes current body width from provided callback', () => {
+            const { wrapper } = doMount();
+            expect(availableWidthMock.innerWidthToBodyWidth).toHaveBeenCalledWith(100, false);
+            expect(wrapper.vm.currentBodyWidth).toBe(bodyWidthResult);
+        });
+
+        it('uses different scrolled element in case of virtual scrolling', () => {
+            useAvailableWidth.reset();
+            const { wrapper } = doMount({ enableVirtualScrolling: true, shallow: false });
+            const [{
+                refs: {
+                    scrolledElement
+                }
+            }] = useAvailableWidth.mock.calls[0];
+
+            expect(unref(scrolledElement)).toBe(wrapper.findComponent(RecycleScroller).element);
+        });
+
+        it('uses the scrollbar width when creating the current body width', () => {
+            const { wrapper } = doMount({ enableVirtualScrolling: true, shallow: false });
+            expect(availableWidthMock.innerWidthToBodyWidth).toHaveBeenCalledWith(100, true);
+            expect(wrapper.vm.currentBodyWidth).toBe(bodyWidthResult);
         });
     });
 
