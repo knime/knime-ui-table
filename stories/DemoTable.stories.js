@@ -355,3 +355,13 @@ TableView.args = {
     numRowsAbove: 5,
     numRowsBelow: 5
 };
+
+export const ColumnSizeScrollbarBug = Template.bind({});
+
+ColumnSizeScrollbarBug.args = {
+    withColumnFilters: false,
+    enableColumnResize: true,
+    enableVirtualScrolling: true,
+    allDataLength: 200,
+    containerHeight: '100%'
+};
