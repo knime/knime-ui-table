@@ -589,31 +589,6 @@ export default {
 
 <template>
   <table ref="wrapper">
-    <div
-      :style="{display: 'flex', flexDirection: 'row', overflow: auto}"
-    >
-      <div
-        v-if="tableConfig.showCollapser"
-        :style="{width: 30 + 'px', backgroundColor: 'red' ,flexShrink: 0}"
-      />
-      <div
-        v-if="tableConfig.showSelection"
-        :style="{width: 30 + 'px', backgroundColor: 'orange', flexShrink: 0}"
-      />
-      <div
-        :style="{
-          width: availableWidth + 'px',
-          backgroundColor: 'green',
-          flexShrink: 0
-        }"
-      >
-        AvailableWidth: {{ availableWidth }}
-      </div>
-      <div
-        v-if="tableConfig.showColumnFilters || tableConfig.subMenuItems.length > 0"
-        :style="{width: 30 + 'px', backgroundColor: 'blue', flexShrink: 0}"
-      />
-    </div>
     <TopControls
       v-if="tableConfig.pageConfig !== false"
       :table-config="tableConfig"
