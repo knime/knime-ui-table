@@ -382,16 +382,11 @@ tr {
 
 .row-drag-handle {
   height: 5px;
-  background-color: var(--knime-dove-gray);
   opacity: 0;
   bottom: 5px;
   margin-bottom: -5px;
   cursor: row-resize;
   position: relative;
-
-  &:hover {
-    opacity: 1;
-  }
 }
 
 tr.row {
