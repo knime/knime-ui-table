@@ -244,76 +244,23 @@ describe('Table.vue', () => {
     });
 
     describe('events', () => {
-        it('adds / removes intersection observer / resize listener and updates client width accordingly', () => {
-            const observe = vi.fn();
-            const unobserve = vi.fn();
-            window.IntersectionObserver = vi.fn(() => ({
-                observe,
-                unobserve
-            }));
-            vi.spyOn(window, 'addEventListener');
-            vi.spyOn(window, 'removeEventListener');
-
+        it('updates column sizes from availableWidth', () => {
             const { wrapper } = doMount();
 
-            expect(wrapper.vm.clientWidth).toBe(0);
-            expect(window.IntersectionObserver).toHaveBeenCalledTimes(1);
-            expect(observe).toHaveBeenCalledTimes(1);
-            expect(observe).toHaveBeenCalledWith(wrapper.vm.$el);
-
-            let clientWidth = 100;
-            const mockedEntries = [{
-                target: null
-            }, {
-                target: wrapper.vm.$el,
-                boundingClientRect: { width: 0 }
-            }, {
-                target: wrapper.vm.$el,
-                boundingClientRect: { width: clientWidth }
-            }];
-            const [callback] = window.IntersectionObserver.mock.calls[0];
-            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
-            expect(wrapper.vm.clientWidth).toBe(clientWidth);
-            expect(unobserve).toHaveBeenCalledTimes(1);
-            expect(unobserve).toHaveBeenCalledWith(wrapper.vm.$el);
-            expect(window.addEventListener).toHaveBeenCalledTimes(1);
-            expect(window.addEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
+            let availableWidth = 100;
+            wrapper.vm.updateAvailableWidth(availableWidth);
+            expect(wrapper.vm.currentAvailableWidth).toBe(availableWidth);
             expect(wrapper.vm.currentColumnSizes).toStrictEqual([50, 50]);
 
             const allColumnsResizeSize = 123;
             wrapper.vm.onAllColumnsResize(allColumnsResizeSize);
             const firstColumnsResizeSize = 600;
             wrapper.vm.onColumnResize(0, firstColumnsResizeSize);
-            wrapper.vm.$el.getBoundingClientRect = function () {
-                return { width: 0 };
-            };
-            window.dispatchEvent(new Event('resize'));
-            expect(wrapper.vm.clientWidth).toBe(clientWidth);
-            expect(window.removeEventListener).toHaveBeenCalledTimes(1);
-            expect(window.removeEventListener).toHaveBeenCalledWith('resize', wrapper.vm.onResize);
-            expect(window.IntersectionObserver).toHaveBeenCalledTimes(2);
-            expect(observe).toHaveBeenCalledTimes(2);
-            expect(observe).toHaveBeenLastCalledWith(wrapper.vm.$el);
             expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize, allColumnsResizeSize]);
 
-            callback(mockedEntries, window.IntersectionObserver.mock.results[0].value);
-            expect(wrapper.vm.clientWidth).toBe(clientWidth);
-            expect(unobserve).toHaveBeenCalledTimes(2);
-            expect(unobserve).toHaveBeenLastCalledWith(wrapper.vm.$el);
-            expect(window.addEventListener).toHaveBeenCalledTimes(2);
-            expect(window.addEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
-            expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize, allColumnsResizeSize]);
-
-            clientWidth = 200;
-            wrapper.vm.$el.getBoundingClientRect = function () {
-                return { width: clientWidth };
-            };
-            window.dispatchEvent(new Event('resize'));
-            expect(wrapper.vm.clientWidth).toBe(clientWidth);
-    
-            wrapper.unmount();
-            expect(window.removeEventListener).toHaveBeenCalledTimes(2);
-            expect(window.removeEventListener).toHaveBeenLastCalledWith('resize', wrapper.vm.onResize);
+            availableWidth = 200;
+            wrapper.vm.updateAvailableWidth(availableWidth);
+            expect(wrapper.vm.currentAvailableWidth).toBe(availableWidth);
             expect(wrapper.vm.currentColumnSizes).toStrictEqual([firstColumnsResizeSize * 2, allColumnsResizeSize * 2]);
         });
 
@@ -508,33 +455,29 @@ describe('Table.vue', () => {
             expect(wrapper.vm.filterByColumn([5, 10])).toStrictEqual([10]);
         });
 
-        it('computes currentColumnSizes correctly', () => {
-            let checkCurrentColumnSizes = async (clientWidth, showCollapser, showSelection, columnSizeOverride) => {
-                const { wrapper } = doMount({ customProps: { showCollapser, showSelection } });
-                await wrapper.setData({ clientWidth });
-                const nColumns = wrapper.vm.currentColumns.length;
-                let currentColumnSizes;
-                if (columnSizeOverride) {
-                    for (let i = 0; i < nColumns; i++) {
-                        wrapper.vm.onColumnResize(i, columnSizeOverride);
-                    }
-                    currentColumnSizes = Array(nColumns).fill(columnSizeOverride);
-                } else {
-                    const specialColumnsSizeTotal = SPECIAL_COLUMNS_SIZE + (showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
-                        (showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
-                    const dataColumnsSizeTotal = clientWidth - specialColumnsSizeTotal;
-                    const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, dataColumnsSizeTotal / nColumns);
-                    currentColumnSizes = Array(nColumns).fill(defaultColumnSize);
-                }
-                expect(wrapper.vm.currentColumnSizes).toStrictEqual(currentColumnSizes);
-            };
+        it('computes currentColumnSizes correctly with min space', async () => {
+            const availableWidth = 100;
+            const { wrapper } = doMount();
+            await wrapper.setData({ currentAvailableWidth: availableWidth });
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([MIN_COLUMN_SIZE, MIN_COLUMN_SIZE]);
+        });
 
-            checkCurrentColumnSizes(0, false, false, null);
-            checkCurrentColumnSizes(200, false, false, null);
-            checkCurrentColumnSizes(200, false, true, null);
-            checkCurrentColumnSizes(200, true, false, null);
-            checkCurrentColumnSizes(200, true, true, null);
-            checkCurrentColumnSizes(200, true, true, 100);
+        it('computes currentColumnSizes correctly with enouth space', async () => {
+            const availableWidth = 500;
+            const { wrapper } = doMount();
+            await wrapper.setData({ currentAvailableWidth: availableWidth });
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([availableWidth / 2, availableWidth / 2]);
+        });
+
+        it('computes currentColumnSizes with column size override', async () => {
+            const availableWidth = 200;
+            const columnSizeOverride = 100;
+            const { wrapper } = doMount();
+            await wrapper.setData({ currentAvailableWidth: availableWidth });
+            wrapper.vm.onColumnResize(0, columnSizeOverride);
+            expect(wrapper.vm.currentColumnSizes).toStrictEqual([
+                columnSizeOverride, availableWidth - columnSizeOverride
+            ]);
         });
 
         it('computes currentColumnSizes correctly when resizing all columns', async () => {

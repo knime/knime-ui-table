@@ -87,6 +87,5 @@ export default ({
         }
     });
 
-
     return { innerWidthToBodyWidth };
 };

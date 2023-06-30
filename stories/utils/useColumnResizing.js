@@ -1,6 +1,4 @@
 import { ref, computed } from 'vue';
-
-import throttle from 'raf-throttle';
 import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 export default ({
@@ -12,7 +10,6 @@ export default ({
     const currentSetDefaultSize = ref(null);
 
     const updateAvailableWidth = (newAvaliableWidth) => {
-        console.log(newAvaliableWidth);
         if (currentAvailableWidth.value) {
             // update all non-default column widths according to the relative change in client width
             const ratio = newAvaliableWidth / currentAvailableWidth.value;
@@ -41,8 +38,6 @@ export default ({
         const lastColumnMinSize = currentAvailableWidth.value -
             currentColumnSizes.slice(0, n - 1).reduce((partialSum, size) => partialSum + size, 0);
         currentColumnSizes[n - 1] = Math.max(lastColumnMinSize, currentColumnSizes[n - 1]);
-        console.log('Sum of current column sizes:', currentColumnSizes.reduce((partialSum, size) => partialSum + size, 0));
-        console.log(currentColumnSizes);
         return currentColumnSizes;
     });
         

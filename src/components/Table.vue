@@ -12,8 +12,7 @@ import { filter } from '@/util/transform/filter';
 import { group } from '@/util/transform/group';
 import { sort } from '@/util/transform/sort';
 import { paginate } from '@/util/transform/paginate';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
-import throttle from 'raf-throttle';
+import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 /**
  * @see README.md
@@ -162,9 +161,9 @@ export default {
             // Control State
             // column selection
             currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
-            clientWidth: 0,
             currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
             currentSetDefaultColumnSize: null,
+            currentAvailableWidth: 0,
             currentColumns: this.defaultColumns.map(col => this.allColumnKeys.indexOf(col))
                 .filter(ind => ind > -1).sort((a, b) => a > b),
             // time filter
@@ -318,17 +317,11 @@ export default {
             if (nColumns < 1) {
                 return [];
             }
-
-            const specialColumnsSizeTotal = (this.showColumnFilters ? SPECIAL_COLUMNS_SIZE : 0) +
-                (this.showSelection ? SPECIAL_COLUMNS_SIZE : 0) +
-                (this.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
-            const dataColumnsSizeTotal = this.clientWidth - specialColumnsSizeTotal;
-            const currentDefaultColumnSize = this.currentSetDefaultColumnSize || dataColumnsSizeTotal / nColumns;
+            const currentDefaultColumnSize = this.currentSetDefaultColumnSize || this.currentAvailableWidth / nColumns;
             const defaultColumnSize = Math.max(MIN_COLUMN_SIZE, currentDefaultColumnSize);
-
             const currentColumnSizes = this.filterByColumn(this.currentAllColumnSizes)
                 .map(columnSize => columnSize > 0 ? columnSize : defaultColumnSize);
-            const lastColumnMinSize = dataColumnsSizeTotal -
+            const lastColumnMinSize = this.currentAvailableWidth -
                 currentColumnSizes.slice(0, nColumns - 1).reduce((partialSum, size) => partialSum + size, 0);
             currentColumnSizes[nColumns - 1] = Math.max(lastColumnMinSize, currentColumnSizes[nColumns - 1]);
             return currentColumnSizes;
@@ -490,14 +483,6 @@ export default {
         // If reactivity partially updates on the initial load, update the state manually.
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
-        }
-        const clientWidth = this.$el.getBoundingClientRect().width;
-        // clientWidth can be 0, e.g., if table is not visible (yet)
-        if (clientWidth) {
-            this.clientWidth = clientWidth;
-            window.addEventListener('resize', this.onResize);
-        } else {
-            this.observeTableIntersection();
         }
     },
     beforeUnmount() {
@@ -780,39 +765,20 @@ export default {
             consola.debug(`Table clearing selection.`);
             this.masterSelected = this.allData.map(() => 0);
         },
-        onResize: throttle(function () {
-            /* eslint-disable no-invalid-this */
-            const updatedClientWidth = this.$el.getBoundingClientRect().width;
-            if (updatedClientWidth) {
-                // update all non-default column widths according to the relative change in client width
-                const ratio = updatedClientWidth / this.clientWidth;
+        updateAvailableWidth(newAvailableWidth) {
+            if (this.currentAvailableWidth) {
+                const ratio = newAvailableWidth / this.currentAvailableWidth;
                 this.currentAllColumnSizes = this.currentAllColumnSizes
                     .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
                 if (this.currentSetDefaultColumnSize !== null) {
                     this.currentSetDefaultColumnSize *= ratio;
                 }
-                this.clientWidth = updatedClientWidth;
-            } else {
-                this.observeTableIntersection();
-                window.removeEventListener('resize', this.onResize);
             }
-            /* eslint-enable no-invalid-this */
-        }),
+            this.currentAvailableWidth = newAvailableWidth;
+        },
         getCellContentSlotName(columnId) {
             // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
             return `cellContent-${columnId}`;
-        },
-        observeTableIntersection() {
-            new IntersectionObserver((entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.target === this.$el && entry.boundingClientRect.width) {
-                        this.clientWidth = entry.boundingClientRect.width;
-                        // observer is either removed here or on garbage collection
-                        observer.unobserve(entry.target);
-                        window.addEventListener('resize', this.onResize);
-                    }
-                });
-            }).observe(this.$el);
         }
     }
 };
@@ -842,6 +808,7 @@ export default {
     @table-input="onTableInput"
     @column-resize="onColumnResize"
     @all-columns-resize="onAllColumnsResize"
+    @update:available-width="updateAvailableWidth"
     @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
   >
     <!-- eslint-disable vue/valid-v-slot -->

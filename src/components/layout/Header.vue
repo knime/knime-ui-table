@@ -113,9 +113,6 @@ export default {
             return this.columnSubHeaders.some(item => item);
         }
     },
-    updated() {
-        console.log('hier', this.tableConfig.showColumnFilters);
-    },
     methods: {
         isColumnSortable(index) {
             return this.enableSorting && this.columnSortConfigs[index];
