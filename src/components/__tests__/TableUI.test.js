@@ -312,7 +312,7 @@ describe('TableUI.vue', () => {
             const { wrapper } = doMount({
                 pageConfig: {
                     showTableSize: false,
-                    pageSize: 10,
+                    pageSize: 2,
                     currentSize: 4
                 }
             });

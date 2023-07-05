@@ -2,6 +2,7 @@
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import ArrowNextIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
 import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
+import isSinglePage from '@/util/isSinglePage';
 
 /**
  * Base table data element with table page controls for the left side of a table header.
@@ -44,8 +45,7 @@ export default {
     emits: ['nextPage', 'prevPage'],
     computed: {
         isPaginationEnabled() {
-            // FIXME handle case pageSize bigger than currentItems (currentItems still shown when pagination with one page is enabled)
-            return this.currentItems !== this.pageSize;
+            return !isSinglePage(this.currentItems, this.pageSize);
         },
         shouldAppendTotalItems() {
             return this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0;
@@ -85,11 +85,11 @@ export default {
       <span v-else-if="isPaginationEnabled">
         Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
       </span>
-      <span v-if="shouldAppendTotalItems">
+      <span v-if="shouldAppendTotalItems && showTableSize">
         ({{ totalItems }} total)
       </span>
     </template>
-    <span v-else>
+    <span v-else-if="showTableSize">
       No data {{ `${totalItems ? `(${totalItems} hidden)` : ''}` }}
     </span>
     <span v-if="columnCount && showTableSize">

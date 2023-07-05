@@ -16,6 +16,7 @@ import { DEFAULT_ROW_HEIGHT, COMPACT_ROW_HEIGHT, ROW_MARGIN_BOTTOM,
     ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
     SPECIAL_COLUMNS_SIZE } from '@/util/constants';
 import { computed, ref, toRefs } from 'vue';
+import isSinglePage from '@/util/isSinglePage';
 
 /**
  * @see README.md
@@ -277,8 +278,11 @@ export default {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
         showTopControls() {
-            return this.tableConfig.pageConfig.showTableSize || this.tableConfig.searchConfig ||
-              this.tableConfig.pageConfig.pageSize !== this.tableConfig.pageConfig.currentSize;
+            const isPaginationEnabled = !isSinglePage(
+                this.tableConfig.pageConfig.currentSize,
+                this.tableConfig.pageConfig.pageSize
+            );
+            return this.tableConfig.pageConfig.showTableSize || this.tableConfig.searchConfig || isPaginationEnabled;
         },
         topDataLength() {
             if (this.data === null || this.data.length === 0) {
