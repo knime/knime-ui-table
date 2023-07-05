@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isSinglePage } from '../isSinglePage';
+import isSinglePage from '../isSinglePage';
 
 describe('isSinglePage', () => {
     it('returns true if pagination is disabled with less items than page size', () => {

@@ -277,13 +277,6 @@ export default {
         showVirtualScroller() {
             return this.enableVirtualScrolling && this.scrollData.length === 1;
         },
-        showTopControls() {
-            const isPaginationEnabled = !isSinglePage(
-                this.tableConfig.pageConfig.currentSize,
-                this.tableConfig.pageConfig.pageSize
-            );
-            return this.tableConfig.pageConfig.showTableSize || this.tableConfig.searchConfig || isPaginationEnabled;
-        },
         topDataLength() {
             if (this.data === null || this.data.length === 0) {
                 return 0;
@@ -598,7 +591,6 @@ export default {
 <template>
   <table ref="wrapper">
     <TopControls
-      v-if="showTopControls"
       :table-config="tableConfig"
       :column-headers="columnHeaders"
       @next-page="onPageChange(1)"

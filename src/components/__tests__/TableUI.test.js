@@ -253,89 +253,10 @@ describe('TableUI.vue', () => {
             expect(wrapper.findComponent(BottomControls).exists()).toBe(false);
             expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
         });
-
-        it('hides TopControls when no data to be displayed', async () => {
-            const { wrapper } = doMount({
-                pageConfig: {
-                    showTableSize: false,
-                    pageSize: 10,
-                    currentSize: 10
-                }
-            });
-
-            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
-
-            await wrapper.setProps({
-                ...wrapper.props(),
-                tableConfig: {
-                    ...wrapper.props().tableConfig,
-                    searchConfig: null
-                }
-            });
-
-            expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
-        });
-
-        it('shows TopControls when search is on and table size and pagination are off', () => {
-            const { wrapper } = doMount({
-                pageConfig: {
-                    showTableSize: false,
-                    pageSize: 10,
-                    currentSize: 10
-                }
-            });
-
-            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
-        });
-
-        it('shows TopControls when showTableSize is on and pagination and search are off', async () => {
-            const { wrapper } = doMount({
-                pageConfig: {
-                    showTableSize: true,
-                    pageSize: 10,
-                    currentSize: 10
-                }
-            });
-
-            await wrapper.setProps({
-                ...wrapper.props(),
-                tableConfig: {
-                    ...wrapper.props().tableConfig,
-                    searchConfig: null
-                }
-            });
-    
-            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
-        });
-
-        it('shows TopControls when pagination is on and search and showTableSize are off', async () => {
-            const { wrapper } = doMount({
-                pageConfig: {
-                    showTableSize: false,
-                    pageSize: 2,
-                    currentSize: 4
-                }
-            });
-
-            await wrapper.setProps({
-                ...wrapper.props(),
-                tableConfig: {
-                    ...wrapper.props().tableConfig,
-                    searchConfig: null
-                }
-            });
-    
-            expect(wrapper.findComponent(TopControls).exists()).toBeTruthy();
-        });
     });
 
     describe('events', () => {
         describe('top controls', () => {
-            it('does not show top controls if there are no page controls', () => {
-                const { wrapper } = doMount({ pageConfig: false });
-                expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
-            });
-
             it('does not show top controls text if there showTableSize is false', () => {
                 const { wrapper } = doMount({ shallow: false,
                     pageConfig: {

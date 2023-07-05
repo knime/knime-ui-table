@@ -1,3 +1,1 @@
-export default function isSinglePage(currentItems, pageSize) {
-    return currentItems <= pageSize;
-}
+export default (currentItems, pageSize) => currentItems <= pageSize;

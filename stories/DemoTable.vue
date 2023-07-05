@@ -55,7 +55,6 @@ const props = defineProps({
     enableVirtualScrolling: Boolean,
     fixHeader: Boolean,
     showTableSize: Boolean,
-    showTopControls: Boolean,
     containerHeight: {
         type: String,
         default: ''
@@ -217,17 +216,15 @@ const actionButtonConfig = props.showActionButton
     ? reactive({ callback: () => consola.log('action button clicked'), text: props.actionButtonText })
     : null;
 
-const pageConfig = props.showTopControls
-    ? reactive({
-        tableSize: totalTableSize,
-        currentSize: currentTableSize,
-        pageSize: currentPageSize,
-        possiblePageSizes: tablePageSizes,
-        showTableSize: props.showTableSize,
-        currentPage,
-        fixHeader: props.fixHeader
-    })
-    : false;
+const pageConfig = reactive({
+    tableSize: totalTableSize,
+    currentSize: currentTableSize,
+    pageSize: currentPageSize,
+    possiblePageSizes: tablePageSizes,
+    showTableSize: props.showTableSize,
+    currentPage,
+    fixHeader: props.fixHeader
+});
 
 const tableConfig = reactive({
     showSelection: props.withSelection,
