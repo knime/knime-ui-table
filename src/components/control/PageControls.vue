@@ -2,7 +2,7 @@
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import ArrowNextIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
 import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
-import isSinglePage from '@/util/isSinglePage';
+import TextDimensionAndRange from './TextDimensionAndRange.vue';
 
 /**
  * Base table data element with table page controls for the left side of a table header.
@@ -14,7 +14,8 @@ export default {
     components: {
         ArrowNextIcon,
         FunctionButton,
-        ArrowPrevIcon
+        ArrowPrevIcon,
+        TextDimensionAndRange
     },
     props: {
         totalItems: {
@@ -44,12 +45,6 @@ export default {
     },
     emits: ['nextPage', 'prevPage'],
     computed: {
-        isPaginationEnabled() {
-            return !isSinglePage(this.currentItems, this.pageSize);
-        },
-        shouldAppendTotalItems() {
-            return this.currentItems !== this.totalItems && this.totalItems > 0 && this.currentItems > 0;
-        },
         pageRangeStart() {
             return 1 + ((this.currentPage * this.pageSize) - this.pageSize);
         },
@@ -78,23 +73,16 @@ export default {
 
 <template>
   <th class="left-controls">
-    <template v-if="currentItems">
-      <span v-if="showTableSize && !isPaginationEnabled">
-        Rows: {{ currentItems }}
-      </span>
-      <span v-else-if="isPaginationEnabled">
-        Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
-      </span>
-      <span v-if="shouldAppendTotalItems && showTableSize">
-        ({{ totalItems }} total)
-      </span>
-    </template>
-    <span v-else-if="showTableSize">
-      No data {{ `${totalItems ? `(${totalItems} hidden)` : ''}` }}
-    </span>
-    <span v-if="columnCount && showTableSize">
-      {{ `   |   Columns: ${columnCount}` }}
-    </span>
+    <TextDimensionAndRange
+      :total-items="totalItems"
+      :current-items="currentItems"
+      :page-size="pageSize"
+      :current-page="currentPage"
+      :column-count="columnCount"
+      :show-table-size="showTableSize"
+      :page-range-start="pageRangeStart"
+      :page-range-end="pageRangeEnd"
+      />
     <FunctionButton
       v-if="hasNextPage || hasPreviousPage"
       :disabled="!hasPreviousPage"
@@ -116,11 +104,6 @@ export default {
 th.left-controls {
   display: flex;
   align-items: center;
-
-  & span {
-    margin-right: 5px;
-    white-space: pre;
-  }
 
   & :deep(.function-button) {
     display: flex;
