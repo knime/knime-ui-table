@@ -82,7 +82,7 @@ export default {
         const { possibleValues } = toRefs(props);
 
         const toggleButton: Ref<HTMLElement | null> = ref(null);
-        const optionsPopover = ref(null);
+        const optionsPopover: Ref<HTMLElement | null> = ref(null);
         const option: Ref<{$el: HTMLElement}[]> = ref([]);
 
 
@@ -100,6 +100,13 @@ export default {
         const scrollWindowTo = (element: HTMLElement | null) => {
             const toggleButtonElement = toggleButton.value;
             if (element === null || toggleButtonElement === null) {
+                return;
+            }
+            if (props.isFilter) {
+                /** In this case the list of element is scrollable and the computation below does not suffice.
+                 *  Instead element.scrollIntoView() will guarantee that the element is visible.
+                 */
+                element.scrollIntoView();
                 return;
             }
             const toggleButtonOffset = getOffsetTopToWindow(toggleButtonElement);
@@ -455,6 +462,8 @@ export default {
 }
 
 [role="options"].filter {
+  max-height: calc(32px * 7); /* show max 7 items */
+  overflow-y: auto;
   position: absolute;
   z-index: 2;
   width: fit-content;
@@ -462,7 +471,16 @@ export default {
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 
   & .boxes {
-    top: 5px;
+    height: 32px;
+    overflow-y: hidden;
+    padding-top: 8px; /** Move content down to appear centered */
+    &:deep(span::before) {
+      top: 9px; /** Move absolute positioned checkbox down to appear centered */
+    }
+
+    &:deep(span::after) {
+      top: 9px; /** Move absolute positioned checkbox checked icon down to appear centered */
+    }
   }
 }
 

@@ -215,11 +215,12 @@ describe('ControlMultiselect.vue', () => {
     
         describe('getNextElement', () => {
             let elementClickSpy,
-                getNextElement;
+                getNextElement,
+                wrapper;
     
             beforeEach(() => {
                 useDropdownNavigation.reset();
-                const wrapper = mount(ControlMultiselect, { props, attachTo: document.body });
+                wrapper = mount(ControlMultiselect, { props, attachTo: document.body });
                 wrapper.vm.toggle();
                 getNextElement = useDropdownNavigation.mock.calls[0][0].getNextElement;
                 
@@ -284,6 +285,14 @@ describe('ControlMultiselect.vue', () => {
                     window.innerHeight = 400;
                     getNextElement(2, -1);
                     expect(window.scrollTo).toHaveBeenCalledWith(window.scrollX, -20);
+                });
+
+                it('scrolls into view in case of a filter', async () => {
+                    await wrapper.setProps({ isFilter: true });
+                    const scrollIntoViewSpy = vi.fn();
+                    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewSpy;
+                    getNextElement(2, -1);
+                    expect(scrollIntoViewSpy).toHaveBeenCalled();
                 });
             });
         });
