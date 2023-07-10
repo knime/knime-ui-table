@@ -1,15 +1,17 @@
 //  a vue composable for the capability of the the TableUI to detect the available width for all columns.
 import { computed, onMounted, ref, watch, type Ref, onBeforeUnmount, nextTick } from 'vue';
+import throttle from 'raf-throttle';
 
 const useTotalWidth = (
     root: Ref<HTMLElement>
 ) => {
     const totalWidth: Ref<null| number> = ref(null);
 
-    const rootResizeObserver = new ResizeObserver((entries) => {
+    const rootResizeCallback = throttle((entries) => {
         const rect = entries[0].contentRect;
         totalWidth.value = rect.width;
     });
+    const rootResizeObserver = new ResizeObserver(rootResizeCallback);
 
     onMounted(() => {
         rootResizeObserver.observe(root.value);
@@ -27,11 +29,12 @@ const useScrollbarWidth = (
 ) => {
     const currentScrollBarWidth = ref(0);
 
-    const scrollbarWidthObserver = new ResizeObserver((entries) => {
+    const scrollbarWidthCallback = throttle((entries) => {
         const totalWidth = entries[0].borderBoxSize[0].inlineSize;
         const innerWidth = entries[0].contentRect.width;
         currentScrollBarWidth.value = totalWidth - innerWidth;
     });
+    const scrollbarWidthObserver = new ResizeObserver(scrollbarWidthCallback);
 
     onMounted(() => {
         // next tick necessary for the virtual scroller to be rendered

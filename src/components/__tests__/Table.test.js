@@ -5,16 +5,7 @@ import Table from '../Table.vue';
 import TableUI from '../TableUI.vue';
 
 import { columnTypes } from '@/config/table.config';
-import { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE } from '@/util/constants';
-
-vi.mock('raf-throttle', () => ({
-    default(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+import { MIN_COLUMN_SIZE } from '@/util/constants';
 
 const headerSubMenuItems = [
     [{ text: 'Column 1: Item 1', id: 'c1s1i1', selected: true, section: 'section1' }],

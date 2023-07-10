@@ -11,15 +11,6 @@ import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
-vi.mock('raf-throttle', () => ({
-    default(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
-
 describe('Row.vue', () => {
     let wrapper;
 

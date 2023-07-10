@@ -8,15 +8,6 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
 import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
 
-vi.mock('raf-throttle', () => ({
-    default(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
-
 const columnSubMenuItems = [
     { text: 'Data renderer', separator: true, sectionHeadline: true },
     { text: 'renderer1', id: 'rend1', section: 'dataRendering', selected: false, showTooltip: true },
