@@ -1,4 +1,4 @@
-import { describe, vi, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
 
 import Row from '../Row.vue';
