@@ -90,8 +90,8 @@ const classes = computed(() => {
 
     & .missing-value-icon {
       vertical-align: middle;
+      min-height: 100%;
       width: 14px;
-      height: 14px;
       stroke-width: calc(32px / 14);
       stroke: var(--theme-color-kudos);
     }
