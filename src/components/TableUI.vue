@@ -816,6 +816,11 @@ export default {
 <style lang="postcss" scoped>
 .scroller {
   flex: 1 1 0;
+
+  /* stylelint-disable-next-line selector-class-pattern */
+  & :deep(.vue-recycle-scroller__item-wrapper) {
+    height: 100%;
+  }
 }
 
 table {
