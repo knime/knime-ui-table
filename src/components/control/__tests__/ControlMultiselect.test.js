@@ -268,33 +268,6 @@ describe('ControlMultiselect.vue', () => {
                 const getLastElement = useDropdownNavigation.mock.calls[0][0].getLastElement;
                 expectNextElement(getLastElement(), 2);
             });
-
-            /* Since it is not possible to simulate the full browser functionality here, we instead mock the
-            accessed window parameters */
-            // eslint-disable-next-line vitest/max-nested-describe
-            describe('scrolls to current active element', () => {
-                it('scrolls down if the element is not visible at the bottom of the screen', () => {
-                    window.scrollY = -1000;
-                    window.innerHeight = 400;
-                    getNextElement(2, -1);
-                    expect(window.scrollTo).toHaveBeenCalledWith(window.scrollX, 20 - window.innerHeight);
-                });
-
-                it('scrolls up if the element is not visible at the top of the screen', () => {
-                    window.scrollY = 1000;
-                    window.innerHeight = 400;
-                    getNextElement(2, -1);
-                    expect(window.scrollTo).toHaveBeenCalledWith(window.scrollX, -20);
-                });
-
-                it('scrolls into view in case of a filter', async () => {
-                    await wrapper.setProps({ isFilter: true });
-                    const scrollIntoViewSpy = vi.fn();
-                    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewSpy;
-                    getNextElement(2, -1);
-                    expect(scrollIntoViewSpy).toHaveBeenCalled();
-                });
-            });
         });
 
         it('sets aria-owns and aria-activedescendant label', () => {

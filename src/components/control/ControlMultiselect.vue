@@ -88,10 +88,10 @@ export default {
 
         const isExpanded = ref(false);
 
-        const getOffsetTopToWindow = (element: HTMLElement | null) => {
+        const getPositionOnWindow = (element: HTMLElement | null) => {
             let offsetTop = 0;
             while (element) {
-                offsetTop += element.offsetTop;
+                offsetTop += element.offsetTop - (element.offsetParent?.scrollTop ?? 0);
                 element = element.offsetParent as HTMLElement | null;
             }
             return offsetTop;
@@ -102,16 +102,9 @@ export default {
             if (element === null || toggleButtonElement === null) {
                 return;
             }
-            if (props.isFilter) {
-                /** In this case the list of element is scrollable and the computation below does not suffice.
-                 *  Instead element.scrollIntoView() will guarantee that the element is visible.
-                 */
-                element.scrollIntoView();
-                return;
-            }
-            const toggleButtonOffset = getOffsetTopToWindow(toggleButtonElement);
+            const toggleButtonOffset = getPositionOnWindow(toggleButtonElement);
             const toggleButtonHeight = toggleButtonElement.scrollHeight;
-            const elementOffsetToToggleButton = getOffsetTopToWindow(element);
+            const elementOffsetToToggleButton = getPositionOnWindow(element);
             const elementOffsetTotal = toggleButtonOffset + toggleButtonHeight + elementOffsetToToggleButton;
             // We want a margin from the top / bottom of the screen to the current selected element
             const pageYOffset = 20;
@@ -125,10 +118,28 @@ export default {
             }
         };
 
+        const scrollPopoverTo = (element: HTMLElement) => {
+            const listBoxNode = optionsPopover.value;
+            if (listBoxNode && listBoxNode.scrollHeight > listBoxNode.clientHeight) {
+                const scrollBottom = listBoxNode.clientHeight + listBoxNode.scrollTop;
+                const elementBottom = element.offsetTop + element.offsetHeight;
+                if (elementBottom > scrollBottom) {
+                    listBoxNode.scrollTop = elementBottom - listBoxNode.clientHeight;
+                } else if (element.offsetTop < listBoxNode.scrollTop) {
+                    listBoxNode.scrollTop = element.offsetTop;
+                }
+            }
+        };
+
+        const scrollTo = (element: HTMLElement) => {
+            scrollPopoverTo(element);
+            scrollWindowTo(element);
+        };
+
         const getNextElement = (current: number | null, direction: 1 | -1) => {
             const listItems = option.value.map(({ $el }) => $el);
             const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
-            scrollWindowTo(element);
+            scrollTo(element.offsetParent as HTMLElement);
             const clickableInputElement = element.querySelector('input') as HTMLElement;
             return { index, onClick: () => clickableInputElement.click() };
         };
