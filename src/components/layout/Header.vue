@@ -112,7 +112,7 @@ export default {
         hasSubHeaders() {
             return this.columnSubHeaders.some(item => item);
         },
-        resizeDragHandleWidth() {
+        currentResizeDragHandleWidth() {
             return this.enableColumnResizing ? COLUMN_RESIZE_DRAG_HANDLE_WIDTH : 0;
         }
     },
@@ -197,7 +197,7 @@ export default {
                 const widthHeaderText =
                   this.$refs[`headerText-${columnIndex}`][0].getBoundingClientRect().width;
                 const textContainerOverflow = Math.ceil(widthHeaderText - widthHeaderTextContainer);
-                return widthCompleteHeader + textContainerOverflow + this.resizeDragHandleWidth;
+                return widthCompleteHeader + textContainerOverflow + this.currentResizeDragHandleWidth;
             });
         }
     }
@@ -272,7 +272,7 @@ export default {
         <div
           v-if="enableColumnResizing"
           :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
-          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`, width: `${resizeDragHandleWidth}px`}"
+          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`, width: `${currentResizeDragHandleWidth}px`}"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
           @pointerdown.passive="onPointerDown($event, ind)"

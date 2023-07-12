@@ -363,7 +363,7 @@ describe('Header.vue', () => {
         expect(wrapper.vm.getHeaderCellWidths()).toEqual([65, 45, 45, 45, 45]);
     });
 
-    it('computes the correct sizes such that the header size fits its content wit activated dragHanlde', () => {
+    it('computes the correct sizes such that the header size fits its content with activated dragHandle', () => {
         props.tableConfig.enableColumnResizing = false;
         wrapper = shallowMount(Header, { props });
         Element.prototype.getBoundingClientRect = vi.fn().mockReturnValueOnce({ width: 50 })

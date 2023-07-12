@@ -2,16 +2,7 @@
 /**
  * This component contains the ability to size the columns in the tableUI according to the width of its content by
  * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additonal prop,
- * the autoColumnSizesOptions. This object contains all the options necessary to calculate the sizes based on the
- * content.
- *
- * columnSizesFitContentOptions: {
- *      calculateForBody: boolean,
- *      calculateForHeader: boolean,
- *      fixedSizes: Object of id => size
- * }
- * In case only one of calculateForBody/calculateForHeader is true, the emmited object auto sizes according to
- * body/header. In case both are true, the maximum of both values is used. For fixedSizes no body sizes are calculated.
+ * the options for the calculation.
  */
 
 import TableUI from './TableUI.vue';
@@ -27,6 +18,16 @@ export default {
         currentSelection: { type: Array, default: () => [] },
         dataConfig: { type: Object, default: () => ({}) },
         tableConfig: { type: Object, default: () => ({}) },
+        /** This object contains all the options necessary to calculate the sizes based on the
+         * content. In case only one of calculateForBody/calculateForHeader is true, the emmited object contains auto
+         * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes no
+         * body sizes are calculated.
+         * {
+         *      calculateForBody: boolean,
+         *      calculateForHeader: boolean,
+         *      fixedSizes: Object of id => size
+         * }
+         */
         autoColumnSizesOptions: { type: Object, default: () => ({}) }
     },
     emits: ['autoColumnSizesUpdate'],
@@ -40,6 +41,10 @@ export default {
     computed: {
         mountTableUIForAutoSizeCalculation() {
             return this.data !== null && this.calculateSizes;
+        },
+        autoColumnSizesActive() {
+            const { calculateForBody, calculateForHeader } = this.autoColumnSizesOptions;
+            return calculateForBody || calculateForHeader;
         },
         dataConfigIds() {
             const dataConfigIds = [];
@@ -81,7 +86,6 @@ export default {
         }
     },
     methods: {
-        // this method must be triggered on mounted of the parent, since the tableUI gets visible afterwards
         async triggerCalculationOfAutoColumnSizes() {
             // await one tick until props (autoColumnSizesOptions) are updated
             // can be removed when implementing UIEXT-1111
@@ -173,7 +177,7 @@ export default {
 <template>
   <TableUI
     ref="tableUI"
-    :style="{ visibility: autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
+    :style="{ visibility: !autoColumnSizesActive || autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
     v-bind="$attrs"
     :data="data"
     :current-selection="currentSelection"

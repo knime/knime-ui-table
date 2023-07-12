@@ -266,7 +266,7 @@ export default {
             this.activeDrag = false;
         }),
         getCellComponents() {
-            return this.$refs.cell;
+            return this.row.map((_, columnIndex) => this.$refs[`cell-${columnIndex}`][0]);
         }
     }
 };
@@ -302,7 +302,7 @@ export default {
       </td>
       <Cell
         v-for="(data, ind) in row"
-        ref="cell"
+        :ref="`cell-${ind}`"
         :key="ind"
         :title="getCellTitle(data, ind)"
         :clickable="isClickable(data, ind)"

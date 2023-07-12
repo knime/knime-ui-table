@@ -102,10 +102,19 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
 
     it('renders', () => {
         props.autoColumnSizesOptions.calculateForBody = false;
-        props.autoColumnSizesOptions.calculateForHeader = false;
+        props.autoColumnSizesOptions.calculateForHeader = true;
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
         expect(wrapper.findComponent(TableUIWithAutoSizeCalculation).exists()).toBeTruthy();
         expect(wrapper.findComponent(TableUI).exists()).toBeTruthy();
+        expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: hidden;');
+    });
+
+    it('renders and is visible when the calculation is not triggered from the outside', () => {
+        delete props.autoColumnSizesOptions;
+        const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+        expect(wrapper.findComponent(TableUIWithAutoSizeCalculation).exists()).toBeTruthy();
+        expect(wrapper.findComponent(TableUI).exists()).toBeTruthy();
+        expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: visible;');
     });
 
     it('does not mount the TableUIForAutoSizeCalculation when calculateForBody/calculateForHeader are false',

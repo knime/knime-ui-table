@@ -216,7 +216,8 @@ export default {
                 let columnConfig = {
                     // the id is used to keep track of which columns were removed/added in the TableUIForAutoSizeCalc
                     id: key,
-                    key, // the key is used to get the data of the columns
+                    // the key is used to get the data of the columns
+                    key,
                     header: this.currentHeaders[ind],
                     type: columnType,
                     size: this.currentColumnSizes[ind],
@@ -400,6 +401,9 @@ export default {
                 currentPageSize: this.currentPageSize
             };
         },
+        useAutoColumnSizes() {
+            return this.autoSizeColumnsToContent || this.autoSizeColumnsToContentInclHeaders;
+        },
         autoColumnSizesOptions() {
             return { fixedSizes: {},
                 calculateForBody: this.autoSizeColumnsToContent,
@@ -492,8 +496,7 @@ export default {
             this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         },
         autoSizeColumnsToContentInclHeaders() {
-            this.$refs.tableUIWithAutoSizeCalc.
-                triggerCalculationOfAutoColumnSizes();
+            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         }
     },
     mounted() {
@@ -786,7 +789,7 @@ export default {
             this.masterSelected = this.allData.map(() => 0);
         },
         updateAvailableWidth(newAvailableWidth) {
-            if (this.currentAvailableWidth) {
+            if (this.currentAvailableWidth && !this.useAutoColumnSizes) {
                 const ratio = newAvailableWidth / this.currentAvailableWidth;
                 this.currentAllColumnSizes = this.currentAllColumnSizes
                     .map(columnSize => columnSize > 0 ? columnSize * ratio : columnSize);
@@ -802,8 +805,7 @@ export default {
         },
         onAutoColumnSizesUpdate(newAutoColumnSizes) {
             this.allColumnKeys.forEach((columnKey, columnIndex) => {
-                this.currentAllColumnSizes[columnIndex] =
-                    newAutoColumnSizes[columnKey] || -1;
+                this.currentAllColumnSizes[columnIndex] = newAutoColumnSizes[columnKey] || -1;
             });
         }
     }
