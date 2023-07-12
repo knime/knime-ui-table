@@ -6,11 +6,12 @@ import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg
 import type { Ref, PropType } from 'vue';
 import { ref, toRefs, computed } from 'vue';
 import { isMissingValue } from '@/util';
-import useDropdownPopper from '../../composables/useDropdownPopper';
+import useDropdownPopper from './composables/useDropdownPopper';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
-import useIdGeneration from '@/composables/useIdGeneration';
+import useIdGeneration from './composables/useIdGeneration';
+import useScrollToElement from './composables/useScrollToElement';
 import type PossibleValue from '@/types/PossibleValue';
 
 /**
@@ -88,53 +89,7 @@ export default {
 
         const isExpanded = ref(false);
 
-        const getPositionOnWindow = (element: HTMLElement | null) => {
-            let offsetTop = 0;
-            while (element) {
-                offsetTop += element.offsetTop - (element.offsetParent?.scrollTop ?? 0);
-                element = element.offsetParent as HTMLElement | null;
-            }
-            return offsetTop;
-        };
-
-        const scrollWindowTo = (element: HTMLElement | null) => {
-            const toggleButtonElement = toggleButton.value;
-            if (element === null || toggleButtonElement === null) {
-                return;
-            }
-            const toggleButtonOffset = getPositionOnWindow(toggleButtonElement);
-            const toggleButtonHeight = toggleButtonElement.scrollHeight;
-            const elementOffsetToToggleButton = getPositionOnWindow(element);
-            const elementOffsetTotal = toggleButtonOffset + toggleButtonHeight + elementOffsetToToggleButton;
-            // We want a margin from the top / bottom of the screen to the current selected element
-            const pageYOffset = 20;
-            const pageYMin = elementOffsetTotal - pageYOffset;
-            const pageYMax = elementOffsetTotal + element.scrollHeight + pageYOffset;
-            if (window.scrollY + window.innerHeight < pageYMax) {
-                const newYOffset = pageYMax - window.innerHeight;
-                window.scrollTo(window.scrollX, newYOffset);
-            } else if (window.scrollY > pageYMin) {
-                window.scrollTo(window.scrollX, pageYMin);
-            }
-        };
-
-        const scrollPopoverTo = (element: HTMLElement) => {
-            const listBoxNode = optionsPopover.value;
-            if (listBoxNode && listBoxNode.scrollHeight > listBoxNode.clientHeight) {
-                const scrollBottom = listBoxNode.clientHeight + listBoxNode.scrollTop;
-                const elementBottom = element.offsetTop + element.offsetHeight;
-                if (elementBottom > scrollBottom) {
-                    listBoxNode.scrollTop = elementBottom - listBoxNode.clientHeight;
-                } else if (element.offsetTop < listBoxNode.scrollTop) {
-                    listBoxNode.scrollTop = element.offsetTop;
-                }
-            }
-        };
-
-        const scrollTo = (element: HTMLElement) => {
-            scrollPopoverTo(element);
-            scrollWindowTo(element);
-        };
+        const { scrollTo } = useScrollToElement({ toggleButton });
 
         const getNextElement = (current: number | null, direction: 1 | -1) => {
             const listItems = option.value.map(({ $el }) => $el);

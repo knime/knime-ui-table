@@ -9,10 +9,13 @@ const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onK
 vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
 
 const dropdownPopper = { updatePopper: vi.fn(), popperInstance: { setOptions: vi.fn() } };
-vi.mock('../../../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+vi.mock('../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+const scrollToElement = { scrollTo: vi.fn() };
+vi.mock('../composables/useScrollToElement', () => ({ default: vi.fn(() => scrollToElement) }));
 vi.mock('webapps-common/ui/composables/useClickOutside', () => ({ default: vi.fn() }));
 
-import useDropdownPopper from '../../../composables/useDropdownPopper';
+import useDropdownPopper from '../composables/useDropdownPopper';
+import useScrollToElement from '../composables/useScrollToElement';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
 
@@ -216,17 +219,20 @@ describe('ControlMultiselect.vue', () => {
         describe('getNextElement', () => {
             let elementClickSpy,
                 getNextElement,
-                wrapper;
+                wrapper,
+                getElement;
     
             beforeEach(() => {
                 useDropdownNavigation.reset();
                 wrapper = mount(ControlMultiselect, { props, attachTo: document.body });
                 wrapper.vm.toggle();
                 getNextElement = useDropdownNavigation.mock.calls[0][0].getNextElement;
-                
-                elementClickSpy = (i) => {
+                getElement = (i) => {
                     const popover = wrapper.find({ ref: 'optionsPopover' });
-                    const element = popover.findAll('.boxes')[i].find('input').element;
+                    return popover.findAll('.boxes')[i].find('input').element;
+                };
+                elementClickSpy = (i) => {
+                    const element = getElement(i);
                     return vi.spyOn(element, 'click');
                 };
             });
@@ -267,6 +273,12 @@ describe('ControlMultiselect.vue', () => {
             it('yields last element', () => {
                 const getLastElement = useDropdownNavigation.mock.calls[0][0].getLastElement;
                 expectNextElement(getLastElement(), 2);
+            });
+
+
+            it('scrolls to next element', () => {
+                getNextElement(-1, 1);
+                expect(scrollToElement.scrollTo).toHaveBeenCalledWith(getElement(0).offsetParent);
             });
         });
 
@@ -310,6 +322,13 @@ describe('ControlMultiselect.vue', () => {
         expect(wrapper.vm.isExpanded).toBe(true);
         callback();
         expect(wrapper.vm.isExpanded).toBe(false);
+    });
+
+    it('uses scroll to element composable', () => {
+        useScrollToElement.reset();
+        const wrapper = mount(ControlMultiselect, { props });
+        const [{ toggleButton }] = useScrollToElement.mock.calls[0];
+        expect(toggleButton.value).toStrictEqual(wrapper.find('[role="button"]').element);
     });
 
     describe('drag reordering', () => {

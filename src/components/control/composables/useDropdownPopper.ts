@@ -1,5 +1,6 @@
 import usePopper from 'webapps-common/ui/composables/usePopper';
 import type { PopperTargets } from 'webapps-common/ui/composables/usePopper';
+// @ts-ignore
 import type { ModifierArguments, Options } from '@popperjs/core';
 
 const setWidth = ({
@@ -17,8 +18,7 @@ const setWidth = ({
     popper.style.minWidth = `${reference.width}px`;
 };
 
-
-const useDropdownPopper = (targets: PopperTargets, openUp: boolean = false) => usePopper(
+export default (targets: PopperTargets, openUp: boolean = false): any => usePopper(
     targets,
     {
         placement: openUp ? 'top-end' : 'bottom-start',
@@ -44,6 +44,3 @@ const useDropdownPopper = (targets: PopperTargets, openUp: boolean = false) => u
         }]
     }
 );
-
-
-export default useDropdownPopper;

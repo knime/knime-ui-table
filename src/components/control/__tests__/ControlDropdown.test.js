@@ -9,12 +9,16 @@ const dropdownNavigation = { currentIndex: ref(1), resetNavigation: vi.fn(), onK
 vi.mock('webapps-common/ui/composables/useDropdownNavigation', () => ({ default: vi.fn(() => dropdownNavigation) }));
 
 const dropdownPopper = { updatePopper: vi.fn(), popperInstance: { setOptions: vi.fn() } };
-vi.mock('../../../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+vi.mock('../composables/useDropdownPopper', () => ({ default: vi.fn(() => dropdownPopper) }));
+const scrollToElement = { scrollTo: vi.fn() };
+vi.mock('../composables/useScrollToElement', () => ({ default: vi.fn(() => scrollToElement) }));
 vi.mock('webapps-common/ui/composables/useClickOutside', () => ({ default: vi.fn() }));
 
-import useDropdownPopper from '../../../composables/useDropdownPopper';
+import useDropdownPopper from '../composables/useDropdownPopper';
+import useScrollToElement from '../composables/useScrollToElement';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
+
 
 describe('ControlDropdown.vue', () => {
     let props;
@@ -255,16 +259,20 @@ describe('ControlDropdown.vue', () => {
 
         describe('getNextElement', () => {
             let elementClickSpy,
-                getNextElement;
+                getNextElement,
+                getElement;
 
             beforeEach(() => {
                 useDropdownNavigation.reset();
                 const wrapper = mount(ControlDropdown, { props, attachTo: document.body });
                 wrapper.find('[role="button"]').trigger('click');
                 getNextElement = useDropdownNavigation.mock.calls[0][0].getNextElement;
-                elementClickSpy = (i) => {
+                getElement = (i) => {
                     const popover = wrapper.find({ ref: 'ul' });
-                    const element = popover.findAll('li')[i].element;
+                    return popover.findAll('li')[i].element;
+                };
+                elementClickSpy = (i) => {
+                    const element = getElement(i);
                     return vi.spyOn(element, 'click');
                 };
             });
@@ -306,6 +314,11 @@ describe('ControlDropdown.vue', () => {
                 const getLastElement = useDropdownNavigation.mock.calls[0][0].getLastElement;
                 expectNextElement(getLastElement(), 2);
             });
+
+            it('scrolls to next element', () => {
+                getNextElement(-1, 1);
+                expect(scrollToElement.scrollTo).toHaveBeenCalledWith(getElement(0));
+            });
         });
 
         it('sets aria-owns and aria-activedescendant label', () => {
@@ -323,6 +336,13 @@ describe('ControlDropdown.vue', () => {
             button.trigger('click');
             expect(dropdownNavigation.resetNavigation).toHaveBeenCalled();
         });
+    });
+
+    it('uses scroll to element composable', () => {
+        useScrollToElement.reset();
+        const wrapper = mount(ControlDropdown, { props });
+        const [{ toggleButton }] = useScrollToElement.mock.calls[0];
+        expect(toggleButton.value).toStrictEqual(wrapper.find('[role="button"]').element);
     });
 
     describe('dropdown popover', () => {
