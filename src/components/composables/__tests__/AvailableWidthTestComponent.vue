@@ -20,7 +20,14 @@ const { innerWidthToBodyWidth } = useAvailableWidth({
     specialColumnsSizeTotal: toRef(props, 'specialColumnsSizeTotal'),
     emitAvailableWidth: (width) => emit('availableWidthChanged', width)
 });
-defineExpose({ innerWidthToBodyWidth });
+const useFirstScroller = ref(true);
+const refreshScroller = () => {
+    useFirstScroller.value = !useFirstScroller.value;
+};
+defineExpose({
+    innerWidthToBodyWidth,
+    refreshScroller
+});
 </script>
 
 <template>
@@ -29,7 +36,13 @@ defineExpose({ innerWidthToBodyWidth });
     ref="root"
   />
   <div
+    v-if="useFirstScroller"
     id="scrolledElement"
+    ref="scrolledElement"
+  />
+  <div
+    v-else
+    id="scrolledElement2"
     ref="scrolledElement"
   />
 </template>

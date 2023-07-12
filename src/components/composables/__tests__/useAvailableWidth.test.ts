@@ -11,10 +11,12 @@ describe('useAvailableWidth', () => {
 
     let unobserve: () => void,
         rootCallback: (width: number) => void,
-        scrolledElementCallback: (scrollbarWidth: number) => void;
+        scrolledElementCallback: (scrollbarWidth: number) => void,
+        isSecondScroller: boolean;
 
     beforeEach(() => {
         unobserve = vi.fn();
+        isSecondScroller = false;
         Object.defineProperty(window, 'ResizeObserver', {
             writable: true,
             value: vi.fn().mockImplementation((callback: ResizeCallback) => ({
@@ -30,6 +32,8 @@ describe('useAvailableWidth', () => {
                                 contentRect: { width: 50 - scrollbarWidth }
                             }]
                         );
+                    } else if (el.id === 'scrolledElement2') {
+                        isSecondScroller = true;
                     }
                 }),
                 unobserve,
@@ -79,6 +83,16 @@ describe('useAvailableWidth', () => {
         await flushPromises();
         wrapper.unmount();
         expect(unobserve).toHaveBeenCalledTimes(2);
+    });
+
+    it('reobserves scrolled element when it changes', async () => {
+        const wrapper = mount(AvailableWidthTestComponent as any, { props: { specialColumnsSizeTotal: 0 } });
+        await flushPromises();
+        const firstScrolledElement = wrapper.find('#scrolledElement').element;
+        wrapper.vm.refreshScroller();
+        await flushPromises();
+        expect(unobserve).toHaveBeenCalledWith(firstScrolledElement);
+        expect(isSecondScroller).toBe(true);
     });
 
     it('transforms inner width to body width', async () => {
