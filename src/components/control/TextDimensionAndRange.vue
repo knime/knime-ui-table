@@ -40,7 +40,7 @@ export default {
         }
     },
     computed: {
-        isPaginationEnabled() {
+        hasMultiplePages() {
             return !isSinglePage(this.currentItems, this.pageSize);
         },
         shouldAppendTotalItems() {
@@ -51,23 +51,25 @@ export default {
 </script>
 
 <template>
-  <template v-if="currentItems">
-    <span v-if="showTableSize && !isPaginationEnabled">
-      Rows: {{ currentItems }}
+  <span v-if="hasMultiplePages && currentItems">
+    Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
+  </span>
+  <template v-if="showTableSize">
+    <span v-if="currentItems === 0">
+      No data {{ `${totalItems ? `(${totalItems} hidden)` : ''}` }}
     </span>
-    <span v-else-if="isPaginationEnabled">
-      Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
-    </span>
-    <span v-if="shouldAppendTotalItems && showTableSize">
-      ({{ totalItems }} total)
+    <template v-else>
+      <span v-if="!hasMultiplePages">
+        Rows: {{ currentItems }}
+      </span>
+      <span v-else-if="shouldAppendTotalItems">
+        ({{ totalItems }} total)
+      </span>
+    </template>
+    <span v-if="columnCount">
+      {{ `   |   Columns: ${columnCount}` }}
     </span>
   </template>
-  <span v-else-if="showTableSize">
-    No data {{ `${totalItems ? `(${totalItems} hidden)` : ''}` }}
-  </span>
-  <span v-if="columnCount && showTableSize">
-    {{ `   |   Columns: ${columnCount}` }}
-  </span>
 </template>
 
 <style scoped>

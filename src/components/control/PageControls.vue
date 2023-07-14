@@ -82,7 +82,7 @@ export default {
       :show-table-size="showTableSize"
       :page-range-start="pageRangeStart"
       :page-range-end="pageRangeEnd"
-      />
+    />
     <FunctionButton
       v-if="hasNextPage || hasPreviousPage"
       :disabled="!hasPreviousPage"
