@@ -3,14 +3,13 @@ import { shallowMount } from '@vue/test-utils';
 
 import TableUIWithAutoSizeCalculation from '../TableUIWithAutoSizeCalculation.vue';
 import TableUI from '../TableUI.vue';
-import { columnTypes } from '@/config/table.config';
-
-
-const FIRST_COLUMN_ID = Symbol('a');
 
 describe('TableUIWithAutoSizeCalculation.vue', () => {
     let props, tableUIStub, context, refreshScrollerMock;
     
+    const column1 = { id: Symbol('a'), key: 'a', header: 'a' };
+    const column2 = { id: 'b', key: 'b', header: 'b' };
+
     const loadFonts = async (wrapper) => {
         await wrapper.vm.$nextTick(); // await font 400 1em Roboto to be loaded
         await wrapper.vm.$nextTick(); // await font 700 1em Roboto to be loaded
@@ -28,20 +27,7 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
                 [{ a: 'group1row0cellA', b: 'group1row0cellB' }]],
             currentSelection: [[false], [false]],
             dataConfig: {
-                columnConfigs: [{ id: FIRST_COLUMN_ID,
-                    key: 'a',
-                    header: 'a',
-                    type: columnTypes.Number,
-                    size: 50,
-                    formatter: (x) => x,
-                    hasSlotContent: false },
-                { id: 'b',
-                    key: 'b',
-                    header: 'b',
-                    type: columnTypes.Number,
-                    size: 50,
-                    formatter: (x) => x,
-                    hasSlotContent: false }],
+                columnConfigs: [column1, column2],
                 rowConfig: {
                     compactMode: false
                 }
@@ -69,12 +55,12 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
             methods: {
                 getRowComponents: vi.fn().mockReturnValue([{
                     getCellComponents: vi.fn().mockReturnValue([
-                        { getCellContentWidth: vi.fn().mockReturnValue(50) },
-                        { getCellContentWidth: vi.fn().mockReturnValue(50) }
+                        { getCellContentWidth: vi.fn().mockReturnValue(60) },
+                        { getCellContentWidth: vi.fn().mockReturnValue(60) }
                     ])
                 }]),
                 getHeaderComponent: vi.fn().mockReturnValue({
-                    getHeaderCellWidths: vi.fn().mockReturnValue([50, 50])
+                    getHeaderCellWidths: vi.fn().mockReturnValue([60, 60])
                 }),
                 refreshScroller: refreshScrollerMock
             }
@@ -95,11 +81,6 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
         vi.resetAllMocks();
     });
 
-    const triggerCalculation = async (wrapper) => {
-        wrapper.vm.triggerCalculationOfAutoColumnSizes();
-        await wrapper.vm.$nextTick();
-    };
-
     it('renders', () => {
         props.autoColumnSizesOptions.calculateForBody = false;
         props.autoColumnSizesOptions.calculateForHeader = true;
@@ -109,20 +90,20 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
         expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: hidden;');
     });
 
-    it('renders and is visible when the calculation is not triggered from the outside', () => {
+    it('renders and is visible when the calculation is not triggered from the outside', async () => {
         delete props.autoColumnSizesOptions;
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
         expect(wrapper.findComponent(TableUIWithAutoSizeCalculation).exists()).toBeTruthy();
         expect(wrapper.findComponent(TableUI).exists()).toBeTruthy();
+        await wrapper.vm.$nextTick(); // wait for DOM to be updated
         expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: visible;');
     });
 
-    it('does not mount the TableUIForAutoSizeCalculation when calculateForBody/calculateForHeader are false',
-        async () => {
+    it('does not mount the TableUIForAutoSizeCalculation when calculateForBody and calculateForHeader are false',
+        () => {
             props.autoColumnSizesOptions.calculateForBody = false;
             props.autoColumnSizesOptions.calculateForHeader = false;
             const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-            await triggerCalculation(wrapper);
             expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeFalsy();
             expect(wrapper.vm.$refs).toStrictEqual({ tableUI: expect.any(Object) });
             expect(wrapper.vm.autoColumnSizesCalculationFinished).toBeTruthy();
@@ -132,9 +113,8 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
         async () => {
             const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
             expect(wrapper.vm.autoColumnSizesCalculationFinished).toBeFalsy();
-
-            await triggerCalculation(wrapper);
             expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
+
             await loadFonts(wrapper);
             expect(wrapper.vm.tableConfigForAutoColumnSizesCalculation)
                 .toStrictEqual(expect.objectContaining({ enableVirtualScrolling: false }));
@@ -151,30 +131,42 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
     
     it('does not mount the TableUI for calculation when columns were only removed', async () => {
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-        wrapper.vm.currentSizes = { [FIRST_COLUMN_ID]: 50, b: 50, c: 50 };
-        await triggerCalculation(wrapper);
         await loadFonts(wrapper);
-        expect(wrapper.vm.currentSizes).toStrictEqual({ [FIRST_COLUMN_ID]: 50, b: 50 });
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60, b: 60 });
+        const calcAutoColSizesSpy = vi.spyOn(wrapper.vm, 'calculateAutoColumnSizes');
+
+        await wrapper.setProps(
+            { dataConfig: { ...props.dataConfig, columnConfigs: [column1] } }
+        );
+        expect(wrapper.vm.calculateSizes).toBeFalsy();
+
+        await loadFonts(wrapper);
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60 });
         expect(wrapper.emitted()).toHaveProperty('autoColumnSizesUpdate');
-        expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+        expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
+        expect(calcAutoColSizesSpy).not.toHaveBeenCalled();
     });
 
     it('mounts the TableUI for calculation when columns were added', async () => {
+        props.dataConfig.columnConfigs = [column1];
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-        wrapper.setData({ currentSizes: { [FIRST_COLUMN_ID]: 50, c: 50 } });
-        await triggerCalculation(wrapper);
         await loadFonts(wrapper);
-        expect(wrapper.vm.currentSizes).toStrictEqual({ [FIRST_COLUMN_ID]: 50, b: 50 });
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60 });
+
+        await wrapper.setProps(
+            { dataConfig: { ...props.dataConfig, columnConfigs: [column1, column2] } }
+        );
+        await loadFonts(wrapper);
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60, b: 60 });
         expect(wrapper.emitted()).toHaveProperty('autoColumnSizesUpdate');
-        expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+        expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
     });
 
     it('adds the fixed sizes to the column sizes object when the column still exists', async () => {
-        props.autoColumnSizesOptions.fixedSizes = { [FIRST_COLUMN_ID]: 80, c: 90 };
+        props.autoColumnSizesOptions.fixedSizes = { [column1.id]: 80, c: 90 };
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-        await triggerCalculation(wrapper);
         await loadFonts(wrapper);
-        expect(wrapper.vm.currentSizes).toStrictEqual({ [FIRST_COLUMN_ID]: 80, b: 50 });
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 80, b: 60 });
         expect(wrapper.emitted()).toHaveProperty('autoColumnSizesUpdate');
         expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
     });
@@ -191,9 +183,8 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
             getHeaderCellWidths: vi.fn().mockReturnValue([1200, 60])
         });
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-        await triggerCalculation(wrapper);
         await loadFonts(wrapper);
-        expect(wrapper.vm.currentSizes).toStrictEqual({ [FIRST_COLUMN_ID]: 960, b: 960 });
+        expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 960, b: 960 });
         expect(wrapper.emitted()).toHaveProperty('autoColumnSizesUpdate');
         expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
     });

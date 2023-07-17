@@ -3,6 +3,11 @@
  * This component contains the ability to size the columns in the tableUI according to the width of its content by
  * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additonal prop,
  * the options for the calculation.
+ * To trigger the calculation of the auto sizes, the corresponding trigger method can be called from the parent. The
+ * method is automatically called from within this component when:
+ *  - the component is mounted
+ *  - one of the options to calculate the automatic sizes for the body or the header changes
+ *  - when columns were removed, added, or replaced
  */
 
 import TableUI from './TableUI.vue';
@@ -44,16 +49,8 @@ export default {
         mountTableUIForAutoSizeCalculation() {
             return this.data !== null && this.calculateSizes;
         },
-        autoColumnSizesActive() {
-            const { calculateForBody, calculateForHeader } = this.autoColumnSizesOptions;
-            return calculateForBody || calculateForHeader;
-        },
         dataConfigIds() {
-            const dataConfigIds = [];
-            this.dataConfig.columnConfigs.forEach(columnConfig => {
-                dataConfigIds.push(columnConfig.id);
-            });
-            return dataConfigIds;
+            return this.dataConfig.columnConfigs.map(columnConfig => columnConfig.id);
         },
         removedColumnIds() {
             const removedColumnIds = new Set();
@@ -87,11 +84,24 @@ export default {
                 columnConfigs: this.dataConfig.columnConfigs.map((columnConfig) => ({ ...columnConfig, size: 0 })) };
         }
     },
+    watch: {
+        'autoColumnSizesOptions.calculateForBody'() {
+            this.triggerCalculationOfAutoColumnSizes();
+        },
+        'autoColumnSizesOptions.calculateForHeader'() {
+            this.triggerCalculationOfAutoColumnSizes();
+        },
+        dataConfigIds(newIds, oldIds) {
+            if (newIds.length !== oldIds.length || !newIds.every((el, index) => el === oldIds[index])) {
+                this.triggerCalculationOfAutoColumnSizes();
+            }
+        }
+    },
+    mounted() {
+        this.triggerCalculationOfAutoColumnSizes();
+    },
     methods: {
-        async triggerCalculationOfAutoColumnSizes() {
-            // await one tick until props (autoColumnSizesOptions) are updated
-            // can be removed when implementing UIEXT-1111
-            await this.$nextTick();
+        triggerCalculationOfAutoColumnSizes() {
             const { calculateForBody, calculateForHeader } = this.autoColumnSizesOptions;
             if (!(calculateForBody || calculateForHeader)) {
                 this.autoColumnSizesCalculationFinished = true;
@@ -179,7 +189,7 @@ export default {
 <template>
   <TableUI
     ref="tableUI"
-    :style="{ visibility: !autoColumnSizesActive || autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
+    :style="{ visibility: autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
     v-bind="$attrs"
     :data="data"
     :current-selection="currentSelection"

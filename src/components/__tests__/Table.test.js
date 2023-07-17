@@ -576,23 +576,22 @@ describe('Table.vue', () => {
             expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalled();
         });
 
-        it('triggers and updates the column sizes when the option inclHeaders gets checked', async () => {
-            const { wrapper } = doMount({ customProps: { autoSizeColumnsToContent: true }, shallow: false });
-            await loadFonts(wrapper);
-            await wrapper.setProps({ autoSizeColumnsToContentInclHeaders: true });
-            await loadFonts(wrapper);
-            expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
-            expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
-        });
-
-        it('triggers and updates the column sizes on page change', async () => {
-            const { wrapper } = doMount({ customProps: { autoSizeColumnsToContent: true }, shallow: false });
-            await loadFonts(wrapper);
-            wrapper.findComponent(TableUI).vm.$emit('pageChange', 1);
-            await loadFonts(wrapper);
-            expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
-            expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
-        });
+        it.each([
+            ['page', wrapper => wrapper.findComponent(TableUI).vm.$emit('pageChange', 1)],
+            ['pageSize', wrapper => wrapper.findComponent(TableUI).vm.$emit('pageSizeUpdate', 1)],
+            ['option inclHeaders', async (wrapper) => {
+                await wrapper.setProps({ autoSizeColumnsToContentInclHeaders: true });
+            }]
+        ])('triggers and updates the column sizes when changing %s',
+            async (settingsKey, changeCallback) => {
+                const { wrapper } = doMount({ customProps: { autoSizeColumnsToContent: true }, shallow: false });
+                await loadFonts(wrapper);
+                expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
+                await changeCallback(wrapper);
+                await loadFonts(wrapper);
+                expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
+                expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
+            });
 
 
         it('triggers and updates the column sizes when adding new columns or removing columns', async () => {

@@ -490,13 +490,6 @@ export default {
                 this.pageLevelUpdate();
             },
             deep: true
-        },
-        // TODO: UIEXT-1111 Trigger calculation internally on prop change
-        autoSizeColumnsToContent() {
-            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
-        },
-        autoSizeColumnsToContentInclHeaders() {
-            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         }
     },
     mounted() {
@@ -504,7 +497,6 @@ export default {
         if (this.allData?.length) {
             this.onAllDataUpdate(this.allData);
         }
-        this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.onResize);
@@ -663,7 +655,6 @@ export default {
             consola.debug(`Table received: columnUpdate ${newColumnList}`);
             let x = newColumnList.map(col => this.allHeadersOrdered.indexOf(col)).sort((a, b) => a - b);
             this.currentColumns = x.map(colInd => this.currentAllColumnOrder[colInd]);
-            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         },
         onColumnReorder(colInd, newColInd) {
             consola.debug(`Table received: columnReorder ${colInd} ${newColInd}`);
@@ -709,6 +700,7 @@ export default {
             if (newPageNumber && newPageNumber !== this.currentPage) {
                 this.currentPage = newPageNumber;
             }
+            this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
         },
         /*
          *
