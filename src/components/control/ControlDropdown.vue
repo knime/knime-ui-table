@@ -4,12 +4,13 @@ import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg'
 import { ref, computed, toRefs } from 'vue';
 import type { Ref, PropType } from 'vue';
 import { isMissingValue } from '@/util';
-import useDropdownPopper from '../../composables/useDropdownPopper';
+import useDropdownPopper from './composables/useDropdownPopper';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
 import type PossibleValue from '../../types/PossibleValue';
-import useIdGeneration from '@/composables/useIdGeneration';
+import useIdGeneration from './composables/useIdGeneration';
+import useScrollToElement from './composables/useScrollToElement';
 
 /**
  * A dropdown component specifically styled for the top and bottom control bars of the table
@@ -81,19 +82,7 @@ export default {
         const options: Ref<HTMLLIElement[]|null> = ref([]);
         const isExpanded = ref(false);
 
-        // for accessibility, we need to scroll to the element we navigate to using keyboard navigation
-        const scrollTo = (element: HTMLElement) => {
-            const listBoxNode = ul.value;
-            if (listBoxNode && listBoxNode.scrollHeight > listBoxNode.clientHeight) {
-                const scrollBottom = listBoxNode.clientHeight + listBoxNode.scrollTop;
-                const elementBottom = element.offsetTop + element.offsetHeight;
-                if (elementBottom > scrollBottom) {
-                    listBoxNode.scrollTop = elementBottom - listBoxNode.clientHeight;
-                } else if (element.offsetTop < listBoxNode.scrollTop) {
-                    listBoxNode.scrollTop = element.offsetTop;
-                }
-            }
-        };
+        const { scrollTo } = useScrollToElement({ toggleButton: button });
 
         const getNextElement = (current: number | null, direction: 1 | -1) => {
             const listItems = options.value as HTMLLIElement[];

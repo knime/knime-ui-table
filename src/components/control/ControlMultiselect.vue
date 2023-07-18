@@ -6,11 +6,12 @@ import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg
 import type { Ref, PropType } from 'vue';
 import { ref, toRefs, computed } from 'vue';
 import { isMissingValue } from '@/util';
-import useDropdownPopper from '../../composables/useDropdownPopper';
+import useDropdownPopper from './composables/useDropdownPopper';
 import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
 import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
 import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
-import useIdGeneration from '@/composables/useIdGeneration';
+import useIdGeneration from './composables/useIdGeneration';
+import useScrollToElement from './composables/useScrollToElement';
 import type PossibleValue from '@/types/PossibleValue';
 
 /**
@@ -88,47 +89,12 @@ export default {
 
         const isExpanded = ref(false);
 
-        const getOffsetTopToWindow = (element: HTMLElement | null) => {
-            let offsetTop = 0;
-            while (element) {
-                offsetTop += element.offsetTop;
-                element = element.offsetParent as HTMLElement | null;
-            }
-            return offsetTop;
-        };
-
-        const scrollWindowTo = (element: HTMLElement | null) => {
-            const toggleButtonElement = toggleButton.value;
-            if (element === null || toggleButtonElement === null) {
-                return;
-            }
-            if (props.isFilter) {
-                /** In this case the list of element is scrollable and the computation below does not suffice.
-                 *  Instead element.scrollIntoView() will guarantee that the element is visible.
-                 */
-                element.scrollIntoView();
-                return;
-            }
-            const toggleButtonOffset = getOffsetTopToWindow(toggleButtonElement);
-            const toggleButtonHeight = toggleButtonElement.scrollHeight;
-            const elementOffsetToToggleButton = getOffsetTopToWindow(element);
-            const elementOffsetTotal = toggleButtonOffset + toggleButtonHeight + elementOffsetToToggleButton;
-            // We want a margin from the top / bottom of the screen to the current selected element
-            const pageYOffset = 20;
-            const pageYMin = elementOffsetTotal - pageYOffset;
-            const pageYMax = elementOffsetTotal + element.scrollHeight + pageYOffset;
-            if (window.scrollY + window.innerHeight < pageYMax) {
-                const newYOffset = pageYMax - window.innerHeight;
-                window.scrollTo(window.scrollX, newYOffset);
-            } else if (window.scrollY > pageYMin) {
-                window.scrollTo(window.scrollX, pageYMin);
-            }
-        };
+        const { scrollTo } = useScrollToElement({ toggleButton });
 
         const getNextElement = (current: number | null, direction: 1 | -1) => {
             const listItems = option.value.map(({ $el }) => $el);
             const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
-            scrollWindowTo(element);
+            scrollTo(element.offsetParent as HTMLElement);
             const clickableInputElement = element.querySelector('input') as HTMLElement;
             return { index, onClick: () => clickableInputElement.click() };
         };

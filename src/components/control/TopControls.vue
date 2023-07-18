@@ -8,6 +8,7 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SearchIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
 
 import { tableTimeFilters } from '@/config/time.config';
+import isSinglePage from '@/util/isSinglePage';
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,
@@ -75,6 +76,16 @@ export default {
         },
         searchQuery() {
             return this.tableConfig?.searchConfig?.searchQuery;
+        },
+        hasCarousel() {
+            return this.showTimeFilter || this.showGroupBy || this.showColumnSelection;
+        },
+        showTopControls() {
+            const multiplePages = !isSinglePage(
+                this.tableConfig.pageConfig?.currentSize,
+                this.tableConfig.pageConfig?.pageSize
+            );
+            return this.tableConfig.pageConfig?.showTableSize || this.showSearch || multiplePages || this.hasCarousel;
         }
     },
     methods: {
@@ -123,10 +134,11 @@ export default {
 
 <template>
   <BaseControls
+    v-if="showTopControls"
     class="base-controls"
     v-bind="$attrs"
     :page-config="tableConfig.pageConfig"
-    :has-carousel="showTimeFilter || showGroupBy || showColumnSelection"
+    :has-carousel="hasCarousel"
   >
     <template #carousel>
       <ControlDropdown

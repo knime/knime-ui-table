@@ -608,7 +608,6 @@ export default {
 <template>
   <table ref="wrapper">
     <TopControls
-      v-if="tableConfig.pageConfig !== false"
       :table-config="tableConfig"
       :column-headers="columnHeaders"
       @next-page="onPageChange(1)"

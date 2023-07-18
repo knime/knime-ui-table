@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, shallowMount } from '@vue/test-utils';
 
 import TopControls from '../TopControls.vue';
@@ -10,30 +10,34 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 
 describe('TopControls.vue', () => {
-    let props = {
-        tableConfig: {
-            pageConfig: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
+    let props;
+
+    beforeEach(() => {
+        props = {
+            tableConfig: {
+                pageConfig: {
+                    totalItems: 100,
+                    currentItems: 100,
+                    pageSize: 25,
+                    currentPage: 1
+                },
+                searchConfig: {
+                    searchQuery: ''
+                },
+                timeFilterConfig: {
+                    currentTimeFilter: 'Last month'
+                },
+                columnSelectionConfig: {
+                    possibleColumns: []
+                },
+                groupByConfig: {
+                    currentGroup: '',
+                    possibleGroups: []
+                }
             },
-            searchConfig: {
-                searchQuery: ''
-            },
-            timeFilterConfig: {
-                currentTimeFilter: 'Last month'
-            },
-            columnSelectionConfig: {
-                possibleColumns: []
-            },
-            groupByConfig: {
-                currentGroup: '',
-                possibleGroups: []
-            }
-        },
-        columnHeaders: ['Workflow', 'User', 'Date']
-    };
+            columnHeaders: ['Workflow', 'User', 'Date']
+        };
+    });
 
     it('renders table top controls', () => {
         let wrapper = mount(TopControls, {
@@ -192,6 +196,72 @@ describe('TopControls.vue', () => {
             expect(prevPageMock).not.toHaveBeenCalled();
             wrapper.findComponent(BaseControls).vm.$emit('prevPage');
             expect(prevPageMock).toHaveBeenCalled();
+        });
+    });
+
+    describe('hide top controls', () => {
+        beforeEach(() => {
+            props.tableConfig.pageConfig = {
+                showTableSize: false,
+                pageSize: 10,
+                currentSize: 10
+            };
+            props.tableConfig.searchConfig = null;
+            props.tableConfig.groupByConfig = null;
+            props.tableConfig.timeFilterConfig = null;
+            props.tableConfig.columnSelectionConfig = null;
+        });
+
+        it('hides element when no data to be displayed', () => {
+            const wrapper = shallowMount(TopControls, { props });
+
+            expect(wrapper.findComponent(BaseControls).exists()).toBeFalsy();
+        });
+
+        it('shows TopControls when showTableSize is on and pagination and search are off', () => {
+            props.tableConfig.pageConfig.showTableSize = true;
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when pagination is on and search and showTableSize are off', () => {
+            props.tableConfig.pageConfig = {
+                showTableSize: false,
+                pageSize: 2,
+                currentSize: 4
+            };
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when search is enabled', () => {
+            props.tableConfig.searchConfig = {};
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when time filters are enabled', () => {
+            props.tableConfig.timeFilterConfig = {};
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when column selection is enabled', () => {
+            props.tableConfig.columnSelectionConfig = {};
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+        });
+
+        it('shows TopControls when grouping is enabled', () => {
+            props.tableConfig.groupByConfig = {};
+            const wrapper = shallowMount(TopControls, { props });
+    
+            expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
         });
     });
 });

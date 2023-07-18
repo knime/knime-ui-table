@@ -17,7 +17,7 @@ export default {
     props: {
         pageConfig: {
             type: Object,
-            default: () => ({}),
+            default: () => null,
             validate(pageConfig) {
                 if (typeof pageConfig !== 'object') {
                     return false;

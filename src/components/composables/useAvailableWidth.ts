@@ -43,6 +43,18 @@ const useScrollbarWidth = (
         });
     });
 
+    /**
+     * If the scroller is refreshed, the scrollbar width observer needs to be updated.
+     */
+    watch(() => scrolledElement.value, (newEl, oldEl) => {
+        if (oldEl !== null) {
+            scrollbarWidthObserver.unobserve(oldEl);
+        }
+        if (newEl !== null) {
+            scrollbarWidthObserver.observe(newEl);
+        }
+    });
+
     onBeforeUnmount(() => {
         scrollbarWidthObserver.unobserve(scrolledElement.value);
     });

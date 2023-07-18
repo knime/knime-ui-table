@@ -8,13 +8,15 @@ import PageControls from '../PageControls.vue';
 describe('BaseControls.vue', () => {
     let wrapper;
 
-    it('renders page controls and slots', () => {
+    it('renders page controls and slots if pageConfig is defined', () => {
         wrapper = mount(BaseControls, {
             props: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
+                pageConfig: {
+                    totalItems: 100,
+                    currentItems: 100,
+                    pageSize: 25,
+                    currentPage: 1
+                }
             },
             slots: {
                 carousel: '<h2>This is a Slot inside a carousel!</h2>',
@@ -31,10 +33,12 @@ describe('BaseControls.vue', () => {
     it('emits next and previous page events', () => {
         wrapper = shallowMount(BaseControls, {
             props: {
-                totalItems: 100,
-                currentItems: 100,
-                pageSize: 25,
-                currentPage: 1
+                pageConfig: {
+                    totalItems: 100,
+                    currentItems: 100,
+                    pageSize: 25,
+                    currentPage: 1
+                }
             }
         });
         expect(wrapper.emitted().nextPage).toBeFalsy();

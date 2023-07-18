@@ -53,8 +53,10 @@ const getProps = ({
         visibleSize: 5,
         possiblePageSizes: [5, 10, 25],
         currentPage: 1,
-        fixHeader: false
+        fixHeader: false,
+        showTableSize: true
     },
+    searchConfig = { searchQuery: '' },
     numRowsAbove = 0,
     bottomData = []
 }) => ({
@@ -157,8 +159,10 @@ describe('TableUI.vue', () => {
             visibleSize: 5,
             possiblePageSizes: [5, 10, 25],
             currentPage: 1,
-            fixHeader: false
+            fixHeader: false,
+            showTableSize: true
         },
+        searchConfig = { searchQuery: '' },
         numRowsAbove = 0,
         shallow = true,
         wrapperHeight = 1000,
@@ -182,6 +186,7 @@ describe('TableUI.vue', () => {
             currentSelection,
             currentBottomSelection,
             pageConfig,
+            searchConfig,
             numRowsAbove,
             bottomData
         });
@@ -256,11 +261,6 @@ describe('TableUI.vue', () => {
 
     describe('events', () => {
         describe('top controls', () => {
-            it('does not show top controls if there are no page controls', () => {
-                const { wrapper } = doMount({ pageConfig: false });
-                expect(wrapper.findComponent(TopControls).exists()).toBeFalsy();
-            });
-
             it('does not show top controls text if there showTableSize is false', () => {
                 const { wrapper } = doMount({ shallow: false,
                     pageConfig: {
