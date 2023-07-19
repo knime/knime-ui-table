@@ -31,29 +31,7 @@ export default {
         autoColumnSizesOptions: { type: Object, default: () => ({}) }
     },
     emits: [
-        'autoColumnSizesUpdate',
-        'timeFilterUpdate',
-        'columnUpdate',
-        'columnReorder',
-        'groupUpdate',
-        'search',
-        'pageChange',
-        'pageSizeUpdate',
-        'columnSort',
-        'columnFilter',
-        'clearFilter',
-        'toggleFilter',
-        'selectAll',
-        'rowSelect',
-        'tableInput',
-        'columnResize',
-        'headerSubMenuItemSelection',
-        'lazyload',
-        'allColumnsResize',
-        'columnResizeStart',
-        'columnResizeEnd',
-        'update:available-width',
-        'rowHeightUpdate'
+        'autoColumnSizesUpdate'
     ],
     data() {
         return {
@@ -207,28 +185,6 @@ export default {
     :current-selection="currentSelection"
     :data-config="dataConfig"
     :table-config="tableConfig"
-    @group-update="(...args) => $emit('groupUpdate', ...args)"
-    @time-filter-update="(...args) => $emit('timeFilterUpdate', ...args)"
-    @column-update="(...args) => $emit('columnUpdate', ...args)"
-    @column-reorder="(...args) => $emit('columnReorder', ...args)"
-    @search="(...args) => $emit('search', ...args)"
-    @page-change="(...args) => $emit('pageChange', ...args)"
-    @page-size-update="(...args) => $emit('pageSizeUpdate', ...args)"
-    @column-sort="(...args) => $emit('columnSort', ...args)"
-    @column-filter="(...args) => $emit('columnFilter', ...args)"
-    @clear-filter="(...args) => $emit('clearFilter', ...args)"
-    @toggle-filter="(...args) => $emit('toggleFilter', ...args)"
-    @select-all="(...args) => $emit('selectAll', ...args)"
-    @row-select="(...args) => $emit('rowSelect', ...args)"
-    @table-input="(...args) => $emit('tableInput', ...args)"
-    @column-resize="(...args) => $emit('columnResize', ...args)"
-    @header-sub-menu-item-selection="(...args) => $emit('headerSubMenuItemSelection', ...args)"
-    @lazyload="(...args) => $emit('lazyload', ...args)"
-    @all-columns-resize="(...args) => $emit('allColumnsResize', ...args)"
-    @column-resize-start="(...args) => $emit('columnResizeStart', ...args)"
-    @column-resize-end="(...args) => $emit('columnResizeEnd', ...args)"
-    @update:available-width="(...args) => $emit('update:available-width', ...args)"
-    @row-height-update="(...args) => $emit('rowHeightUpdate', ...args)"
   >
     <template
       v-for="(_, slot) of $slots"
@@ -244,7 +200,6 @@ export default {
     v-if="mountTableUIForAutoSizeCalculation"
     ref="tableUIForAutoSize"
     class="table-column-size-calculation"
-    v-bind="$attrs"
     :data="paginatedDataForAutoColumnSizesCalculation"
     :current-selection="currentSelection"
     :data-config="dataConfigForAutoColumnSizesCalculation"

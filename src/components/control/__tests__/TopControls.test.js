@@ -100,7 +100,7 @@ describe('TopControls.vue', () => {
             let timeFilterControls = wrapper.findAllComponents(ControlDropdown).at(0);
 
             expect(wrapper.emitted().timeFilterUpdate).toBeFalsy();
-            timeFilterControls.vm.$emit('update:model-value', 'Last day');
+            timeFilterControls.vm.$emit('update:modelValue', 'Last day');
             expect(wrapper.emitted().timeFilterUpdate[0][0]).toBe('Last day');
         });
     });
@@ -110,7 +110,7 @@ describe('TopControls.vue', () => {
             let wrapper = mount(TopControls, { props });
 
             expect(wrapper.emitted().columnUpdate).toBeFalsy();
-            wrapper.findComponent(ControlMultiselect).vm.$emit('update:model-value', ['User', 'Workflow']);
+            wrapper.findComponent(ControlMultiselect).vm.$emit('update:modelValue', ['User', 'Workflow']);
             expect(wrapper.emitted().columnUpdate[0][0]).toStrictEqual(['User', 'Workflow']);
         });
 
@@ -129,7 +129,7 @@ describe('TopControls.vue', () => {
             let groupFilterControls = wrapper.findAllComponents(ControlDropdown).at(1);
 
             expect(wrapper.emitted().groupUpdate).toBeFalsy();
-            groupFilterControls.vm.$emit('update:model-value', 'Location');
+            groupFilterControls.vm.$emit('update:modelValue', 'Location');
             expect(wrapper.emitted().groupUpdate[0][0]).toBe('Location');
         });
     });

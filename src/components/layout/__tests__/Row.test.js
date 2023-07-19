@@ -315,7 +315,7 @@ describe('Row.vue', () => {
             });
 
             expect(wrapper.findComponent(Row).emitted().rowSelect).toBeFalsy();
-            wrapper.findComponent(Checkbox).vm.$emit('update:model-value', true);
+            wrapper.findComponent(Checkbox).vm.$emit('update:modelValue', true);
             expect(wrapper.findComponent(Row).emitted().rowSelect).toBeTruthy();
             expect(wrapper.findComponent(Row).emitted().rowSelect[0][0]).toBeTruthy();
         });

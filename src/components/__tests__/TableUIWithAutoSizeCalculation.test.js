@@ -100,16 +100,6 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
         await wrapper.vm.$nextTick();
     };
 
-    it.each(TableUI.emits)("emit '%s' event", async (eventName) => {
-        const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-        await triggerCalculation(wrapper);
-        const tableUIs = wrapper.findAllComponents(TableUI);
-        tableUIs.at(1).vm.$emit(eventName);
-        expect(wrapper.emitted(eventName)).toBeFalsy();
-        tableUIs.at(0).vm.$emit(eventName);
-        expect(wrapper.emitted(eventName)).toBeTruthy();
-    });
-
     it('renders', () => {
         props.autoColumnSizesOptions.calculateForBody = false;
         props.autoColumnSizesOptions.calculateForHeader = true;

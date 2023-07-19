@@ -33,7 +33,7 @@ const subMenuItems = [
     {
         name: 'manage',
         text: 'Manage access',
-        icon: TeamGroupAdmin,
+        icon: markRaw(TeamGroupAdmin),
         hideOn: (row, data) => {
             consola.debug(`hideOn function called with ${row}`, data);
             const propability = 0.5;
