@@ -161,14 +161,8 @@ export default {
             }
             return scrollWrapper.value;
         });
-        
-        const availableWidth = ref(0); // Only for demo purposes
-        const dummyUpdate = (newWidth) => {
-            availableWidth.value = newWidth;
-            emit('update:available-width', newWidth);
-        };
         const { tableConfig } = toRefs(props);
-
+        
         const collapserSize = computed(() => tableConfig.value.showCollapser ? SPECIAL_COLUMNS_SIZE : 0);
         const selectionSize = computed(() => tableConfig.value.showSelection ? SPECIAL_COLUMNS_SIZE : 0);
         const rightSideSize = computed(
@@ -178,14 +172,14 @@ export default {
         );
 
         const { innerWidthToBodyWidth } = useAvailableWidthDetection({
-            emitAvailableWidth: dummyUpdate,
+            emitAvailableWidth: (newWidth) => emit('update:available-width', newWidth),
             specialColumnsSizeTotal: computed(() => collapserSize.value + selectionSize.value + rightSideSize.value),
             refs: {
                 root: wrapper,
                 scrolledElement
             }
         });
-        return { wrapper, scroller, availableWidth, scrollWrapper, enableVirtualScrolling, innerWidthToBodyWidth };
+        return { wrapper, scroller, scrollWrapper, enableVirtualScrolling, innerWidthToBodyWidth };
     },
     data() {
         return {
