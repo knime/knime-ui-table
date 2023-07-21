@@ -29,12 +29,6 @@ const subMenuItems = [
         }
     },
     {
-        name: 'download',
-        text: 'Download link',
-        icon: LinkIcon,
-        href: 'https://speed.hetzner.de/100MB.bin'
-    },
-    {
         name: 'manage',
         text: 'Manage access',
         icon: TeamGroupAdmin,

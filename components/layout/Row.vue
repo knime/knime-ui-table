@@ -170,7 +170,8 @@ export default {
         },
         onSubMenuItemClick(event, clickedItem) {
             this.$emit('rowSubMenuClick', clickedItem);
-            // do not prevent default or return false to allow for regular <a href> to work
+            event.preventDefault();
+            return false;
         },
         isClickable(data, ind) {
             if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
