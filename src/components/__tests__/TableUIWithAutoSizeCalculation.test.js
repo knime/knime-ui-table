@@ -90,12 +90,11 @@ describe('TableUIWithAutoSizeCalculation.vue', () => {
         expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: hidden;');
     });
 
-    it('renders and is visible when the calculation is not triggered from the outside', async () => {
+    it('renders and is visible when the calculation is not triggered from the outside', () => {
         delete props.autoColumnSizesOptions;
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
         expect(wrapper.findComponent(TableUIWithAutoSizeCalculation).exists()).toBeTruthy();
         expect(wrapper.findComponent(TableUI).exists()).toBeTruthy();
-        await wrapper.vm.$nextTick(); // wait for DOM to be updated
         expect(wrapper.findComponent({ ref: 'tableUI' }).attributes().style).toBe('visibility: visible;');
     });
 

@@ -82,6 +82,9 @@ export default {
         dataConfigForAutoColumnSizesCalculation() {
             return { ...this.dataConfig,
                 columnConfigs: this.dataConfig.columnConfigs.map((columnConfig) => ({ ...columnConfig, size: 0 })) };
+        },
+        autoSizingActive() {
+            return this.autoColumnSizesOptions.calculateForBody || this.autoColumnSizesOptions.calculateForHeader;
         }
     },
     watch: {
@@ -102,8 +105,7 @@ export default {
     },
     methods: {
         triggerCalculationOfAutoColumnSizes() {
-            const { calculateForBody, calculateForHeader } = this.autoColumnSizesOptions;
-            if (!(calculateForBody || calculateForHeader)) {
+            if (!this.autoSizingActive) {
                 this.autoColumnSizesCalculationFinished = true;
                 this.currentSizes = {};
                 this.$emit('autoColumnSizesUpdate', this.currentSizes);
@@ -189,7 +191,7 @@ export default {
 <template>
   <TableUI
     ref="tableUI"
-    :style="{ visibility: autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
+    :style="{ visibility: !autoSizingActive || autoColumnSizesCalculationFinished ? 'visible': 'hidden'}"
     v-bind="$attrs"
     :data="data"
     :current-selection="currentSelection"
