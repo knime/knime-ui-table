@@ -1,0 +1,7 @@
+package-lock.json
+coverage
+test-results
+dist
+vue-virtual-scroller
+webapps-common
+.vscode

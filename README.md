@@ -8,7 +8,7 @@ It's published as npm package: [@knime/knime-ui-table]
 
 ### Prerequisites
 
-* Install [Node.js][node], see version in [package.json](package.json).
+- Install [Node.js][node], see version in [package.json](package.json).
 
 Newer versions may also work, but have not been tested.
 
@@ -24,7 +24,6 @@ git submodule update --init
 npm install
 ```
 
-
 ### Launch development server
 
 ```sh
@@ -36,6 +35,13 @@ or, using storybook:
 ```sh
 npm run storybook
 ```
+
+### Git hooks
+
+When committing your changes, a couple of commit hooks will run via [husky].
+
+- `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
+- `prepare-commit-msg` hook to format your commit message to conform with the required format by KNIME. In order for this to work you must set environment variables with your Atlassian email and API token. Refer to [webapps-common/scripts/README.md](webapps-common/scripts/README.md) for more information.
 
 ### Testing
 
@@ -123,4 +129,5 @@ The KNIME-Table expects that the embedding app provides the following:
 [Vitest]: https://vitest.dev/
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
-[@knime/knime-ui-table]: https://www.npmjs.com/package/@knime/knime-ui-table
+[husky]: https://www.npmjs.com/package/husky
+[lintstaged]: https://github.com/okonet/lint-staged

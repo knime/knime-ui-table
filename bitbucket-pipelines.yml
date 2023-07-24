@@ -2,7 +2,7 @@ image: node:18.14.2
 
 definitions:
   services:
-    docker: 
+    docker:
       memory: 6000
   caches:
     sonar: ~/.sonar/cache
@@ -17,7 +17,7 @@ definitions:
         script:
           - git submodule update --init --recursive
           - npm ci
-          - npm run ci:lint
+          - npm run ci:lint-format
           - npm run coverage
           - npm run audit
           - pipe: sonarsource/sonarcloud-scan:1.4.0
@@ -30,7 +30,7 @@ definitions:
 
 pipelines:
   pull-requests:
-    '**':
+    "**":
       - step: *lint-test-build
       - step:
           # actually publishing should be only possible on the master branch, but see
