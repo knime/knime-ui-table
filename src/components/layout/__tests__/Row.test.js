@@ -131,7 +131,7 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
     });
 
-    it("hides submenu items if hideOn function is given", () => {
+    it("hides submenu items if hideOn function is given", async () => {
       const subMenuItems = [
         {
           name: "delete",
@@ -152,13 +152,14 @@ describe("Row.vue", () => {
           },
         },
       });
-
+      // Open sub menu so that the menu items are rendered
+      await wrapper.findComponent(SubMenu).find("button").trigger("click");
       const menuItems = wrapper.findComponent(MenuItems);
       const listItem = menuItems.findAll(".list-item");
       expect(listItem.length).toBe(subMenuItems.length - 1);
     });
 
-    it("does not hide submenu items if hideOn is not a function", () => {
+    it("does not hide submenu items if hideOn is not a function", async () => {
       const subMenuItems = [
         {
           name: "delete",
@@ -179,7 +180,8 @@ describe("Row.vue", () => {
           },
         },
       });
-
+      // Open sub menu so that the menu items are rendered
+      await wrapper.findComponent(SubMenu).find("button").trigger("click");
       const menuItems = wrapper.findComponent(MenuItems);
       const listItem = menuItems.findAll(".list-item");
       expect(listItem.length).toBe(subMenuItems.length);
