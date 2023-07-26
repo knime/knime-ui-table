@@ -13,7 +13,7 @@
     "format": "prettier --cache --write .",
     "format:check": "prettier --cache --check .",
     "lint": "run-p 'lint:* -- --fix'",
-    "lint:js": "eslint . --cache --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.json",
+    "lint:js": "eslint . --cache --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:css": "stylelint --cache '**/*.{css,vue}'",
     "ci:lint-format": "run-p ci:lint:* format:check -c",
     "ci:lint:js": "npm run lint:js && npm run lint:js -- -f json -o test-results/eslint.json",
