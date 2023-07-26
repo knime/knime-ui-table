@@ -1,1 +1,1 @@
-declare const consola: import('consola').Consola;
+declare const consola: import("consola").Consola;

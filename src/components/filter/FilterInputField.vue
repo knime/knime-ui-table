@@ -7,35 +7,35 @@
  * @emits blur event when focus leaves the input field.
  */
 export default {
-    props: {
-        modelValue: {
-            default: '',
-            type: [Number, String]
-        },
-        placeholder: {
-            default: null,
-            type: String
-        },
-        disabled: {
-            default: false,
-            type: Boolean
-        }
+  props: {
+    modelValue: {
+      default: "",
+      type: [Number, String],
     },
-    emits: ['update:modelValue', 'blur'],
-    methods: {
-        getValue() {
-            return this.$refs.input.value;
-        },
-        onInput() {
-            this.$emit('update:modelValue', this.getValue());
-        },
-        onBlur(e) {
-            this.$emit('blur', e);
-        },
-        focus() {
-            this.$refs.input.focus();
-        }
-    }
+    placeholder: {
+      default: null,
+      type: String,
+    },
+    disabled: {
+      default: false,
+      type: Boolean,
+    },
+  },
+  emits: ["update:modelValue", "blur"],
+  methods: {
+    getValue() {
+      return this.$refs.input.value;
+    },
+    onInput() {
+      this.$emit("update:modelValue", this.getValue());
+    },
+    onBlur(e) {
+      this.$emit("blur", e);
+    },
+    focus() {
+      this.$refs.input.focus();
+    },
+  },
 };
 </script>
 
@@ -49,7 +49,7 @@ export default {
       type="text"
       @input="onInput"
       @keydown.esc="onBlur"
-    >
+    />
   </div>
 </template>
 

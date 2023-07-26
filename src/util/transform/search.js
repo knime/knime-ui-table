@@ -1,5 +1,5 @@
-import { columnTypes } from '@/config/table.config';
-import { unpackObjectRepresentation } from '..';
+import { columnTypes } from "@/config/table.config";
+import { unpackObjectRepresentation } from "..";
 
 /**
  * Utility function to search a single cell. Formatters are required for the following table data types:
@@ -16,34 +16,34 @@ import { unpackObjectRepresentation } from '..';
  * @returns {Boolean} - if a match was found.
  */
 export const searchCell = (field, type, formatter, query) => {
-    if (typeof field === 'undefined') {
-        return false;
-    }
-    try {
-        let formattedData;
-        switch (type) {
-            case columnTypes.Number:
-            case columnTypes.String:
-            case columnTypes.Nominal:
-            case columnTypes.DateTime:
-            case columnTypes.Boolean:
-                formattedData = formatter(field);
-                break;
-            case columnTypes.Array:
-            case columnTypes.Object:
-                formattedData = JSON.stringify(field);
-                // search both JSON data and displayed value if custom formatter provided
-                if (formatter?.name && !columnTypes[formatter.name]) {
-                    formattedData += formatter(field);
-                }
-                break;
-            default:
-                formattedData = field.toString();
+  if (typeof field === "undefined") {
+    return false;
+  }
+  try {
+    let formattedData;
+    switch (type) {
+      case columnTypes.Number:
+      case columnTypes.String:
+      case columnTypes.Nominal:
+      case columnTypes.DateTime:
+      case columnTypes.Boolean:
+        formattedData = formatter(field);
+        break;
+      case columnTypes.Array:
+      case columnTypes.Object:
+        formattedData = JSON.stringify(field);
+        // search both JSON data and displayed value if custom formatter provided
+        if (formatter?.name && !columnTypes[formatter.name]) {
+          formattedData += formatter(field);
         }
-        return formattedData.search(new RegExp(query.trim(), 'i')) > -1;
-    } catch (err) {
-        return false;
+        break;
+      default:
+        formattedData = field.toString();
     }
+    return formattedData.search(new RegExp(query.trim(), "i")) > -1;
+  } catch (err) {
+    return false;
+  }
 };
 
 /**
@@ -55,5 +55,12 @@ export const searchCell = (field, type, formatter, query) => {
  * @param {String} query - the search query to locate in the provided row.
  * @returns {Boolean} - if the query has been matched with an item in the row.
  */
-export const searchRow = (row, types, formatters, query) => row
-    .some((data, colInd) => searchCell(unpackObjectRepresentation(data), types[colInd], formatters[colInd], query));
+export const searchRow = (row, types, formatters, query) =>
+  row.some((data, colInd) =>
+    searchCell(
+      unpackObjectRepresentation(data),
+      types[colInd],
+      formatters[colInd],
+      query,
+    ),
+  );

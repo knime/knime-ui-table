@@ -1,99 +1,123 @@
-import { ref, watch, computed, unref, onMounted } from 'vue';
-import _ from 'lodash';
+import { ref, watch, computed, unref, onMounted } from "vue";
+import _ from "lodash";
 
 export default ({
-    filter: { filterData, filterHash },
-    group: { groupData, groupHash },
-    sort: { sortData, sortHash },
-    paginate: { paginateData, pageHash, goToFirstPage },
-    allData,
-    updateDomains
+  filter: { filterData, filterHash },
+  group: { groupData, groupHash },
+  sort: { sortData, sortHash },
+  paginate: { paginateData, pageHash, goToFirstPage },
+  allData,
+  updateDomains,
 }) => {
-    const filteredData = ref(null);
-    const groupedData = ref(null);
-    const sortedData = ref(null);
-    const paginatedData = ref([]);
+  const filteredData = ref(null);
+  const groupedData = ref(null);
+  const sortedData = ref(null);
+  const paginatedData = ref([]);
 
-    const paginatedIndicies = ref([]);
-  
-    const pageLevelUpdate = () => {
-        const paginatedDataResult = paginateData(sortedData.value);
-        paginatedData.value = paginatedDataResult.paginatedData;
-        paginatedIndicies.value = paginatedDataResult.paginatedIndicies;
-    };
+  const paginatedIndicies = ref([]);
 
-    const sortLevelUpdate = () => {
-        sortedData.value = sortData(groupedData.value);
-        pageLevelUpdate();
-    };
+  const pageLevelUpdate = () => {
+    const paginatedDataResult = paginateData(sortedData.value);
+    paginatedData.value = paginatedDataResult.paginatedData;
+    paginatedIndicies.value = paginatedDataResult.paginatedIndicies;
+  };
 
-    const groupLevelUpdate = () => {
-        groupedData.value = groupData(filteredData.value);
-        sortLevelUpdate();
-    };
+  const sortLevelUpdate = () => {
+    sortedData.value = sortData(groupedData.value);
+    pageLevelUpdate();
+  };
 
-    const filterLevelUpdate = () => {
-        filteredData.value = filterData(unref(allData));
-        groupLevelUpdate();
-    };
+  const groupLevelUpdate = () => {
+    groupedData.value = groupData(filteredData.value);
+    sortLevelUpdate();
+  };
 
-    const totalTableSize = ref(0);
-    
+  const filterLevelUpdate = () => {
+    filteredData.value = filterData(unref(allData));
+    groupLevelUpdate();
+  };
 
-    const processLevel = ref(null);
+  const totalTableSize = ref(0);
 
-    const hashChangeHandler = (level, description, update) => () => {
-        consola.trace(`New ${description.toLowerCase()} hash (watcher called).`);
-        if (processLevel.value === null || processLevel.value > 1) {
-            processLevel.value = 1;
-            consola.trace(`${description} level update.`);
-            update();
-            processLevel.value = null;
-        } else {
-            consola.trace(`Blocked unnecessary ${description.toLowerCase()} reactivity.`);
-        }
-    };
+  const processLevel = ref(null);
 
-    watch(() => _.cloneDeep(filterHash.value), hashChangeHandler(1, 'Filter', filterLevelUpdate));
-    watch(() => _.cloneDeep(groupHash.value), hashChangeHandler(1, 'Group', groupLevelUpdate));
-    watch(() => _.cloneDeep(sortHash.value), hashChangeHandler(1, 'Sort', sortLevelUpdate));
-    watch(() => _.cloneDeep(pageHash.value), hashChangeHandler(1, 'Page', pageLevelUpdate));
-    watch(() => filterHash.value.searchQuery, (newVal) => newVal && goToFirstPage());
-    watch(() => filterHash.value.currentTimeFilter, goToFirstPage);
-    watch(() => groupHash.value.currentGroup, (newVal) => newVal && goToFirstPage());
-    watch(() => sortHash.value.columnSort, (newVal, oldVal) => (newVal !== oldVal) && goToFirstPage());
+  const hashChangeHandler = (level, description, update) => () => {
+    consola.trace(`New ${description.toLowerCase()} hash (watcher called).`);
+    if (processLevel.value === null || processLevel.value > 1) {
+      processLevel.value = 1;
+      consola.trace(`${description} level update.`);
+      update();
+      processLevel.value = null;
+    } else {
+      consola.trace(
+        `Blocked unnecessary ${description.toLowerCase()} reactivity.`,
+      );
+    }
+  };
 
-    const onAllDataUpdate = () => {
-        updateDomains(allData);
-        if (totalTableSize.value !== allData.length) {
-            totalTableSize.value = allData.length;
-        }
-        if (paginatedData.value === null || processLevel.value === null || processLevel.value > 1) {
-            processLevel.value = 1;
-            filterLevelUpdate();
-            processLevel.value = null;
-        } else {
-            consola.trace('Blocked unnecessary filter reactivity.');
-        }
-    };
+  watch(
+    () => _.cloneDeep(filterHash.value),
+    hashChangeHandler(1, "Filter", filterLevelUpdate),
+  );
+  watch(
+    () => _.cloneDeep(groupHash.value),
+    hashChangeHandler(1, "Group", groupLevelUpdate),
+  );
+  watch(
+    () => _.cloneDeep(sortHash.value),
+    hashChangeHandler(1, "Sort", sortLevelUpdate),
+  );
+  watch(
+    () => _.cloneDeep(pageHash.value),
+    hashChangeHandler(1, "Page", pageLevelUpdate),
+  );
+  watch(
+    () => filterHash.value.searchQuery,
+    (newVal) => newVal && goToFirstPage(),
+  );
+  watch(() => filterHash.value.currentTimeFilter, goToFirstPage);
+  watch(
+    () => groupHash.value.currentGroup,
+    (newVal) => newVal && goToFirstPage(),
+  );
+  watch(
+    () => sortHash.value.columnSort,
+    (newVal, oldVal) => newVal !== oldVal && goToFirstPage(),
+  );
 
-    onMounted(() => {
-        if (allData.length) {
-            onAllDataUpdate();
-        }
-    });
+  const onAllDataUpdate = () => {
+    updateDomains(allData);
+    if (totalTableSize.value !== allData.length) {
+      totalTableSize.value = allData.length;
+    }
+    if (
+      paginatedData.value === null ||
+      processLevel.value === null ||
+      processLevel.value > 1
+    ) {
+      processLevel.value = 1;
+      filterLevelUpdate();
+      processLevel.value = null;
+    } else {
+      consola.trace("Blocked unnecessary filter reactivity.");
+    }
+  };
 
+  onMounted(() => {
+    if (allData.length) {
+      onAllDataUpdate();
+    }
+  });
 
-    const processedIndicies = computed(() => sortedData.value.sortedIndicies);
+  const processedIndicies = computed(() => sortedData.value.sortedIndicies);
 
-    return {
-        paginatedData,
-        paginatedIndicies,
-        processedIndicies,
-        totalTableSize,
-        groupLevelUpdate,
-        sortLevelUpdate,
-        pageLevelUpdate
-    };
+  return {
+    paginatedData,
+    paginatedIndicies,
+    processedIndicies,
+    totalTableSize,
+    groupLevelUpdate,
+    sortLevelUpdate,
+    pageLevelUpdate,
+  };
 };
-    

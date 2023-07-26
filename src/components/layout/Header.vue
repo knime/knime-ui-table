@@ -1,12 +1,17 @@
 <script>
-import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import ArrowDropdown from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-down.svg';
-import FilterIcon from 'webapps-common/ui/assets/img/icons/filter.svg';
-import throttle from 'raf-throttle';
-import { MIN_COLUMN_SIZE, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH, COLUMN_RESIZE_DRAG_HANDLE_WIDTH } from '@/util/constants';
+import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import ArrowDropdown from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
+import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import throttle from "raf-throttle";
+import {
+  MIN_COLUMN_SIZE,
+  HEADER_HEIGHT,
+  MAX_SUB_MENU_WIDTH,
+  COLUMN_RESIZE_DRAG_HANDLE_WIDTH,
+} from "@/util/constants";
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -20,187 +25,212 @@ import { MIN_COLUMN_SIZE, HEADER_HEIGHT, MAX_SUB_MENU_WIDTH, COLUMN_RESIZE_DRAG_
  * @emits subMenuItemSelection event when the selection of a submenu item is changed
  */
 export default {
-    components: {
-        FunctionButton,
-        Checkbox,
-        SubMenu,
-        ArrowIcon,
-        ArrowDropdown,
-        FilterIcon
+  components: {
+    FunctionButton,
+    Checkbox,
+    SubMenu,
+    ArrowIcon,
+    ArrowDropdown,
+    FilterIcon,
+  },
+  props: {
+    tableConfig: {
+      type: Object,
+      default: () => ({}),
     },
-    props: {
-        tableConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        columnHeaders: {
-            type: Array,
-            default: () => []
-        },
-        columnSubHeaders: {
-            type: Array,
-            default: () => []
-        },
-        columnSizes: {
-            type: Array,
-            default: () => []
-        },
-        columnSortConfigs: {
-            type: Array,
-            default: () => []
-        },
-        columnSubMenuItems: {
-            type: Array,
-            default: () => []
-        },
-        isSelected: {
-            type: Boolean,
-            default: false
-        },
-        filtersActive: {
-            type: Boolean,
-            default: false
-        },
-        getDragHandleHeight: {
-            type: Function,
-            default: () => HEADER_HEIGHT
-        }
+    columnHeaders: {
+      type: Array,
+      default: () => [],
     },
-    emits: [
-        'headerSelect',
-        'columnSort',
-        'toggleFilter',
-        'showColumnBorder',
-        'columnResize',
-        'hideColumnBorder',
-        'subMenuItemSelection',
-        'columnResizeEnd',
-        'columnResizeStart',
-        'allColumnsResize'
-    ],
-    data() {
-        return {
-            height: 40,
-            hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
-            dragIndex: null, // the index of the column that is currently being dragged / resized
-            columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-            pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
-            minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
-            maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
-            currentDragHandlerHeight: 0
-        };
+    columnSubHeaders: {
+      type: Array,
+      default: () => [],
     },
-    computed: {
-        enableSorting() {
-            // do not enable sorting when currently resizing or hovering over a drag handle
-            return Boolean(this.tableConfig?.sortConfig) && this.hoverIndex === null && this.dragIndex === null;
-        },
-        enableColumnResizing() {
-            const enableColumnResizingSetting = this.tableConfig?.enableColumnResizing;
-            if (typeof enableColumnResizingSetting === 'undefined') {
-                return true;
-            } else {
-                return enableColumnResizingSetting;
-            }
-        },
-        sortColumn() {
-            return this.tableConfig?.sortConfig?.sortColumn;
-        },
-        sortDirection() {
-            return this.tableConfig?.sortConfig?.sortDirection;
-        },
-        hasSubHeaders() {
-            return this.columnSubHeaders.some(item => item);
-        },
-        currentResizeDragHandleWidth() {
-            return this.enableColumnResizing ? COLUMN_RESIZE_DRAG_HANDLE_WIDTH : 0;
-        }
+    columnSizes: {
+      type: Array,
+      default: () => [],
     },
-    methods: {
-        isColumnSortable(index) {
-            return this.enableSorting && this.columnSortConfigs[index];
-        },
-        onSelect() {
-            this.$emit('headerSelect', !this.isSelected);
-        },
-        onHeaderClick(ind) {
-            if (this.isColumnSortable(ind)) {
-                this.$emit('columnSort', ind, this.columnHeaders[ind]);
-            }
-        },
-        onToggleFilter() {
-            this.$emit('toggleFilter');
-        },
-        onPointerOver(event, columnIndex) {
-            consola.debug('Begin hover over drag handle: ', event);
-            if (this.dragIndex === null) {
-                this.hoverIndex = columnIndex;
-            }
-        },
-        onPointerLeave(event) {
-            consola.debug('End hover over drag handle: ', event);
-            if (this.dragIndex === null) {
-                this.hoverIndex = null;
-            }
-        },
-        onPointerDown(event, columnIndex) {
-            consola.debug('Resize via drag triggered: ', event);
-            // stop the event from propagating up the DOM tree
-            event.stopPropagation();
-            // capture move events until the pointer is released
-            event.target.setPointerCapture(event.pointerId);
-            this.dragIndex = columnIndex;
-            this.currentDragHandlerHeight = this.getDragHandleHeight();
-            this.columnSizeOnDragStart = this.columnSizes[columnIndex];
-            this.pageXOnDragStart = event.pageX;
-            this.$emit('columnResizeStart');
-        },
-        onPointerUp(event) {
-            this.$emit('columnResizeEnd');
-            if (event.shiftKey) {
-                const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-                this.$emit('allColumnsResize', Math.max(newColumnSize, this.minimumColumnWidth));
-            }
-        },
-        onPointerMove: throttle(function (event) {
-            /* eslint-disable no-invalid-this */
-            if (this.dragIndex !== null) {
-                consola.debug('Resize via drag ongoing: ', event);
-                const newColumnSize = this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
-                this.$emit('columnResize', this.dragIndex, Math.max(newColumnSize, this.minimumColumnWidth));
-            }
-            /* eslint-enable no-invalid-this */
-        }),
-        /* The lostpointercapture event is triggered if the pointer capture is lost for any reason, including its
+    columnSortConfigs: {
+      type: Array,
+      default: () => [],
+    },
+    columnSubMenuItems: {
+      type: Array,
+      default: () => [],
+    },
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
+    filtersActive: {
+      type: Boolean,
+      default: false,
+    },
+    getDragHandleHeight: {
+      type: Function,
+      default: () => HEADER_HEIGHT,
+    },
+  },
+  emits: [
+    "headerSelect",
+    "columnSort",
+    "toggleFilter",
+    "showColumnBorder",
+    "columnResize",
+    "hideColumnBorder",
+    "subMenuItemSelection",
+    "columnResizeEnd",
+    "columnResizeStart",
+    "allColumnsResize",
+  ],
+  data() {
+    return {
+      height: 40,
+      hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
+      dragIndex: null, // the index of the column that is currently being dragged / resized
+      columnSizeOnDragStart: null, // the original width of the column that is currently being resized
+      pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+      minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
+      maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
+      currentDragHandlerHeight: 0,
+    };
+  },
+  computed: {
+    enableSorting() {
+      // do not enable sorting when currently resizing or hovering over a drag handle
+      return (
+        Boolean(this.tableConfig?.sortConfig) &&
+        this.hoverIndex === null &&
+        this.dragIndex === null
+      );
+    },
+    enableColumnResizing() {
+      const enableColumnResizingSetting =
+        this.tableConfig?.enableColumnResizing;
+      if (typeof enableColumnResizingSetting === "undefined") {
+        return true;
+      } else {
+        return enableColumnResizingSetting;
+      }
+    },
+    sortColumn() {
+      return this.tableConfig?.sortConfig?.sortColumn;
+    },
+    sortDirection() {
+      return this.tableConfig?.sortConfig?.sortDirection;
+    },
+    hasSubHeaders() {
+      return this.columnSubHeaders.some((item) => item);
+    },
+    currentResizeDragHandleWidth() {
+      return this.enableColumnResizing ? COLUMN_RESIZE_DRAG_HANDLE_WIDTH : 0;
+    },
+  },
+  methods: {
+    isColumnSortable(index) {
+      return this.enableSorting && this.columnSortConfigs[index];
+    },
+    onSelect() {
+      this.$emit("headerSelect", !this.isSelected);
+    },
+    onHeaderClick(ind) {
+      if (this.isColumnSortable(ind)) {
+        this.$emit("columnSort", ind, this.columnHeaders[ind]);
+      }
+    },
+    onToggleFilter() {
+      this.$emit("toggleFilter");
+    },
+    onPointerOver(event, columnIndex) {
+      consola.debug("Begin hover over drag handle: ", event);
+      if (this.dragIndex === null) {
+        this.hoverIndex = columnIndex;
+      }
+    },
+    onPointerLeave(event) {
+      consola.debug("End hover over drag handle: ", event);
+      if (this.dragIndex === null) {
+        this.hoverIndex = null;
+      }
+    },
+    onPointerDown(event, columnIndex) {
+      consola.debug("Resize via drag triggered: ", event);
+      // stop the event from propagating up the DOM tree
+      event.stopPropagation();
+      // capture move events until the pointer is released
+      event.target.setPointerCapture(event.pointerId);
+      this.dragIndex = columnIndex;
+      this.currentDragHandlerHeight = this.getDragHandleHeight();
+      this.columnSizeOnDragStart = this.columnSizes[columnIndex];
+      this.pageXOnDragStart = event.pageX;
+      this.$emit("columnResizeStart");
+    },
+    onPointerUp(event) {
+      this.$emit("columnResizeEnd");
+      if (event.shiftKey) {
+        const newColumnSize =
+          this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+        this.$emit(
+          "allColumnsResize",
+          Math.max(newColumnSize, this.minimumColumnWidth),
+        );
+      }
+    },
+    onPointerMove: throttle(function (event) {
+      /* eslint-disable no-invalid-this */
+      if (this.dragIndex !== null) {
+        consola.debug("Resize via drag ongoing: ", event);
+        const newColumnSize =
+          this.columnSizeOnDragStart + event.pageX - this.pageXOnDragStart;
+        this.$emit(
+          "columnResize",
+          this.dragIndex,
+          Math.max(newColumnSize, this.minimumColumnWidth),
+        );
+      }
+      /* eslint-enable no-invalid-this */
+    }),
+    /* The lostpointercapture event is triggered if the pointer capture is lost for any reason, including its
         orderly release via a pointerup event. Because the onPointerMove function is throttled we also need to throttle
         the onLostPointerCapture function to guarantee order of event handling. */
-        onLostPointerCapture: throttle(function (event) {
-            /* eslint-disable no-invalid-this */
-            consola.debug('Resize via drag finished: ', event);
-            this.dragIndex = null;
-            /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
-            this.hoverIndex = null;
-            /* eslint-enable no-invalid-this */
-        }),
-        dragHandleHeight(isDragging) {
-            return isDragging ? this.currentDragHandlerHeight : HEADER_HEIGHT;
-        },
-        onSubMenuItemSelection(item, ind) {
-            this.$emit('subMenuItemSelection', item, ind);
-        },
-        getHeaderCellWidths() {
-            return this.columnHeaders.map((_, columnIndex) => {
-                const widthCompleteHeader =
-                  Math.ceil(this.$refs[`columnHeader-${columnIndex}`][0].getBoundingClientRect().width);
-                const widthHeaderTextContainer =
-                    this.$refs[`headerTextContainer-${columnIndex}`][0].getBoundingClientRect().width;
-                const widthHeaderText =
-                  this.$refs[`headerText-${columnIndex}`][0].getBoundingClientRect().width;
-                const textContainerOverflow = Math.ceil(widthHeaderText - widthHeaderTextContainer);
-                return widthCompleteHeader + textContainerOverflow + this.currentResizeDragHandleWidth;
-            });
-        }
-    }
+    onLostPointerCapture: throttle(function (event) {
+      /* eslint-disable no-invalid-this */
+      consola.debug("Resize via drag finished: ", event);
+      this.dragIndex = null;
+      /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
+      this.hoverIndex = null;
+      /* eslint-enable no-invalid-this */
+    }),
+    dragHandleHeight(isDragging) {
+      return isDragging ? this.currentDragHandlerHeight : HEADER_HEIGHT;
+    },
+    onSubMenuItemSelection(item, ind) {
+      this.$emit("subMenuItemSelection", item, ind);
+    },
+    getHeaderCellWidths() {
+      return this.columnHeaders.map((_, columnIndex) => {
+        const widthCompleteHeader = Math.ceil(
+          this.$refs[`columnHeader-${columnIndex}`][0].getBoundingClientRect()
+            .width,
+        );
+        const widthHeaderTextContainer =
+          this.$refs[
+            `headerTextContainer-${columnIndex}`
+          ][0].getBoundingClientRect().width;
+        const widthHeaderText =
+          this.$refs[`headerText-${columnIndex}`][0].getBoundingClientRect()
+            .width;
+        const textContainerOverflow = Math.ceil(
+          widthHeaderText - widthHeaderTextContainer,
+        );
+        return (
+          widthCompleteHeader +
+          textContainerOverflow +
+          this.currentResizeDragHandleWidth
+        );
+      });
+    },
+  },
 };
 </script>
 
@@ -210,28 +240,31 @@ export default {
       <th
         v-if="tableConfig.showCollapser"
         :cell-type="'th'"
-        :class="['collapser-cell-spacer', {'with-subheaders': hasSubHeaders}]"
+        :class="['collapser-cell-spacer', { 'with-subheaders': hasSubHeaders }]"
       />
       <th
         v-if="tableConfig.showSelection"
-        :class="['select-cell', {'with-subheaders': hasSubHeaders}]"
+        :class="['select-cell', { 'with-subheaders': hasSubHeaders }]"
       >
-        <Checkbox
-          :model-value="isSelected"
-          @update:model-value="onSelect"
-        />
+        <Checkbox :model-value="isSelected" @update:model-value="onSelect" />
       </th>
       <th
         v-for="(header, ind) in columnHeaders"
         :key="ind"
         :ref="`columnHeader-${ind}`"
-        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`}"
+        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)` }"
         class="column-header"
       >
         <div
           class="column-header-content"
-          :class="[{ sortable: isColumnSortable(ind), inverted: sortDirection === -1, 'with-subheaders': hasSubHeaders,
-                     'with-sub-menu': columnSubMenuItems[ind] }]"
+          :class="[
+            {
+              sortable: isColumnSortable(ind),
+              inverted: sortDirection === -1,
+              'with-subheaders': hasSubHeaders,
+              'with-sub-menu': columnSubMenuItems[ind],
+            },
+          ]"
           tabindex="0"
           @click="onHeaderClick(ind)"
           @keydown.space="onHeaderClick(ind)"
@@ -246,17 +279,11 @@ export default {
               <span :ref="`headerText-${ind}`">{{ header }}</span>
             </div>
           </div>
-          <div
-            v-if="columnSubHeaders[ind]"
-            class="sub-header-text-container"
-          >
+          <div v-if="columnSubHeaders[ind]" class="sub-header-text-container">
             {{ columnSubHeaders[ind] }}
           </div>
         </div>
-        <div
-          v-if="columnSubMenuItems[ind]"
-          class="sub-menu-select-header"
-        >
+        <div v-if="columnSubMenuItems[ind]" class="sub-menu-select-header">
           <SubMenu
             ref="subMenu"
             :items="columnSubMenuItems[ind]"
@@ -264,15 +291,25 @@ export default {
             :max-menu-width="maximumSubMenuWidth"
             allow-overflow-main-axis
             button-title="Open table column header submenu"
-            @item-click="(_, item) => { onSubMenuItemSelection(item, ind) }"
+            @item-click="
+              (_, item) => {
+                onSubMenuItemSelection(item, ind);
+              }
+            "
           >
             <ArrowDropdown class="icon" />
           </SubMenu>
         </div>
         <div
           v-if="enableColumnResizing"
-          :class="['drag-handle', { hover: hoverIndex === ind, drag: dragIndex === ind}]"
-          :style="{ height: `${dragHandleHeight(dragIndex === ind)}px`, width: `${currentResizeDragHandleWidth}px`}"
+          :class="[
+            'drag-handle',
+            { hover: hoverIndex === ind, drag: dragIndex === ind },
+          ]"
+          :style="{
+            height: `${dragHandleHeight(dragIndex === ind)}px`,
+            width: `${currentResizeDragHandleWidth}px`,
+          }"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
           @pointerdown.passive="onPointerDown($event, ind)"
@@ -299,11 +336,13 @@ export default {
 <style lang="postcss" scoped>
 thead {
   height: 41px;
-  
+
   & tr {
     display: flex;
     height: 100%;
-    transition: height 0.3s, box-shadow 0.15s;
+    transition:
+      height 0.3s,
+      box-shadow 0.15s;
     border-top: 1px solid var(--knime-silver-sand-semi);
 
     & th {
@@ -370,7 +409,6 @@ thead {
         }
       }
 
-
       &.column-header {
         position: relative;
         display: flex;
@@ -385,7 +423,9 @@ thead {
           width: 100%;
 
           &.with-sub-menu {
-            width: calc(100% - 22px); /* due to .sub-menu-select-header: width */
+            width: calc(
+              100% - 22px
+            ); /* due to .sub-menu-select-header: width */
           }
 
           &:not(.inverted) .icon.active {

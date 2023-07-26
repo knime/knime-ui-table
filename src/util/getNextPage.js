@@ -11,18 +11,18 @@
  * @returns {Number|null} new page number or null of no update is needed.
  */
 export const getNextPage = (pageSize, currentPage, availableRows, pageRows) => {
-    if (pageSize > availableRows) {
-        return 1;
-    } else if (pageSize * currentPage > availableRows || pageRows < 1) {
-        let newPageNumber = currentPage;
-        while (newPageNumber >= 1) {
-            if (pageSize * newPageNumber > availableRows) {
-                newPageNumber -= 1;
-            } else {
-                break;
-            }
-        }
-        return newPageNumber;
+  if (pageSize > availableRows) {
+    return 1;
+  } else if (pageSize * currentPage > availableRows || pageRows < 1) {
+    let newPageNumber = currentPage;
+    while (newPageNumber >= 1) {
+      if (pageSize * newPageNumber > availableRows) {
+        newPageNumber -= 1;
+      } else {
+        break;
+      }
     }
-    return null;
+    return newPageNumber;
+  }
+  return null;
 };

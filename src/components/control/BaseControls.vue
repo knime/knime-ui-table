@@ -1,6 +1,6 @@
 <script>
-import PageControls from './PageControls.vue';
-import Carousel from 'webapps-common/ui/components/Carousel.vue';
+import PageControls from "./PageControls.vue";
+import Carousel from "webapps-common/ui/components/Carousel.vue";
 
 /**
  * Base table header component with table page controls on the left of the table row
@@ -10,39 +10,47 @@ import Carousel from 'webapps-common/ui/components/Carousel.vue';
  * @emits prevPage
  */
 export default {
-    components: {
-        PageControls,
-        Carousel
-    },
-    props: {
-        pageConfig: {
-            type: Object,
-            default: () => null,
-            validate(pageConfig) {
-                if (typeof pageConfig !== 'object') {
-                    return false;
-                }
-                const requiredProperties = ['currentSize', 'tableSize', 'pageSize', 'currentPage', 'possiblePageSizes'];
-                return requiredProperties.every(key => pageConfig.hasOwnProperty(key));
-            }
-        },
-        hasCarousel: {
-            type: Boolean,
-            required: false,
-            default: true
+  components: {
+    PageControls,
+    Carousel,
+  },
+  props: {
+    pageConfig: {
+      type: Object,
+      default: () => null,
+      validate(pageConfig) {
+        if (typeof pageConfig !== "object") {
+          return false;
         }
+        const requiredProperties = [
+          "currentSize",
+          "tableSize",
+          "pageSize",
+          "currentPage",
+          "possiblePageSizes",
+        ];
+        return requiredProperties.every((key) =>
+          pageConfig.hasOwnProperty(key),
+        );
+      },
     },
-    emits: ['nextPage', 'prevPage'],
-    methods: {
-        onNextPage() {
-            consola.debug('Next Page');
-            this.$emit('nextPage');
-        },
-        onPrevPage() {
-            consola.debug('Prev Page');
-            this.$emit('prevPage');
-        }
-    }
+    hasCarousel: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+  },
+  emits: ["nextPage", "prevPage"],
+  methods: {
+    onNextPage() {
+      consola.debug("Next Page");
+      this.$emit("nextPage");
+    },
+    onPrevPage() {
+      consola.debug("Prev Page");
+      this.$emit("prevPage");
+    },
+  },
 };
 </script>
 
@@ -60,11 +68,7 @@ export default {
         @prev-page="onPrevPage"
       />
       <th class="right-controls">
-        <div
-          v-if="hasCarousel"
-          ref="carousel-wrapper"
-          class="carousel-wrapper"
-        >
+        <div v-if="hasCarousel" ref="carousel-wrapper" class="carousel-wrapper">
           <Carousel>
             <div class="wrapper">
               <slot name="carousel" />
@@ -116,14 +120,13 @@ thead {
             padding-left: 0;
             padding-right: 0;
           }
-          
+
           & :deep(.shadow-wrapper) {
             margin-right: 0;
             margin-left: 0;
           }
         }
       }
-
     }
   }
 }

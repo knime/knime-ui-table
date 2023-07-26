@@ -1,6 +1,6 @@
 <script>
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
-import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
+import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
+import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 
 /**
  * Table data element wrapper for the animated collapser icon and it's animation.
@@ -8,32 +8,32 @@ import BaseButton from 'webapps-common/ui/components/BaseButton.vue';
  * @emits collapserExpand when the element is clicked.
  */
 export default {
-    components: {
-        DropdownIcon,
-        BaseButton
+  components: {
+    DropdownIcon,
+    BaseButton,
+  },
+  props: {
+    expanded: {
+      type: Boolean,
+      default: false,
     },
-    props: {
-        expanded: {
-            type: Boolean,
-            default: false
-        },
-        compactMode: {
-            type: Boolean,
-            default: false
-        }
+    compactMode: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['collapserExpand'],
-    methods: {
-        onTrigger() {
-            this.$emit('collapserExpand', !this.expanded);
-        }
-    }
+  },
+  emits: ["collapserExpand"],
+  methods: {
+    onTrigger() {
+      this.$emit("collapserExpand", !this.expanded);
+    },
+  },
 };
 </script>
 
 <template>
   <td class="collapser-cell">
-    <div :class="['row-collapser-toggle', {'compact-mode': compactMode}]">
+    <div :class="['row-collapser-toggle', { 'compact-mode': compactMode }]">
       <BaseButton
         class="button"
         :aria-expanded="String(expanded)"
@@ -90,7 +90,8 @@ export default {
       }
     }
 
-    &:focus .dropdown { /* whole button gets focus but only dropdown icon is styled */
+    &:focus .dropdown {
+      /* whole button gets focus but only dropdown icon is styled */
       background-color: var(--theme-button-function-background-color-focus);
     }
   }

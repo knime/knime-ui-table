@@ -1,8 +1,7 @@
 interface PossibleValue {
-    id: string,
-    text: string,
-    selectedText?: string
+  id: string;
+  text: string;
+  selectedText?: string;
 }
-
 
 export default PossibleValue;

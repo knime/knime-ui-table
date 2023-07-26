@@ -25,53 +25,61 @@
  * @returns {Array[]} paginatedResults.paginatedIndicies - the paginated indicies to map TableUI selection events to their
  *      original indicies.
  */
-export const paginate = paginationConfig => {
-    let {
-        sortedData,
-        processedIndicies,
-        processedSelection = [],
-        pageSize,
-        pageStart,
-        pageEnd
-    } = paginationConfig;
-    let includedRows = 0;
-    let totalRows = 0;
-    let paginatedSelection = [];
-    let paginatedIndicies = [];
-    let paginatedData = sortedData.map((dataGroup, groupInd) => {
-        let groupCount = dataGroup.length;
-        let groupStart = totalRows;
-        let groupEnd = groupStart + groupCount;
-        let remainingRows = pageSize - includedRows;
-        let returnValue = [];
-        let skipGroup = remainingRows <= 0 || groupEnd < pageStart || groupStart > pageEnd;
-        let includeEntireGroup = remainingRows >= groupCount && groupStart >= pageStart && groupEnd <= pageEnd;
-        if (skipGroup) {
-            returnValue = [];
-            paginatedSelection.push([]);
-            paginatedIndicies.push([]);
-        } else if (includeEntireGroup) {
-            returnValue = dataGroup;
-            paginatedSelection.push(processedSelection[groupInd]);
-            paginatedIndicies.push(processedIndicies[groupInd]);
-        } else {
-            let groupSliceStart = 0;
-            let groupSliceEnd = groupCount;
-            if (groupStart < pageStart) {
-                groupSliceStart = pageStart - groupStart;
-                if (groupCount - groupSliceStart > remainingRows) {
-                    groupSliceEnd = groupSliceStart + remainingRows;
-                }
-            } else if (groupSliceStart + remainingRows < groupCount) {
-                groupSliceEnd = groupSliceStart + remainingRows;
-            }
-            returnValue = dataGroup.slice(groupSliceStart, groupSliceEnd);
-            paginatedSelection.push(processedSelection[groupInd]?.slice(groupSliceStart, groupSliceEnd));
-            paginatedIndicies.push(processedIndicies[groupInd].slice(groupSliceStart, groupSliceEnd));
+export const paginate = (paginationConfig) => {
+  let {
+    sortedData,
+    processedIndicies,
+    processedSelection = [],
+    pageSize,
+    pageStart,
+    pageEnd,
+  } = paginationConfig;
+  let includedRows = 0;
+  let totalRows = 0;
+  let paginatedSelection = [];
+  let paginatedIndicies = [];
+  let paginatedData = sortedData.map((dataGroup, groupInd) => {
+    let groupCount = dataGroup.length;
+    let groupStart = totalRows;
+    let groupEnd = groupStart + groupCount;
+    let remainingRows = pageSize - includedRows;
+    let returnValue = [];
+    let skipGroup =
+      remainingRows <= 0 || groupEnd < pageStart || groupStart > pageEnd;
+    let includeEntireGroup =
+      remainingRows >= groupCount &&
+      groupStart >= pageStart &&
+      groupEnd <= pageEnd;
+    if (skipGroup) {
+      returnValue = [];
+      paginatedSelection.push([]);
+      paginatedIndicies.push([]);
+    } else if (includeEntireGroup) {
+      returnValue = dataGroup;
+      paginatedSelection.push(processedSelection[groupInd]);
+      paginatedIndicies.push(processedIndicies[groupInd]);
+    } else {
+      let groupSliceStart = 0;
+      let groupSliceEnd = groupCount;
+      if (groupStart < pageStart) {
+        groupSliceStart = pageStart - groupStart;
+        if (groupCount - groupSliceStart > remainingRows) {
+          groupSliceEnd = groupSliceStart + remainingRows;
         }
-        includedRows += returnValue.length;
-        totalRows += groupCount;
-        return returnValue;
-    });
-    return { paginatedData, paginatedSelection, paginatedIndicies };
+      } else if (groupSliceStart + remainingRows < groupCount) {
+        groupSliceEnd = groupSliceStart + remainingRows;
+      }
+      returnValue = dataGroup.slice(groupSliceStart, groupSliceEnd);
+      paginatedSelection.push(
+        processedSelection[groupInd]?.slice(groupSliceStart, groupSliceEnd),
+      );
+      paginatedIndicies.push(
+        processedIndicies[groupInd].slice(groupSliceStart, groupSliceEnd),
+      );
+    }
+    includedRows += returnValue.length;
+    totalRows += groupCount;
+    return returnValue;
+  });
+  return { paginatedData, paginatedSelection, paginatedIndicies };
 };

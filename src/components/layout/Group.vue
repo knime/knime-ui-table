@@ -1,6 +1,6 @@
 <script>
-import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
+import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 /**
  * This component is a wrapper for groups of table rows. It can display a "group" row
@@ -11,52 +11,45 @@ import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
  * @emits groupSubMenuClick when the "group" SubMenu has an item clicked.
  */
 export default {
-    components: {
-        OptionsIcon,
-        SubMenu
+  components: {
+    OptionsIcon,
+    SubMenu,
+  },
+  props: {
+    title: {
+      type: String,
+      default: () => "Group",
     },
-    props: {
-        title: {
-            type: String,
-            default: () => 'Group'
-        },
-        show: {
-            type: Boolean,
-            default: false
-        },
-        groupSubMenuItems: {
-            type: Array,
-            default: () => []
-        }
+    show: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['groupSubMenuClick', 'groupSubMenuExpand'],
-    methods: {
-        onSubMenuItemClick(event, clickedItem) {
-            this.$emit('groupSubMenuClick', clickedItem);
-            event.preventDefault();
-            return false;
-        },
-        onSubMenuToggle(callback) {
-            this.$emit('groupSubMenuExpand', callback);
-        }
-    }
+    groupSubMenuItems: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  emits: ["groupSubMenuClick", "groupSubMenuExpand"],
+  methods: {
+    onSubMenuItemClick(event, clickedItem) {
+      this.$emit("groupSubMenuClick", clickedItem);
+      event.preventDefault();
+      return false;
+    },
+    onSubMenuToggle(callback) {
+      this.$emit("groupSubMenuExpand", callback);
+    },
+  },
 };
 </script>
 
 <template>
   <tbody>
-    <tr
-      v-if="show"
-      class="table-group"
-    >
+    <tr v-if="show" class="table-group">
       <td>
         {{ title }}
       </td>
-      <td
-        v-if="groupSubMenuItems.length"
-        button-title="actions"
-        class="action"
-      >
+      <td v-if="groupSubMenuItems.length" button-title="actions" class="action">
         <SubMenu
           teleport-to-body
           :items="groupSubMenuItems"

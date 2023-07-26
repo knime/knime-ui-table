@@ -1,7 +1,7 @@
-import { columnTypes } from '@/config/table.config';
-import { tableTimeFilters, checkTimeFilter } from '@/config/time.config';
-import { searchRow, searchCell } from './search';
-import { isEmpty, unpackObjectRepresentation } from '..';
+import { columnTypes } from "@/config/table.config";
+import { tableTimeFilters, checkTimeFilter } from "@/config/time.config";
+import { searchRow, searchCell } from "./search";
+import { isEmpty, unpackObjectRepresentation } from "..";
 
 /**
  * Utility function designed to consume an entire data set and output only the rows which match the provided
@@ -43,81 +43,90 @@ import { isEmpty, unpackObjectRepresentation } from '..';
  * @returns {Number[]} filteredDataConfig.filteredIndicies - an array of the original row indicies for the filtered
  *      data subset. Can be used for tracking transformations of the data.
  */
-export const filter = filterConfig => {
-    let {
-        data,
-        columnKeys,
-        formatters,
-        types,
-        timeFilter,
-        timeFilterKey,
-        searchQuery,
-        showFilter,
-        filterValues
-    } = filterConfig;
-    let localColumnTypes = columnKeys.map(colKey => types[colKey]);
-    let filters = Object.entries(filterValues);
-    let columnFormatters = Object.values(formatters);
-    let filteredIndicies = [];
-    let filteredData = data
-        .filter((row, rowInd) => {
-            if (timeFilter) {
-                let inTimeFilter = checkTimeFilter(row[timeFilterKey], tableTimeFilters[timeFilter]);
-                if (!inTimeFilter) {
-                    return false;
-                }
-            }
-            let rowValues = columnKeys.map(colKey => row[colKey]);
-            let shouldSearch = searchQuery && searchQuery.length;
-            if (shouldSearch && !searchRow(rowValues, localColumnTypes, columnFormatters, searchQuery)) {
-                return false;
-            }
-            if (!showFilter || filters.length === 0) {
-                filteredIndicies.push(rowInd);
-                return true;
-            }
-            let inFilter = filters.every(entry => {
-                let colKey = entry[0];
-                let filterVal = entry[1];
-                let colInd = columnKeys.indexOf(colKey);
-                let columnType = localColumnTypes[colInd];
-                let colFormatter = columnFormatters[colInd];
-                let rowValue = unpackObjectRepresentation(row[colKey]);
-                const formattedRowValue = colFormatter ? colFormatter(rowValue) : rowValue;
-                if (filterVal === null) {
-                    return rowValue === null;
-                }
-                if (
-                    typeof filterVal === 'undefined' ||
-                    filterVal === '' ||
-                    (Array.isArray(filterVal) && filterVal.length === 0)
-                ) {
-                    return true;
-                }
-                if (isEmpty(rowValue)) {
-                    return false;
-                }
-                switch (columnType) {
-                    case columnTypes.Nominal: {
-                        return filterVal.includes(formattedRowValue);
-                    }
-                    case columnTypes.Number:
-                    case columnTypes.String:
-                    case columnTypes.DateTime:
-                    case columnTypes.Object:
-                    case columnTypes.Array:
-                        return searchCell(rowValue, columnType, colFormatter, filterVal);
-                    case columnTypes.Boolean:
-                        return filterVal.includes(colFormatter ? colFormatter(rowValue) : rowValue.toString());
-                        // return filterVal.includes(rowValue.toString());
-                    default:
-                        return true;
-                }
-            });
-            if (inFilter) {
-                filteredIndicies.push(rowInd);
-            }
-            return inFilter;
-        });
-    return { filteredData, filteredIndicies };
+export const filter = (filterConfig) => {
+  let {
+    data,
+    columnKeys,
+    formatters,
+    types,
+    timeFilter,
+    timeFilterKey,
+    searchQuery,
+    showFilter,
+    filterValues,
+  } = filterConfig;
+  let localColumnTypes = columnKeys.map((colKey) => types[colKey]);
+  let filters = Object.entries(filterValues);
+  let columnFormatters = Object.values(formatters);
+  let filteredIndicies = [];
+  let filteredData = data.filter((row, rowInd) => {
+    if (timeFilter) {
+      let inTimeFilter = checkTimeFilter(
+        row[timeFilterKey],
+        tableTimeFilters[timeFilter],
+      );
+      if (!inTimeFilter) {
+        return false;
+      }
+    }
+    let rowValues = columnKeys.map((colKey) => row[colKey]);
+    let shouldSearch = searchQuery && searchQuery.length;
+    if (
+      shouldSearch &&
+      !searchRow(rowValues, localColumnTypes, columnFormatters, searchQuery)
+    ) {
+      return false;
+    }
+    if (!showFilter || filters.length === 0) {
+      filteredIndicies.push(rowInd);
+      return true;
+    }
+    let inFilter = filters.every((entry) => {
+      let colKey = entry[0];
+      let filterVal = entry[1];
+      let colInd = columnKeys.indexOf(colKey);
+      let columnType = localColumnTypes[colInd];
+      let colFormatter = columnFormatters[colInd];
+      let rowValue = unpackObjectRepresentation(row[colKey]);
+      const formattedRowValue = colFormatter
+        ? colFormatter(rowValue)
+        : rowValue;
+      if (filterVal === null) {
+        return rowValue === null;
+      }
+      if (
+        typeof filterVal === "undefined" ||
+        filterVal === "" ||
+        (Array.isArray(filterVal) && filterVal.length === 0)
+      ) {
+        return true;
+      }
+      if (isEmpty(rowValue)) {
+        return false;
+      }
+      switch (columnType) {
+        case columnTypes.Nominal: {
+          return filterVal.includes(formattedRowValue);
+        }
+        case columnTypes.Number:
+        case columnTypes.String:
+        case columnTypes.DateTime:
+        case columnTypes.Object:
+        case columnTypes.Array:
+          return searchCell(rowValue, columnType, colFormatter, filterVal);
+        case columnTypes.Boolean:
+          return filterVal.includes(
+            colFormatter ? colFormatter(rowValue) : rowValue.toString(),
+          );
+        // return filterVal.includes(rowValue.toString());
+        default:
+          return true;
+      }
+    });
+    if (inFilter) {
+      filteredIndicies.push(rowInd);
+    }
+    return inFilter;
+  });
+  return { filteredData, filteredIndicies };
 };

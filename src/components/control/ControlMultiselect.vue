@@ -1,18 +1,18 @@
 <script lang="ts">
-import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
-import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import type { Ref, PropType } from 'vue';
-import { ref, toRefs, computed } from 'vue';
-import { isMissingValue } from '@/util';
-import useDropdownPopper from './composables/useDropdownPopper';
-import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
-import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
-import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
-import useIdGeneration from './composables/useIdGeneration';
-import useScrollToElement from './composables/useScrollToElement';
-import type PossibleValue from '@/types/PossibleValue';
+import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import type { Ref, PropType } from "vue";
+import { ref, toRefs, computed } from "vue";
+import { isMissingValue } from "@/util";
+import useDropdownPopper from "./composables/useDropdownPopper";
+import useClickOutside from "webapps-common/ui/composables/useClickOutside";
+import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
+import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
+import useIdGeneration from "./composables/useIdGeneration";
+import useScrollToElement from "./composables/useScrollToElement";
+import type PossibleValue from "@/types/PossibleValue";
 
 /**
  * A multi component specifically styled for use in the table controls. This component allows
@@ -22,218 +22,235 @@ import type PossibleValue from '@/types/PossibleValue';
  * @emits columnReorder event when the order of the list items changes.
  */
 export default {
-    components: {
-        Checkbox,
-        DropdownIcon,
-        CircleHelpIcon,
-        MenuOptionsIcon
-    },
-    props: {
-        /**
-         * List of possible values. Each item must have an `id` and a `text` property, and optionally a `selectedText`
-         * property that is used for displaying the list of selected items. If it is omitted, `text` is used instead.
-         * @example
-         * [{
-         *   id: 'pdf',
-         *   text: 'PDF'
-         * }, {
-         *   id: 'XLS',
-         *   text: 'Excel',
-         *   selectedText: '.xls'
-         * }]
-         */
-        possibleValues: {
-            type: Array as PropType<Array<PossibleValue>>,
-            default: () => [],
-            validator(values) {
-                if (!Array.isArray(values)) {
-                    return false;
-                }
-                return values.every(item => item.hasOwnProperty('id') && item.hasOwnProperty('text'));
-            }
-        },
-        /**
-         * Selected value (which is a list of ids of entries).
-         */
-        modelValue: {
-            type: Array as PropType<Array<string>>,
-            default: () => []
-        },
-        /**
-         * Placeholder to be displayed when nothing is selected.
-         */
-        placeholder: {
-            type: String,
-            default: null
-        },
-        /**
-         * If the placeholder should always be displayed; else selected values will be listed.
-         */
-        lockPlaceholder: {
-            type: Boolean,
-            default: false
-        },
-        isFilter: {
-            type: Boolean,
-            default: false
+  components: {
+    Checkbox,
+    DropdownIcon,
+    CircleHelpIcon,
+    MenuOptionsIcon,
+  },
+  props: {
+    /**
+     * List of possible values. Each item must have an `id` and a `text` property, and optionally a `selectedText`
+     * property that is used for displaying the list of selected items. If it is omitted, `text` is used instead.
+     * @example
+     * [{
+     *   id: 'pdf',
+     *   text: 'PDF'
+     * }, {
+     *   id: 'XLS',
+     *   text: 'Excel',
+     *   selectedText: '.xls'
+     * }]
+     */
+    possibleValues: {
+      type: Array as PropType<Array<PossibleValue>>,
+      default: () => [],
+      validator(values) {
+        if (!Array.isArray(values)) {
+          return false;
         }
-    },
-    emits: ['update:modelValue', 'columnReorder'],
-    setup(props) {
-        const { possibleValues } = toRefs(props);
-
-        const toggleButton: Ref<HTMLElement | null> = ref(null);
-        const optionsPopover: Ref<HTMLElement | null> = ref(null);
-        const option: Ref<{$el: HTMLElement}[]> = ref([]);
-
-
-        const isExpanded = ref(false);
-
-        const { scrollTo } = useScrollToElement({ toggleButton });
-
-        const getNextElement = (current: number | null, direction: 1 | -1) => {
-            const listItems = option.value.map(({ $el }) => $el);
-            const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
-            scrollTo(element.offsetParent as HTMLElement);
-            const clickableInputElement = element.querySelector('input') as HTMLElement;
-            return { index, onClick: () => clickableInputElement.click() };
-        };
-        
-        const closeMenu = () => {
-            isExpanded.value = false;
-        };
-
-        const { updatePopper } = useDropdownPopper({ popperTarget: optionsPopover, referenceEl: toggleButton });
-        const { onKeydown, resetNavigation, currentIndex: selectedIndex } = useDropdownNavigation({
-            getNextElement,
-            getFirstElement: () => getNextElement(null, 1),
-            getLastElement: () => getNextElement(null, -1),
-            close: () => {
-                closeMenu();
-                resetNavigation();
-            }
-        });
-
-        useClickOutside({ targets: [toggleButton, optionsPopover], callback: closeMenu }, isExpanded);
-        const { activeDescendantId, generateOptionId } = useIdGeneration(
-            computed(() => possibleValues.value.map(({ id }) => id)),
-            selectedIndex,
-            'control-multiselect'
+        return values.every(
+          (item) => item.hasOwnProperty("id") && item.hasOwnProperty("text"),
         );
-        return {
-            updatePopper,
-            onKeydown,
-            resetNavigation,
-            selectedIndex,
-            isExpanded,
-            option,
-            optionsPopover,
-            toggleButton,
-            activeDescendantId,
-            generateOptionId
-        };
+      },
     },
-    data() {
-        return {
-            checkedValue: this.modelValue,
-            dragGhost: null,
-            dragInd: null,
-            hoverInd: null,
-            listItemHeightCutoff: 15
-        } as {
-            checkedValue: string[],
-            dragGhost: Node | null,
-            dragInd: number | null,
-            hoverInd: number | null,
-            listItemHeightCutoff: number
-        };
+    /**
+     * Selected value (which is a list of ids of entries).
+     */
+    modelValue: {
+      type: Array as PropType<Array<string>>,
+      default: () => [],
     },
-    computed: {
-        optionText() {
-            if (this.checkedValue.length === 0 || this.lockPlaceholder) {
-                return this.placeholder;
-            }
-            if (this.isFilter) {
-                return `${this.checkedValue.length} selected`;
-            }
-            return this.possibleValues
-                .filter(({ id }) => this.checkedValue.indexOf(id) > -1)
-                .map(({ text, selectedText = text }) => selectedText)
-                .join(', ');
-        },
-        withReorderEnabled() {
-            // for filters, reordering of options does not make any sense
-            return !this.isFilter;
-        }
+    /**
+     * Placeholder to be displayed when nothing is selected.
+     */
+    placeholder: {
+      type: String,
+      default: null,
     },
-    watch: {
-        modelValue(newValue) {
-            this.checkedValue = newValue;
-        }
+    /**
+     * If the placeholder should always be displayed; else selected values will be listed.
+     */
+    lockPlaceholder: {
+      type: Boolean,
+      default: false,
     },
-    methods: {
-        refocusToggleButton() {
-            const toggleButtonElement = this.toggleButton;
-            if (toggleButtonElement !== null) {
-                toggleButtonElement.focus({ preventScroll: true });
-            }
-        },
-        isMissingValue,
-        onInput(value: string, toggled: boolean) {
-            if (toggled) {
-                if (this.checkedValue.indexOf(value) === -1) {
-                    this.checkedValue.push(value);
-                }
-            } else {
-                this.checkedValue = this.checkedValue.filter(x => x !== value);
-            }
-            this.refocusToggleButton();
-            consola.trace('Multiselect value changed to', this.checkedValue);
+    isFilter: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["update:modelValue", "columnReorder"],
+  setup(props) {
+    const { possibleValues } = toRefs(props);
 
-            this.$emit('update:modelValue', this.checkedValue);
-        },
-        toggle() {
-            this.isExpanded = !this.isExpanded;
-            this.resetNavigation();
-            this.updatePopper();
-        },
-        isChecked(itemId: string) {
-            return this.checkedValue.indexOf(itemId) > -1;
-        },
-        onDragStart(event: Event, ind: number) {
-            consola.trace('Drag triggered: ', event, ind);
-            this.dragInd = ind;
-            const dragElement = this.option[ind].$el;
-            this.dragGhost = dragElement.cloneNode(true);
-            document.body.appendChild(this.dragGhost);
-        },
-        onDragEnd() {
-            if (this.hoverInd === null) {
-                return;
-            }
-            let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
-            if (this.dragGhost) {
-                document.body.removeChild(this.dragGhost);
-                this.$emit('columnReorder', this.dragInd, this.hoverInd + offset);
-            }
-            this.dragGhost = null;
-            this.dragInd = null;
-            this.hoverInd = null;
-            this.refocusToggleButton();
-        },
-        onDragOver(event: DragEvent, ind: number) {
-            // detect when moving between options
-            if (event.offsetY < this.listItemHeightCutoff) {
-                ind -= 1;
-            }
-            if (this.dragGhost) {
-                this.hoverInd = ind;
-            }
-        },
-        onDragLeave() {
-            this.hoverInd = null;
+    const toggleButton: Ref<HTMLElement | null> = ref(null);
+    const optionsPopover: Ref<HTMLElement | null> = ref(null);
+    const option: Ref<{ $el: HTMLElement }[]> = ref([]);
+
+    const isExpanded = ref(false);
+
+    const { scrollTo } = useScrollToElement({ toggleButton });
+
+    const getNextElement = (current: number | null, direction: 1 | -1) => {
+      const listItems = option.value.map(({ $el }) => $el);
+      const { element, index } = getWrappedAroundNextElement(
+        current,
+        direction,
+        listItems,
+      );
+      scrollTo(element.offsetParent as HTMLElement);
+      const clickableInputElement = element.querySelector(
+        "input",
+      ) as HTMLElement;
+      return { index, onClick: () => clickableInputElement.click() };
+    };
+
+    const closeMenu = () => {
+      isExpanded.value = false;
+    };
+
+    const { updatePopper } = useDropdownPopper({
+      popperTarget: optionsPopover,
+      referenceEl: toggleButton,
+    });
+    const {
+      onKeydown,
+      resetNavigation,
+      currentIndex: selectedIndex,
+    } = useDropdownNavigation({
+      getNextElement,
+      getFirstElement: () => getNextElement(null, 1),
+      getLastElement: () => getNextElement(null, -1),
+      close: () => {
+        closeMenu();
+        resetNavigation();
+      },
+    });
+
+    useClickOutside(
+      { targets: [toggleButton, optionsPopover], callback: closeMenu },
+      isExpanded,
+    );
+    const { activeDescendantId, generateOptionId } = useIdGeneration(
+      computed(() => possibleValues.value.map(({ id }) => id)),
+      selectedIndex,
+      "control-multiselect",
+    );
+    return {
+      updatePopper,
+      onKeydown,
+      resetNavigation,
+      selectedIndex,
+      isExpanded,
+      option,
+      optionsPopover,
+      toggleButton,
+      activeDescendantId,
+      generateOptionId,
+    };
+  },
+  data() {
+    return {
+      checkedValue: this.modelValue,
+      dragGhost: null,
+      dragInd: null,
+      hoverInd: null,
+      listItemHeightCutoff: 15,
+    } as {
+      checkedValue: string[];
+      dragGhost: Node | null;
+      dragInd: number | null;
+      hoverInd: number | null;
+      listItemHeightCutoff: number;
+    };
+  },
+  computed: {
+    optionText() {
+      if (this.checkedValue.length === 0 || this.lockPlaceholder) {
+        return this.placeholder;
+      }
+      if (this.isFilter) {
+        return `${this.checkedValue.length} selected`;
+      }
+      return this.possibleValues
+        .filter(({ id }) => this.checkedValue.indexOf(id) > -1)
+        .map(({ text, selectedText = text }) => selectedText)
+        .join(", ");
+    },
+    withReorderEnabled() {
+      // for filters, reordering of options does not make any sense
+      return !this.isFilter;
+    },
+  },
+  watch: {
+    modelValue(newValue) {
+      this.checkedValue = newValue;
+    },
+  },
+  methods: {
+    refocusToggleButton() {
+      const toggleButtonElement = this.toggleButton;
+      if (toggleButtonElement !== null) {
+        toggleButtonElement.focus({ preventScroll: true });
+      }
+    },
+    isMissingValue,
+    onInput(value: string, toggled: boolean) {
+      if (toggled) {
+        if (this.checkedValue.indexOf(value) === -1) {
+          this.checkedValue.push(value);
         }
-    }
+      } else {
+        this.checkedValue = this.checkedValue.filter((x) => x !== value);
+      }
+      this.refocusToggleButton();
+      consola.trace("Multiselect value changed to", this.checkedValue);
+
+      this.$emit("update:modelValue", this.checkedValue);
+    },
+    toggle() {
+      this.isExpanded = !this.isExpanded;
+      this.resetNavigation();
+      this.updatePopper();
+    },
+    isChecked(itemId: string) {
+      return this.checkedValue.indexOf(itemId) > -1;
+    },
+    onDragStart(event: Event, ind: number) {
+      consola.trace("Drag triggered: ", event, ind);
+      this.dragInd = ind;
+      const dragElement = this.option[ind].$el;
+      this.dragGhost = dragElement.cloneNode(true);
+      document.body.appendChild(this.dragGhost);
+    },
+    onDragEnd() {
+      if (this.hoverInd === null) {
+        return;
+      }
+      let offset = this.hoverInd < this.possibleValues?.length - 1 ? 1 : 0;
+      if (this.dragGhost) {
+        document.body.removeChild(this.dragGhost);
+        this.$emit("columnReorder", this.dragInd, this.hoverInd + offset);
+      }
+      this.dragGhost = null;
+      this.dragInd = null;
+      this.hoverInd = null;
+      this.refocusToggleButton();
+    },
+    onDragOver(event: DragEvent, ind: number) {
+      // detect when moving between options
+      if (event.offsetY < this.listItemHeightCutoff) {
+        ind -= 1;
+      }
+      if (this.dragGhost) {
+        this.hoverInd = ind;
+      }
+    },
+    onDragLeave() {
+      this.hoverInd = null;
+    },
+  },
 };
 </script>
 
@@ -262,7 +279,7 @@ export default {
         v-show="isExpanded"
         ref="optionsPopover"
         role="options"
-        :class="{filter: isFilter}"
+        :class="{ filter: isFilter }"
         @dragleave.stop.prevent
       >
         <div
@@ -270,14 +287,19 @@ export default {
           class="drag-spacer drag-first"
         />
         <span
-          v-for="(item, ind) of possibleValues.filter(({id}) => typeof id !== 'undefined')"
+          v-for="(item, ind) of possibleValues.filter(
+            ({ id }) => typeof id !== 'undefined',
+          )"
           :id="generateOptionId(item.id)"
           :key="`multiselect-${item.id}`"
-          :class="['item-container', {
-            'hovered': dragInd !== ind && hoverInd === ind,
-            'focused': selectedIndex === ind,
-            'drag-item': dragInd === ind
-          }]"
+          :class="[
+            'item-container',
+            {
+              hovered: dragInd !== ind && hoverInd === ind,
+              focused: selectedIndex === ind,
+              'drag-item': dragInd === ind,
+            },
+          ]"
           @dragover.stop.prevent="onDragOver($event, ind)"
         >
           <div
@@ -304,7 +326,13 @@ export default {
             <span v-else>{{ item.text }}</span>
           </Checkbox>
           <div
-            v-if="withReorderEnabled && (dragInd !== null) && dragInd !== ind && dragInd - 1!== ind && hoverInd === ind"
+            v-if="
+              withReorderEnabled &&
+              dragInd !== null &&
+              dragInd !== ind &&
+              dragInd - 1 !== ind &&
+              hoverInd === ind
+            "
             class="drag-spacer"
             @dragover.stop.prevent
             @dragenter.stop.prevent
@@ -339,20 +367,20 @@ export default {
   }
 
   &:not(.filter) [role="button"] {
-      padding: 0 38px 0 10px;
-      font-weight: 500;
-      height: 40px;
-      line-height: 40px; /* to center text vertically */
+    padding: 0 38px 0 10px;
+    font-weight: 500;
+    height: 40px;
+    line-height: 40px; /* to center text vertically */
   }
 
-  &.filter [role="button"]{
-      background-color: var(--knime-white);
-      border: 1px solid var(--knime-stone-gray);
-      padding: 0 24px 0 10px;
-      font-weight: 400;
-      height: 27px;
-      line-height: 25px; /* to center text vertically */
-      overflow-x: hidden;
+  &.filter [role="button"] {
+    background-color: var(--knime-white);
+    border: 1px solid var(--knime-stone-gray);
+    padding: 0 24px 0 10px;
+    font-weight: 400;
+    height: 27px;
+    line-height: 25px; /* to center text vertically */
+    overflow-x: hidden;
   }
 
   &:not(.collapsed).filter [role="button"] {
@@ -362,7 +390,6 @@ export default {
   &.collapsed.filter:hover [role="button"] {
     background: var(--knime-silver-sand-semi);
   }
-
 
   & .icon {
     position: absolute;
@@ -409,7 +436,6 @@ export default {
     &:hover {
       background-color: var(--knime-silver-sand-semi);
     }
-
   }
 
   & .boxes {
@@ -453,7 +479,7 @@ export default {
 [role="options"]:not(.filter) {
   & .item-container {
     padding-top: 5px;
-  
+
     &.drag-item {
       background-color: var(--knime-silver-sand);
       opacity: 0.5;
@@ -463,22 +489,22 @@ export default {
       cursor: move;
       height: 0;
       width: 0;
-  
+
       & .drag {
         position: absolute;
         height: 22px;
         top: 5px;
-  
+
         &.left-drag {
           left: -1px;
         }
-  
+
         &.right-drag {
           left: 5px;
         }
       }
     }
-  
+
     & .boxes {
       margin-left: 16px;
       font-size: 13px;
@@ -487,21 +513,21 @@ export default {
   }
 
   & .drag-spacer {
-   height: 1px;
-   margin: auto;
-   right: 0;
-   left: 0;
-   width: 75%;
-   position: absolute;
-   bottom: 0;
-   background-color: var(--knime-dove-gray);
+    height: 1px;
+    margin: auto;
+    right: 0;
+    left: 0;
+    width: 75%;
+    position: absolute;
+    bottom: 0;
+    background-color: var(--knime-dove-gray);
 
-   &.drag-first {
-     top: 0;
-     z-index: 2;
-     margin-top: unset;
-     margin-bottom: unset;
-   }
- }
+    &.drag-first {
+      top: 0;
+      z-index: 2;
+      margin-top: unset;
+      margin-bottom: unset;
+    }
+  }
 }
 </style>

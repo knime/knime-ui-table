@@ -1,5 +1,5 @@
-import { columnTypes } from '@/config/table.config';
-import { isEmpty, isMissingValue } from '..';
+import { columnTypes } from "@/config/table.config";
+import { isEmpty, isMissingValue } from "..";
 
 /**
  * Utility function for sorting a data set. This functionality sorts the entire dataset, but also performs sorts within
@@ -24,63 +24,79 @@ import { isEmpty, isMissingValue } from '..';
  * @returns {Number[]} sortedDataConfig.sortedIndicies - an array of the original row indicies grouped and sorted according
  *      to the previous grouping and the current sorting transformations which were performed.
  */
-export const sort = sortConfig => {
-    let {
-        groupedData,
-        groupedIndicies,
-        groupColumnKey,
-        columnKeys,
-        columnTypes: currentColumnTypes,
-        sortColumn,
-        sortDirection
-    } = sortConfig;
+export const sort = (sortConfig) => {
+  let {
+    groupedData,
+    groupedIndicies,
+    groupColumnKey,
+    columnKeys,
+    columnTypes: currentColumnTypes,
+    sortColumn,
+    sortDirection,
+  } = sortConfig;
 
-    return groupedData
-        .map(({ data, groupInd }) => data
-            .map((row, rowInd) => ({
-                row,
-                rowInd: groupedIndicies[groupInd][rowInd]
-            }))
-            .sort(({ row: row1 }, { row: row2 }) => {
-                // only sort within groups
-                if (sortColumn === null || (groupColumnKey && row1[groupColumnKey] !== row2[groupColumnKey])) {
-                    return 0;
-                }
-                let columnKey = columnKeys[sortColumn];
-                let columnType = currentColumnTypes[sortColumn];
-                let rawVal1 = row1[columnKey];
-                let rawVal2 = row2[columnKey];
-                const val1EmptyOrMissing = isEmpty(rawVal1) || isMissingValue(rawVal1);
-                const val2EmptyOrMissing = isEmpty(rawVal2) || isMissingValue(rawVal2);
+  return groupedData
+    .map(({ data, groupInd }) =>
+      data
+        .map((row, rowInd) => ({
+          row,
+          rowInd: groupedIndicies[groupInd][rowInd],
+        }))
+        .sort(({ row: row1 }, { row: row2 }) => {
+          // only sort within groups
+          if (
+            sortColumn === null ||
+            (groupColumnKey && row1[groupColumnKey] !== row2[groupColumnKey])
+          ) {
+            return 0;
+          }
+          let columnKey = columnKeys[sortColumn];
+          let columnType = currentColumnTypes[sortColumn];
+          let rawVal1 = row1[columnKey];
+          let rawVal2 = row2[columnKey];
+          const val1EmptyOrMissing =
+            isEmpty(rawVal1) || isMissingValue(rawVal1);
+          const val2EmptyOrMissing =
+            isEmpty(rawVal2) || isMissingValue(rawVal2);
 
-                if (val1EmptyOrMissing && val2EmptyOrMissing) {
-                    return 0;
-                } else if (val1EmptyOrMissing) {
-                    return 1;
-                } else if (val2EmptyOrMissing) {
-                    return -1;
-                } else {
-                    let order = 0;
-                    if (columnType === columnTypes.Array && rawVal1.length !== rawVal2.length) {
-                        order = rawVal1.length > rawVal2.length ? 1 : -1;
-                    } else {
-                        let val1comparison = JSON.stringify(row1[columnKey]);
-                        let val2comparison = JSON.stringify(row2[columnKey]);
-                        if (val1comparison !== val2comparison) {
-                            order = val1comparison > val2comparison ? 1 : -1;
-                        }
-                    }
-                    return order * sortDirection;
-                }
-            })
-            .reduce((acc, mapItem) => {
-                acc.data.push(mapItem.row);
-                acc.indicies.push(mapItem.rowInd);
-                return acc;
-            }, { data: [], indicies: [] }))
-        .reduce((acc, { data, indicies }) => {
-            acc.sortedData.push(data);
-            acc.sortedIndicies.push(indicies);
+          if (val1EmptyOrMissing && val2EmptyOrMissing) {
+            return 0;
+          } else if (val1EmptyOrMissing) {
+            return 1;
+          } else if (val2EmptyOrMissing) {
+            return -1;
+          } else {
+            let order = 0;
+            if (
+              columnType === columnTypes.Array &&
+              rawVal1.length !== rawVal2.length
+            ) {
+              order = rawVal1.length > rawVal2.length ? 1 : -1;
+            } else {
+              let val1comparison = JSON.stringify(row1[columnKey]);
+              let val2comparison = JSON.stringify(row2[columnKey]);
+              if (val1comparison !== val2comparison) {
+                order = val1comparison > val2comparison ? 1 : -1;
+              }
+            }
+            return order * sortDirection;
+          }
+        })
+        .reduce(
+          (acc, mapItem) => {
+            acc.data.push(mapItem.row);
+            acc.indicies.push(mapItem.rowInd);
             return acc;
-        }, { sortedData: [], sortedIndicies: [] });
+          },
+          { data: [], indicies: [] },
+        ),
+    )
+    .reduce(
+      (acc, { data, indicies }) => {
+        acc.sortedData.push(data);
+        acc.sortedIndicies.push(indicies);
+        return acc;
+      },
+      { sortedData: [], sortedIndicies: [] },
+    );
 };

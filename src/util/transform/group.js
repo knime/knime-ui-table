@@ -1,6 +1,6 @@
-import { isMissingValue, isEmpty, unpackObjectRepresentation } from '..';
+import { isMissingValue, isEmpty, unpackObjectRepresentation } from "..";
 
-const missingValueSymbol = Symbol('Missing');
+const missingValueSymbol = Symbol("Missing");
 
 /**
  * Utility function for grouping rows in the provided data based on nominal group membership. This group membership
@@ -31,66 +31,67 @@ const missingValueSymbol = Symbol('Missing');
  *      and the numbers the original indicies.
  * @returns {Array} groupedDataConfig.groupTitles - a list of Group names
  */
-export const group = groupConfig => {
-    let {
-        filteredData,
-        groupColumn,
-        groupColumnKey,
-        filteredIndicies
-    } = groupConfig;
-    let returnValue = {
-        groupedData: {},
-        groupedIndicies: [],
-        groupTitles: []
-    };
-    if (!groupColumn || groupColumn === 'None') {
-        returnValue.groupedIndicies.push(filteredIndicies);
-        returnValue.groupTitles.push('None');
-        returnValue.groupedData = [
-            {
-                data: filteredData,
-                groupInd: 0
-            }
-        ];
-        return returnValue;
-    }
-    let containsMissingGroupFromString = false;
-    returnValue.groupedData = filteredData
-        .reduce((map, row, rowInd) => {
-            let rowGroup = unpackObjectRepresentation(row[groupColumnKey]);
-            if (isEmpty(rowGroup) || isMissingValue(rowGroup)) {
-                rowGroup = missingValueSymbol;
-            } else if (rowGroup === missingValueSymbol.description) {
-                containsMissingGroupFromString = true;
-            }
-            if (typeof map[rowGroup] === 'undefined') {
-                returnValue.groupTitles.push(rowGroup);
-                let indexTracker = returnValue.groupedIndicies.push([]);
-                map[rowGroup] = {
-                    data: [],
-                    groupInd: indexTracker - 1
-                };
-            }
-            returnValue.groupedIndicies[map[rowGroup].groupInd].push(filteredIndicies[rowInd]);
-            map[rowGroup].data.push(row);
-            return map;
-        }, {});
-    let orderedGroups = [];
-    returnValue.groupTitles = returnValue.groupTitles.sort((group1, group2) => {
-        if (group1 === missingValueSymbol) {
-            return 1;
-        } else if (group2 === missingValueSymbol) {
-            return -1;
-        }
-        return group1.toLowerCase() > group2.toLowerCase() ? 1 : -1;
-    }).map(group => {
-        orderedGroups.push(returnValue.groupedData[group]);
-        if (group === missingValueSymbol) {
-            return containsMissingGroupFromString ? 'No group' : missingValueSymbol.description;
-        }
-        return group;
-    });
-    returnValue.groupedData = orderedGroups;
-
+export const group = (groupConfig) => {
+  let { filteredData, groupColumn, groupColumnKey, filteredIndicies } =
+    groupConfig;
+  let returnValue = {
+    groupedData: {},
+    groupedIndicies: [],
+    groupTitles: [],
+  };
+  if (!groupColumn || groupColumn === "None") {
+    returnValue.groupedIndicies.push(filteredIndicies);
+    returnValue.groupTitles.push("None");
+    returnValue.groupedData = [
+      {
+        data: filteredData,
+        groupInd: 0,
+      },
+    ];
     return returnValue;
+  }
+  let containsMissingGroupFromString = false;
+  returnValue.groupedData = filteredData.reduce((map, row, rowInd) => {
+    let rowGroup = unpackObjectRepresentation(row[groupColumnKey]);
+    if (isEmpty(rowGroup) || isMissingValue(rowGroup)) {
+      rowGroup = missingValueSymbol;
+    } else if (rowGroup === missingValueSymbol.description) {
+      containsMissingGroupFromString = true;
+    }
+    if (typeof map[rowGroup] === "undefined") {
+      returnValue.groupTitles.push(rowGroup);
+      let indexTracker = returnValue.groupedIndicies.push([]);
+      map[rowGroup] = {
+        data: [],
+        groupInd: indexTracker - 1,
+      };
+    }
+    returnValue.groupedIndicies[map[rowGroup].groupInd].push(
+      filteredIndicies[rowInd],
+    );
+    map[rowGroup].data.push(row);
+    return map;
+  }, {});
+  let orderedGroups = [];
+  returnValue.groupTitles = returnValue.groupTitles
+    .sort((group1, group2) => {
+      if (group1 === missingValueSymbol) {
+        return 1;
+      } else if (group2 === missingValueSymbol) {
+        return -1;
+      }
+      return group1.toLowerCase() > group2.toLowerCase() ? 1 : -1;
+    })
+    .map((group) => {
+      orderedGroups.push(returnValue.groupedData[group]);
+      if (group === missingValueSymbol) {
+        return containsMissingGroupFromString
+          ? "No group"
+          : missingValueSymbol.description;
+      }
+      return group;
+    });
+  returnValue.groupedData = orderedGroups;
+
+  return returnValue;
 };

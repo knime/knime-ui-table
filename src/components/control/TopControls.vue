@@ -1,14 +1,14 @@
 <script>
-import BaseControls from './BaseControls.vue';
-import ControlDropdown from './ControlDropdown.vue';
-import ControlMultiselect from './ControlMultiselect.vue';
-import FilterInputField from '../filter/FilterInputField.vue';
+import BaseControls from "./BaseControls.vue";
+import ControlDropdown from "./ControlDropdown.vue";
+import ControlMultiselect from "./ControlMultiselect.vue";
+import FilterInputField from "../filter/FilterInputField.vue";
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import SearchIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import SearchIcon from "webapps-common/ui/assets/img/icons/lens.svg";
 
-import { tableTimeFilters } from '@/config/time.config';
-import isSinglePage from '@/util/isSinglePage';
+import { tableTimeFilters } from "@/config/time.config";
+import isSinglePage from "@/util/isSinglePage";
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,
@@ -24,111 +24,126 @@ import isSinglePage from '@/util/isSinglePage';
  * @emits $listeners from @see BaseControls
  */
 export default {
-    components: {
-        BaseControls,
-        FilterInputField,
-        ControlDropdown,
-        ControlMultiselect,
-        FunctionButton,
-        SearchIcon
+  components: {
+    BaseControls,
+    FilterInputField,
+    ControlDropdown,
+    ControlMultiselect,
+    FunctionButton,
+    SearchIcon,
+  },
+  props: {
+    tableConfig: {
+      type: Object,
+      default: () => ({}),
     },
-    props: {
-        tableConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        columnHeaders: {
-            type: Array,
-            default: () => []
-        }
+    columnHeaders: {
+      type: Array,
+      default: () => [],
     },
-    emits: ['timeFilterUpdate', 'columnReorder', 'columnUpdate', 'groupUpdate', 'searchUpdate'],
-    data() {
-        return {
-            searchActive: false,
-            timeFilters: Object.keys(tableTimeFilters)
-        };
+  },
+  emits: [
+    "timeFilterUpdate",
+    "columnReorder",
+    "columnUpdate",
+    "groupUpdate",
+    "searchUpdate",
+  ],
+  data() {
+    return {
+      searchActive: false,
+      timeFilters: Object.keys(tableTimeFilters),
+    };
+  },
+  computed: {
+    showTimeFilter() {
+      return Boolean(this.tableConfig?.timeFilterConfig);
     },
-    computed: {
-        showTimeFilter() {
-            return Boolean(this.tableConfig?.timeFilterConfig);
-        },
-        timeFilter() {
-            return this.tableConfig?.timeFilterConfig?.currentTimeFilter;
-        },
-        showColumnSelection() {
-            return Boolean(this.tableConfig?.columnSelectionConfig);
-        },
-        possibleColumns() {
-            return this.tableConfig?.columnSelectionConfig?.possibleColumns;
-        },
-        showGroupBy() {
-            return Boolean(this.tableConfig?.groupByConfig);
-        },
-        currentGroup() {
-            return this.tableConfig?.groupByConfig?.currentGroup;
-        },
-        possibleGroups() {
-            return this.tableConfig?.groupByConfig?.possibleGroups;
-        },
-        showSearch() {
-            return this.tableConfig?.searchConfig;
-        },
-        searchQuery() {
-            return this.tableConfig?.searchConfig?.searchQuery;
-        },
-        hasCarousel() {
-            return this.showTimeFilter || this.showGroupBy || this.showColumnSelection;
-        },
-        showTopControls() {
-            const multiplePages = !isSinglePage(
-                this.tableConfig.pageConfig?.currentSize,
-                this.tableConfig.pageConfig?.pageSize
-            );
-            return this.tableConfig.pageConfig?.showTableSize || this.showSearch || multiplePages || this.hasCarousel;
-        }
+    timeFilter() {
+      return this.tableConfig?.timeFilterConfig?.currentTimeFilter;
     },
-    methods: {
-        getSelectItems(itemArr) {
-            return itemArr?.length ? itemArr.map(item => ({ id: item, text: item })) : [];
-        },
-        onTimeFilterSelect(timeFilter) {
-            consola.debug('Updated time filter: ', timeFilter);
-            this.$emit('timeFilterUpdate', timeFilter);
-        },
-        onColumnSelect(columns) {
-            consola.debug('Updated table column filter: ', columns);
-            this.$emit('columnUpdate', columns);
-        },
-        onColumnReorder(columnInd, newInd) {
-            consola.debug('Updated table column order: ', columnInd, newInd);
-            this.$emit('columnReorder', columnInd, newInd);
-        },
-        onGroupSelect(group) {
-            consola.debug('Updated table group filter: ', group);
-            this.$emit('groupUpdate', group);
-        },
-        onSearchClick() {
-            this.searchActive = !this.searchActive;
-            if (this.showSearch && this.searchActive) {
-                this.$nextTick(() => {
-                    if (typeof this.$refs.searchField?.focus === 'function') {
-                        this.$refs.searchField.focus();
-                    }
-                });
-            } else {
-                this.$emit('searchUpdate', '');
-            }
-        },
-        onSearchBlur() {
-            this.searchActive = false;
-            this.$emit('searchUpdate', '');
-        },
-        onSearch(input) {
-            consola.debug('Updated search: ', input);
-            this.$emit('searchUpdate', input);
-        }
-    }
+    showColumnSelection() {
+      return Boolean(this.tableConfig?.columnSelectionConfig);
+    },
+    possibleColumns() {
+      return this.tableConfig?.columnSelectionConfig?.possibleColumns;
+    },
+    showGroupBy() {
+      return Boolean(this.tableConfig?.groupByConfig);
+    },
+    currentGroup() {
+      return this.tableConfig?.groupByConfig?.currentGroup;
+    },
+    possibleGroups() {
+      return this.tableConfig?.groupByConfig?.possibleGroups;
+    },
+    showSearch() {
+      return this.tableConfig?.searchConfig;
+    },
+    searchQuery() {
+      return this.tableConfig?.searchConfig?.searchQuery;
+    },
+    hasCarousel() {
+      return (
+        this.showTimeFilter || this.showGroupBy || this.showColumnSelection
+      );
+    },
+    showTopControls() {
+      const multiplePages = !isSinglePage(
+        this.tableConfig.pageConfig?.currentSize,
+        this.tableConfig.pageConfig?.pageSize,
+      );
+      return (
+        this.tableConfig.pageConfig?.showTableSize ||
+        this.showSearch ||
+        multiplePages ||
+        this.hasCarousel
+      );
+    },
+  },
+  methods: {
+    getSelectItems(itemArr) {
+      return itemArr?.length
+        ? itemArr.map((item) => ({ id: item, text: item }))
+        : [];
+    },
+    onTimeFilterSelect(timeFilter) {
+      consola.debug("Updated time filter: ", timeFilter);
+      this.$emit("timeFilterUpdate", timeFilter);
+    },
+    onColumnSelect(columns) {
+      consola.debug("Updated table column filter: ", columns);
+      this.$emit("columnUpdate", columns);
+    },
+    onColumnReorder(columnInd, newInd) {
+      consola.debug("Updated table column order: ", columnInd, newInd);
+      this.$emit("columnReorder", columnInd, newInd);
+    },
+    onGroupSelect(group) {
+      consola.debug("Updated table group filter: ", group);
+      this.$emit("groupUpdate", group);
+    },
+    onSearchClick() {
+      this.searchActive = !this.searchActive;
+      if (this.showSearch && this.searchActive) {
+        this.$nextTick(() => {
+          if (typeof this.$refs.searchField?.focus === "function") {
+            this.$refs.searchField.focus();
+          }
+        });
+      } else {
+        this.$emit("searchUpdate", "");
+      }
+    },
+    onSearchBlur() {
+      this.searchActive = false;
+      this.$emit("searchUpdate", "");
+    },
+    onSearch(input) {
+      consola.debug("Updated search: ", input);
+      this.$emit("searchUpdate", input);
+    },
+  },
 };
 </script>
 
@@ -165,7 +180,7 @@ export default {
         :possible-values="getSelectItems(possibleGroups)"
         :placeholder="'Group by…'"
         :aria-label="'Group by category'"
-        :formatter="group => `Grouped by '${group}'`"
+        :formatter="(group) => `Grouped by '${group}'`"
         @update:model-value="onGroupSelect"
       />
     </template>
@@ -176,7 +191,7 @@ export default {
         class="input-control"
         :model-value="searchQuery"
         :placeholder="'Search'"
-        :style="{minWidth: '100px'}"
+        :style="{ minWidth: '100px' }"
         @update:model-value="onSearch"
         @blur="onSearchBlur"
       />
@@ -197,7 +212,6 @@ export default {
   border-spacing: unset;
   border-collapse: unset;
   vertical-align: baseline;
-
 
   & span {
     line-height: 50px;

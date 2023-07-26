@@ -4,12 +4,12 @@
  * an intuitive way. It will break words to always display without scroll bars.
  */
 export default {
-    props: {
-        data: {
-            type: String,
-            default: null
-        }
-    }
+  props: {
+    data: {
+      type: String,
+      default: null,
+    },
+  },
 };
 </script>
 

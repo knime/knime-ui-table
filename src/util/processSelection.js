@@ -11,28 +11,28 @@
  * @returns {int} index from processed mapping
  */
 export const getProcessedRowInd = ({
-    relativeInd,
-    groupInd,
-    currentPage,
-    currentPageSize,
-    currentGroup,
-    processedIndicies
+  relativeInd,
+  groupInd,
+  currentPage,
+  currentPageSize,
+  currentGroup,
+  processedIndicies,
 }) => {
-    let pageStart = currentPageSize * (currentPage - 1);
-    if (pageStart === 0) {
-        return relativeInd;
+  let pageStart = currentPageSize * (currentPage - 1);
+  if (pageStart === 0) {
+    return relativeInd;
+  }
+  if (currentGroup) {
+    let indCount = 0;
+    processedIndicies.forEach((group, gInd) => {
+      if (gInd < groupInd) {
+        indCount += group.length;
+      }
+    });
+    if (indCount <= pageStart) {
+      return pageStart - indCount + relativeInd;
     }
-    if (currentGroup) {
-        let indCount = 0;
-        processedIndicies.forEach((group, gInd) => {
-            if (gInd < groupInd) {
-                indCount += group.length;
-            }
-        });
-        if (indCount <= pageStart) {
-            return pageStart - indCount + relativeInd;
-        }
-        return relativeInd;
-    }
-    return relativeInd + pageStart;
+    return relativeInd;
+  }
+  return relativeInd + pageStart;
 };

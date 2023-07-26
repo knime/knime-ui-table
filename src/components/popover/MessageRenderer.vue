@@ -1,9 +1,9 @@
 <script>
-import PopoverPageControls from './PopoverPageControls.vue';
-import ErrorIcon from 'webapps-common/ui/assets/img/icons/sign-warning.svg';
-import WarnIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
+import PopoverPageControls from "./PopoverPageControls.vue";
+import ErrorIcon from "webapps-common/ui/assets/img/icons/sign-warning.svg";
+import WarnIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 
-import { capitalize } from 'webapps-common/util/capitalize';
+import { capitalize } from "webapps-common/util/capitalize";
 
 /**
  * This popover rendering component is used to display message content when provided
@@ -12,67 +12,68 @@ import { capitalize } from 'webapps-common/util/capitalize';
  * and message section with icons and styles for both "warning" and "error" messages.
  */
 export default {
-    components: {
-        PopoverPageControls,
-        ErrorIcon,
-        WarnIcon
+  components: {
+    PopoverPageControls,
+    ErrorIcon,
+    WarnIcon,
+  },
+  props: {
+    data: {
+      type: Array,
+      default: () => [],
     },
-    props: {
-        data: {
-            type: Array,
-            default: () => []
-        }
+  },
+  data() {
+    return {
+      currentItemNumber: 0,
+    };
+  },
+  computed: {
+    itemTitle() {
+      return this.data[this.currentItemNumber]?.itemTitle || "Item";
     },
-    data() {
-        return {
-            currentItemNumber: 0
-        };
+    messageTitle() {
+      return this.data[this.currentItemNumber]?.messageTitle || "Message";
     },
-    computed: {
-        itemTitle() {
-            return this.data[this.currentItemNumber]?.itemTitle || 'Item';
-        },
-        messageTitle() {
-            return this.data[this.currentItemNumber]?.messageTitle || 'Message';
-        },
-        messageType() {
-            return capitalize((this.data[this.currentItemNumber]?.type || 'ERROR').toLowerCase());
-        },
-        item() {
-            return this.data[this.currentItemNumber]?.item || 'Missing item.';
-        },
-        message() {
-            return this.data[this.currentItemNumber]?.message || 'No message found.';
-        },
-        formattedData() {
-            return this.data.filter(item => typeof item !== 'undefined' && item !== null);
-        },
-        numberItems() {
-            return this.formattedData?.length;
-        },
-        currentItem() {
-            return this.formattedData[this.currentItemNumber];
-        }
+    messageType() {
+      return capitalize(
+        (this.data[this.currentItemNumber]?.type || "ERROR").toLowerCase(),
+      );
     },
-    methods: {
-        onPageChange(change) {
-            let nextItem = this.currentItemNumber + change;
-            if (nextItem >= this.numberItems) {
-                nextItem = 0;
-            } else if (nextItem < 0) {
-                nextItem = this.numberItems - 1;
-            }
-            this.currentItemNumber = nextItem;
-        }
-    }
+    item() {
+      return this.data[this.currentItemNumber]?.item || "Missing item.";
+    },
+    message() {
+      return this.data[this.currentItemNumber]?.message || "No message found.";
+    },
+    formattedData() {
+      return this.data.filter(
+        (item) => typeof item !== "undefined" && item !== null,
+      );
+    },
+    numberItems() {
+      return this.formattedData?.length;
+    },
+    currentItem() {
+      return this.formattedData[this.currentItemNumber];
+    },
+  },
+  methods: {
+    onPageChange(change) {
+      let nextItem = this.currentItemNumber + change;
+      if (nextItem >= this.numberItems) {
+        nextItem = 0;
+      } else if (nextItem < 0) {
+        nextItem = this.numberItems - 1;
+      }
+      this.currentItemNumber = nextItem;
+    },
+  },
 };
 </script>
 
 <template>
-  <div
-    v-if="formattedData.length"
-    class="wrapper"
-  >
+  <div v-if="formattedData.length" class="wrapper">
     <div class="content">
       <header :class="messageType.toLowerCase()">
         <WarnIcon v-if="messageType === 'Warning'" />
@@ -80,11 +81,11 @@ export default {
         {{ messageType }}
       </header>
       <label>{{ itemTitle }}</label>
-      <br>
+      <br />
       {{ item }}
-      <br>
+      <br />
       <label>{{ messageTitle }}</label>
-      <br>
+      <br />
       {{ message }}
     </div>
     <PopoverPageControls

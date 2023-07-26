@@ -1,8 +1,8 @@
 <script>
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import ArrowNextIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
-import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
-import TextDimensionAndRange from './TextDimensionAndRange.vue';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import ArrowNextIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
+import ArrowPrevIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+import TextDimensionAndRange from "./TextDimensionAndRange.vue";
 
 /**
  * Base table data element with table page controls for the left side of a table header.
@@ -11,63 +11,63 @@ import TextDimensionAndRange from './TextDimensionAndRange.vue';
  * @emits prevPage event.
  */
 export default {
-    components: {
-        ArrowNextIcon,
-        FunctionButton,
-        ArrowPrevIcon,
-        TextDimensionAndRange
+  components: {
+    ArrowNextIcon,
+    FunctionButton,
+    ArrowPrevIcon,
+    TextDimensionAndRange,
+  },
+  props: {
+    totalItems: {
+      type: Number,
+      default: 0,
     },
-    props: {
-        totalItems: {
-            type: Number,
-            default: 0
-        },
-        currentItems: {
-            type: Number,
-            default: 0
-        },
-        pageSize: {
-            type: Number,
-            default: 0
-        },
-        currentPage: {
-            type: Number,
-            default: 0
-        },
-        columnCount: {
-            type: Number,
-            default: null
-        },
-        showTableSize: {
-            type: Boolean,
-            default: true
-        }
+    currentItems: {
+      type: Number,
+      default: 0,
     },
-    emits: ['nextPage', 'prevPage'],
-    computed: {
-        pageRangeStart() {
-            return 1 + ((this.currentPage * this.pageSize) - this.pageSize);
-        },
-        pageRangeEnd() {
-            return Math.min(this.currentPage * this.pageSize, this.currentItems);
-        },
-        hasNextPage() {
-            return this.pageRangeEnd < this.currentItems;
-        },
-        hasPreviousPage() {
-            return this.pageRangeStart > 1;
-        }
+    pageSize: {
+      type: Number,
+      default: 0,
     },
-    methods: {
-        onNextPage() {
-            consola.debug('Next Page');
-            this.$emit('nextPage');
-        },
-        onPrevPage() {
-            consola.debug('Prev Page');
-            this.$emit('prevPage');
-        }
-    }
+    currentPage: {
+      type: Number,
+      default: 0,
+    },
+    columnCount: {
+      type: Number,
+      default: null,
+    },
+    showTableSize: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  emits: ["nextPage", "prevPage"],
+  computed: {
+    pageRangeStart() {
+      return 1 + (this.currentPage * this.pageSize - this.pageSize);
+    },
+    pageRangeEnd() {
+      return Math.min(this.currentPage * this.pageSize, this.currentItems);
+    },
+    hasNextPage() {
+      return this.pageRangeEnd < this.currentItems;
+    },
+    hasPreviousPage() {
+      return this.pageRangeStart > 1;
+    },
+  },
+  methods: {
+    onNextPage() {
+      consola.debug("Next Page");
+      this.$emit("nextPage");
+    },
+    onPrevPage() {
+      consola.debug("Prev Page");
+      this.$emit("prevPage");
+    },
+  },
 };
 </script>
 

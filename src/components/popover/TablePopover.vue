@@ -1,14 +1,14 @@
 <script>
-import { columnTypes } from '@/config/table.config';
-import { mixin as VueClickAway } from 'vue3-click-away';
-import StringRenderer from './StringRenderer.vue';
-import ObjectRenderer from './ObjectRenderer.vue';
-import ArrayRenderer from './ArrayRenderer.vue';
-import MessageRenderer from './MessageRenderer.vue';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import { columnTypes } from "@/config/table.config";
+import { mixin as VueClickAway } from "vue3-click-away";
+import StringRenderer from "./StringRenderer.vue";
+import ObjectRenderer from "./ObjectRenderer.vue";
+import ArrayRenderer from "./ArrayRenderer.vue";
+import MessageRenderer from "./MessageRenderer.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 
-const PARENT_RATIO = .5;
+const PARENT_RATIO = 0.5;
 const MAX_TOTAL_HEIGHT = 300;
 
 /**
@@ -23,123 +23,132 @@ const MAX_TOTAL_HEIGHT = 300;
  * @emits close event when the popover is closed.
  */
 export default {
-    components: {
-        StringRenderer,
-        ObjectRenderer,
-        ArrayRenderer,
-        MessageRenderer,
-        FunctionButton,
-        CloseIcon
+  components: {
+    StringRenderer,
+    ObjectRenderer,
+    ArrayRenderer,
+    MessageRenderer,
+    FunctionButton,
+    CloseIcon,
+  },
+  mixins: [VueClickAway],
+  props: {
+    initiallyExpanded: {
+      type: Boolean,
+      default: false,
     },
-    mixins: [VueClickAway],
-    props: {
-        initiallyExpanded: {
-            type: Boolean,
-            default: false
-        },
-        data: {
-            type: null,
-            default: null,
-            required: true
-        },
-        target: {
-            type: null,
-            default: null,
-            required: true
-        },
-        renderer: {
-            type: [Object, String],
-            default: columnTypes.Object
-        },
-        rowHeight: {
-            type: Number,
-            default: 40
-        }
+    data: {
+      type: null,
+      default: null,
+      required: true,
     },
-    emits: ['close'],
-    data() {
-        // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
-        return {
-            expanded: this.initiallyExpanded,
-            type: this.renderer?.type || this.renderer,
-            offsetParentHeight: this.target.offsetParent.clientHeight,
-            offsetTop: this.target.offsetTop,
-            offsetParentOffsetTop: this.target.offsetParent.offsetTop,
-            offsetParentOffsetLeft: this.target.offsetParent.offsetLeft,
-            offsetLeft: this.target.offsetLeft,
-            offsetHeight: this.target.offsetHeight,
-            offsetWidth: this.target.offsetWidth,
-            rowOffset: (this.rowHeight / 2) - 2
-        };
+    target: {
+      type: null,
+      default: null,
+      required: true,
     },
-    computed: {
-        componentType() {
-            if (this.renderer?.type) {
-                return this.renderer.type;
-            }
-            switch (this.renderer) {
-                case columnTypes.Nominal:
-                case columnTypes.String:
-                    return 'StringRenderer';
-                case columnTypes.Array:
-                    return 'ArrayRenderer';
-                case columnTypes.DateTime:
-                case columnTypes.Number:
-                case columnTypes.Boolean:
-                default:
-                    return 'ObjectRenderer';
-            }
-        },
-        processedData() {
-            return this.renderer?.process?.(this.data) || this.data;
-        },
-        displayTop() {
-            return this.offsetTop / this.offsetParentHeight >= PARENT_RATIO;
-        },
-        verticalUnits() {
-            return this.displayTop ? 'bottom' : 'top';
-        },
-        top() {
-            return this.offsetTop + (this.offsetHeight / 2) + this.offsetParentOffsetTop;
-        },
-        left() {
-            return this.offsetLeft + (this.offsetWidth / 2) + this.offsetParentOffsetLeft;
-        },
-        maxHeight() {
-            return Math.max(this.displayTop ? this.top : this.offsetParentHeight - this.top, MAX_TOTAL_HEIGHT);
-        },
-        style() {
-            return {
-                top: `${this.top}px`,
-                left: `${this.left}px`
-            };
-        },
-        contentStyle() {
-            return {
-                [this.verticalUnits]: `${this.target.clientHeight - this.rowOffset}px`,
-                'max-height': `${this.maxHeight}px`
-            };
-        },
-        childMaxHeight() {
-            return {
-                'max-height': `${this.maxHeight - this.rowHeight}px`
-            };
-        },
-        show() {
-            return typeof this.processedData !== 'undefined' && this.processedData !== null;
-        }
+    renderer: {
+      type: [Object, String],
+      default: columnTypes.Object,
     },
-    methods: {
-        closeMenu() {
-            consola.trace('Closing popover menu');
-            this.$emit('close');
-            this.expanded = false;
-        },
-        openMenu() {
-            consola.trace('Opening popover menu');
-            this.expanded = true;
-        }
-    }
+    rowHeight: {
+      type: Number,
+      default: 40,
+    },
+  },
+  emits: ["close"],
+  data() {
+    // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
+    return {
+      expanded: this.initiallyExpanded,
+      type: this.renderer?.type || this.renderer,
+      offsetParentHeight: this.target.offsetParent.clientHeight,
+      offsetTop: this.target.offsetTop,
+      offsetParentOffsetTop: this.target.offsetParent.offsetTop,
+      offsetParentOffsetLeft: this.target.offsetParent.offsetLeft,
+      offsetLeft: this.target.offsetLeft,
+      offsetHeight: this.target.offsetHeight,
+      offsetWidth: this.target.offsetWidth,
+      rowOffset: this.rowHeight / 2 - 2,
+    };
+  },
+  computed: {
+    componentType() {
+      if (this.renderer?.type) {
+        return this.renderer.type;
+      }
+      switch (this.renderer) {
+        case columnTypes.Nominal:
+        case columnTypes.String:
+          return "StringRenderer";
+        case columnTypes.Array:
+          return "ArrayRenderer";
+        case columnTypes.DateTime:
+        case columnTypes.Number:
+        case columnTypes.Boolean:
+        default:
+          return "ObjectRenderer";
+      }
+    },
+    processedData() {
+      return this.renderer?.process?.(this.data) || this.data;
+    },
+    displayTop() {
+      return this.offsetTop / this.offsetParentHeight >= PARENT_RATIO;
+    },
+    verticalUnits() {
+      return this.displayTop ? "bottom" : "top";
+    },
+    top() {
+      return (
+        this.offsetTop + this.offsetHeight / 2 + this.offsetParentOffsetTop
+      );
+    },
+    left() {
+      return (
+        this.offsetLeft + this.offsetWidth / 2 + this.offsetParentOffsetLeft
+      );
+    },
+    maxHeight() {
+      return Math.max(
+        this.displayTop ? this.top : this.offsetParentHeight - this.top,
+        MAX_TOTAL_HEIGHT,
+      );
+    },
+    style() {
+      return {
+        top: `${this.top}px`,
+        left: `${this.left}px`,
+      };
+    },
+    contentStyle() {
+      return {
+        [this.verticalUnits]: `${this.target.clientHeight - this.rowOffset}px`,
+        "max-height": `${this.maxHeight}px`,
+      };
+    },
+    childMaxHeight() {
+      return {
+        "max-height": `${this.maxHeight - this.rowHeight}px`,
+      };
+    },
+    show() {
+      return (
+        typeof this.processedData !== "undefined" && this.processedData !== null
+      );
+    },
+  },
+  methods: {
+    closeMenu() {
+      consola.trace("Closing popover menu");
+      this.$emit("close");
+      this.expanded = false;
+    },
+    openMenu() {
+      consola.trace("Opening popover menu");
+      this.expanded = true;
+    },
+  },
 };
 </script>
 
@@ -157,10 +166,7 @@ export default {
       :class="['content', type.toLowerCase()]"
     >
       <div class="content-container">
-        <slot
-          name="content"
-          :style="childMaxHeight"
-        >
+        <slot name="content" :style="childMaxHeight">
           <Component
             :is="componentType"
             :data="processedData"
@@ -168,16 +174,12 @@ export default {
           />
         </slot>
       </div>
-      <FunctionButton
-        class="closer"
-        @click="closeMenu"
-      >
+      <FunctionButton class="closer" @click="closeMenu">
         <CloseIcon />
       </FunctionButton>
     </div>
   </div>
 </template>
-
 
 <style lang="postcss" scoped>
 .popover {
@@ -208,7 +210,8 @@ export default {
       height: 0;
       border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
       border-right: calc(var(--popover-arrow-size) + 1px) solid transparent;
-      border-bottom: calc(var(--popover-arrow-size) + 1px) solid var(--knime-silver-sand-semi);
+      border-bottom: calc(var(--popover-arrow-size) + 1px) solid
+        var(--knime-silver-sand-semi);
     }
 
     &.top::before {
@@ -222,7 +225,8 @@ export default {
       bottom: calc(100% + 6px);
       top: unset;
       border-bottom: none;
-      border-top: calc(var(--popover-arrow-size) + 1px) solid var(--knime-silver-sand-semi);
+      border-top: calc(var(--popover-arrow-size) + 1px) solid
+        var(--knime-silver-sand-semi);
     }
   }
 

@@ -1,14 +1,14 @@
 <script>
-import CollapserToggle from '../ui/CollapserToggle.vue';
-import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
-import Checkbox from 'webapps-common/ui/components/forms/Checkbox.vue';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import OptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
-import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
-import { DEFAULT_ROW_HEIGHT } from '@/util/constants';
-import { isMissingValue, getColor, unpackObjectRepresentation } from '@/util';
-import Cell from './Cell.vue';
-import throttle from 'raf-throttle';
+import CollapserToggle from "../ui/CollapserToggle.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import { DEFAULT_ROW_HEIGHT } from "@/util/constants";
+import { isMissingValue, getColor, unpackObjectRepresentation } from "@/util";
+import Cell from "./Cell.vue";
+import throttle from "raf-throttle";
 
 /**
  * A table row element which is used for displaying data in the table body. It offers a
@@ -43,232 +43,247 @@ import throttle from 'raf-throttle';
  * @emits rowSubMenuClick event when a row SubMenu action is triggered.
  */
 export default {
-    components: {
-        CollapserToggle,
-        SubMenu,
-        Checkbox,
-        FunctionButton,
-        OptionsIcon,
-        CloseIcon,
-        Cell
+  components: {
+    CollapserToggle,
+    SubMenu,
+    Checkbox,
+    FunctionButton,
+    OptionsIcon,
+    CloseIcon,
+    Cell,
+  },
+  props: {
+    /**
+     * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
+     * property rowData contains the complete set and not just the part that is displayed per column.
+     */
+    rowData: {
+      type: Object,
+      default: () => ({}),
     },
-    props: {
-        /**
-         * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
-         * property rowData contains the complete set and not just the part that is displayed per column.
-         */
-        rowData: {
-            type: Object,
-            default: () => ({})
-        },
-        /**
-         * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
-         */
-        row: {
-            type: Array,
-            default: () => []
-        },
-        tableConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        columnConfigs: {
-            type: Array,
-            default: () => []
-        },
-        rowConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        rowHeight: {
-            type: Number,
-            default: DEFAULT_ROW_HEIGHT
-        },
-        isSelected: {
-            type: Boolean,
-            default: false
-        },
-        showBorderColumnIndex: {
-            type: Number,
-            default: null
-        },
-        marginBottom: {
-            type: Number,
-            default: 0
-        },
-        minRowHeight: {
-            type: Number,
-            default: 0
-        },
-        showDragHandle: {
-            type: Boolean,
-            default: false
-        }
+    /**
+     * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
+     */
+    row: {
+      type: Array,
+      default: () => [],
     },
-    emits: [
-        'rowSelect',
-        'rowInput',
-        'rowSubMenuClick',
-        'rowSubMenuExpand',
-        'rowExpand',
-        'resizeAllRows',
-        'resizeRow'
-    ],
-    data() {
-        return {
-            showContent: false,
-            currentRowHeight: this.rowHeight,
-            activeDrag: false
-        };
+    tableConfig: {
+      type: Object,
+      default: () => ({}),
     },
-    computed: {
-        columnKeys() {
-            return this.getPropertiesFromColumns('key');
-        },
-        columnSizes() {
-            return this.getPropertiesFromColumns('size');
-        },
-        formatters() {
-            return this.getPropertiesFromColumns('formatter');
-        },
-        classGenerators() {
-            return this.getPropertiesFromColumns('classGenerator');
-        },
-        slottedColumns() {
-            return this.getPropertiesFromColumns('hasSlotContent');
-        },
-        clickableColumns() {
-            // enforce boolean to reduce reactivity
-            return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
-        },
-        classes() {
-            return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
-                if (typeof classItem === 'function') {
-                    return classItem(item);
-                }
-                if (typeof classItem === 'object') {
-                    return classItem[item];
-                }
-                return classItem;
-            }));
-        },
-        filteredSubMenuItems() {
-            if (!this.tableConfig.subMenuItems) {
-                return [];
-            }
-            return this.tableConfig.subMenuItems.filter(item => {
-                if (typeof item.hideOn === 'function') {
-                    return !item.hideOn(this.row, this.rowData);
-                }
-                return true;
-            });
-        }
+    columnConfigs: {
+      type: Array,
+      default: () => [],
     },
-    watch: {
-        rowHeight: {
-            handler(newVal) {
-                this.currentRowHeight = newVal;
-            }
-        }
+    rowConfig: {
+      type: Object,
+      default: () => ({}),
     },
-    mounted() {
-        // Reverts emited event if component is not ready
-        this.$emit('rowExpand', this.showContent);
+    rowHeight: {
+      type: Number,
+      default: DEFAULT_ROW_HEIGHT,
     },
-    methods: {
-        getPropertiesFromColumns(key) {
-            return this.columnConfigs.map(colConfig => colConfig[key]);
-        },
-        isMissingValue,
-        onRowExpand() {
-            this.showContent = !this.showContent;
-            this.$nextTick(() => this.$emit('rowExpand', this.showContent));
-        },
-        onSelect(value) {
-            this.$emit('rowSelect', value);
-        },
-        onCellClick(event, colInd, data) {
-            this.$emit('rowInput', {
-                ...event,
-                type: 'click',
-                value: null,
-                colInd,
-                data
-            });
-        },
-        onInput(event) {
-            this.$emit('rowInput', { type: 'input', ...event });
-        },
-        onSubMenuItemClick(event, clickedItem) {
-            this.$emit('rowSubMenuClick', clickedItem);
-            event.preventDefault();
-            return false;
-        },
-        onSubMenuToggle(callback) {
-            this.$emit('rowSubMenuExpand', callback);
-        },
-        isClickable(data, ind) {
-            return this.tableConfig.showPopovers && Boolean(data) && data !== '-' && this.clickableColumns[ind];
-        },
-        getCellContentSlotName(columnKeys, columnId) {
-            // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
-            return `cellContent-${columnKeys[columnId]}`;
-        },
-        getCellTitle(data, ind) {
-            if (this.isMissingValue(data)) {
-                const missingValueMsg = data === null ? '' : ` (${data.metadata})`;
-                return `Missing Value${missingValueMsg}`;
-            }
-            if (this.isClickable(data, ind)) {
-                return null;
-            }
-            const formattedValue = this.getFormattedValue(data, ind);
-            if (typeof formattedValue === 'undefined') {
-                return null;
-            } else {
-                return String(formattedValue);
-            }
-        },
-        getFormattedValue(data, ind) {
-            const formatter = this.formatters[ind];
-            return formatter(unpackObjectRepresentation(data));
-        },
-        unpackObjectRepresentation,
-        getColor,
-        onPointerDown(event) {
-            consola.debug('Resize via row drag triggered: ', event);
-            // stop the event from propagating up the DOM tree
-            event.stopPropagation();
-            // capture move events until the pointer is released
-            event.target.setPointerCapture(event.pointerId);
-            this.activeDrag = true;
-            this.rowHeightOnDragStart = this.currentRowHeight;
-        },
-        onPointerUp(event) {
-            if (this.activeDrag) {
-                consola.debug('Resize via row drag ended: ', event);
-                this.activeDrag = false;
-                this.$emit('resizeAllRows', this.currentRowHeight, this.$el);
-            }
-        },
-        onPointerMove: throttle(function (event) {
-            /* eslint-disable no-invalid-this */
-            if (this.activeDrag) {
-                consola.debug('Resize via drag ongoing: ', event);
-                const newRowHeight = event.clientY - this.$el.getBoundingClientRect().top;
-                this.currentRowHeight = Math.max(newRowHeight, this.minRowHeight);
-                this.$emit('resizeRow', this.currentRowHeight - this.rowHeightOnDragStart);
-            }
-            /* eslint-enable no-invalid-this */
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
+    showBorderColumnIndex: {
+      type: Number,
+      default: null,
+    },
+    marginBottom: {
+      type: Number,
+      default: 0,
+    },
+    minRowHeight: {
+      type: Number,
+      default: 0,
+    },
+    showDragHandle: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: [
+    "rowSelect",
+    "rowInput",
+    "rowSubMenuClick",
+    "rowSubMenuExpand",
+    "rowExpand",
+    "resizeAllRows",
+    "resizeRow",
+  ],
+  data() {
+    return {
+      showContent: false,
+      currentRowHeight: this.rowHeight,
+      activeDrag: false,
+    };
+  },
+  computed: {
+    columnKeys() {
+      return this.getPropertiesFromColumns("key");
+    },
+    columnSizes() {
+      return this.getPropertiesFromColumns("size");
+    },
+    formatters() {
+      return this.getPropertiesFromColumns("formatter");
+    },
+    classGenerators() {
+      return this.getPropertiesFromColumns("classGenerator");
+    },
+    slottedColumns() {
+      return this.getPropertiesFromColumns("hasSlotContent");
+    },
+    clickableColumns() {
+      // enforce boolean to reduce reactivity
+      return this.getPropertiesFromColumns("popoverRenderer").map((config) =>
+        Boolean(config),
+      );
+    },
+    classes() {
+      return this.row.map((item, ind) =>
+        this.classGenerators[ind]?.map((classItem) => {
+          if (typeof classItem === "function") {
+            return classItem(item);
+          }
+          if (typeof classItem === "object") {
+            return classItem[item];
+          }
+          return classItem;
         }),
-        onLostPointerCapture: throttle(function () {
-            // eslint-disable-next-line no-invalid-this
-            this.activeDrag = false;
-        }),
-        getCellComponents() {
-            return this.row.map((_, columnIndex) => this.$refs[`cell-${columnIndex}`][0]);
+      );
+    },
+    filteredSubMenuItems() {
+      if (!this.tableConfig.subMenuItems) {
+        return [];
+      }
+      return this.tableConfig.subMenuItems.filter((item) => {
+        if (typeof item.hideOn === "function") {
+          return !item.hideOn(this.row, this.rowData);
         }
-    }
+        return true;
+      });
+    },
+  },
+  watch: {
+    rowHeight: {
+      handler(newVal) {
+        this.currentRowHeight = newVal;
+      },
+    },
+  },
+  mounted() {
+    // Reverts emited event if component is not ready
+    this.$emit("rowExpand", this.showContent);
+  },
+  methods: {
+    getPropertiesFromColumns(key) {
+      return this.columnConfigs.map((colConfig) => colConfig[key]);
+    },
+    isMissingValue,
+    onRowExpand() {
+      this.showContent = !this.showContent;
+      this.$nextTick(() => this.$emit("rowExpand", this.showContent));
+    },
+    onSelect(value) {
+      this.$emit("rowSelect", value);
+    },
+    onCellClick(event, colInd, data) {
+      this.$emit("rowInput", {
+        ...event,
+        type: "click",
+        value: null,
+        colInd,
+        data,
+      });
+    },
+    onInput(event) {
+      this.$emit("rowInput", { type: "input", ...event });
+    },
+    onSubMenuItemClick(event, clickedItem) {
+      this.$emit("rowSubMenuClick", clickedItem);
+      event.preventDefault();
+      return false;
+    },
+    onSubMenuToggle(callback) {
+      this.$emit("rowSubMenuExpand", callback);
+    },
+    isClickable(data, ind) {
+      return (
+        this.tableConfig.showPopovers &&
+        Boolean(data) &&
+        data !== "-" &&
+        this.clickableColumns[ind]
+      );
+    },
+    getCellContentSlotName(columnKeys, columnId) {
+      // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
+      return `cellContent-${columnKeys[columnId]}`;
+    },
+    getCellTitle(data, ind) {
+      if (this.isMissingValue(data)) {
+        const missingValueMsg = data === null ? "" : ` (${data.metadata})`;
+        return `Missing Value${missingValueMsg}`;
+      }
+      if (this.isClickable(data, ind)) {
+        return null;
+      }
+      const formattedValue = this.getFormattedValue(data, ind);
+      if (typeof formattedValue === "undefined") {
+        return null;
+      } else {
+        return String(formattedValue);
+      }
+    },
+    getFormattedValue(data, ind) {
+      const formatter = this.formatters[ind];
+      return formatter(unpackObjectRepresentation(data));
+    },
+    unpackObjectRepresentation,
+    getColor,
+    onPointerDown(event) {
+      consola.debug("Resize via row drag triggered: ", event);
+      // stop the event from propagating up the DOM tree
+      event.stopPropagation();
+      // capture move events until the pointer is released
+      event.target.setPointerCapture(event.pointerId);
+      this.activeDrag = true;
+      this.rowHeightOnDragStart = this.currentRowHeight;
+    },
+    onPointerUp(event) {
+      if (this.activeDrag) {
+        consola.debug("Resize via row drag ended: ", event);
+        this.activeDrag = false;
+        this.$emit("resizeAllRows", this.currentRowHeight, this.$el);
+      }
+    },
+    onPointerMove: throttle(function (event) {
+      /* eslint-disable no-invalid-this */
+      if (this.activeDrag) {
+        consola.debug("Resize via drag ongoing: ", event);
+        const newRowHeight =
+          event.clientY - this.$el.getBoundingClientRect().top;
+        this.currentRowHeight = Math.max(newRowHeight, this.minRowHeight);
+        this.$emit(
+          "resizeRow",
+          this.currentRowHeight - this.rowHeightOnDragStart,
+        );
+      }
+      /* eslint-enable no-invalid-this */
+    }),
+    onLostPointerCapture: throttle(function () {
+      // eslint-disable-next-line no-invalid-this
+      this.activeDrag = false;
+    }),
+    getCellComponents() {
+      return this.row.map(
+        (_, columnIndex) => this.$refs[`cell-${columnIndex}`][0],
+      );
+    },
+  },
 };
 </script>
 
@@ -276,12 +291,17 @@ export default {
   <div>
     <tr
       v-if="row.length > 0"
-      :class="['row', {
-        'no-sub-menu': !filteredSubMenuItems.length,
-        'compact-mode': rowConfig.compactMode
-      }]"
-      :style="{height: `${currentRowHeight}px`, marginBottom: `${marginBottom}px`,
-               ...activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' },
+      :class="[
+        'row',
+        {
+          'no-sub-menu': !filteredSubMenuItems.length,
+          'compact-mode': rowConfig.compactMode,
+        },
+      ]"
+      :style="{
+        height: `${currentRowHeight}px`,
+        marginBottom: `${marginBottom}px`,
+        ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       }"
     >
       <CollapserToggle
@@ -291,14 +311,8 @@ export default {
         class="collapser-cell"
         @collapser-expand="onRowExpand"
       />
-      <td
-        v-if="tableConfig.showSelection"
-        class="select-cell"
-      >
-        <Checkbox
-          :model-value="isSelected"
-          @update:model-value="onSelect"
-        />
+      <td v-if="tableConfig.showSelection" class="select-cell">
+        <Checkbox :model-value="isSelected" @update:model-value="onSelect" />
       </td>
       <Cell
         v-for="(data, ind) in row"
@@ -309,17 +323,15 @@ export default {
         :is-missing="isMissingValue(data)"
         :is-slotted="slottedColumns[ind]"
         :text="getFormattedValue(data, ind)"
-        :size="(columnSizes[ind] || 100)"
+        :size="columnSizes[ind] || 100"
         :background-color="getColor(data)"
         :class-generators="classGenerators[ind]"
         @click="onCellClick($event, ind, data)"
         @input="onInput"
       >
-        <template
-          #default="{width}"
-        >
+        <template #default="{ width }">
           <slot
-            :name="getCellContentSlotName(columnKeys,ind)"
+            :name="getCellContentSlotName(columnKeys, ind)"
             :row="row"
             :cell="unpackObjectRepresentation(data)"
             :height="rowHeight"
@@ -344,13 +356,8 @@ export default {
         </SubMenu>
       </td>
     </tr>
-    <tr
-      v-else
-      class="row empty-row"
-    >
-      <td>
-        -
-      </td>
+    <tr v-else class="row empty-row">
+      <td>-</td>
     </tr>
     <div
       v-if="showDragHandle"
@@ -361,15 +368,9 @@ export default {
       @lostpointercapture="onLostPointerCapture"
       @scroll="onScroll"
     />
-    <tr
-      v-if="showContent"
-      class="collapser-row"
-    >
+    <tr v-if="showContent" class="collapser-row">
       <td class="expandable-content">
-        <FunctionButton
-          class="collapser-button"
-          @click="onRowExpand"
-        >
+        <FunctionButton class="collapser-button" @click="onRowExpand">
           <CloseIcon />
         </FunctionButton>
         <slot name="rowCollapserContent" />
@@ -379,7 +380,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr {
   display: flex;
 }

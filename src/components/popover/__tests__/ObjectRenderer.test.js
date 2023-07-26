@@ -1,50 +1,50 @@
-import { describe, it, expect } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { describe, it, expect } from "vitest";
+import { shallowMount } from "@vue/test-utils";
 
-import ObjectRenderer from '../ObjectRenderer.vue';
+import ObjectRenderer from "../ObjectRenderer.vue";
 
-describe('ObjectRenderer.vue', () => {
-    let wrapper;
+describe("ObjectRenderer.vue", () => {
+  let wrapper;
 
-    it('renders object data', () => {
-        wrapper = shallowMount(ObjectRenderer, {
-            props: {
-                data: {
-                    important: 'property'
-                }
-            }
-        });
-
-        expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
-        expect(wrapper.find('div').text()).toBe(`{\n  "important": "property"\n}`);
+  it("renders object data", () => {
+    wrapper = shallowMount(ObjectRenderer, {
+      props: {
+        data: {
+          important: "property",
+        },
+      },
     });
 
-    it('renders string data', () => {
-        wrapper = shallowMount(ObjectRenderer, {
-            props: {
-                data: 'test'
-            }
-        });
+    expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
+    expect(wrapper.find("div").text()).toBe('{\n  "important": "property"\n}');
+  });
 
-        expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
-        expect(wrapper.find('div').text()).toBe('test');
+  it("renders string data", () => {
+    wrapper = shallowMount(ObjectRenderer, {
+      props: {
+        data: "test",
+      },
     });
 
-    it('parses and formats valid object strings', () => {
-        wrapper = shallowMount(ObjectRenderer, {
-            props: {
-                data: '{"important":"property"}'
-            }
-        });
+    expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
+    expect(wrapper.find("div").text()).toBe("test");
+  });
 
-        expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
-        expect(wrapper.find('div').text()).toBe(`{\n  "important": "property"\n}`);
+  it("parses and formats valid object strings", () => {
+    wrapper = shallowMount(ObjectRenderer, {
+      props: {
+        data: '{"important":"property"}',
+      },
     });
 
-    it('does not render if data is missing', () => {
-        wrapper = shallowMount(ObjectRenderer);
+    expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
+    expect(wrapper.find("div").text()).toBe('{\n  "important": "property"\n}');
+  });
 
-        expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
-        expect(wrapper.find('div').exists()).toBe(false);
-    });
+  it("does not render if data is missing", () => {
+    wrapper = shallowMount(ObjectRenderer);
+
+    expect(wrapper.findComponent(ObjectRenderer).exists()).toBe(true);
+    expect(wrapper.find("div").exists()).toBe(false);
+  });
 });

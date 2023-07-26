@@ -1,5 +1,5 @@
 <script>
-import Button from 'webapps-common/ui/components/Button.vue';
+import Button from "webapps-common/ui/components/Button.vue";
 
 /**
  * Button displayed at the bottom of the table instead of page size controls.
@@ -9,36 +9,33 @@ import Button from 'webapps-common/ui/components/Button.vue';
  * @callback actionCallback triggers the global action on click.
  */
 export default {
-    components: {
-        Button
+  components: {
+    Button,
+  },
+  props: {
+    config: {
+      type: Object,
+      default: () => ({}),
     },
-    props: {
-        config: {
-            type: Object,
-            default: () => ({})
-        }
+  },
+  data() {
+    return {
+      height: 40,
+    };
+  },
+  methods: {
+    onClick() {
+      consola.debug("Table action triggered.");
+      this.config.callback();
     },
-    data() {
-        return {
-            height: 40
-        };
-    },
-    methods: {
-        onClick() {
-            consola.debug('Table action triggered.');
-            this.config.callback();
-        }
-    }
+  },
 };
 </script>
 
 <template>
   <tr>
     <td class="action-">
-      <Button
-        with-border
-        @click="onClick"
-      >
+      <Button with-border @click="onClick">
         {{ config.text }}
       </Button>
     </td>

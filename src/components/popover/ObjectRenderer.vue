@@ -5,34 +5,34 @@
  * easier viewing.
  */
 export default {
-    props: {
-        data: {
-            type: null,
-            default: null
-        }
+  props: {
+    data: {
+      type: null,
+      default: null,
     },
-    computed: {
-        formattedData() {
-            if (!this.data) {
-                return null;
-            }
-            let parsedData = this.data;
-            if (typeof parsedData === 'string') {
-                // only parse potential valid JSON to avoid extra '""'
-                if (!this.data.includes('{')) {
-                    return this.data;
-                }
-                try {
-                    parsedData = JSON.parse(parsedData);
-                } catch (e) {
-                    // do nothing
-                }
-            }
-            // eslint-disable-next-line no-undefined
-            parsedData = JSON.stringify(parsedData, undefined, 2);
-            return parsedData;
+  },
+  computed: {
+    formattedData() {
+      if (!this.data) {
+        return null;
+      }
+      let parsedData = this.data;
+      if (typeof parsedData === "string") {
+        // only parse potential valid JSON to avoid extra '""'
+        if (!this.data.includes("{")) {
+          return this.data;
         }
-    }
+        try {
+          parsedData = JSON.parse(parsedData);
+        } catch (e) {
+          // do nothing
+        }
+      }
+      // eslint-disable-next-line no-undefined
+      parsedData = JSON.stringify(parsedData, undefined, 2);
+      return parsedData;
+    },
+  },
 };
 </script>
 

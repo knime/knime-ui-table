@@ -1,16 +1,16 @@
 <script lang="ts">
-import CircleHelpIcon from 'webapps-common/ui/assets/img/icons/circle-help.svg';
-import DropdownIcon from 'webapps-common/ui/assets/img/icons/arrow-dropdown.svg';
-import { ref, computed, toRefs } from 'vue';
-import type { Ref, PropType } from 'vue';
-import { isMissingValue } from '@/util';
-import useDropdownPopper from './composables/useDropdownPopper';
-import useDropdownNavigation from 'webapps-common/ui/composables/useDropdownNavigation';
-import useClickOutside from 'webapps-common/ui/composables/useClickOutside';
-import getWrappedAroundNextElement from '@/util/getWrappedArondNextElement';
-import type PossibleValue from '../../types/PossibleValue';
-import useIdGeneration from './composables/useIdGeneration';
-import useScrollToElement from './composables/useScrollToElement';
+import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import { ref, computed, toRefs } from "vue";
+import type { Ref, PropType } from "vue";
+import { isMissingValue } from "@/util";
+import useDropdownPopper from "./composables/useDropdownPopper";
+import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
+import useClickOutside from "webapps-common/ui/composables/useClickOutside";
+import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
+import type PossibleValue from "../../types/PossibleValue";
+import useIdGeneration from "./composables/useIdGeneration";
+import useScrollToElement from "./composables/useScrollToElement";
 
 /**
  * A dropdown component specifically styled for the top and bottom control bars of the table
@@ -20,191 +20,210 @@ import useScrollToElement from './composables/useScrollToElement';
  * @emits input event when an option is selected.
  */
 export default {
-    components: {
-        CircleHelpIcon,
-        DropdownIcon
+  components: {
+    CircleHelpIcon,
+    DropdownIcon,
+  },
+  props: {
+    modelValue: {
+      type: String,
+      default: "",
     },
-    props: {
-        modelValue: {
-            type: String,
-            default: ''
-        },
-        placeholder: {
-            type: String,
-            default: null
-        },
-        ariaLabel: {
-            type: String,
-            required: true
-        },
-        /**
-         * List of possible values. Each item must have an `id` and a `text` property
-         * @example
-         * [{
-         *   id: 'pdf',
-         *   text: 'PDF'
-         * }, {
-         *   id: 'XLS',
-         *   text: 'Excel',
-         * }]
-         */
-        possibleValues: {
-            type: Array as PropType<PossibleValue[]>,
-            default: () => [],
-            validator(values) {
-                if (!Array.isArray(values)) {
-                    return false;
-                }
-                return values.every(item => item.hasOwnProperty('id') && item.hasOwnProperty('text'));
-            }
-        },
-        formatter: {
-            type: Function,
-            default: (item : string) => item
-        },
-        includePlaceholder: {
-            type: Boolean,
-            default: false
-        },
-        openUp: {
-            type: Boolean,
-            default: false
-        },
-        isFilter: {
-            type: Boolean,
-            default: false
+    placeholder: {
+      type: String,
+      default: null,
+    },
+    ariaLabel: {
+      type: String,
+      required: true,
+    },
+    /**
+     * List of possible values. Each item must have an `id` and a `text` property
+     * @example
+     * [{
+     *   id: 'pdf',
+     *   text: 'PDF'
+     * }, {
+     *   id: 'XLS',
+     *   text: 'Excel',
+     * }]
+     */
+    possibleValues: {
+      type: Array as PropType<PossibleValue[]>,
+      default: () => [],
+      validator(values) {
+        if (!Array.isArray(values)) {
+          return false;
         }
-    },
-    emits: ['update:modelValue'],
-    setup(props) {
-        const button = ref(null);
-        const ul: Ref<HTMLUListElement | null> = ref(null);
-        const options: Ref<HTMLLIElement[]|null> = ref([]);
-        const isExpanded = ref(false);
-
-        const { scrollTo } = useScrollToElement({ toggleButton: button });
-
-        const getNextElement = (current: number | null, direction: 1 | -1) => {
-            const listItems = options.value as HTMLLIElement[];
-            const { element, index } = getWrappedAroundNextElement(current, direction, listItems);
-            scrollTo(element);
-            return { index, onClick: () => element.click() };
-        };
-
-        const getFirstElement = () => getNextElement(null, 1);
-
-        const getLastElement = () => getNextElement(null, -1);
-
-        const closeMenu = () => {
-            isExpanded.value = false;
-        };
-
-        const { updatePopper } = useDropdownPopper({ popperTarget: ul, referenceEl: button }, props.openUp);
-        const { onKeydown, resetNavigation, currentIndex: selectedIndex } = useDropdownNavigation({
-            getNextElement,
-            getFirstElement,
-            getLastElement,
-            close: closeMenu
-        });
-
-        useClickOutside({
-            targets: [button, ul],
-            callback: () => {
-                closeMenu();
-                resetNavigation();
-            }
-        }, isExpanded);
-        const { possibleValues, includePlaceholder, placeholder } = toRefs(props);
-        const localValues = computed(() => {
-            const values = possibleValues.value.filter(({ id }) => typeof id !== 'undefined');
-            if (includePlaceholder.value) {
-                values.unshift({
-                    id: placeholder.value,
-                    text: placeholder.value
-                });
-            }
-            return values;
-        });
-        const ids = computed(() => localValues.value.map(({ id }) => id));
-
-        const { activeDescendantId, buttonId, generateOptionId } = useIdGeneration(
-            ids,
-            selectedIndex,
-            'dropdown-input'
+        return values.every(
+          (item) => item.hasOwnProperty("id") && item.hasOwnProperty("text"),
         );
-        return {
-            updatePopper,
-            onKeydown,
-            resetNavigation,
-            generateOptionId,
-            localValues,
-            selectedIndex,
-            isExpanded,
-            options,
-            button,
-            ul,
-            activeDescendantId,
-            buttonId
-        };
+      },
     },
-    computed: {
-        showPlaceholder() {
-            const noModelValuePresent = typeof this.modelValue === 'undefined' || this.modelValue === '';
-            if (this.includePlaceholder) {
-                return noModelValuePresent || this.modelValue === this.placeholder;
-            } else {
-                return noModelValuePresent;
-            }
-        },
-        displayTextMap() {
-            let map: Record<string, string> = {};
-            for (let value of this.localValues) {
-                map[value.id] = value.text;
-            }
-            return map;
-        },
-        displayText() {
-            if (this.showPlaceholder) {
-                return this.placeholder;
-            } else if (this.displayTextMap.hasOwnProperty(this.modelValue)) {
-                return this.formatter(this.displayTextMap[this.modelValue]);
-            } else {
-                return `(MISSING) ${this.modelValue}`;
-            }
-        }
+    formatter: {
+      type: Function,
+      default: (item: string) => item,
     },
-    methods: {
-        isCurrentValue(candidate: string) {
-            return this.modelValue === candidate;
+    includePlaceholder: {
+      type: Boolean,
+      default: false,
+    },
+    openUp: {
+      type: Boolean,
+      default: false,
+    },
+    isFilter: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["update:modelValue"],
+  setup(props) {
+    const button = ref(null);
+    const ul: Ref<HTMLUListElement | null> = ref(null);
+    const options: Ref<HTMLLIElement[] | null> = ref([]);
+    const isExpanded = ref(false);
+
+    const { scrollTo } = useScrollToElement({ toggleButton: button });
+
+    const getNextElement = (current: number | null, direction: 1 | -1) => {
+      const listItems = options.value as HTMLLIElement[];
+      const { element, index } = getWrappedAroundNextElement(
+        current,
+        direction,
+        listItems,
+      );
+      scrollTo(element);
+      return { index, onClick: () => element.click() };
+    };
+
+    const getFirstElement = () => getNextElement(null, 1);
+
+    const getLastElement = () => getNextElement(null, -1);
+
+    const closeMenu = () => {
+      isExpanded.value = false;
+    };
+
+    const { updatePopper } = useDropdownPopper(
+      { popperTarget: ul, referenceEl: button },
+      props.openUp,
+    );
+    const {
+      onKeydown,
+      resetNavigation,
+      currentIndex: selectedIndex,
+    } = useDropdownNavigation({
+      getNextElement,
+      getFirstElement,
+      getLastElement,
+      close: closeMenu,
+    });
+
+    useClickOutside(
+      {
+        targets: [button, ul],
+        callback: () => {
+          closeMenu();
+          resetNavigation();
         },
-        isMissingValue,
-        isFocusedValue(index: number) {
-            return this.selectedIndex === index;
-        },
-        setSelected(value: string) {
-            consola.trace('ListBox setSelected on', value);
-            if (this.includePlaceholder && value === this.placeholder) {
-                value = '';
-            }
-            this.$emit('update:modelValue', value);
-        },
-        onOptionClick(value: string) {
-            this.setSelected(value);
-            this.isExpanded = false;
-            this.updatePopper();
-        },
-        toggleExpanded() {
-            this.isExpanded = !this.isExpanded;
-            this.resetNavigation();
-            this.updatePopper();
-        }
-    }
+      },
+      isExpanded,
+    );
+    const { possibleValues, includePlaceholder, placeholder } = toRefs(props);
+    const localValues = computed(() => {
+      const values = possibleValues.value.filter(
+        ({ id }) => typeof id !== "undefined",
+      );
+      if (includePlaceholder.value) {
+        values.unshift({
+          id: placeholder.value,
+          text: placeholder.value,
+        });
+      }
+      return values;
+    });
+    const ids = computed(() => localValues.value.map(({ id }) => id));
+
+    const { activeDescendantId, buttonId, generateOptionId } = useIdGeneration(
+      ids,
+      selectedIndex,
+      "dropdown-input",
+    );
+    return {
+      updatePopper,
+      onKeydown,
+      resetNavigation,
+      generateOptionId,
+      localValues,
+      selectedIndex,
+      isExpanded,
+      options,
+      button,
+      ul,
+      activeDescendantId,
+      buttonId,
+    };
+  },
+  computed: {
+    showPlaceholder() {
+      const noModelValuePresent =
+        typeof this.modelValue === "undefined" || this.modelValue === "";
+      if (this.includePlaceholder) {
+        return noModelValuePresent || this.modelValue === this.placeholder;
+      } else {
+        return noModelValuePresent;
+      }
+    },
+    displayTextMap() {
+      let map: Record<string, string> = {};
+      for (let value of this.localValues) {
+        map[value.id] = value.text;
+      }
+      return map;
+    },
+    displayText() {
+      if (this.showPlaceholder) {
+        return this.placeholder;
+      } else if (this.displayTextMap.hasOwnProperty(this.modelValue)) {
+        return this.formatter(this.displayTextMap[this.modelValue]);
+      } else {
+        return `(MISSING) ${this.modelValue}`;
+      }
+    },
+  },
+  methods: {
+    isCurrentValue(candidate: string) {
+      return this.modelValue === candidate;
+    },
+    isMissingValue,
+    isFocusedValue(index: number) {
+      return this.selectedIndex === index;
+    },
+    setSelected(value: string) {
+      consola.trace("ListBox setSelected on", value);
+      if (this.includePlaceholder && value === this.placeholder) {
+        value = "";
+      }
+      this.$emit("update:modelValue", value);
+    },
+    onOptionClick(value: string) {
+      this.setSelected(value);
+      this.isExpanded = false;
+      this.updatePopper();
+    },
+    toggleExpanded() {
+      this.isExpanded = !this.isExpanded;
+      this.resetNavigation();
+      this.updatePopper();
+    },
+  },
 };
 </script>
 
 <template>
   <div
-    :class="['dropdown' , { filter: isFilter, collapsed: !isExpanded }]"
+    :class="['dropdown', { filter: isFilter, collapsed: !isExpanded }]"
     @keydown.space.prevent="toggleExpanded"
   >
     <div
@@ -213,7 +232,7 @@ export default {
       role="button"
       tabindex="0"
       aria-haspopup="listbox"
-      :class="{'placeholder': showPlaceholder}"
+      :class="{ placeholder: showPlaceholder }"
       :aria-label="ariaLabel"
       :aria-labelledby="buttonId"
       :aria-expanded="isExpanded"
@@ -235,20 +254,24 @@ export default {
         ref="ul"
         role="listbox"
         tabindex="-1"
-        :class="{ 'open-up': openUp, 'with-placeholder': includePlaceholder, filter: isFilter }"
+        :class="{
+          'open-up': openUp,
+          'with-placeholder': includePlaceholder,
+          filter: isFilter,
+        }"
       >
         <li
-          v-for="item, index in localValues"
+          v-for="(item, index) in localValues"
           :id="generateOptionId(item.id)"
           :key="`listbox-${item.id}`"
           ref="options"
           role="option"
           :title="item.text"
           :class="{
-            'focused': isFocusedValue(index),
-            'selected': isCurrentValue(item.id),
-            'noselect': true,
-            'empty': item.text?.trim() === ''
+            focused: isFocusedValue(index),
+            selected: isCurrentValue(item.id),
+            noselect: true,
+            empty: item.text?.trim() === '',
           }"
           :aria-selected="isCurrentValue(item.id)"
           @click="onOptionClick(item.id)"
@@ -275,8 +298,8 @@ export default {
   &.filter {
     background-color: var(--knime-white);
 
-    &.collapsed:hover  {
-        background-color: var(--knime-silver-sand-semi);
+    &.collapsed:hover {
+      background-color: var(--knime-silver-sand-semi);
     }
   }
 
@@ -313,22 +336,21 @@ export default {
   }
 
   & [role="button"]:focus {
-      outline: none;
+    outline: none;
   }
 
   &.filter [role="button"]:focus {
-      border-color: var(--knime-masala);
+    border-color: var(--knime-masala);
   }
 
   &:not(.filter) [role="button"]:focus,
   &:not(.filter) [role="button"]:hover {
-      color: var(--knime-masala);
+    color: var(--knime-masala);
 
-      & :deep(svg) {
-        stroke: var(--knime-masala);
-      }
+    & :deep(svg) {
+      stroke: var(--knime-masala);
+    }
   }
-
 
   &.collapsed:hover {
     color: var(--knime-masala);
@@ -388,7 +410,7 @@ export default {
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
   }
 
-  &.filter{
+  &.filter {
     font-size: 13px;
     font-weight: 400;
     margin: -1.5px 0 1px;
@@ -429,7 +451,6 @@ export default {
       background: var(--theme-dropdown-background-color-hover);
       color: var(--theme-dropdown-foreground-color-hover);
     }
-
 
     & .missing-value-icon {
       width: 14px;

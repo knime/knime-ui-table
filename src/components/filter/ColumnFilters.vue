@@ -1,12 +1,12 @@
 <script lang="ts">
-import ControlMultiselect from '../control/ControlMultiselect.vue';
-import FilterInputField from './FilterInputField.vue';
-import ControlDropdown from '../control/ControlDropdown.vue';
-import type FilterConfig from '../../types/FilterConfig';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import TrashIcon from 'webapps-common/ui/assets/img/icons/trash.svg';
-import { MIN_COLUMN_SIZE } from '@/util/constants';
-import type { PropType } from 'vue';
+import ControlMultiselect from "../control/ControlMultiselect.vue";
+import FilterInputField from "./FilterInputField.vue";
+import ControlDropdown from "../control/ControlDropdown.vue";
+import type FilterConfig from "../../types/FilterConfig";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import { MIN_COLUMN_SIZE } from "@/util/constants";
+import type { PropType } from "vue";
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -17,69 +17,63 @@ import type { PropType } from 'vue';
  * @emits clearFilter event when the filters are cleared.
  */
 export default {
-    components: {
-        ControlMultiselect,
-        FilterInputField,
-        ControlDropdown,
-        FunctionButton,
-        TrashIcon
+  components: {
+    ControlMultiselect,
+    FilterInputField,
+    ControlDropdown,
+    FunctionButton,
+    TrashIcon,
+  },
+  props: {
+    filterConfigs: {
+      type: Array as PropType<Array<FilterConfig>>,
+      default: () => [],
     },
-    props: {
-        filterConfigs: {
-            type: Array as PropType<Array<FilterConfig>>,
-            default: () => []
-        },
-        columnHeaders: {
-            type: Array,
-            default: () => []
-        },
-        columnSizes: {
-            type: Array,
-            default: () => []
-        },
-        showCollapser: {
-            type: Boolean,
-            default: false
-        },
-        showSelection: {
-            type: Boolean,
-            default: false
-        }
+    columnHeaders: {
+      type: Array,
+      default: () => [],
     },
-    emits: ['columnFilter', 'clearFilter'],
-    data() {
-        return {
-            MIN_COLUMN_SIZE
-        };
+    columnSizes: {
+      type: Array,
+      default: () => [],
     },
-    methods: {
-        onInput(colInd: number, value: FilterConfig['modelValue']) {
-            consola.debug('Updated table column filter: ', value);
-            this.$emit('columnFilter', colInd, value);
-        },
-        onClearFilter() {
-            consola.debug('Table column filter cleared.');
-            this.$emit('clearFilter');
-        }
-    }
+    showCollapser: {
+      type: Boolean,
+      default: false,
+    },
+    showSelection: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["columnFilter", "clearFilter"],
+  data() {
+    return {
+      MIN_COLUMN_SIZE,
+    };
+  },
+  methods: {
+    onInput(colInd: number, value: FilterConfig["modelValue"]) {
+      consola.debug("Updated table column filter: ", value);
+      this.$emit("columnFilter", colInd, value);
+    },
+    onClearFilter() {
+      consola.debug("Table column filter cleared.");
+      this.$emit("clearFilter");
+    },
+  },
 };
 </script>
 
 <template>
   <thead>
     <tr>
-      <th
-        v-if="showCollapser"
-        class="collapser-cell-spacer"
-      />
-      <th
-        v-if="showSelection"
-        class="select-cell-spacer"
-      />
+      <th v-if="showCollapser" class="collapser-cell-spacer" />
+      <th v-if="showSelection" class="select-cell-spacer" />
       <th
         v-for="(column, ind) in columnHeaders"
         :key="ind + 'filter'"
-        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)`}"
+        :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)` }"
         :cell-type="'th'"
         class="filter"
       >
@@ -106,9 +100,11 @@ tr {
   display: flex;
   height: 40px;
   overflow-x: clip;
-  transition: height 0.3s, box-shadow 0.15s;
+  transition:
+    height 0.3s,
+    box-shadow 0.15s;
   background-color: var(--knime-silver-sand-semi);
-  
+
   & th {
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -116,7 +112,7 @@ tr {
 
     &.filter {
       margin: auto 0;
-      padding-left: 10px
+      padding-left: 10px;
     }
 
     &.collapser-cell-spacer {

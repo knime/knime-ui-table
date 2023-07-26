@@ -1,7 +1,7 @@
 <script>
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
-import ArrowNextIcon from 'webapps-common/ui/assets/img/icons/arrow-next.svg';
-import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import ArrowNextIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
+import ArrowPrevIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
 
 /**
  * This component provides popover pagination controls for content with a variable length.
@@ -10,32 +10,32 @@ import ArrowPrevIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
  * @emits prevPage event.
  */
 export default {
-    components: {
-        ArrowNextIcon,
-        FunctionButton,
-        ArrowPrevIcon
+  components: {
+    ArrowNextIcon,
+    FunctionButton,
+    ArrowPrevIcon,
+  },
+  props: {
+    totalPages: {
+      type: Number,
+      default: 0,
     },
-    props: {
-        totalPages: {
-            type: Number,
-            default: 0
-        },
-        currentPage: {
-            type: Number,
-            default: 0
-        }
+    currentPage: {
+      type: Number,
+      default: 0,
     },
-    emits: ['nextPage', 'prevPage'],
-    methods: {
-        onNextPage() {
-            consola.debug('Next Page');
-            this.$emit('nextPage');
-        },
-        onPrevPage() {
-            consola.debug('Prev Page');
-            this.$emit('prevPage');
-        }
-    }
+  },
+  emits: ["nextPage", "prevPage"],
+  methods: {
+    onNextPage() {
+      consola.debug("Next Page");
+      this.$emit("nextPage");
+    },
+    onPrevPage() {
+      consola.debug("Prev Page");
+      this.$emit("prevPage");
+    },
+  },
 };
 </script>
 
@@ -79,5 +79,4 @@ export default {
     }
   }
 }
-
 </style>
