@@ -129,5 +129,6 @@ The KNIME-Table expects that the embedding app provides the following:
 [Vitest]: https://vitest.dev/
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[@knime/knime-ui-table]: https://www.npmjs.com/package/@knime/knime-ui-table
 [husky]: https://www.npmjs.com/package/husky
 [lintstaged]: https://github.com/okonet/lint-staged
