@@ -1,17 +1,18 @@
 <script>
 /**
  * This component contains the ability to size the columns in the tableUI according to the width of its content by
- * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additonal prop,
+ * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additional prop,
  * the options for the calculation.
  * To trigger the calculation of the auto sizes, the corresponding trigger method can be called from the parent. The
  * method is automatically called from within this component when:
  *  - the component is mounted
- *  - one of the options to calculate the automatic sizes for the body or the header changes
+ *  - one property of the autoColumnSizesOptions changes
  *  - when columns were removed, added, or replaced
  */
 
 import TableUI from "./TableUI.vue";
 import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
+import useTableReady from "./composables/useTableReady";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -24,7 +25,7 @@ export default {
     dataConfig: { type: Object, default: () => ({}) },
     tableConfig: { type: Object, default: () => ({}) },
     /** This object contains all the options necessary to calculate the sizes based on the
-     * content. In case only one of calculateForBody/calculateForHeader is true, the emmited object contains auto
+     * content. In case only one of calculateForBody/calculateForHeader is true, the emitted object contains auto
      * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes no
      * body sizes are calculated.
      * {
@@ -35,10 +36,25 @@ export default {
      */
     autoColumnSizesOptions: { type: Object, default: () => ({}) },
   },
-  emits: ["autoColumnSizesUpdate"],
+  emits: ["autoColumnSizesUpdate", "ready", "update:available-width"],
+  setup() {
+    const {
+      tableIsVisible,
+      tableIsInitiallyReady,
+      setTableIsVisibleToTrue,
+      setAutoSizesWereInitiallyUpdatedToTrue,
+      setAvailableWidthWasInitiallyUpdatedToTrue,
+    } = useTableReady();
+    return {
+      tableIsVisible,
+      tableIsInitiallyReady,
+      setTableIsVisibleToTrue,
+      setAutoSizesWereInitiallyUpdatedToTrue,
+      setAvailableWidthWasInitiallyUpdatedToTrue,
+    };
+  },
   data() {
     return {
-      autoColumnSizesCalculationFinished: false,
       currentSizes: {},
       calculateSizes: false,
     };
@@ -96,11 +112,11 @@ export default {
     },
   },
   watch: {
-    "autoColumnSizesOptions.calculateForBody"() {
-      this.triggerCalculationOfAutoColumnSizes();
-    },
-    "autoColumnSizesOptions.calculateForHeader"() {
-      this.triggerCalculationOfAutoColumnSizes();
+    autoColumnSizesOptions: {
+      handler() {
+        this.triggerCalculationOfAutoColumnSizes();
+      },
+      deep: true,
     },
     dataConfigIds(newIds, oldIds) {
       if (
@@ -114,12 +130,19 @@ export default {
   mounted() {
     this.triggerCalculationOfAutoColumnSizes();
   },
+  async updated() {
+    if (this.tableIsInitiallyReady) {
+      this.setTableIsVisibleToTrue();
+      // await for the table to be visible in the DOM
+      await this.$nextTick();
+      this.$emit("ready");
+    }
+  },
   methods: {
     triggerCalculationOfAutoColumnSizes() {
       if (!this.autoSizingActive) {
-        this.autoColumnSizesCalculationFinished = true;
         this.currentSizes = {};
-        this.$emit("autoColumnSizesUpdate", this.currentSizes);
+        this.emitNewAutoSizes();
       } else if (this.columnsWereOnlyRemoved) {
         Reflect.ownKeys(this.currentSizes).forEach((columnId) => {
           if (this.removedColumnIds.has(columnId)) {
@@ -148,8 +171,7 @@ export default {
       }
       this.enforceMaxColSize();
       this.calculateSizes = false;
-      this.autoColumnSizesCalculationFinished = true;
-      this.$emit("autoColumnSizesUpdate", this.currentSizes);
+      this.emitNewAutoSizes();
     },
     initializeCurrentSizes() {
       this.currentSizes = this.dataConfigIds.reduce(
@@ -208,6 +230,14 @@ export default {
         {},
       );
     },
+    emitNewAutoSizes() {
+      this.$emit("autoColumnSizesUpdate", this.currentSizes);
+      this.setAutoSizesWereInitiallyUpdatedToTrue();
+    },
+    onUpdateAvailableWidth(newAvailableWidth) {
+      this.$emit("update:available-width", newAvailableWidth);
+      this.setAvailableWidthWasInitiallyUpdatedToTrue();
+    },
     getTableUIElement() {
       return this.$refs.tableUI.$el;
     },
@@ -222,16 +252,14 @@ export default {
   <TableUI
     ref="tableUI"
     :style="{
-      visibility:
-        !autoSizingActive || autoColumnSizesCalculationFinished
-          ? 'visible'
-          : 'hidden',
+      visibility: tableIsVisible ? 'visible' : 'hidden',
     }"
     v-bind="$attrs"
     :data="data"
     :current-selection="currentSelection"
     :data-config="dataConfig"
     :table-config="tableConfig"
+    @update:available-width="onUpdateAvailableWidth"
   >
     <template v-for="(_, slot) of $slots" #[slot]="scope">
       <slot :name="slot" v-bind="scope" />

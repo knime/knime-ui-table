@@ -11,12 +11,24 @@ import { shallowMount } from "@vue/test-utils";
 
 import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
 import TableUI from "../TableUI.vue";
+import { ref } from "vue";
+
+const useTableReadyMock = {
+  tableIsInitiallyReady: ref(false),
+  tableIsVisible: ref(false),
+  setTableIsVisibleToTrue: vi.fn(),
+  setAutoSizesWereInitiallyUpdatedToTrue: vi.fn(),
+  setAvailableWidthWasInitiallyUpdatedToTrue: vi.fn(),
+};
+vi.mock("../composables/useTableReady", () => ({
+  default: vi.fn(() => useTableReadyMock),
+}));
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
   let props, tableUIStub, context, refreshScrollerMock;
 
-  const column1 = { id: Symbol("a"), key: "a", header: "a" };
-  const column2 = { id: "b", key: "b", header: "b" };
+  const column1 = { id: Symbol("a"), key: "a", header: "a", size: 50 };
+  const column2 = { id: "b", key: "b", header: "b", size: 50 };
 
   const loadFonts = async (wrapper) => {
     await wrapper.vm.$nextTick(); // await font 400 1em Roboto to be loaded
@@ -102,12 +114,11 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.resetAllMocks();
   });
 
-  it("renders", () => {
+  it("renders when auto sizing is deactivated", () => {
     props.autoColumnSizesOptions.calculateForBody = false;
-    props.autoColumnSizesOptions.calculateForHeader = true;
+    props.autoColumnSizesOptions.calculateForHeader = false;
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
     expect(
       wrapper.findComponent(TableUIWithAutoSizeCalculation).exists(),
@@ -116,32 +127,17 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.findComponent({ ref: "tableUI" }).attributes().style).toBe(
       "visibility: hidden;",
     );
-  });
-
-  it("renders and is visible when the calculation is not triggered from the outside", () => {
-    delete props.autoColumnSizesOptions;
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    expect(
-      wrapper.findComponent(TableUIWithAutoSizeCalculation).exists(),
-    ).toBeTruthy();
-    expect(wrapper.findComponent(TableUI).exists()).toBeTruthy();
-    expect(wrapper.findComponent({ ref: "tableUI" }).attributes().style).toBe(
-      "visibility: visible;",
-    );
-  });
-
-  it("does not mount the TableUIForAutoSizeCalculation when calculateForBody and calculateForHeader are false", () => {
-    props.autoColumnSizesOptions.calculateForBody = false;
-    props.autoColumnSizesOptions.calculateForHeader = false;
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+    expect(wrapper.emitted("autoColumnSizesUpdate")).toStrictEqual([[{}]]);
     expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeFalsy();
     expect(wrapper.vm.$refs).toStrictEqual({ tableUI: expect.any(Object) });
-    expect(wrapper.vm.autoColumnSizesCalculationFinished).toBeTruthy();
+    expect(
+      useTableReadyMock.setAutoSizesWereInitiallyUpdatedToTrue,
+    ).toHaveBeenCalled();
   });
 
   it("mounts the TableUI when calculateForBody/calculateForHeader are true and creates correct configs", async () => {
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    expect(wrapper.vm.autoColumnSizesCalculationFinished).toBeFalsy();
     expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
 
     await loadFonts(wrapper);
@@ -163,9 +159,47 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
         ],
       ],
     );
-    expect(wrapper.vm.autoColumnSizesCalculationFinished).toBeTruthy();
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+  });
+
+  it("is visible when the sizes were initially calculated and the available width was received", () => {
+    props.autoColumnSizesOptions.calculateForBody = false;
+    props.autoColumnSizesOptions.calculateForHeader = false;
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+
+    const newAvailableWidth = 200;
+    wrapper
+      .findComponent(TableUI)
+      .vm.$emit("update:available-width", newAvailableWidth);
+
+    expect(wrapper.emitted()).toHaveProperty("update:available-width");
+    expect(wrapper.emitted("update:available-width")).toStrictEqual([[200]]);
+  });
+
+  it("emits ready only on the first update when the sizes were calculated and the table is not visible yet", async () => {
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    await loadFonts(wrapper);
+    expect(wrapper.emitted()).not.toHaveProperty("ready");
+
+    useTableReadyMock.tableIsInitiallyReady.value = true;
+    expect(wrapper.vm.tableIsInitiallyReady).toBeTruthy();
+    expect(wrapper.emitted()).not.toHaveProperty("ready");
+
+    wrapper.vm.$forceUpdate();
+    await wrapper.vm.$nextTick();
+    expect(useTableReadyMock.setTableIsVisibleToTrue).toHaveBeenCalled();
+    expect(wrapper.emitted()).not.toHaveProperty("ready");
+
+    useTableReadyMock.tableIsVisible.value = true;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted()).toHaveProperty("ready");
+    expect(wrapper.findComponent({ ref: "tableUI" }).attributes().style).toBe(
+      "visibility: visible;",
+    );
+
+    wrapper.vm.$forceUpdate();
+    expect(wrapper.emitted("ready").length).toBe(1);
   });
 
   it("does not mount the TableUI for calculation when columns were only removed", async () => {
@@ -202,6 +236,9 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60, b: 60 });
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
+    expect(
+      useTableReadyMock.setAutoSizesWereInitiallyUpdatedToTrue,
+    ).toHaveBeenCalled();
   });
 
   it("adds the fixed sizes to the column sizes object when the column still exists", async () => {
@@ -236,6 +273,56 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     });
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+  });
+
+  it("triggers the calculation when a property of the auto size options is changed", async () => {
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    await loadFonts(wrapper);
+    const triggerCalculationSpy = vi.spyOn(
+      wrapper.vm,
+      "triggerCalculationOfAutoColumnSizes",
+    );
+    expect(triggerCalculationSpy).toHaveBeenCalledTimes(0);
+
+    await wrapper.setProps({
+      autoColumnSizesOptions: {
+        ...props.autoColumnSizesOptions,
+        calculateForBody: false,
+      },
+    });
+    expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+
+    await wrapper.setProps({
+      autoColumnSizesOptions: {
+        ...props.autoColumnSizesOptions,
+        calculateForHeader: false,
+      },
+    });
+    expect(triggerCalculationSpy).toHaveBeenCalledTimes(2);
+
+    await wrapper.setProps({
+      autoColumnSizesOptions: {
+        ...props.autoColumnSizesOptions,
+        fixedSizes: { a: 40, b: 60 },
+      },
+    });
+    expect(triggerCalculationSpy).toHaveBeenCalledTimes(3);
+  });
+
+  it("emits update:available-width", () => {
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    const newAvailableWidth = 200;
+    wrapper
+      .findComponent(TableUI)
+      .vm.$emit("update:available-width", newAvailableWidth);
+
+    expect(wrapper.emitted()).toHaveProperty("update:available-width");
+    expect(wrapper.emitted("update:available-width")).toStrictEqual([
+      [newAvailableWidth],
+    ]);
+    expect(
+      useTableReadyMock.setAvailableWidthWasInitiallyUpdatedToTrue,
+    ).toHaveBeenCalled();
   });
 
   it("forwards the method to refresh the scroller", () => {
