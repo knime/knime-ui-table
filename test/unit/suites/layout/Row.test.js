@@ -98,6 +98,33 @@ describe('Row.vue', () => {
             expect(wrapper.find(Checkbox).exists()).toBe(false);
         });
 
+        it('shows custom submenuitems for a row', () => {
+            const customSubMenuItemsForRow = [
+                {
+                    name: 'custom menu item name',
+                    text: 'bla'
+                }
+            ];
+ 
+            wrapper = shallowMount(Row, {
+                propsData: {
+                    ...propsData,
+                    row: ['data1'],
+                    rowData: {
+                        data: {
+                            subMenuItemsForRow: customSubMenuItemsForRow
+                        }
+                    }
+                }
+            });
+          
+            expect(wrapper.find(Row).exists()).toBeTruthy();
+            expect(wrapper.find(SubMenu).exists()).toBeTruthy();
+            expect(wrapper.find(SubMenu).props('items')).toEqual(
+                customSubMenuItemsForRow
+            );
+        });
+
         it('hides the submenu if no items are provided', () => {
             wrapper = shallowMount(Row, {
                 propsData: {
