@@ -111,6 +111,17 @@
           ]
         }
       },
+      "subMenuItemsForRow": [
+        {
+          "href": "http://apple.com",
+          "text": "Apples",
+          "title": "Tastier Apples"
+        },
+        {
+          "href": "https://speed.hetzner.de/100MB.bin",
+          "text": "Download me"
+        }
+      ],
       "notifications": {},
       "executionRetries": 0,
       "user": "example-user2",

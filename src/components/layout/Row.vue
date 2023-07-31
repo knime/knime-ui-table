@@ -160,12 +160,18 @@ export default {
       if (!this.tableConfig.subMenuItems) {
         return [];
       }
-      return this.tableConfig.subMenuItems.filter((item) => {
-        if (typeof item.hideOn === "function") {
-          return !item.hideOn(this.row, this.rowData);
-        }
-        return true;
-      });
+      const defaultSubMenuItems = this.tableConfig.subMenuItems.filter(
+        (item) => {
+          if (typeof item.hideOn === "function") {
+            return !item.hideOn(this.row, this.rowData);
+          }
+          return true;
+        },
+      );
+
+      return this.rowData.data?.subMenuItemsForRow?.length
+        ? this.rowData.data?.subMenuItemsForRow
+        : defaultSubMenuItems;
     },
   },
   watch: {
@@ -205,8 +211,11 @@ export default {
     },
     onSubMenuItemClick(event, clickedItem) {
       this.$emit("rowSubMenuClick", clickedItem);
-      event.preventDefault();
-      return false;
+      if (clickedItem.callback) {
+        event.preventDefault();
+        return false;
+      }
+      return true;
     },
     onSubMenuToggle(callback) {
       this.$emit("rowSubMenuExpand", callback);

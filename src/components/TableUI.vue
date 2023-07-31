@@ -578,7 +578,9 @@ export default {
     },
     onRowSubMenuClick(event, row) {
       consola.debug(`TableUI row submenu clicked ${event} ${row}`);
-      event.callback(row, this);
+      if (event.callback) {
+        event.callback(row, this);
+      }
     },
     registerExpandedSubMenu(callback) {
       // Timeout to prevent the sub menu to be closed due to scroll event triggered by clicking a row/group
