@@ -157,7 +157,10 @@ export default {
       );
     },
     filteredSubMenuItems() {
-      if (!this.tableConfig.subMenuItems) {
+      if (
+        !this.tableConfig.subMenuItems?.length &&
+        !this.rowData.data?.subMenuItemsForRow?.length
+      ) {
         return [];
       }
       const defaultSubMenuItems = this.tableConfig.subMenuItems.filter(
