@@ -131,6 +131,33 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
     });
 
+    it("shows custom submenuitems for a row", () => {
+      const customSubMenuItemsForRow = [
+        {
+          name: "custom menu item name",
+          text: "bla",
+        },
+      ];
+      wrapper = mount(Row, {
+        props: {
+          ...props,
+          row: ["data1"],
+          rowData: {
+            data: {
+              subMenuItemsForRow: customSubMenuItemsForRow,
+            },
+          },
+        },
+        global: { stubs: { Cell: { template: stubbedCell } } },
+      });
+
+      expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+      expect(wrapper.findComponent(SubMenu).exists()).toBeTruthy();
+      expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
+        customSubMenuItemsForRow,
+      );
+    });
+
     it("hides submenu items if hideOn function is given", async () => {
       const subMenuItems = [
         {
