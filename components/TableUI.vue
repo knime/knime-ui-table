@@ -439,7 +439,9 @@ export default {
         },
         onRowSubMenuClick(event, row) {
             consola.debug(`TableUI row submenu clicked ${event} ${row}`);
-            event.callback(row, this);
+            if (event.callback) {
+                event.callback(row, this);
+            }
         },
         openPopover(event) {
             consola.debug(`TableUI: open popover`, event);

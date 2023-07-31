@@ -132,12 +132,16 @@ export default {
             }));
         },
         filteredSubMenuItems() {
-            return this.tableConfig.subMenuItems.filter(item => {
+            const defaultSubMenuItems = this.tableConfig.subMenuItems.filter(item => {
                 if (typeof item.hideOn === 'function') {
                     return !item.hideOn(this.row, this.rowData);
                 }
                 return true;
             });
+
+            return this.rowData.data?.subMenuItemsForRow?.length
+                ? this.rowData.data?.subMenuItemsForRow
+                : defaultSubMenuItems;
         }
     },
     mounted() {
@@ -170,8 +174,11 @@ export default {
         },
         onSubMenuItemClick(event, clickedItem) {
             this.$emit('rowSubMenuClick', clickedItem);
-            event.preventDefault();
-            return false;
+            if (clickedItem.callback) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
         },
         isClickable(data, ind) {
             if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {

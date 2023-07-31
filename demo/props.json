@@ -665,6 +665,18 @@
       "discardAfterSuccessfulExec": true,
       "discardAfterFailedExec": true,
       "targetName": "Create Changelog HTML from JIRA",
+      "subMenuItemsForRow": [
+        {
+          "href": "http://apple.com",
+          "text": "Apples",
+          "title": "Tastier Apples"
+        }, {
+          "href": "https://en.wikipedia.org/wiki/Orange_(colour)",
+          "text": "Oranges",
+          "disabled": true,
+          "separator": true
+        }
+      ],
       "schedule": {
         "startTime": "2020-02-23T06:22+01:00[Europe/Berlin]",
         "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]",
