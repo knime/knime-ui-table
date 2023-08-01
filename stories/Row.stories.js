@@ -70,6 +70,7 @@ RowWithSpecificSubMenu.args = {
   },
   tableConfig: {
     ...defaultArgs.tableConfig,
+    showSubMenu: "always", // needed to make sure RowWithSpecificSubMenu works
     subMenuItems: [
       {
         id: "foo",

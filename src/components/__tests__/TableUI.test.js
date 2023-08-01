@@ -35,6 +35,7 @@ const getProps = ({
   compactMode = false,
   showSelection = true,
   showCollapser = false,
+  showSubMenu = "auto",
   showSubMenuItems = false,
   showColumnFilters = true,
   showBottomControls = true,
@@ -133,6 +134,7 @@ const getProps = ({
       ? {}
       : { columnFilterInitiallyActive }),
     ...(actionButtonConfig ? { actionButtonConfig } : {}),
+    showSubMenu,
     ...(showSubMenuItems ? { subMenuItems: [{ text: "test" }] } : {}),
   },
 });
@@ -147,6 +149,7 @@ describe("TableUI.vue", () => {
       showSelection = true,
       showCollapser = false,
       showSubMenuItems = false,
+      showSubMenu = "auto",
       showColumnFilters = true,
       showBottomControls = true,
       enableVirtualScrolling = false,
@@ -182,6 +185,7 @@ describe("TableUI.vue", () => {
       showSelection,
       showCollapser,
       showSubMenuItems,
+      showSubMenu,
       showColumnFilters,
       showBottomControls,
       enableVirtualScrolling,
@@ -766,6 +770,7 @@ describe("TableUI.vue", () => {
           showCollapser: false,
           showSelection: false,
           showSubMenuItems: false,
+          showSubMenu: "auto",
         };
       });
 
@@ -796,8 +801,15 @@ describe("TableUI.vue", () => {
         );
       });
 
-      it("respects sub menus", () => {
+      it("respects automatic sub menus", () => {
         specialColumnsSettings.showSubMenuItems = true;
+        expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(
+          SPECIAL_COLUMNS_SIZE,
+        );
+      });
+
+      it("respects custom submenus", () => {
+        specialColumnsSettings.showSubMenu = "always";
         expect(unref(getSpecialColumnsSizeTotal(specialColumnsSettings))).toBe(
           SPECIAL_COLUMNS_SIZE,
         );

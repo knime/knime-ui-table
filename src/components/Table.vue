@@ -283,6 +283,7 @@ export default {
           Boolean(Object.keys(this.initialFilterValues).length),
         showBottomControls: this.showBottomControls,
         subMenuItems: this.subMenuItems,
+        showSubMenu: this.showSubMenu,
         groupSubMenuItems: this.groupSubMenuItems,
         enableVirtualScrolling: this.enableVirtualScrolling,
         enableColumnResizing: false,

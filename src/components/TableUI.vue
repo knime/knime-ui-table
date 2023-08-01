@@ -188,13 +188,13 @@ export default {
     const selectionSize = computed(() =>
       tableConfig.value.showSelection ? SPECIAL_COLUMNS_SIZE : 0,
     );
-    const rightSideSize = computed(() =>
-      tableConfig.value.showColumnFilters ||
-      tableConfig.value.subMenuItems.length > 0 ||
-      tableConfig.value.showSubMenu === "always"
+    const rightSideSize = computed(() => {
+      return tableConfig.value.showColumnFilters ||
+        tableConfig.value.subMenuItems.length > 0 ||
+        tableConfig.value.showSubMenu === "always"
         ? SPECIAL_COLUMNS_SIZE
-        : 0,
-    );
+        : 0;
+    });
 
     const { innerWidthToBodyWidth } = useAvailableWidthDetection({
       emitAvailableWidth: (newWidth) =>

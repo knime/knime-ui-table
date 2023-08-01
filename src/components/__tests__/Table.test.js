@@ -157,6 +157,7 @@ describe("Table.vue", () => {
         },
         searchConfig: { searchQuery: "" },
         sortConfig: { sortColumn: 0, sortDirection: -1 },
+        showSubMenu: "auto",
         subMenuItems: [],
         groupSubMenuItems: [],
         columnFilterInitiallyActive: false,
