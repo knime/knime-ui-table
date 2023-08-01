@@ -147,6 +147,16 @@ export default {
       type: Array,
       default: () => [],
     },
+    /**
+     * The table automatically shows the subMenu or not
+     * if you use table-wide subMenuItems and cares about resizing correctly.
+     * If you use custom subMenuItemsForRows in Row.vue, set this to 'always'.
+     */
+    showSubMenu: {
+      type: String,
+      default: "auto",
+      validate: (val) => ["auto", "always"].includes(val),
+    },
     groupSubMenuItems: {
       type: Array,
       default: () => [],

@@ -56,6 +56,7 @@ export default {
     /**
      * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
      * property rowData contains the complete set and not just the part that is displayed per column.
+     * @param {Array} rowData.data.subMenuItemsForRow   Define a set of subMenuItems just for this row. If you use this, set showSubMenu on the Table to 'always'.
      */
     rowData: {
       type: Object,

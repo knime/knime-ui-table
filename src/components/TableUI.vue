@@ -190,7 +190,8 @@ export default {
     );
     const rightSideSize = computed(() =>
       tableConfig.value.showColumnFilters ||
-      tableConfig.value.subMenuItems.length > 0
+      tableConfig.value.subMenuItems.length > 0 ||
+      tableConfig.value.showSubMenu === "always"
         ? SPECIAL_COLUMNS_SIZE
         : 0,
     );
