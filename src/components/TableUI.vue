@@ -210,6 +210,14 @@ export default {
       },
     });
 
+    const selectCellsOnMove = ref(false);
+    const activateCellSelectionOnMove = () => {
+      selectCellsOnMove.value = true;
+    };
+    const deactivateCellSelectionOnMove = () => {
+      selectCellsOnMove.value = false;
+    };
+
     return {
       wrapper,
       scroller,
@@ -217,6 +225,9 @@ export default {
       enableVirtualScrolling,
       innerWidthToBodyWidth,
       ...useCellSelection(),
+      activateCellSelectionOnMove,
+      deactivateCellSelectionOnMove,
+      selectCellsOnMove,
     };
   },
   data() {
@@ -680,7 +691,12 @@ export default {
 </script>
 
 <template>
-  <table ref="wrapper">
+  <table
+    ref="wrapper"
+    @pointerleave="deactivateCellSelectionOnMove"
+    @pointerdown.passive="activateCellSelectionOnMove"
+    @pointerup.passive="deactivateCellSelectionOnMove"
+  >
     <TopControls
       :table-config="tableConfig"
       :column-headers="columnHeaders"
@@ -798,6 +814,7 @@ export default {
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(item.index, item.isTop)"
           :selected-cells="getSelectedIndicesForRow(item.index) as any"
+          :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
           :style="{
             transform: `translateY(${
@@ -894,6 +911,7 @@ export default {
                 currentSelection[groupInd][rowInd] || false
           "
           :selected-cells="getSelectedIndicesForRow(rowInd) as any"
+          :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
           :show-drag-handle="dataConfig.rowConfig.enableRowResize"
           @cell-select="

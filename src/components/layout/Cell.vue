@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import throttle from "raf-throttle";
 import { computed, ref, type Ref } from "vue";
 import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import type { CellProps } from "./CellProps";
@@ -54,6 +55,12 @@ const getCellContentWidth = () => {
 defineExpose({
   getCellContentWidth,
 });
+
+const onPointerOver = throttle(() => {
+  if (props.selectOnMove) {
+    emit("select", { expandSelection: true });
+  }
+});
 </script>
 
 <template>
@@ -71,12 +78,15 @@ defineExpose({
     }"
     :title="title === null ? undefined : title"
     @click="
-      (event: Event) => {
-        emit('select', { event });
+      (event: MouseEvent) => {
         if (clickable) {
           emit('click', { event, cell: $el });
         }
       }
+    "
+    @pointerover="onPointerOver"
+    @pointerdown="
+      (event: MouseEvent) => emit('select', { expandSelection: event.shiftKey })
     "
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >

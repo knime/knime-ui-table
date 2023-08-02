@@ -15,6 +15,7 @@ describe("Cell.vue", () => {
       isMissing: false,
       clickable: false,
       isSlotted: false,
+      selectOnMove: false,
       isSelected: false,
       size: 300,
       backgroundColor: null,
@@ -160,5 +161,15 @@ describe("Cell.vue", () => {
       const wrapper = shallowMount(Cell, { props });
       expect(wrapper.element.classList.contains("width-3")).toBeTruthy();
     });
+  });
+
+  it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
+    props.selectOnMove = true;
+    const wrapper = shallowMount(Cell, { props });
+    wrapper.find("td").trigger("pointerover");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted().select).toStrictEqual([
+      [{ expandSelection: true }],
+    ]);
   });
 });

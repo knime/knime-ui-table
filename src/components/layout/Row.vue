@@ -109,6 +109,10 @@ export default {
       type: Object,
       default: null,
     },
+    selectCellsOnMove: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     "rowSelect",
@@ -308,8 +312,8 @@ export default {
       }
       return this.selectedCells.min <= index && this.selectedCells.max >= index;
     },
-    onCellSelect({ event, ind }) {
-      if (event.shiftKey) {
+    onCellSelect({ expandSelection, ind }) {
+      if (expandSelection) {
         this.$emit("expandCellSelect", ind);
       } else {
         this.$emit("cellSelect", ind);
@@ -355,6 +359,7 @@ export default {
         :is-missing="isMissingValue(data)"
         :is-slotted="slottedColumns[ind]"
         :is-selected="isCellSelected(ind)"
+        :select-on-move="selectCellsOnMove"
         :text="getFormattedValue(data, ind)"
         :size="columnSizes[ind] || 100"
         :background-color="getColor(data)"
@@ -394,7 +399,7 @@ export default {
       <td>-</td>
     </tr>
     <div
-      v-if="showDragHandle"
+      v-if="showDragHandle && !selectCellsOnMove"
       class="row-drag-handle"
       @pointerdown.passive="onPointerDown($event)"
       @pointerup.passive="onPointerUp($event)"

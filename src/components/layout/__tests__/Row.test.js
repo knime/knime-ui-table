@@ -481,7 +481,7 @@ describe("Row.vue", () => {
           props,
         });
         const colInd = 2;
-        wrapper.findAll("td.data-cell").at(colInd).trigger("click");
+        wrapper.findAll("td.data-cell").at(colInd).trigger("pointerdown");
         expect(
           wrapper.findComponent(Row).emitted().cellSelect[0],
         ).toStrictEqual([colInd]);
@@ -495,7 +495,7 @@ describe("Row.vue", () => {
         wrapper
           .findAll("td.data-cell")
           .at(colInd)
-          .trigger("click", { shiftKey: true });
+          .trigger("pointerdown", { shiftKey: true });
         expect(
           wrapper.findComponent(Row).emitted().expandCellSelect[0],
         ).toStrictEqual([colInd]);
@@ -523,6 +523,16 @@ describe("Row.vue", () => {
         expect(wrapper.findAll("td.data-cell").at(4).classes()).not.toContain(
           "selected",
         );
+      });
+
+      it("passes selectOnMove down to the Cell", async () => {
+        const wrapper = mount(Row, {
+          props,
+        });
+
+        await wrapper.setProps({ selectCellsOnMove: true });
+
+        expect(wrapper.findComponent(Cell).props().selectOnMove).toBeTruthy();
       });
     });
 

@@ -15,6 +15,9 @@ class CellRect {
   }
 
   setCorner(cellPos: CellPosition) {
+    if (isEqual(this.opposite, cellPos)) {
+      return;
+    }
     this.opposite = cellPos;
   }
 

@@ -3,6 +3,7 @@ interface CellProps {
   title: string | null;
   isMissing: boolean;
   isSelected: boolean;
+  selectOnMove: boolean;
   clickable: boolean;
   isSlotted: boolean;
   size?: number;

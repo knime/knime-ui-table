@@ -1206,6 +1206,35 @@ describe("TableUI.vue", () => {
       const row = wrapper.findComponent(Row);
       expect(row.props().selectedCells).toBe(selectedCellsMock);
     });
+
+    it("activates selecting cells by mouse move on pointerdown", async () => {
+      wrapper.find("table").trigger("pointerdown");
+      await wrapper.vm.$nextTick();
+      const row = wrapper.findComponent(Row);
+      expect(row.props().selectCellsOnMove).toBeTruthy();
+    });
+
+    it("deactivates selecting cells by mouse move on pointerup", async () => {
+      wrapper.find("table").trigger("pointerdown");
+      await wrapper.vm.$nextTick();
+
+      wrapper.find("table").trigger("pointerup");
+      await wrapper.vm.$nextTick();
+
+      const row = wrapper.findComponent(Row);
+      expect(row.props().selectCellsOnMove).toBeFalsy();
+    });
+
+    it("deactivates selecting cells by mouse move on pointerleave", async () => {
+      wrapper.find("table").trigger("pointerdown");
+      await wrapper.vm.$nextTick();
+
+      wrapper.find("table").trigger("pointerleave");
+      await wrapper.vm.$nextTick();
+
+      const row = wrapper.findComponent(Row);
+      expect(row.props().selectCellsOnMove).toBeFalsy();
+    });
   });
 
   it("computes drag handle height", () => {
