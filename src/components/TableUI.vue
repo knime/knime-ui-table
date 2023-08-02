@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /* eslint-disable max-lines */
 import TopControls from "./control/TopControls.vue";
 import BottomControls from "./control/BottomControls.vue";
@@ -11,7 +11,9 @@ import ActionButton from "./ui/ActionButton.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
-import useAvailableWidthDetection from "./composables/useAvailableWidth.ts";
+import useAvailableWidthDetection from "./composables/useAvailableWidth";
+import useCellSelection from "./composables/useCellSelection";
+
 import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_HEIGHT,
@@ -207,12 +209,14 @@ export default {
         scrolledElement,
       },
     });
+
     return {
       wrapper,
       scroller,
       scrollWrapper,
       enableVirtualScrolling,
       innerWidthToBodyWidth,
+      ...useCellSelection(),
     };
   },
   data() {
@@ -778,6 +782,7 @@ export default {
           :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(item.index, item.isTop)"
+          :selected-cells="getSelectedIndicesForRow(item.index) as any"
           :show-border-column-index="showBorderColumnIndex"
           :style="{
             transform: `translateY(${
@@ -788,6 +793,13 @@ export default {
           }"
           @row-select="onRowSelect($event, item.index, 0, item.isTop)"
           @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
+          @cell-select="
+            (cellInd: number) => selectCell({ x: cellInd, y: item.index })
+          "
+          @expand-cell-select="
+            (cellInd: number) =>
+              expandCellSelection({ x: cellInd, y: item.index })
+          "
           @row-input="
             onRowInput({
               ...$event,
@@ -859,8 +871,15 @@ export default {
               ? false
               : currentSelection[groupInd][rowInd] || false
           "
+          :selected-cells="getSelectedIndicesForRow(rowInd) as any"
           :show-border-column-index="showBorderColumnIndex"
           :show-drag-handle="dataConfig.rowConfig.enableRowResize"
+          @cell-select="
+            (cellInd: number) => selectCell({ x: cellInd, y: rowInd })
+          "
+          @expand-cell-select="
+            (cellInd: number) => expandCellSelection({ x: cellInd, y: rowInd })
+          "
           @row-select="onRowSelect($event, rowInd, groupInd, true)"
           @row-input="
             onRowInput({

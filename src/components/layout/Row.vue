@@ -105,6 +105,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    selectedCells: {
+      type: Object,
+      default: null,
+    },
   },
   emits: [
     "rowSelect",
@@ -114,6 +118,8 @@ export default {
     "rowExpand",
     "resizeAllRows",
     "resizeRow",
+    "cellSelect",
+    "expandCellSelect",
   ],
   data() {
     return {
@@ -296,6 +302,19 @@ export default {
         (_, columnIndex) => this.$refs[`cell-${columnIndex}`][0],
       );
     },
+    isCellSelected(index) {
+      if (!this.selectedCells) {
+        return false;
+      }
+      return this.selectedCells.min <= index && this.selectedCells.max >= index;
+    },
+    onCellSelect({ event, ind }) {
+      if (event.shiftKey) {
+        this.$emit("expandCellSelect", ind);
+      } else {
+        this.$emit("cellSelect", ind);
+      }
+    },
   },
 };
 </script>
@@ -335,11 +354,13 @@ export default {
         :clickable="isClickable(data, ind)"
         :is-missing="isMissingValue(data)"
         :is-slotted="slottedColumns[ind]"
+        :is-selected="isCellSelected(ind)"
         :text="getFormattedValue(data, ind)"
         :size="columnSizes[ind] || 100"
         :background-color="getColor(data)"
         :class-generators="classGenerators[ind]"
         @click="onCellClick($event, ind, data)"
+        @select="onCellSelect({ ...$event, ind })"
         @input="onInput"
       >
         <template #default="{ width }">

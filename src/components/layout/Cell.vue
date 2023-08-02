@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, type Ref } from "vue";
 import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import type { CellProps } from "./CellProps";
 
-const emit = defineEmits(["click", "input"]);
+const emit = defineEmits(["click", "input", "select"]);
 const props = defineProps<CellProps>();
 
 const PADDING_LEFT_DEFAULT_CELL = 10;
@@ -43,10 +43,10 @@ const classes = computed(() => {
     .filter((obj) => obj !== null);
 });
 
-const dataCell = ref(null);
+const dataCell: Ref<HTMLElement | null> = ref(null);
 const getCellContentWidth = () => {
   const widthDataCellFirstChild = Math.ceil(
-    dataCell.value.firstElementChild.getBoundingClientRect().width,
+    dataCell.value?.firstElementChild?.getBoundingClientRect().width || 0,
   );
   return paddingLeft.value + widthDataCellFirstChild;
 };
@@ -62,7 +62,7 @@ defineExpose({
     :class="[
       classes,
       'data-cell',
-      { clickable, 'colored-cell': backgroundColor },
+      { clickable, selected: isSelected, 'colored-cell': backgroundColor },
     ]"
     :style="{
       width: `calc(${totalWidth}px)`,
@@ -72,8 +72,9 @@ defineExpose({
     :title="title === null ? undefined : title"
     @click="
       (event: Event) => {
+        emit('select', { event });
         if (clickable) {
-          emit('click', { event: event, cell: $el });
+          emit('click', { event, cell: $el });
         }
       }
     "
@@ -91,6 +92,7 @@ defineExpose({
 & td {
   color: var(--data-cell-color);
   background-clip: border-box;
+  user-select: none;
 
   &.colored-cell {
     background-size: 4px;
@@ -101,6 +103,10 @@ defineExpose({
       var(--cell-background-color),
       var(--cell-background-color)
     );
+  }
+
+  &.selected {
+    background-color: var(--knime-silver-sand-semi);
   }
 
   & .missing-value-icon {

@@ -475,6 +475,57 @@ describe("Row.vue", () => {
       );
     });
 
+    describe("cell selection", () => {
+      it("emits a cellSelect event when a cell is clicked", () => {
+        const wrapper = mount(Row, {
+          props,
+        });
+        const colInd = 2;
+        wrapper.findAll("td.data-cell").at(colInd).trigger("click");
+        expect(
+          wrapper.findComponent(Row).emitted().cellSelect[0],
+        ).toStrictEqual([colInd]);
+      });
+
+      it("emits a expandCellSelect event when a cell is clicked with shift pressed", () => {
+        const wrapper = mount(Row, {
+          props,
+        });
+        const colInd = 2;
+        wrapper
+          .findAll("td.data-cell")
+          .at(colInd)
+          .trigger("click", { shiftKey: true });
+        expect(
+          wrapper.findComponent(Row).emitted().expandCellSelect[0],
+        ).toStrictEqual([colInd]);
+      });
+
+      it("selects selected cells", () => {
+        const wrapper = mount(Row, {
+          props: {
+            ...props,
+            selectedCells: { min: 1, max: 3 },
+          },
+        });
+        expect(wrapper.findAll("td.data-cell").at(0).classes()).not.toContain(
+          "selected",
+        );
+        expect(wrapper.findAll("td.data-cell").at(1).classes()).toContain(
+          "selected",
+        );
+        expect(wrapper.findAll("td.data-cell").at(2).classes()).toContain(
+          "selected",
+        );
+        expect(wrapper.findAll("td.data-cell").at(3).classes()).toContain(
+          "selected",
+        );
+        expect(wrapper.findAll("td.data-cell").at(4).classes()).not.toContain(
+          "selected",
+        );
+      });
+    });
+
     describe("row resize", () => {
       beforeEach(() => {
         props.showDragHandle = true;

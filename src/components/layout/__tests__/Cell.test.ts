@@ -15,6 +15,7 @@ describe("Cell.vue", () => {
       isMissing: false,
       clickable: false,
       isSlotted: false,
+      isSelected: false,
       size: 300,
       backgroundColor: null,
     };
@@ -145,7 +146,8 @@ describe("Cell.vue", () => {
     });
 
     it("applies function class generators to the data", () => {
-      const classFunction = (data: string) => `width-${data.slice(-1)}`;
+      const classFunction = (data: string | undefined) =>
+        `width-${data?.slice(-1)}`;
       props.text = "data3";
       props.classGenerators = [classFunction];
       const wrapper = shallowMount(Cell, { props });

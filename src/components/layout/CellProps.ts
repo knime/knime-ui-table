@@ -2,6 +2,7 @@ interface CellProps {
   text: string | undefined;
   title: string | null;
   isMissing: boolean;
+  isSelected: boolean;
   clickable: boolean;
   isSlotted: boolean;
   size?: number;

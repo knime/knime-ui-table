@@ -1,6 +1,6 @@
 /* eslint-disable vitest/max-nested-describe */
 /* eslint-disable max-lines */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import TableUI from "../TableUI.vue";
@@ -16,8 +16,9 @@ import TablePopover from "@/components/popover/TablePopover.vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import { columnTypes } from "@/config/table.config";
 import useAvailableWidth from "../composables/useAvailableWidth";
-import { unref } from "vue";
+import { ref, unref } from "vue";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
+import useCellSelection from "../composables/useCellSelection";
 
 const expectedNormalRowHeight = 41;
 
@@ -27,6 +28,16 @@ const availableWidthMock = {
 };
 vi.mock("../composables/useAvailableWidth", () => ({
   default: vi.fn(() => availableWidthMock),
+}));
+
+const cellSelectionMock = {
+  selectCell: vi.fn(),
+  expandCellSelection: vi.fn(),
+  getSelectedIndicesForRow: ref(() => null),
+};
+
+vi.mock("../composables/useCellSelection", () => ({
+  default: vi.fn(() => cellSelectionMock),
 }));
 
 const getProps = ({
@@ -221,6 +232,10 @@ describe("TableUI.vue", () => {
         disconnect: vi.fn(),
       })),
     });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   describe("configuration", () => {
@@ -1140,6 +1155,56 @@ describe("TableUI.vue", () => {
         wrapper.vm.onScroll(1, 2);
         expect(wrapper.vm.currentExpanded).not.toContain(0);
       });
+    });
+  });
+
+  describe("cell selection", () => {
+    let wrapper;
+
+    beforeEach(() => {
+      const comp = doMount();
+      wrapper = comp.wrapper;
+    });
+
+    it("used cell selection composable", () => {
+      expect(useCellSelection).toHaveBeenCalled();
+    });
+
+    it("selects cell on row event", () => {
+      const row = wrapper.findComponent(Row);
+      const colInd = 3;
+
+      row.vm.$emit("cell-select", colInd);
+
+      expect(cellSelectionMock.selectCell).toHaveBeenCalledWith({
+        x: colInd,
+        y: 0,
+      });
+    });
+
+    it("expands cell selection on row event", () => {
+      const row = wrapper.findComponent(Row);
+      const colInd = 3;
+
+      row.vm.$emit("expand-cell-select", colInd);
+
+      expect(cellSelectionMock.expandCellSelection).toHaveBeenCalledWith({
+        x: colInd,
+        y: 0,
+      });
+    });
+
+    it("sets selected cells", async () => {
+      const selectedCellsMock = { min: 2, max: 4 };
+      cellSelectionMock.getSelectedIndicesForRow.value = vi.fn(
+        () => selectedCellsMock,
+      );
+      await wrapper.vm.$nextTick();
+      expect(
+        cellSelectionMock.getSelectedIndicesForRow.value,
+      ).toHaveBeenCalledWith(0);
+      const row = wrapper.findComponent(Row);
+      expect(row.props().selectedCells).toBe(selectedCellsMock);
     });
   });
 
