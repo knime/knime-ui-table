@@ -21,7 +21,7 @@ import {
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
   SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
-import { computed, ref, toRefs } from "vue";
+import { computed, ref, toRefs, type Ref } from "vue";
 
 /**
  * @see README.md
@@ -41,7 +41,7 @@ export default {
     ActionButton,
     TablePopover,
     RecycleScroller,
-  },
+  } as any,
   props: {
     /**
      * Data props.
@@ -99,7 +99,7 @@ export default {
     tableConfig: {
       type: Object,
       default: () => ({}),
-      validate(tableConfig) {
+      validate(tableConfig: any) {
         if (typeof tableConfig !== "object") {
           return false;
         }
@@ -132,9 +132,9 @@ export default {
         };
         return (
           isValid &&
-          Object.entries(requiredConfigs).every((key, values) => {
+          Object.entries(requiredConfigs).every((key: any, values: any) => {
             if (tableConfig[key]) {
-              return values.every((configOption) =>
+              return values.every((configOption: any) =>
                 tableConfig[key].hasOwnProperty(configOption),
               );
             }
@@ -169,9 +169,9 @@ export default {
     "rowHeightUpdate",
   ],
   setup(props, { emit }) {
-    const wrapper = ref(null);
-    const scroller = ref(null);
-    const scrollWrapper = ref(null);
+    const wrapper: Ref<any> = ref(null);
+    const scroller: Ref<any> = ref(null);
+    const scrollWrapper: Ref<any> = ref(null);
 
     const enableVirtualScrolling = computed(
       () => props.tableConfig.enableVirtualScrolling,
@@ -240,9 +240,9 @@ export default {
       columnResizeActive: false,
       closeExpandedSubMenu: () => {},
       scrollerId: "scroller",
-      resizedRowHeight: null,
-      currentResizedScrollIndex: null,
-      currentRowSizeDelta: null,
+      resizedRowHeight: null as null | number,
+      currentResizedScrollIndex: null as null | number,
+      currentRowSizeDelta: null as null | number,
     };
   },
   computed: {
@@ -279,7 +279,7 @@ export default {
       return this.getPropertiesFromColumns("key");
     },
     columnSortConfigs() {
-      return this.dataConfig.columnConfigs.map((columnConfig) =>
+      return this.dataConfig.columnConfigs.map((columnConfig: any) =>
         columnConfig.hasOwnProperty("isSortable")
           ? columnConfig.isSortable
           : true,
@@ -287,12 +287,14 @@ export default {
     },
     slottedColumns() {
       return this.getPropertiesFromColumns("hasSlotContent")
-        .map((hasSlotContent, colInd) => (hasSlotContent ? colInd : null))
-        .filter((colInd) => colInd !== null);
+        .map((hasSlotContent: any, colInd: any) =>
+          hasSlotContent ? colInd : null,
+        )
+        .filter((colInd: any) => colInd !== null);
     },
     popoverRenderers() {
       return this.getPropertiesFromColumns("popoverRenderer").map(
-        (renderer, colInd) => {
+        (renderer: any, colInd: any) => {
           if (renderer && typeof renderer === "boolean") {
             renderer = this.columnTypes[colInd];
           }
@@ -312,7 +314,7 @@ export default {
     },
     currentBodyWidth() {
       const widthContentColumns = this.columnSizes.reduce(
-        (prev, curr) => prev + curr,
+        (prev: any, curr: any) => prev + curr,
         0,
       );
       const useScrollbarSize = this.enableVirtualScrolling;
@@ -325,14 +327,15 @@ export default {
       if (this.data === null || this.data.length === 0) {
         return 0;
       }
+      // @ts-ignore
       return this.data[0].length;
     },
     scrollData() {
       if (this.data === null || this.data.length === 0) {
         return [];
       }
-      const data = this.data?.map((groupData) =>
-        groupData.map((rowData, index) => {
+      const data = this.data?.map((groupData: any) =>
+        groupData.map((rowData: any, index: any) => {
           const id = (index + this.numRowsAbove).toString();
           return {
             id,
@@ -373,7 +376,7 @@ export default {
           });
         }
       }
-      this.currentExpanded.forEach((scrollIndex) => {
+      this.currentExpanded.forEach((scrollIndex: any) => {
         const contentHeight = this.getContentHeight(scrollIndex);
         data[0][scrollIndex - this.numRowsAbove].size += contentHeight;
       });
@@ -383,12 +386,13 @@ export default {
       if (!this.tableConfig.showSelection) {
         return () => false;
       }
-      return (index, isTop) => {
+      return (index: any, isTop: any) => {
         if (typeof index === "undefined") {
           return false;
         }
         return isTop
-          ? this.currentSelection[0][index]
+          ? // @ts-ignore
+            this.currentSelection[0][index]
           : this.currentBottomSelection[index];
       };
     },
@@ -431,10 +435,12 @@ export default {
   },
   methods: {
     // Utilities
-    getPropertiesFromColumns(key) {
-      return this.dataConfig.columnConfigs.map((colConfig) => colConfig[key]);
+    getPropertiesFromColumns(key: any) {
+      return this.dataConfig.columnConfigs.map(
+        (colConfig: any) => colConfig[key],
+      );
     },
-    getGroupName(ind) {
+    getGroupName(ind: number) {
       return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || "";
     },
     refreshScroller() {
@@ -444,7 +450,7 @@ export default {
       this.resizedRowHeight = null;
     },
     // Event handling
-    onScroll(startIndex, endIndex) {
+    onScroll(startIndex: number, endIndex: number) {
       if (
         this.lastScrollIndex === endIndex ||
         this.currentResizedScrollIndex !== null
@@ -456,10 +462,10 @@ export default {
       this.collapseAllUnusedRows(startIndex, endIndex);
       this.$emit("lazyload", { direction, startIndex, endIndex });
     },
-    collapseAllUnusedRows(startIndex, endIndex) {
+    collapseAllUnusedRows(startIndex: number, endIndex: number) {
       let needsCollapse = false;
       const usedExpanded = new Set();
-      this.currentExpanded.forEach((i) => {
+      this.currentExpanded.forEach((i: any) => {
         if (i < endIndex && i >= startIndex) {
           usedExpanded.add(i);
         } else {
@@ -470,39 +476,39 @@ export default {
         this.currentExpanded = usedExpanded;
       }
     },
-    onTimeFilterUpdate(newTimeFilter) {
+    onTimeFilterUpdate(newTimeFilter: any) {
       consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
       this.$emit("timeFilterUpdate", newTimeFilter);
     },
-    onColumnUpdate(newColumnList) {
+    onColumnUpdate(newColumnList: any) {
       consola.debug(`TableUI emitting: columnUpdate ${newColumnList}`);
       this.$emit("columnUpdate", newColumnList);
     },
-    onColumnReorder(colInd, newColInd) {
+    onColumnReorder(colInd: number, newColInd: number) {
       consola.debug(`TableUI emitting: columnReorder ${colInd} ${newColInd}`);
       this.$emit("columnReorder", colInd, newColInd);
     },
-    onGroupUpdate(group) {
+    onGroupUpdate(group: any) {
       consola.debug(`TableUI emitting: groupUpdate ${group}`);
       this.$emit("groupUpdate", group);
     },
-    onSearch(input) {
+    onSearch(input: any) {
       consola.debug(`TableUI emitting: search ${input}`);
       this.$emit("search", input);
     },
-    onPageChange(pageNumberDiff) {
+    onPageChange(pageNumberDiff: any) {
       consola.debug(`TableUI emitting: pageChange ${pageNumberDiff}`);
       this.$emit("pageChange", pageNumberDiff);
     },
-    onPageSizeUpdate(newPageSize) {
+    onPageSizeUpdate(newPageSize: number) {
       consola.debug(`TableUI emitting: pageSizeUpdate ${newPageSize}`);
       this.$emit("pageSizeUpdate", newPageSize);
     },
-    onColumnSort(colInd) {
+    onColumnSort(colInd: number) {
       consola.debug(`TableUI emitting: columnSort ${colInd}`);
       this.$emit("columnSort", colInd);
     },
-    onColumnFilter(colInd, value) {
+    onColumnFilter(colInd: number, value: any) {
       consola.debug(`TableUI emitting: columnFilter ${colInd} ${value}`);
       this.$emit("columnFilter", colInd, value);
     },
@@ -515,23 +521,28 @@ export default {
       consola.debug(`TableUI emitting: toggleFilter ${this.filterActive}`);
       this.$emit("toggleFilter", this.filterActive);
     },
-    onSelectAll(selected) {
+    onSelectAll(selected: any) {
       consola.debug(`TableUI emitting: selectAll ${selected}`);
       this.$emit("selectAll", selected);
     },
-    onHeaderSubMenuItemSelection(item, colInd) {
+    onHeaderSubMenuItemSelection(item: any, colInd: any) {
       consola.debug(
         `TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`,
       );
       this.$emit("headerSubMenuItemSelection", item, colInd);
     },
-    onRowSelect(selected, rowInd, groupInd, isTop) {
+    onRowSelect(
+      selected: any,
+      rowInd: number,
+      groupInd: number,
+      isTop: boolean,
+    ) {
       consola.debug(
         `TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd} ${isTop}`,
       );
       this.$emit("rowSelect", selected, rowInd, groupInd, isTop);
     },
-    onRowExpand(expanded, scrollIndex) {
+    onRowExpand(expanded: boolean, scrollIndex: number) {
       // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
       if (expanded) {
         this.currentExpanded.add(scrollIndex);
@@ -543,14 +554,14 @@ export default {
         }
       }
     },
-    onResizeRow(rowSizeDelta, scrollIndex) {
+    onResizeRow(rowSizeDelta: number, scrollIndex: number) {
       this.currentRowSizeDelta = rowSizeDelta;
       this.currentResizedScrollIndex = scrollIndex;
     },
-    onResizeAllRows(currentSize, row, scrollIndex) {
+    onResizeAllRows(currentSize: number, row: any, scrollIndex: number) {
       this.currentRowSizeDelta = 0;
       if (this.enableVirtualScrolling) {
-        const previousScrollTop = this.$refs.scroller.getScroll().start;
+        const previousScrollTop = this.scroller.getScroll().start;
         const heightAboveCurrentRow = scrollIndex * this.currentRowHeight;
         const offset = heightAboveCurrentRow - previousScrollTop;
         this.resizedRowHeight = currentSize;
@@ -561,44 +572,45 @@ export default {
         row.scrollIntoView();
       }
     },
-    keepScrollerPositionOnRowResize(scrollPosition) {
+    keepScrollerPositionOnRowResize(scrollPosition: number) {
       const resizeObserver = new ResizeObserver(() => {
         setTimeout(() => {
           // scroll was temporarily disabled to avoid sending scroll events during resize
           this.currentResizedScrollIndex = null;
         }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
-        this.$refs.scroller.scrollToPosition(scrollPosition);
+        this.scroller.scrollToPosition(scrollPosition);
         resizeObserver.disconnect();
       });
-      resizeObserver.observe(this.$refs.scroller.$refs.wrapper);
+      resizeObserver.observe(this.scroller.$refs.wrapper);
     },
-    onRowInput(event) {
+    onRowInput(event: any) {
       consola.debug(`TableUI emitting: tableInput ${event}`);
       this.$emit("tableInput", event);
       this.openPopover(event);
     },
-    onGroupSubMenuClick(event, group) {
+    onGroupSubMenuClick(event: any, group: any) {
       consola.debug(`TableUI group submenu clicked ${event} ${group}`);
       event.callback(group, this);
     },
-    onRowSubMenuClick(event, row) {
+    onRowSubMenuClick(event: any, row: any) {
       consola.debug(`TableUI row submenu clicked ${event} ${row}`);
       if (event.callback) {
         event.callback(row, this);
       }
     },
-    registerExpandedSubMenu(callback) {
+    registerExpandedSubMenu(callback: any) {
       // Timeout to prevent the sub menu to be closed due to scroll event triggered by clicking a row/group
       setTimeout(() => {
         this.closeExpandedSubMenu = callback;
       }, 100);
     },
-    openPopover(event) {
+    openPopover(event: any) {
       consola.debug("TableUI: open popover", event);
       this.popoverColumn = this.columnKeys[event.colInd];
       this.popoverRenderer =
         this.popoverRenderers[event.colInd] || this.columnTypes[event.colInd];
       this.popoverData =
+        // @ts-ignore
         this.data[event.groupInd][event.rowInd][this.popoverColumn];
       this.popoverTarget = event.cell;
       window.addEventListener("resize", this.onPopoverClose);
@@ -611,10 +623,10 @@ export default {
       this.popoverData = null;
       window.removeEventListener("resize", this.onPopoverClose);
     },
-    onColumnResize(columnIndex, newColumnSize) {
+    onColumnResize(columnIndex: number, newColumnSize: number) {
       this.$emit("columnResize", columnIndex, newColumnSize);
     },
-    onAllColumnsResize(newColumnSize) {
+    onAllColumnsResize(newColumnSize: number) {
       this.$emit("allColumnsResize", newColumnSize);
     },
     onColumnResizeStart() {
@@ -626,14 +638,15 @@ export default {
       this.$emit("columnResizeEnd");
     },
     // Find the additional height added by expanded content of a row
-    getContentHeight(index) {
+    getContentHeight(index: number) {
       // The second child of the dom element referenced by the row is the expanded content.
       const contentHeight =
+        // @ts-ignore
         this.$refs[`row-${index}`]?.$el.children[1]?.clientHeight;
       return contentHeight || 0;
     },
     getDragHandleHeight() {
-      const scroller = this.$refs.scrollWrapper;
+      const scroller = this.$refs.scrollWrapper as any;
       return Array(...scroller.children).reduce((prev, cur) => {
         if (cur.id === this.scrollerId) {
           // the first child of the RecycleScroller is an element of the heigt of all rows combined
@@ -643,7 +656,7 @@ export default {
         }
       }, 0);
     },
-    getCellContentSlotName(columnKeys, columnId) {
+    getCellContentSlotName(columnKeys: any, columnId: any) {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
       return `cellContent-${columnKeys[columnId]}`;
     },
@@ -651,10 +664,11 @@ export default {
       return this.$refs.header;
     },
     getRowComponents() {
-      const rowComponents = [];
-      this.data.forEach((group, groupIndex) => {
-        group.forEach((_, rowIndex) =>
+      const rowComponents: any[] = [];
+      this.data.forEach((group: any, groupIndex) => {
+        group.forEach((_: any, rowIndex: number) =>
           rowComponents.push(
+            // @ts-ignore
             this.$refs[`group-${groupIndex}-row-${rowIndex}`][0],
           ),
         );
@@ -762,6 +776,7 @@ export default {
           :height="item.size"
           :style="{
             transform: `translateY(${
+              currentResizedScrollIndex !== null &&
               item.scrollIndex > currentResizedScrollIndex
                 ? currentRowSizeDelta
                 : 0
@@ -773,7 +788,7 @@ export default {
           :key="item.id"
           :ref="`row-${item.id}`"
           :row-data="item.data"
-          :row="columnKeys.map((column) => item.data[column])"
+          :row="columnKeys.map((column: any) => item.data[column])"
           :table-config="item.tableConfig || tableConfig"
           :show-drag-handle="enableRowResize && (item.showDragHandle ?? true)"
           :column-configs="dataConfig.columnConfigs"
@@ -786,13 +801,13 @@ export default {
           :show-border-column-index="showBorderColumnIndex"
           :style="{
             transform: `translateY(${
+              currentResizedScrollIndex !== null &&
               item.scrollIndex > currentResizedScrollIndex
                 ? currentRowSizeDelta
                 : 0
             }px)`,
           }"
           @row-select="onRowSelect($event, item.index, 0, item.isTop)"
-          @row-expand="onRowExpand($event, item.scrollIndex, item.isTop)"
           @cell-select="
             (cellInd: number) => selectCell({ x: cellInd, y: item.index })
           "
@@ -800,6 +815,7 @@ export default {
             (cellInd: number) =>
               expandCellSelection({ x: cellInd, y: item.index })
           "
+          @row-expand="onRowExpand($event, item.scrollIndex)"
           @row-input="
             onRowInput({
               ...$event,
@@ -810,13 +826,16 @@ export default {
             })
           "
           @row-sub-menu-expand="registerExpandedSubMenu"
-          @row-sub-menu-click="(event) => onRowSubMenuClick(event, item.data)"
+          @row-sub-menu-click="
+            (event: any) => onRowSubMenuClick(event, item.data)
+          "
           @resize-all-rows="
-            (currentSize, row) =>
+            (currentSize: number, row: any) =>
               onResizeAllRows(currentSize, row, item.scrollIndex)
           "
           @resize-row="
-            (rowSizeDelta) => onResizeRow(rowSizeDelta, item.scrollIndex)
+            (rowSizeDelta: number) =>
+              onResizeRow(rowSizeDelta, item.scrollIndex)
           "
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
@@ -852,14 +871,16 @@ export default {
         :group-sub-menu-items="tableConfig.groupSubMenuItems"
         :show="data.length > 1 && dataGroup.length > 0"
         @group-sub-menu-expand="registerExpandedSubMenu"
-        @group-sub-menu-click="(event) => onGroupSubMenuClick(event, dataGroup)"
+        @group-sub-menu-click="
+          (event: any) => onGroupSubMenuClick(event, dataGroup)
+        "
       >
         <Row
           v-for="(row, rowInd) in dataGroup"
           :ref="`group-${groupInd}-row-${row.id}`"
           :key="row.data.id"
           :row-data="row"
-          :row="columnKeys.map((column) => row.data[column])"
+          :row="columnKeys.map((column: any) => row.data[column])"
           :table-config="tableConfig"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
@@ -869,7 +890,8 @@ export default {
           :is-selected="
             currentSelection[groupInd] === undefined
               ? false
-              : currentSelection[groupInd][rowInd] || false
+              : // @ts-ignore
+                currentSelection[groupInd][rowInd] || false
           "
           :selected-cells="getSelectedIndicesForRow(rowInd) as any"
           :show-border-column-index="showBorderColumnIndex"
