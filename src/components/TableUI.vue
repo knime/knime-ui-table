@@ -814,6 +814,12 @@ export default {
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(item.index, item.isTop)"
           :selected-cells="getSelectedIndicesForRow(item.index) as any"
+          :selected-cells-row-above="
+            getSelectedIndicesForRow(item.index - 1) as any
+          "
+          :selected-cells-row-below="
+            getSelectedIndicesForRow(item.index + 1) as any
+          "
           :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
           :style="{
@@ -911,6 +917,12 @@ export default {
                 currentSelection[groupInd][rowInd] || false
           "
           :selected-cells="getSelectedIndicesForRow(rowInd) as any"
+          :selected-cells-row-above="
+            getSelectedIndicesForRow(rowInd - 1) as any
+          "
+          :selected-cells-row-below="
+            getSelectedIndicesForRow(rowInd + 1) as any
+          "
           :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
           :show-drag-handle="dataConfig.rowConfig.enableRowResize"

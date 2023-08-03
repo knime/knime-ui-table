@@ -1196,15 +1196,16 @@ describe("TableUI.vue", () => {
 
     it("sets selected cells", async () => {
       const selectedCellsMock = { min: 2, max: 4 };
-      cellSelectionMock.getSelectedIndicesForRow.value = vi.fn(
-        () => selectedCellsMock,
-      );
+      const getSelectedMock = vi.fn(() => selectedCellsMock);
+      cellSelectionMock.getSelectedIndicesForRow.value = getSelectedMock;
       await wrapper.vm.$nextTick();
-      expect(
-        cellSelectionMock.getSelectedIndicesForRow.value,
-      ).toHaveBeenCalledWith(0);
+      expect(getSelectedMock).toHaveBeenCalledWith(0);
+      expect(getSelectedMock).toHaveBeenCalledWith(-1);
+      expect(getSelectedMock).toHaveBeenCalledWith(1);
       const row = wrapper.findComponent(Row);
       expect(row.props().selectedCells).toBe(selectedCellsMock);
+      expect(row.props().selectedCellsRowAbove).toBe(selectedCellsMock);
+      expect(row.props().selectedCellsRowBelow).toBe(selectedCellsMock);
     });
 
     it("activates selecting cells by mouse move on pointerdown", async () => {

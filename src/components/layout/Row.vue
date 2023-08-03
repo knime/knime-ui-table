@@ -109,6 +109,14 @@ export default {
       type: Object,
       default: null,
     },
+    selectedCellsRowAbove: {
+      type: Object,
+      default: null,
+    },
+    selectedCellsRowBelow: {
+      type: Object,
+      default: null,
+    },
     selectCellsOnMove: {
       type: Boolean,
       default: false,
@@ -306,11 +314,12 @@ export default {
         (_, columnIndex) => this.$refs[`cell-${columnIndex}`][0],
       );
     },
-    isCellSelected(index) {
-      if (!this.selectedCells) {
+    isCellSelected(selectedCells, index) {
+      if (!selectedCells) {
         return false;
       }
-      return this.selectedCells.min <= index && this.selectedCells.max >= index;
+      const { min, max } = selectedCells;
+      return min <= index && max >= index;
     },
     onCellSelect({ expandSelection, ind }) {
       if (expandSelection) {
@@ -358,7 +367,11 @@ export default {
         :clickable="isClickable(data, ind)"
         :is-missing="isMissingValue(data)"
         :is-slotted="slottedColumns[ind]"
-        :is-selected="isCellSelected(ind)"
+        :is-selected="isCellSelected(selectedCells, ind)"
+        :right-is-selected="isCellSelected(selectedCells, ind + 1)"
+        :left-is-selected="isCellSelected(selectedCells, ind - 1)"
+        :above-is-selected="isCellSelected(selectedCellsRowAbove, ind)"
+        :below-is-selected="isCellSelected(selectedCellsRowBelow, ind)"
         :select-on-move="selectCellsOnMove"
         :text="getFormattedValue(data, ind)"
         :size="columnSizes[ind] || 100"

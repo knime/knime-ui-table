@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { describe, it, expect, beforeEach } from "vitest";
 import { shallowMount, mount } from "@vue/test-utils";
 
@@ -506,20 +507,27 @@ describe("Row.vue", () => {
           props: {
             ...props,
             selectedCells: { min: 1, max: 3 },
+            selectedCellsRowAbove: { min: 1, max: 2 },
+            selectedCellsRowBelow: null,
           },
         });
         expect(wrapper.findAll("td.data-cell").at(0).classes()).not.toContain(
           "selected",
         );
-        expect(wrapper.findAll("td.data-cell").at(1).classes()).toContain(
-          "selected",
-        );
-        expect(wrapper.findAll("td.data-cell").at(2).classes()).toContain(
-          "selected",
-        );
-        expect(wrapper.findAll("td.data-cell").at(3).classes()).toContain(
-          "selected",
-        );
+        const cell1 = wrapper.findAll("td.data-cell").at(1).classes();
+        expect(cell1).toContain("selected");
+        expect(cell1).toContain("border-left");
+        expect(cell1).toContain("border-bottom");
+
+        const cell2 = wrapper.findAll("td.data-cell").at(2).classes();
+        expect(cell2).toContain("selected");
+        expect(cell2).toContain("border-bottom");
+        const cell3 = wrapper.findAll("td.data-cell").at(3).classes();
+        expect(cell3).toContain("selected");
+        expect(cell3).toContain("border-top");
+        expect(cell3).toContain("border-bottom");
+        expect(cell3).toContain("border-right");
+
         expect(wrapper.findAll("td.data-cell").at(4).classes()).not.toContain(
           "selected",
         );

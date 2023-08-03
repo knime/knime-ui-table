@@ -69,7 +69,15 @@ const onPointerOver = throttle(() => {
     :class="[
       classes,
       'data-cell',
-      { clickable, selected: isSelected, 'colored-cell': backgroundColor },
+      {
+        clickable,
+        selected: isSelected,
+        'border-left': isSelected && !leftIsSelected,
+        'border-right': isSelected && !rightIsSelected,
+        'border-top': isSelected && !aboveIsSelected,
+        'border-bottom': isSelected && !belowIsSelected,
+        'colored-cell': backgroundColor,
+      },
     ]"
     :style="{
       width: `calc(${totalWidth}px)`,
@@ -115,8 +123,27 @@ const onPointerOver = throttle(() => {
     );
   }
 
+  --selected-cell-background-color: rgb(30 109 168 / 9%);
+  --selected-cell-border: 1px solid rgb(55 109 168);
+
   &.selected {
-    background-color: var(--knime-silver-sand-semi);
+    background-color: var(--selected-cell-background-color);
+  }
+
+  &.border-left {
+    border-left: var(--selected-cell-border);
+  }
+
+  &.border-right {
+    border-right: var(--selected-cell-border);
+  }
+
+  &.border-top {
+    border-top: var(--selected-cell-border);
+  }
+
+  &.border-bottom {
+    border-bottom: var(--selected-cell-border);
   }
 
   & .missing-value-icon {
