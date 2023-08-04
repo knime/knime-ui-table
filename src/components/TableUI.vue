@@ -812,13 +812,13 @@ export default {
           :row-height="currentRowHeight"
           :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
-          :is-selected="currentSelectionMap(item.index, item.isTop)"
-          :selected-cells="getSelectedIndicesForRow(item.index) as any"
+          :is-selected="currentSelectionMap(item.scrollIndex, item.isTop)"
+          :selected-cells="getSelectedIndicesForRow(item.scrollIndex) as any"
           :selected-cells-row-above="
-            getSelectedIndicesForRow(item.index - 1) as any
+            getSelectedIndicesForRow(item.scrollIndex - 1) as any
           "
           :selected-cells-row-below="
-            getSelectedIndicesForRow(item.index + 1) as any
+            getSelectedIndicesForRow(item.scrollIndex + 1) as any
           "
           :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
@@ -832,11 +832,11 @@ export default {
           }"
           @row-select="onRowSelect($event, item.index, 0, item.isTop)"
           @cell-select="
-            (cellInd: number) => selectCell({ x: cellInd, y: item.index })
+            (cellInd: number) => selectCell({ x: cellInd, y: item.scrollIndex })
           "
           @expand-cell-select="
             (cellInd: number) =>
-              expandCellSelection({ x: cellInd, y: item.index })
+              expandCellSelection({ x: cellInd, y: item.scrollIndex })
           "
           @row-expand="onRowExpand($event, item.scrollIndex)"
           @row-input="
