@@ -22,7 +22,7 @@ import {
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
   SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
-import { computed, ref, toRefs, type Ref } from "vue";
+import { computed, ref, toRefs, type Ref, defineExpose } from "vue";
 
 /**
  * @see README.md
@@ -169,6 +169,7 @@ export default {
     "columnResizeEnd",
     "update:available-width",
     "rowHeightUpdate",
+    "copySelection",
   ],
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
@@ -225,6 +226,20 @@ export default {
     );
     const cellSelection = useCellSelection(enableCellSelection);
 
+    const onCopySelection = () => {
+      const { rectMinMax, currentRectId } = cellSelection;
+      if (rectMinMax.value) {
+        emit("copySelection", {
+          rect: rectMinMax.value,
+          id: currentRectId.value,
+        });
+      }
+    };
+
+    defineExpose({
+      clearCellSelection: cellSelection.clearCellSelection,
+    });
+
     return {
       wrapper,
       scroller,
@@ -235,6 +250,7 @@ export default {
       deactivateCellSelectionOnMove,
       selectCellsOnMove,
       ...cellSelection,
+      onCopySelection,
     };
   },
   data() {
@@ -711,8 +727,12 @@ export default {
 <template>
   <table
     ref="wrapper"
+    :tabindex="-1"
+    @keydown.ctrl.c="onCopySelection"
     @pointerleave="deactivateCellSelectionOnMove"
-    @pointerdown.passive="$event.button === 0 && activateCellSelectionOnMove()"
+    @pointerdown.passive.stop="
+      $event.button === 0 && activateCellSelectionOnMove()
+    "
     @pointerup.passive="$event.button === 0 && deactivateCellSelectionOnMove()"
   >
     <TopControls
@@ -1048,6 +1068,10 @@ table {
   flex-direction: column;
   margin-left: 0;
   margin-right: auto;
+
+  &:focus {
+    outline: none;
+  }
 
   & .horizontal-scroll {
     display: flex;

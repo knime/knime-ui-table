@@ -235,6 +235,9 @@ export default {
     refreshScroller() {
       this.$refs.tableUI?.refreshScroller();
     },
+    clearCellSelection() {
+      this.$refs.tableUI?.clearCellSelection();
+    },
   },
 };
 </script>

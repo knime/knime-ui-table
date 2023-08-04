@@ -23,7 +23,7 @@ vi.mock("../composables/useTableReady", () => ({
 }));
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
-  let props, tableUIStub, context, refreshScrollerMock;
+  let props, tableUIStub, context, refreshScrollerMock, clearCellSelectionMock;
 
   const column1 = { id: Symbol("a"), key: "a", header: "a", size: 50 };
   const column2 = { id: "b", key: "b", header: "b", size: 50 };
@@ -79,6 +79,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     };
 
     refreshScrollerMock = vi.fn();
+    clearCellSelectionMock = vi.fn();
 
     tableUIStub = {
       template: "<table />",
@@ -97,6 +98,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
           getHeaderCellWidths: vi.fn().mockReturnValue([60, 60]),
         }),
         refreshScroller: refreshScrollerMock,
+        clearCellSelection: clearCellSelectionMock,
       },
     };
 
@@ -318,6 +320,12 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
     wrapper.vm.refreshScroller();
     expect(refreshScrollerMock).toHaveBeenCalled();
+  });
+
+  it("forwards the method to clear the cell selection", () => {
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    wrapper.vm.clearCellSelection();
+    expect(clearCellSelectionMock).toHaveBeenCalled();
   });
 
   it("returns the table ui as element on getTableUIElement", () => {

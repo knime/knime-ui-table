@@ -1339,6 +1339,18 @@ describe("TableUI.vue", () => {
       const row = wrapper.findComponent(Row);
       expect(row.props().selectCellsOnMove).toBeFalsy();
     });
+
+    it("emits copySelection event when pressing Ctrl + C", async () => {
+      const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+      cellSelectionMock.rectMinMax.value = rect;
+      const id = 0;
+      cellSelectionMock.currentRectId.value = id;
+      await wrapper.vm.$nextTick();
+
+      wrapper.find("table").trigger("keydown.ctrl.c");
+
+      expect(wrapper.emitted("copySelection")[0]).toStrictEqual([{ id, rect }]);
+    });
   });
 
   it("computes drag handle height", () => {
