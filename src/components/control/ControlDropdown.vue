@@ -406,6 +406,7 @@ export default {
 
   &:not(.filter) {
     font-size: 14px;
+    font-weight: 500;
     margin: -1px 0 1px;
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
   }
