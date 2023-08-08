@@ -1,4 +1,5 @@
 import { months } from "./time.config";
+import { padStart } from "lodash";
 import type { FilterComponent } from "@/types/FilterConfig";
 
 export const defaultPageSize = 10;
@@ -66,16 +67,12 @@ export const valueTypeFormatters = {
       if (Object.values(hrdp).some((part) => !part && part !== 0)) {
         throw new SyntaxError("Can't parse date.");
       }
-      if (hrdp.hour === 0) {
-        hrdp.hour = Number(`0${hrdp.hour}`);
-      }
-      if (hrdp.minute < 10) {
-        hrdp.minute = Number(`0${hrdp.minute}`);
-      }
-      // @ts-ignore
-      return `${months[hrdp.month]} ${hrdp.day}, ${hrdp.year}, ${hrdp.hour}:${
-        hrdp.minute
-      }`;
+      const pad2 = (val: Number) => padStart(`${val}`, 2, "0");
+      return (
+        // @ts-ignore
+        `${months[hrdp.month]} ${pad2(hrdp.day)}, ${hrdp.year}, ` +
+        `${pad2(hrdp.hour)}:${pad2(hrdp.minute)}`
+      );
     } catch (_error) {
       return val;
     }
