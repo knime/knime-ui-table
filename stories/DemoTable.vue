@@ -247,7 +247,7 @@ const dataConfig = computed(() => {
 });
 
 const groupByConfig = props.withGroupBy
-  ? reactive({
+  ? computed(() => ({
       possibleGroups: demoProps.allColumnHeaders.filter(
         (header, colInd) =>
           demoProps.allColumnTypes[demoProps.allColumnKeys[colInd]] ===
@@ -255,7 +255,7 @@ const groupByConfig = props.withGroupBy
       ),
       currentGroup: currentGroup.value,
       currentGroupValues: groupTitles.value,
-    })
+    }))
   : null;
 
 const timeFilterConfig = props.withTimeFilter

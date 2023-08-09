@@ -167,71 +167,13 @@ describe("Cell.vue", () => {
     });
   });
 
-  describe("selection", () => {
-    it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
-      props.selectOnMove = true;
-      const wrapper = shallowMount(Cell, { props });
-      wrapper.find("td").trigger("pointerover");
-      await wrapper.vm.$nextTick();
-      expect(wrapper.emitted().select).toStrictEqual([
-        [{ expandSelection: true }],
-      ]);
-    });
-
-    it("sets right border", () => {
-      props.isSelected = true;
-      props.rightIsSelected = false;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).toContain("border-right");
-    });
-
-    it("does not set right border if right cell is selected", () => {
-      props.isSelected = true;
-      props.rightIsSelected = true;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).not.toContain("border-right");
-    });
-
-    it("sets left border", () => {
-      props.isSelected = true;
-      props.leftIsSelected = false;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).toContain("border-left");
-    });
-
-    it("does not set left border if left cell is selected", () => {
-      props.isSelected = true;
-      props.leftIsSelected = true;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).not.toContain("border-left");
-    });
-
-    it("sets top border", () => {
-      props.isSelected = true;
-      props.aboveIsSelected = false;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).toContain("border-top");
-    });
-
-    it("does not set top border if above cell is selected", () => {
-      props.isSelected = true;
-      props.aboveIsSelected = true;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).not.toContain("border-top");
-    });
-
-    it("sets bottom border", () => {
-      props.isSelected = true;
-      props.belowIsSelected = false;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).toContain("border-bottom");
-    });
-
-    it("does not set bottom border if below cell is selected", () => {
-      props.isSelected = true;
-      props.belowIsSelected = true;
-      const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.classes()).not.toContain("border-bottom");
-    });
+  it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
+    props.selectOnMove = true;
+    const wrapper = shallowMount(Cell, { props });
+    wrapper.find("td").trigger("pointerover");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted().select).toStrictEqual([
+      [{ expandSelection: true }],
+    ]);
   });
 });

@@ -10,6 +10,7 @@ import BottomControls from "@/components/control/BottomControls.vue";
 import ColumnFilters from "@/components/filter/ColumnFilters.vue";
 import Header from "@/components/layout/Header.vue";
 import Group from "@/components/layout/Group.vue";
+import SelectedCellsOverlay from "@/components/ui/CellSelectionOverlay.vue";
 import Row from "@/components/layout/Row.vue";
 import ActionButton from "@/components/ui/ActionButton.vue";
 import TablePopover from "@/components/popover/TablePopover.vue";
@@ -33,7 +34,8 @@ vi.mock("../composables/useAvailableWidth", () => ({
 const cellSelectionMock = {
   selectCell: vi.fn(),
   expandCellSelection: vi.fn(),
-  getSelectedIndicesForRow: ref(() => null),
+  rectMinMax: ref(null),
+  currentRectId: ref(null),
 };
 
 vi.mock("../composables/useCellSelection", () => ({
@@ -1162,6 +1164,11 @@ describe("TableUI.vue", () => {
     let wrapper;
 
     beforeEach(() => {
+      useCellSelection.reset();
+      cellSelectionMock.selectCell = vi.fn();
+      cellSelectionMock.expandCellSelection = vi.fn();
+      cellSelectionMock.rectMinMax = ref(null);
+      cellSelectionMock.currentRectId = ref(null);
       const comp = doMount();
       wrapper = comp.wrapper;
     });
@@ -1176,10 +1183,13 @@ describe("TableUI.vue", () => {
 
       row.vm.$emit("cell-select", colInd);
 
-      expect(cellSelectionMock.selectCell).toHaveBeenCalledWith({
-        x: colInd,
-        y: 0,
-      });
+      expect(cellSelectionMock.selectCell).toHaveBeenCalledWith(
+        {
+          x: colInd,
+          y: 0,
+        },
+        0,
+      );
     });
 
     it("expands cell selection on row event", () => {
@@ -1188,24 +1198,97 @@ describe("TableUI.vue", () => {
 
       row.vm.$emit("expand-cell-select", colInd);
 
-      expect(cellSelectionMock.expandCellSelection).toHaveBeenCalledWith({
-        x: colInd,
-        y: 0,
-      });
+      expect(cellSelectionMock.expandCellSelection).toHaveBeenCalledWith(
+        {
+          x: colInd,
+          y: 0,
+        },
+        0,
+      );
     });
 
-    it("sets selected cells", async () => {
-      const selectedCellsMock = { min: 2, max: 4 };
-      const getSelectedMock = vi.fn(() => selectedCellsMock);
-      cellSelectionMock.getSelectedIndicesForRow.value = getSelectedMock;
-      await wrapper.vm.$nextTick();
-      expect(getSelectedMock).toHaveBeenCalledWith(0);
-      expect(getSelectedMock).toHaveBeenCalledWith(-1);
-      expect(getSelectedMock).toHaveBeenCalledWith(1);
-      const row = wrapper.findComponent(Row);
-      expect(row.props().selectedCells).toBe(selectedCellsMock);
-      expect(row.props().selectedCellsRowAbove).toBe(selectedCellsMock);
-      expect(row.props().selectedCellsRowBelow).toBe(selectedCellsMock);
+    describe("overlay", () => {
+      it("displays no overlay if nothing is selected", () => {
+        expect(
+          wrapper.findComponent(SelectedCellsOverlay).exists(),
+        ).toBeFalsy();
+      });
+
+      it("displays overlay once something is selected", async () => {
+        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+        cellSelectionMock.rectMinMax.value = rectMinMax;
+        cellSelectionMock.currentRectId.value = 0;
+        await wrapper.vm.$nextTick();
+
+        const overlay = wrapper.findComponent(SelectedCellsOverlay);
+        expect(overlay.exists()).toBeTruthy();
+        expect(overlay.props()).toStrictEqual({
+          columnSizes: [50, 50],
+          rect: rectMinMax,
+          rowHeight: 41,
+          rowResizeDelta: null,
+          rowResizeIndex: null,
+          tableConfig: wrapper.vm.tableConfig,
+        });
+      });
+
+      it("displays overlay inside virtual scroller", () => {
+        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+        cellSelectionMock.rectMinMax.value = rectMinMax;
+        cellSelectionMock.currentRectId.value = 0;
+        const { wrapper } = doMount({
+          enableVirtualScrolling: true,
+          shallow: false,
+        });
+
+        const overlay = wrapper.findComponent(SelectedCellsOverlay);
+        expect(overlay.exists()).toBeTruthy();
+        expect(overlay.props()).toStrictEqual({
+          columnSizes: [50, 50],
+          rect: rectMinMax,
+          rowHeight: 41,
+          rowResizeDelta: null,
+          rowResizeIndex: null,
+          tableConfig: wrapper.vm.tableConfig,
+        });
+      });
+
+      it("displays overlay for the correct group", async () => {
+        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+        cellSelectionMock.rectMinMax.value = rectMinMax;
+        cellSelectionMock.currentRectId.value = 1;
+        const { wrapper } = doMount({
+          data: [
+            [
+              { a: "aGroup1Row1", b: "bGroup1Row1" },
+              { a: "aGroup1Row2", b: "bGroup1Row2" },
+            ],
+            [
+              { a: "aGroup2Row1", b: "bGroup2Row1" },
+              { a: "aGroup2Row2", b: "bGroup2Row2" },
+            ],
+          ],
+        });
+
+        let groups = wrapper.findAllComponents(Group);
+        expect(groups).toHaveLength(2);
+        expect(
+          groups.at(0).findComponent(SelectedCellsOverlay).exists(),
+        ).toBeFalsy();
+        expect(
+          groups.at(1).findComponent(SelectedCellsOverlay).exists(),
+        ).toBeTruthy();
+
+        cellSelectionMock.currentRectId.value = 0;
+        await wrapper.vm.$nextTick();
+
+        expect(
+          groups.at(0).findComponent(SelectedCellsOverlay).exists(),
+        ).toBeTruthy();
+        expect(
+          groups.at(1).findComponent(SelectedCellsOverlay).exists(),
+        ).toBeFalsy();
+      });
     });
 
     it("activates selecting cells by mouse move on pointerdown", async () => {

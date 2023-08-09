@@ -502,37 +502,6 @@ describe("Row.vue", () => {
         ).toStrictEqual([colInd]);
       });
 
-      it("selects selected cells", () => {
-        const wrapper = mount(Row, {
-          props: {
-            ...props,
-            selectedCells: { min: 1, max: 3 },
-            selectedCellsRowAbove: { min: 1, max: 2 },
-            selectedCellsRowBelow: null,
-          },
-        });
-        expect(wrapper.findAll("td.data-cell").at(0).classes()).not.toContain(
-          "selected",
-        );
-        const cell1 = wrapper.findAll("td.data-cell").at(1).classes();
-        expect(cell1).toContain("selected");
-        expect(cell1).toContain("border-left");
-        expect(cell1).toContain("border-bottom");
-
-        const cell2 = wrapper.findAll("td.data-cell").at(2).classes();
-        expect(cell2).toContain("selected");
-        expect(cell2).toContain("border-bottom");
-        const cell3 = wrapper.findAll("td.data-cell").at(3).classes();
-        expect(cell3).toContain("selected");
-        expect(cell3).toContain("border-top");
-        expect(cell3).toContain("border-bottom");
-        expect(cell3).toContain("border-right");
-
-        expect(wrapper.findAll("td.data-cell").at(4).classes()).not.toContain(
-          "selected",
-        );
-      });
-
       it("passes selectOnMove down to the Cell", async () => {
         const wrapper = mount(Row, {
           props,

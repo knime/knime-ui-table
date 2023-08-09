@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, ref, type Ref } from "vue";
 import { isEqual } from "lodash";
 
 export type CellPosition = {
@@ -33,6 +33,7 @@ export type Rect = { x: MinMax; y: MinMax };
 
 export default () => {
   const cellRect = ref<CellRect | null>(null);
+  const currentRectId: Ref<number | boolean | null> = ref(null);
 
   const rectMinMax = computed<Rect | null>(() => {
     const rectValue = cellRect.value;
@@ -53,35 +54,23 @@ export default () => {
     );
   };
 
-  const selectCell = (cellPosition: CellPosition) => {
-    if (isSingleSelectedCell(cellPosition)) {
+  const selectCell = (cellPosition: CellPosition, rectId: number | boolean) => {
+    if (rectId === currentRectId.value && isSingleSelectedCell(cellPosition)) {
       cellRect.value = null;
+      currentRectId.value = null;
       return;
     }
     cellRect.value = new CellRect(cellPosition);
+    currentRectId.value = rectId;
   };
 
-  const expandCellSelection = (cellPosition: CellPosition) => {
-    if (cellRect.value === null) {
-      selectCell(cellPosition);
+  const expandCellSelection = (cellPosition: CellPosition, rectId: number) => {
+    if (cellRect.value === null || currentRectId.value !== rectId) {
+      selectCell(cellPosition, rectId);
       return;
     }
     cellRect.value.setCorner(cellPosition);
   };
 
-  const getSelectedIndicesForRow = computed(() => {
-    const rect = rectMinMax.value;
-    if (rect === null) {
-      return () => null;
-    }
-    return (rowInd: number): MinMax | null => {
-      const { x, y } = rect;
-      if (y.min <= rowInd && y.max >= rowInd) {
-        return x;
-      }
-      return null;
-    };
-  });
-
-  return { selectCell, expandCellSelection, getSelectedIndicesForRow };
+  return { selectCell, expandCellSelection, rectMinMax, currentRectId };
 };

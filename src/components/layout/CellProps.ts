@@ -2,11 +2,6 @@ interface CellProps {
   text: string | undefined;
   title: string | null;
   isMissing: boolean;
-  isSelected: boolean;
-  leftIsSelected: boolean;
-  rightIsSelected: boolean;
-  aboveIsSelected: boolean;
-  belowIsSelected: boolean;
   selectOnMove: boolean;
   clickable: boolean;
   isSlotted: boolean;

@@ -71,11 +71,6 @@ const onPointerOver = throttle(() => {
       'data-cell',
       {
         clickable,
-        selected: isSelected,
-        'border-left': isSelected && !leftIsSelected,
-        'border-right': isSelected && !rightIsSelected,
-        'border-top': isSelected && !aboveIsSelected,
-        'border-bottom': isSelected && !belowIsSelected,
         'colored-cell': backgroundColor,
       },
     ]"
@@ -121,29 +116,6 @@ const onPointerOver = throttle(() => {
       var(--cell-background-color),
       var(--cell-background-color)
     );
-  }
-
-  --selected-cell-background-color: rgb(30 109 168 / 9%);
-  --selected-cell-border: 1px solid rgb(55 109 168);
-
-  &.selected {
-    background-color: var(--selected-cell-background-color);
-  }
-
-  &.border-left {
-    border-left: var(--selected-cell-border);
-  }
-
-  &.border-right {
-    border-right: var(--selected-cell-border);
-  }
-
-  &.border-top {
-    border-top: var(--selected-cell-border);
-  }
-
-  &.border-bottom {
-    border-bottom: var(--selected-cell-border);
   }
 
   & .missing-value-icon {

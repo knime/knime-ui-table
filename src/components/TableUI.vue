@@ -8,6 +8,7 @@ import Group from "./layout/Group.vue";
 import Row from "./layout/Row.vue";
 import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import ActionButton from "./ui/ActionButton.vue";
+import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
@@ -41,6 +42,7 @@ export default {
     ActionButton,
     TablePopover,
     RecycleScroller,
+    CellSelectionOverlay,
   } as any,
   props: {
     /**
@@ -760,7 +762,6 @@ export default {
         :id="scrollerId"
         ref="scroller"
         :key="scrollerKey"
-        #default="{ item }"
         :style="{
           width: `${currentBodyWidth}px`,
           overflowY: currentResizedScrollIndex === null ? 'auto' : 'hidden',
@@ -787,103 +788,113 @@ export default {
         @scroll="closeExpandedSubMenu"
         @update="onScroll"
       >
-        <PlaceholderRow
-          v-if="item.dots"
-          :height="item.size"
-          :style="{
-            transform: `translateY(${
-              currentResizedScrollIndex !== null &&
-              item.scrollIndex > currentResizedScrollIndex
-                ? currentRowSizeDelta
-                : 0
-            }px)`,
-          }"
-        />
-        <Row
-          v-else
-          :key="item.id"
-          :ref="`row-${item.id}`"
-          :row-data="item.data"
-          :row="columnKeys.map((column: any) => item.data[column])"
-          :table-config="item.tableConfig || tableConfig"
-          :show-drag-handle="enableRowResize && (item.showDragHandle ?? true)"
-          :column-configs="dataConfig.columnConfigs"
-          :row-config="dataConfig.rowConfig"
-          :row-height="currentRowHeight"
-          :min-row-height="initialRowHeight"
-          :margin-bottom="rowMarginBottom"
-          :is-selected="currentSelectionMap(item.scrollIndex, item.isTop)"
-          :selected-cells="getSelectedIndicesForRow(item.scrollIndex) as any"
-          :selected-cells-row-above="
-            getSelectedIndicesForRow(item.scrollIndex - 1) as any
-          "
-          :selected-cells-row-below="
-            getSelectedIndicesForRow(item.scrollIndex + 1) as any
-          "
-          :select-cells-on-move="selectCellsOnMove"
-          :show-border-column-index="showBorderColumnIndex"
-          :style="{
-            transform: `translateY(${
-              currentResizedScrollIndex !== null &&
-              item.scrollIndex > currentResizedScrollIndex
-                ? currentRowSizeDelta
-                : 0
-            }px)`,
-          }"
-          @row-select="onRowSelect($event, item.index, 0, item.isTop)"
-          @cell-select="
-            (cellInd: number) => selectCell({ x: cellInd, y: item.scrollIndex })
-          "
-          @expand-cell-select="
-            (cellInd: number) =>
-              expandCellSelection({ x: cellInd, y: item.scrollIndex })
-          "
-          @row-expand="onRowExpand($event, item.scrollIndex)"
-          @row-input="
-            onRowInput({
-              ...$event,
-              rowInd: item.index,
-              id: item.data.id,
-              groupInd: 0,
-              isTop: item.isTop,
-            })
-          "
-          @row-sub-menu-expand="registerExpandedSubMenu"
-          @row-sub-menu-click="
-            (event: any) => onRowSubMenuClick(event, item.data)
-          "
-          @resize-all-rows="
-            (currentSize: number, row: any) =>
-              onResizeAllRows(currentSize, row, item.scrollIndex)
-          "
-          @resize-row="
-            (rowSizeDelta: number) =>
-              onResizeRow(rowSizeDelta, item.scrollIndex)
-          "
-        >
-          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-          <!-- eslint-disable vue/valid-v-slot -->
-          <template
-            v-for="colInd in slottedColumns"
-            #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-            :key="item.index + '_' + colInd"
+        <template #before>
+          <CellSelectionOverlay
+            v-if="rectMinMax"
+            :rect="rectMinMax"
+            :row-height="scrollerItemSize"
+            :table-config="tableConfig"
+            :row-resize-index="currentResizedScrollIndex"
+            :row-resize-delta="currentRowSizeDelta"
+            :column-sizes="columnSizes"
+          />
+        </template>
+        <template #default="{ item }">
+          <PlaceholderRow
+            v-if="item.dots"
+            :height="item.size"
+            :style="{
+              transform: `translateY(${
+                currentResizedScrollIndex !== null &&
+                item.scrollIndex > currentResizedScrollIndex
+                  ? currentRowSizeDelta
+                  : 0
+              }px)`,
+            }"
+          />
+          <Row
+            v-else
+            :key="item.id"
+            :ref="`row-${item.id}`"
+            :row-data="item.data"
+            :row="columnKeys.map((column: any) => item.data[column])"
+            :table-config="item.tableConfig || tableConfig"
+            :show-drag-handle="enableRowResize && (item.showDragHandle ?? true)"
+            :column-configs="dataConfig.columnConfigs"
+            :row-config="dataConfig.rowConfig"
+            :row-height="currentRowHeight"
+            :min-row-height="initialRowHeight"
+            :margin-bottom="rowMarginBottom"
+            :is-selected="currentSelectionMap(item.scrollIndex, item.isTop)"
+            :select-cells-on-move="selectCellsOnMove"
+            :show-border-column-index="showBorderColumnIndex"
+            :style="{
+              transform: `translateY(${
+                currentResizedScrollIndex !== null &&
+                item.scrollIndex > currentResizedScrollIndex
+                  ? currentRowSizeDelta
+                  : 0
+              }px)`,
+            }"
+            @row-select="onRowSelect($event, item.index, 0, item.isTop)"
+            @cell-select="
+              (cellInd: number) =>
+                selectCell({ x: cellInd, y: item.scrollIndex }, item.isTop)
+            "
+            @expand-cell-select="
+              (cellInd: number) =>
+                expandCellSelection(
+                  { x: cellInd, y: item.scrollIndex },
+                  item.isTop,
+                )
+            "
+            @row-expand="onRowExpand($event, item.scrollIndex)"
+            @row-input="
+              onRowInput({
+                ...$event,
+                rowInd: item.index,
+                id: item.data.id,
+                groupInd: 0,
+                isTop: item.isTop,
+              })
+            "
+            @row-sub-menu-expand="registerExpandedSubMenu"
+            @row-sub-menu-click="
+              (event: any) => onRowSubMenuClick(event, item.data)
+            "
+            @resize-all-rows="
+              (currentSize: number, row: any) =>
+                onResizeAllRows(currentSize, row, item.scrollIndex)
+            "
+            @resize-row="
+              (rowSizeDelta: number) =>
+                onResizeRow(rowSizeDelta, item.scrollIndex)
+            "
           >
-            <span>
-              <slot
-                :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{
-                  ...cellData,
-                  key: columnKeys[colInd],
-                  rowInd: item.index,
-                  colInd,
-                }"
-              />
-            </span>
-          </template>
-          <template #rowCollapserContent>
-            <slot name="collapserContent" :row="item" />
-          </template>
-        </Row>
+            <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+            <!-- eslint-disable vue/valid-v-slot -->
+            <template
+              v-for="colInd in slottedColumns"
+              #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+              :key="item.index + '_' + colInd"
+            >
+              <span>
+                <slot
+                  :name="`cellContent-${columnKeys[colInd]}`"
+                  :data="{
+                    ...cellData,
+                    key: columnKeys[colInd],
+                    rowInd: item.index,
+                    colInd,
+                  }"
+                />
+              </span>
+            </template>
+            <template #rowCollapserContent>
+              <slot name="collapserContent" :row="item" />
+            </template>
+          </Row>
+        </template>
       </RecycleScroller>
       <Group
         v-for="(dataGroup, groupInd) in scrollData"
@@ -898,6 +909,15 @@ export default {
           (event: any) => onGroupSubMenuClick(event, dataGroup)
         "
       >
+        <CellSelectionOverlay
+          v-if="rectMinMax && currentRectId === groupInd"
+          :rect="rectMinMax"
+          :row-height="scrollerItemSize"
+          :table-config="tableConfig"
+          :row-resize-index="currentResizedScrollIndex"
+          :row-resize-delta="currentRowSizeDelta"
+          :column-sizes="columnSizes"
+        />
         <Row
           v-for="(row, rowInd) in dataGroup"
           :ref="`group-${groupInd}-row-${row.id}`"
@@ -916,21 +936,15 @@ export default {
               : // @ts-ignore
                 currentSelection[groupInd][rowInd] || false
           "
-          :selected-cells="getSelectedIndicesForRow(rowInd) as any"
-          :selected-cells-row-above="
-            getSelectedIndicesForRow(rowInd - 1) as any
-          "
-          :selected-cells-row-below="
-            getSelectedIndicesForRow(rowInd + 1) as any
-          "
           :select-cells-on-move="selectCellsOnMove"
           :show-border-column-index="showBorderColumnIndex"
           :show-drag-handle="dataConfig.rowConfig.enableRowResize"
           @cell-select="
-            (cellInd: number) => selectCell({ x: cellInd, y: rowInd })
+            (cellInd: number) => selectCell({ x: cellInd, y: rowInd }, groupInd)
           "
           @expand-cell-select="
-            (cellInd: number) => expandCellSelection({ x: cellInd, y: rowInd })
+            (cellInd: number) =>
+              expandCellSelection({ x: cellInd, y: rowInd }, groupInd)
           "
           @row-select="onRowSelect($event, rowInd, groupInd, true)"
           @row-input="
