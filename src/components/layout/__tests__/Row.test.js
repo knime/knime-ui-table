@@ -482,10 +482,25 @@ describe("Row.vue", () => {
           props,
         });
         const colInd = 2;
-        wrapper.findAll("td.data-cell").at(colInd).trigger("pointerdown");
+        wrapper
+          .findAll("td.data-cell")
+          .at(colInd)
+          .trigger("pointerdown", { button: 0 });
         expect(
           wrapper.findComponent(Row).emitted().cellSelect[0],
         ).toStrictEqual([colInd]);
+      });
+
+      it("does not emits a cellSelect event when a cell is clicked with a non-left button", () => {
+        const wrapper = mount(Row, {
+          props,
+        });
+        const colInd = 2;
+        wrapper
+          .findAll("td.data-cell")
+          .at(colInd)
+          .trigger("pointerdown", { button: 1 });
+        expect(wrapper.findComponent(Row).emitted().cellSelect).toBeFalsy();
       });
 
       it("emits a expandCellSelect event when a cell is clicked with shift pressed", () => {
@@ -496,7 +511,7 @@ describe("Row.vue", () => {
         wrapper
           .findAll("td.data-cell")
           .at(colInd)
-          .trigger("pointerdown", { shiftKey: true });
+          .trigger("pointerdown", { shiftKey: true, button: 0 });
         expect(
           wrapper.findComponent(Row).emitted().expandCellSelect[0],
         ).toStrictEqual([colInd]);

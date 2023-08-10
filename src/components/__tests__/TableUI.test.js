@@ -1305,17 +1305,24 @@ describe("TableUI.vue", () => {
     });
 
     it("activates selecting cells by mouse move on pointerdown", async () => {
-      wrapper.find("table").trigger("pointerdown");
+      wrapper.find("table").trigger("pointerdown", { button: 0 });
       await wrapper.vm.$nextTick();
       const row = wrapper.findComponent(Row);
       expect(row.props().selectCellsOnMove).toBeTruthy();
     });
 
+    it("does not activates selecting cells by mouse move on non-left pointerdown", async () => {
+      wrapper.find("table").trigger("pointerdown", { button: 1 });
+      await wrapper.vm.$nextTick();
+      const row = wrapper.findComponent(Row);
+      expect(row.props().selectCellsOnMove).toBeFalsy();
+    });
+
     it("deactivates selecting cells by mouse move on pointerup", async () => {
-      wrapper.find("table").trigger("pointerdown");
+      wrapper.find("table").trigger("pointerdown", { button: 0 });
       await wrapper.vm.$nextTick();
 
-      wrapper.find("table").trigger("pointerup");
+      wrapper.find("table").trigger("pointerup", { button: 0 });
       await wrapper.vm.$nextTick();
 
       const row = wrapper.findComponent(Row);

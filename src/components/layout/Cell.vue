@@ -89,7 +89,9 @@ const onPointerOver = throttle(() => {
     "
     @pointerover="onPointerOver"
     @pointerdown="
-      (event: MouseEvent) => emit('select', { expandSelection: event.shiftKey })
+      (event: MouseEvent) =>
+        event.button === 0 &&
+        emit('select', { expandSelection: event.shiftKey })
     "
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >

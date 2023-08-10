@@ -712,8 +712,8 @@ export default {
   <table
     ref="wrapper"
     @pointerleave="deactivateCellSelectionOnMove"
-    @pointerdown.passive="activateCellSelectionOnMove"
-    @pointerup.passive="deactivateCellSelectionOnMove"
+    @pointerdown.passive="$event.button === 0 && activateCellSelectionOnMove()"
+    @pointerup.passive="$event.button === 0 && deactivateCellSelectionOnMove()"
   >
     <TopControls
       :table-config="tableConfig"
