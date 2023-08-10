@@ -491,47 +491,58 @@ export default {
     },
     onTimeFilterUpdate(newTimeFilter: any) {
       consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
+      this.clearCellSelection();
       this.$emit("timeFilterUpdate", newTimeFilter);
     },
     onColumnUpdate(newColumnList: any) {
       consola.debug(`TableUI emitting: columnUpdate ${newColumnList}`);
+      this.clearCellSelection();
       this.$emit("columnUpdate", newColumnList);
     },
     onColumnReorder(colInd: number, newColInd: number) {
       consola.debug(`TableUI emitting: columnReorder ${colInd} ${newColInd}`);
+      this.clearCellSelection();
       this.$emit("columnReorder", colInd, newColInd);
     },
     onGroupUpdate(group: any) {
       consola.debug(`TableUI emitting: groupUpdate ${group}`);
+      this.clearCellSelection();
       this.$emit("groupUpdate", group);
     },
     onSearch(input: any) {
       consola.debug(`TableUI emitting: search ${input}`);
+      this.clearCellSelection();
       this.$emit("search", input);
     },
     onPageChange(pageNumberDiff: any) {
       consola.debug(`TableUI emitting: pageChange ${pageNumberDiff}`);
+      this.clearCellSelection();
       this.$emit("pageChange", pageNumberDiff);
     },
     onPageSizeUpdate(newPageSize: number) {
       consola.debug(`TableUI emitting: pageSizeUpdate ${newPageSize}`);
+      this.clearCellSelection();
       this.$emit("pageSizeUpdate", newPageSize);
     },
     onColumnSort(colInd: number) {
       consola.debug(`TableUI emitting: columnSort ${colInd}`);
+      this.clearCellSelection();
       this.$emit("columnSort", colInd);
     },
     onColumnFilter(colInd: number, value: any) {
       consola.debug(`TableUI emitting: columnFilter ${colInd} ${value}`);
+      this.clearCellSelection();
       this.$emit("columnFilter", colInd, value);
     },
     onClearFilter() {
       consola.debug("TableUI emitting: clearFilter");
+      this.clearCellSelection();
       this.$emit("clearFilter");
     },
     onToggleFilter() {
       this.filterActive = !this.filterActive;
       consola.debug(`TableUI emitting: toggleFilter ${this.filterActive}`);
+      this.clearCellSelection();
       this.$emit("toggleFilter", this.filterActive);
     },
     onSelectAll(selected: any) {

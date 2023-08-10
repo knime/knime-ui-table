@@ -47,7 +47,7 @@ const classes = computed(() => {
 const dataCell: Ref<HTMLElement | null> = ref(null);
 const getCellContentWidth = () => {
   const widthDataCellFirstChild = Math.ceil(
-    dataCell.value?.firstElementChild?.getBoundingClientRect().width || 0,
+    dataCell.value?.firstElementChild?.getBoundingClientRect().width ?? 0,
   );
   return paddingLeft.value + widthDataCellFirstChild;
 };

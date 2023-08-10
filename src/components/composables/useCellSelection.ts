@@ -31,9 +31,11 @@ export type MinMax = { min: number; max: number };
 
 export type Rect = { x: MinMax; y: MinMax };
 
+export type RectId = number | boolean;
+
 export default () => {
   const cellRect = ref<CellRect | null>(null);
-  const currentRectId: Ref<number | boolean | null> = ref(null);
+  const currentRectId: Ref<RectId | null> = ref(null);
 
   const rectMinMax = computed<Rect | null>(() => {
     const rectValue = cellRect.value;
@@ -54,17 +56,21 @@ export default () => {
     );
   };
 
-  const selectCell = (cellPosition: CellPosition, rectId: number | boolean) => {
+  const clearCellSelection = () => {
+    cellRect.value = null;
+    currentRectId.value = null;
+  };
+
+  const selectCell = (cellPosition: CellPosition, rectId: RectId) => {
     if (rectId === currentRectId.value && isSingleSelectedCell(cellPosition)) {
-      cellRect.value = null;
-      currentRectId.value = null;
+      clearCellSelection();
       return;
     }
     cellRect.value = new CellRect(cellPosition);
     currentRectId.value = rectId;
   };
 
-  const expandCellSelection = (cellPosition: CellPosition, rectId: number) => {
+  const expandCellSelection = (cellPosition: CellPosition, rectId: RectId) => {
     if (cellRect.value === null || currentRectId.value !== rectId) {
       selectCell(cellPosition, rectId);
       return;
@@ -72,5 +78,11 @@ export default () => {
     cellRect.value.setCorner(cellPosition);
   };
 
-  return { selectCell, expandCellSelection, rectMinMax, currentRectId };
+  return {
+    selectCell,
+    expandCellSelection,
+    clearCellSelection,
+    rectMinMax,
+    currentRectId,
+  };
 };

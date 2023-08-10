@@ -1,66 +1,82 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Ref } from "vue";
 import useCellSelection, {
   type CellPosition,
   type Rect,
-  type MinMax,
+  type RectId,
 } from "../useCellSelection";
 
+import type { Ref } from "vue";
+
 describe("useCellSelection", () => {
-  let selectCell: (cellPos: CellPosition) => void,
-    expandCellSelection: (cellPos: CellPosition) => void,
-    getSelectedIndicesForRow: Ref<(rowInd: number) => MinMax | null>;
+  const id = 1;
+  let selectCell: (cellPos: CellPosition, rectId: RectId) => void,
+    expandCellSelection: (cellPos: CellPosition, rectId: RectId) => void,
+    rectMinMax: Ref<Rect | null>,
+    clearCellSelection: () => void,
+    currentRectId: Ref<RectId | null>;
 
-  type ExpectedPairs = { rowIndex: number; result: MinMax | null }[];
-
-  const getExpectedFromRect = (rect: Rect): ExpectedPairs => {
-    const expectedPairs: ExpectedPairs = [];
-    for (let y = rect.y.min; y <= rect.y.max; y++) {
-      expectedPairs.push({ rowIndex: y, result: rect.x });
-    }
-    expectedPairs.push({ rowIndex: rect.y.min - 1, result: null });
-    expectedPairs.push({ rowIndex: rect.y.max + 1, result: null });
-    return expectedPairs;
+  const expectSelectedRect = (rect: Rect, id: RectId) => {
+    expect(rectMinMax.value).toStrictEqual(rect);
+    expect(currentRectId.value).toBe(id);
   };
 
-  const expectSelectedRect = (rect: Rect) => {
-    getExpectedFromRect(rect).forEach((expected) =>
-      expect(getSelectedIndicesForRow.value(expected.rowIndex)).toStrictEqual(
-        expected.result,
-      ),
+  const expectSingleSelectedCell = (cellPos: CellPosition, id: RectId) => {
+    expectSelectedRect(
+      {
+        x: { min: cellPos.x, max: cellPos.x },
+        y: { min: cellPos.y, max: cellPos.y },
+      },
+      id,
     );
   };
 
-  const expectSingleSelectedCell = (cellPos: CellPosition) => {
-    expectSelectedRect({
-      x: { min: cellPos.x, max: cellPos.x },
-      y: { min: cellPos.y, max: cellPos.y },
-    });
+  const expectEmptySelection = () => {
+    expect(rectMinMax.value).toBeNull();
   };
 
   beforeEach(() => {
     const cellSelecton = useCellSelection();
     selectCell = cellSelecton.selectCell;
     expandCellSelection = cellSelecton.expandCellSelection;
-    getSelectedIndicesForRow = cellSelecton.getSelectedIndicesForRow;
+    clearCellSelection = cellSelecton.clearCellSelection;
+    rectMinMax = cellSelecton.rectMinMax;
+    currentRectId = cellSelecton.currentRectId;
   });
 
   it("selects cell on selectCell", () => {
     const cellPos: CellPosition = { x: 3, y: 5 };
-    expect(getSelectedIndicesForRow.value(cellPos.y)).toBeNull();
+    expectEmptySelection();
 
-    selectCell(cellPos);
+    selectCell(cellPos, id);
 
-    expectSingleSelectedCell(cellPos);
+    expectSingleSelectedCell(cellPos, id);
   });
 
   it("deselects cell if it was already selected", () => {
     const cellPos: CellPosition = { x: 3, y: 5 };
 
-    selectCell(cellPos);
-    selectCell(cellPos);
+    selectCell(cellPos, id);
+    selectCell(cellPos, id);
 
-    expect(getSelectedIndicesForRow.value(cellPos.y)).toBeNull();
+    expectEmptySelection();
+  });
+
+  it("does not deselect cell if the position is the same but the id changes", () => {
+    const cellPos: CellPosition = { x: 3, y: 5 };
+
+    selectCell(cellPos, id - 1);
+    selectCell(cellPos, id);
+
+    expectSingleSelectedCell(cellPos, id);
+  });
+
+  it("deselects all cells on clearCellSelection", () => {
+    const cellPos: CellPosition = { x: 3, y: 5 };
+    selectCell(cellPos, id);
+
+    clearCellSelection();
+
+    expectEmptySelection();
   });
 
   describe("expandCellSelection", () => {
@@ -86,40 +102,49 @@ describe("useCellSelection", () => {
     ])(
       "sets rectangle min and max when selecting opposite corner at %s",
       (corner: CellPosition, expected: Rect) => {
-        selectCell(anchorPos);
+        selectCell(anchorPos, id);
 
-        expandCellSelection(corner);
+        expandCellSelection(corner, id);
 
-        expectSelectedRect(expected);
+        expectSelectedRect(expected, id);
       },
     );
 
     it("does not select rectangle on selectCell", () => {
-      selectCell(anchorPos);
+      selectCell(anchorPos, id);
       const otherPosition = { x: 5, y: 7 };
 
-      selectCell(otherPosition);
+      selectCell(otherPosition, id);
 
-      expectSingleSelectedCell(otherPosition);
+      expectSingleSelectedCell(otherPosition, id);
     });
 
     it("does not deselect cell if it was already selected when more than one cell was selected", () => {
       const cellPos: CellPosition = { x: 3, y: 5 };
       const corner: CellPosition = { x: 5, y: 7 };
-      selectCell(cellPos);
-      expandCellSelection(corner);
+      selectCell(cellPos, id);
+      expandCellSelection(corner, id);
 
-      selectCell(corner);
+      selectCell(corner, id);
 
-      expectSingleSelectedCell(corner);
+      expectSingleSelectedCell(corner, id);
     });
 
     it("selects cell on expandCellSelection if no cell was selected previously", () => {
       const corner: CellPosition = { x: 5, y: 7 };
 
-      expandCellSelection(corner);
+      expandCellSelection(corner, id);
 
-      expectSingleSelectedCell(corner);
+      expectSingleSelectedCell(corner, id);
+    });
+
+    it("does not expand the selection if the id changes", () => {
+      const otherPosition: CellPosition = { x: 5, y: 7 };
+      selectCell(anchorPos, id - 1);
+
+      expandCellSelection(otherPosition, id);
+
+      expectSingleSelectedCell(otherPosition, id);
     });
   });
 });

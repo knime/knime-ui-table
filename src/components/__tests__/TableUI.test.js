@@ -34,6 +34,7 @@ vi.mock("../composables/useAvailableWidth", () => ({
 const cellSelectionMock = {
   selectCell: vi.fn(),
   expandCellSelection: vi.fn(),
+  clearCellSelection: vi.fn(),
   rectMinMax: ref(null),
   currentRectId: ref(null),
 };
@@ -323,6 +324,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().columnUpdate).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("columnUpdate", ["A"]);
         expect(wrapper.emitted().columnUpdate).toStrictEqual([[["A"]]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles column reorder events", () => {
@@ -331,6 +333,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().columnReorder).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("columnReorder", 1, 0);
         expect(wrapper.emitted().columnReorder).toStrictEqual([[1, 0]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles group update events", () => {
@@ -339,6 +342,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().groupUpdate).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("groupUpdate", "New Group");
         expect(wrapper.emitted().groupUpdate).toStrictEqual([["New Group"]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles search events", () => {
@@ -347,6 +351,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().search).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("searchUpdate", "Query");
         expect(wrapper.emitted().search).toStrictEqual([["Query"]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles time filter update events", () => {
@@ -356,6 +361,7 @@ describe("TableUI.vue", () => {
         wrapper
           .findComponent(TopControls)
           .vm.$emit("timeFilterUpdate", "Last year");
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
         expect(wrapper.emitted().timeFilterUpdate).toStrictEqual([
           ["Last year"],
         ]);
@@ -377,6 +383,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().columnSort).toBeFalsy();
         wrapper.findComponent(Header).vm.$emit("columnSort", 0);
         expect(wrapper.emitted().columnSort).toStrictEqual([[0]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles toggle filter events", () => {
@@ -385,6 +392,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().toggleFilter).toBeFalsy();
         wrapper.findComponent(Header).vm.$emit("toggleFilter", true);
         expect(wrapper.emitted().toggleFilter).toStrictEqual([[true]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles header submenu events", () => {
@@ -414,6 +422,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().columnFilter).toBeFalsy();
         wrapper.findComponent(ColumnFilters).vm.$emit("columnFilter", 0, "0");
         expect(wrapper.emitted().columnFilter).toStrictEqual([[0, "0"]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles clear filter events", async () => {
@@ -424,6 +433,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().clearFilter).toBeFalsy();
         wrapper.findComponent(ColumnFilters).vm.$emit("clearFilter");
         expect(wrapper.emitted().clearFilter).toBeTruthy();
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
     });
 
@@ -677,6 +687,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().pageChange).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("nextPage");
         expect(wrapper.emitted().pageChange).toStrictEqual([[1]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("handles prev page events", () => {
@@ -685,6 +696,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().pageChange).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("prevPage");
         expect(wrapper.emitted().pageChange).toStrictEqual([[-1]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
 
       it("registers pageSizeUpdate events", () => {
@@ -693,6 +705,7 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted().pageSizeUpdate).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("pageSizeUpdate", 25);
         expect(wrapper.emitted().pageSizeUpdate).toStrictEqual([[25]]);
+        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
       });
     });
 
