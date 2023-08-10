@@ -122,6 +122,12 @@ export default {
         category: "Rows",
       },
     },
+    withCellSelection: {
+      name: "Cell Selection",
+      table: {
+        category: "Body",
+      },
+    },
     showActionButton: {
       name: "Action button",
       table: {
@@ -284,6 +290,7 @@ Hub.args = {
   showCollapser: true,
   showSubHeaders: false,
   withSelection: true,
+  withCellSelection: false,
   showActionButton: true,
   showPopovers: true,
   compactMode: false,
@@ -355,6 +362,7 @@ TableView.args = {
   showCollapser: false,
   showSubHeaders: true,
   withSelection: true,
+  withCellSelection: true,
   showActionButton: false,
   showPopovers: false,
   compactMode: false,

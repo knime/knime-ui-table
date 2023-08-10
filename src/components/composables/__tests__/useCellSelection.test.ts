@@ -5,7 +5,7 @@ import useCellSelection, {
   type RectId,
 } from "../useCellSelection";
 
-import type { Ref } from "vue";
+import { ref, type Ref } from "vue";
 
 describe("useCellSelection", () => {
   const id = 1;
@@ -13,7 +13,8 @@ describe("useCellSelection", () => {
     expandCellSelection: (cellPos: CellPosition, rectId: RectId) => void,
     rectMinMax: Ref<Rect | null>,
     clearCellSelection: () => void,
-    currentRectId: Ref<RectId | null>;
+    currentRectId: Ref<RectId | null>,
+    enableCellSelection: Ref<boolean>;
 
   const expectSelectedRect = (rect: Rect, id: RectId) => {
     expect(rectMinMax.value).toStrictEqual(rect);
@@ -35,7 +36,8 @@ describe("useCellSelection", () => {
   };
 
   beforeEach(() => {
-    const cellSelecton = useCellSelection();
+    enableCellSelection = ref(true);
+    const cellSelecton = useCellSelection(enableCellSelection);
     selectCell = cellSelecton.selectCell;
     expandCellSelection = cellSelecton.expandCellSelection;
     clearCellSelection = cellSelecton.clearCellSelection;
@@ -68,6 +70,15 @@ describe("useCellSelection", () => {
     selectCell(cellPos, id);
 
     expectSingleSelectedCell(cellPos, id);
+  });
+
+  it("does not select cell if cell selection is disabled", () => {
+    enableCellSelection.value = false;
+    const cellPos: CellPosition = { x: 3, y: 5 };
+
+    selectCell(cellPos, id);
+
+    expectEmptySelection();
   });
 
   it("deselects all cells on clearCellSelection", () => {

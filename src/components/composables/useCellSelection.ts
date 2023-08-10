@@ -33,7 +33,7 @@ export type Rect = { x: MinMax; y: MinMax };
 
 export type RectId = number | boolean;
 
-export default () => {
+export default (enableCellSelection: Ref<boolean>) => {
   const cellRect = ref<CellRect | null>(null);
   const currentRectId: Ref<RectId | null> = ref(null);
 
@@ -78,10 +78,18 @@ export default () => {
     cellRect.value.setCorner(cellPosition);
   };
 
+  const applyIfEnabled = (method: (...args: any[]) => void) => {
+    return (...args: any[]) => {
+      if (enableCellSelection.value) {
+        method(...args);
+      }
+    };
+  };
+
   return {
-    selectCell,
-    expandCellSelection,
-    clearCellSelection,
+    selectCell: applyIfEnabled(selectCell),
+    expandCellSelection: applyIfEnabled(expandCellSelection),
+    clearCellSelection: applyIfEnabled(clearCellSelection),
     rectMinMax,
     currentRectId,
   };

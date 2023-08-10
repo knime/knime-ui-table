@@ -220,16 +220,21 @@ export default {
       selectCellsOnMove.value = false;
     };
 
+    const enableCellSelection = computed(() =>
+      Boolean(props.tableConfig.enableCellSelection),
+    );
+    const cellSelection = useCellSelection(enableCellSelection);
+
     return {
       wrapper,
       scroller,
       scrollWrapper,
       enableVirtualScrolling,
       innerWidthToBodyWidth,
-      ...useCellSelection(),
       activateCellSelectionOnMove,
       deactivateCellSelectionOnMove,
       selectCellsOnMove,
+      ...cellSelection,
     };
   },
   data() {
