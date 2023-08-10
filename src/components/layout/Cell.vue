@@ -23,7 +23,7 @@ const cellBackgroundColorStyle = computed(() => {
   return backgroundColor === null
     ? {}
     : {
-        "--cell-background-color": backgroundColor,
+        "--data-cell-color": backgroundColor,
       };
 });
 const classes = computed(() => {
@@ -105,7 +105,6 @@ const onPointerOver = throttle(() => {
 
 <style lang="postcss" scoped>
 & td {
-  color: var(--data-cell-color);
   background-clip: border-box;
   user-select: none;
 
@@ -115,8 +114,8 @@ const onPointerOver = throttle(() => {
     background-position: 10px 0;
     background-image: linear-gradient(
       90deg,
-      var(--cell-background-color),
-      var(--cell-background-color)
+      var(--data-cell-color),
+      var(--data-cell-color)
     );
   }
 

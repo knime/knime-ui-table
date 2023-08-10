@@ -87,9 +87,7 @@ describe("Cell.vue", () => {
       props.backgroundColor = null;
       const wrapper = mount(Cell, { props });
       expect(wrapper.classes()).not.toContain("colored-cell");
-      expect(wrapper.attributes("style")).not.toContain(
-        "--cell-background-color",
-      );
+      expect(wrapper.attributes("style")).not.toContain("--data-cell-color");
       expect(wrapper.attributes("style")).toContain("padding-left: 10px");
     });
 
@@ -98,7 +96,7 @@ describe("Cell.vue", () => {
       const wrapper = mount(Cell, { props });
       expect(wrapper.classes()).toContain("colored-cell");
       expect(wrapper.attributes("style")).toContain(
-        "--cell-background-color: #abcdef",
+        "--data-cell-color: #abcdef",
       );
       expect(wrapper.attributes("style")).toContain("padding-left: 20px");
     });

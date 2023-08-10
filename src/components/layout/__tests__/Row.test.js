@@ -331,7 +331,7 @@ describe("Row.vue", () => {
       const firstCell = wrapper.findComponent(Cell);
       expect(firstCell.text()).toBe("Text");
       expect(firstCell.attributes("style")).toContain(
-        "--cell-background-color: #123456",
+        "--data-cell-color: #123456",
       );
     });
 

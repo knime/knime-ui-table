@@ -74,8 +74,11 @@ const width = computed(() => {
 
 <style lang="postcss" scoped>
 .overlay {
-  background-color: rgb(30 109 168 / 9%);
-  border: 1px solid rgb(55 109 168);
+  --selected-cells-background-color: rgb(30 109 168 / 9%);
+  --selected-cells-border: 1px solid rgb(55 109 168);
+
+  background-color: var(--selected-cells-background-color);
+  border: var(--selected-cells-border);
   position: absolute;
   z-index: 1;
   pointer-events: none;
