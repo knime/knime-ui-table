@@ -38,14 +38,26 @@ export default {
         category: "Data",
       },
     },
+    bottomData: {
+      name: "Bottom data",
+      table: {
+        category: "Data",
+      },
+    },
     withSorting: {
       name: "Sorting",
       table: {
         category: "Sorting",
       },
     },
-    withTimeFilter: {
-      name: "Time filter",
+    showTimeFilter: {
+      name: "Show Time filter",
+      table: {
+        category: "Filtering",
+      },
+    },
+    defaultTimeFilter: {
+      name: "Default Time filter",
       table: {
         category: "Filtering",
       },
@@ -262,7 +274,8 @@ Hub.args = {
   initialFilterValues: { user: ["example-user2"] },
   initialSortColumn: 1,
   initialSortDirection: -1,
-  withTimeFilter: true,
+  showTimeFilter: true,
+  defaultTimeFilter: "Last month",
   withColumnSelection: true,
   withGroupBy: true,
   withSearch: true,
@@ -319,11 +332,13 @@ export const TableView = Template.bind({});
 
 TableView.args = {
   allDataLength: 200,
+  bottomData: [{ id: "Bottom row 1" }, { id: "Bottom row 2" }],
   withSorting: true,
   withPagination: false,
   withColumnFilters: true,
   withSpecificSortConfigs: true,
-  withTimeFilter: false,
+  showTimeFilter: false,
+  defaultTimeFilter: "All time",
   withColumnSelection: false,
   withGroupBy: false,
   withSearch: true,
@@ -353,6 +368,6 @@ TableView.args = {
   showTopControls: true,
   showSubMenus: false,
   showGroupSubMenus: false,
-  numRowsAbove: 5,
-  numRowsBelow: 5,
+  numRowsAbove: 0,
+  numRowsBelow: 0,
 };

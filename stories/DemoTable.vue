@@ -22,6 +22,10 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  bottomData: {
+    type: Array,
+    default: () => [],
+  },
   initialFilterValues: {
     type: Object,
     default: () => ({}),
@@ -39,7 +43,11 @@ const props = defineProps({
   },
   withSorting: Boolean,
   withSpecificSortConfigs: Boolean,
-  withTimeFilter: Boolean,
+  showTimeFilter: Boolean,
+  defaultTimeFilter: {
+    type: String,
+    default: "All time",
+  },
   withColumnSelection: Boolean,
   withGroupBy: Boolean,
   withSearch: Boolean,
@@ -141,7 +149,7 @@ const {
 } = useFilters({
   initialParameters: props,
   timeFilterKey: demoProps.timeFilterKey,
-  defaultTimeFilter: demoProps.defaultTimeFilter,
+  defaultTimeFilter: props.defaultTimeFilter,
   formatterData: { domains, currentFormatters },
   currentColumns: currentColumns.keys,
   allColumns: demoProps,
@@ -258,7 +266,7 @@ const groupByConfig = props.withGroupBy
     }))
   : null;
 
-const timeFilterConfig = props.withTimeFilter
+const timeFilterConfig = props.showTimeFilter
   ? reactive({ currentTimeFilter })
   : null;
 
@@ -316,6 +324,7 @@ const tableConfig = reactive({
 
 const tableProps = reactive({
   data: paginatedData,
+  bottomData: props.bottomData,
   currentSelection: paginatedSelection,
   totalSelected,
   dataConfig,
