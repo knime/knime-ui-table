@@ -49,12 +49,14 @@ describe("useAvailableWidth", () => {
 
   it("emits available width", async () => {
     const availableWidth = 200;
+    const scrollbarWidth = 0;
 
     const wrapper = mount(AvailableWidthTestComponent as any, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
     rootCallback(availableWidth);
+    scrolledElementCallback(scrollbarWidth);
     await flushPromises();
 
     expect(wrapper.emitted().availableWidthChanged[0]).toStrictEqual([
@@ -62,15 +64,34 @@ describe("useAvailableWidth", () => {
     ]);
   });
 
-  it("substracts specialColumnsSizeTotal from the available width", async () => {
+  it("doesn't emit availableWidthChanged when the scrollbar width isn't computed yet", async () => {
+    const availableWidth = 200;
+    const scrollbarWidth = 10;
+
+    const wrapper = mount(AvailableWidthTestComponent as any, {
+      props: { specialColumnsSizeTotal: 0 },
+    });
+    await flushPromises();
+    rootCallback(availableWidth);
+    await flushPromises();
+    expect(wrapper.emitted()).not.toHaveProperty("availableWidthChanged");
+
+    scrolledElementCallback(scrollbarWidth);
+    await flushPromises();
+    expect(wrapper.emitted()).toHaveProperty("availableWidthChanged");
+  });
+
+  it("subtracts specialColumnsSizeTotal from the available width", async () => {
     const specialColumnsSizeTotal = 123;
     const availableWidth = 200;
+    const scrollbarWidth = 0;
 
     const wrapper = mount(AvailableWidthTestComponent as any, {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
     rootCallback(availableWidth);
+    scrolledElementCallback(scrollbarWidth);
     await flushPromises();
 
     expect(wrapper.emitted().availableWidthChanged[0]).toStrictEqual([
@@ -78,7 +99,7 @@ describe("useAvailableWidth", () => {
     ]);
   });
 
-  it("substracts the scrollbar width from the available width", async () => {
+  it("subtracts the scrollbar width from the available width", async () => {
     const scrollbarWidth = 17;
     const availableWidth = 200;
 

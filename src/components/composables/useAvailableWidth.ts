@@ -31,7 +31,7 @@ const useTotalWidth = (root: Ref<HTMLElement>) => {
 };
 
 const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
-  const currentScrollBarWidth = ref(0);
+  const currentScrollBarWidth: Ref<number | null> = ref(null);
 
   const scrollbarWidthCallback = throttle((entries) => {
     const totalWidth = entries[0].borderBoxSize[0].inlineSize;
@@ -85,7 +85,7 @@ export default ({
   const currentScrollBarWidth = useScrollbarWidth(scrolledElement);
 
   const currentDataWidth = computed(() => {
-    if (totalWidth.value === null) {
+    if (totalWidth.value === null || currentScrollBarWidth.value === null) {
       return null;
     }
     return (
