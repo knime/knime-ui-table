@@ -95,7 +95,7 @@ export default {
     headerSubMenu: {
       name: "Header submenu items",
       table: {
-        categore: "Header",
+        category: "Header",
       },
     },
     showBottomControls: {
@@ -254,6 +254,24 @@ export default {
         category: "Sorting",
       },
     },
+    autoSizeColumnsToBody: {
+      name: "Auto size columns regarding the body",
+      table: {
+        category: "Auto column sizing",
+      },
+    },
+    autoSizeColumnsToHeader: {
+      name: "Auto size columns regarding the header",
+      table: {
+        category: "Auto column sizing",
+      },
+    },
+    fixedColumnSizes: {
+      name: "Fixed column sizes",
+      table: {
+        category: "Auto column sizing",
+      },
+    },
   },
 };
 
@@ -378,4 +396,28 @@ TableView.args = {
   showGroupSubMenus: false,
   numRowsAbove: 0,
   numRowsBelow: 0,
+};
+
+export const TableUIWithAutoSizeCalculation = Template.bind({});
+
+TableUIWithAutoSizeCalculation.args = {
+  autoSizeColumnsToBody: true,
+  autoSizeColumnsToHeader: false,
+  fixedColumnSizes: { lastRun: 500, nextScheduledExecution: 500 },
+  withSorting: true,
+  withPagination: false,
+  withColumnFilters: true,
+  withColumnSelection: true,
+  withHeaderSubMenu: true,
+  headerSubMenu: [
+    { text: "Section1", sectionHeadline: true, separator: true },
+    { text: "Item 1", id: "s1i1", selected: true, section: "section1" },
+    { text: "Item 2", id: "s1i2", selected: false, section: "section1" },
+    { text: "Section2", sectionHeadline: true, separator: true },
+    { text: "Item 1", id: "s2i1", selected: true, section: "section2" },
+    { text: "Item 2", id: "s2i2", selected: false, section: "section2" },
+  ],
+  showSubHeaders: true,
+  enableColumnResize: true,
+  showSubMenus: true,
 };

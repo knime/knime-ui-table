@@ -1,5 +1,6 @@
 <script setup>
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
+import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
 import TableUI from "@/components/TableUI.vue";
 import demoProps from "./props.json";
 import { columnTypes, tablePageSizes } from "@/config/table.config";
@@ -109,6 +110,9 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  autoSizeColumnsToBody: Boolean,
+  autoSizeColumnsToHeader: Boolean,
+  fixedColumnSizes: { type: Object, default: () => ({}) },
 });
 
 const {
@@ -127,8 +131,10 @@ const {
   onColumnResize,
   onAllColumnsResize,
   updateAvailableWidth: onAvailableWidthUpdate,
+  onAutoColumnSizesUpdate,
 } = useColumnResizing({
   currentColumnIndices: currentColumns.indices,
+  currentColumnKeys: currentColumns.keys,
 });
 
 const { domains, updateDomains, currentFormatters } = useFormatters({
@@ -188,6 +194,12 @@ const {
   currentTableSize,
 });
 
+const tableUIWithAutoSizeCalculation = ref(null);
+const onTriggerPageChange = (pageNumberDiff) => {
+  onPageChange(pageNumberDiff);
+  tableUIWithAutoSizeCalculation.value.triggerCalculationOfAutoColumnSizes();
+};
+
 const { paginatedData, processedIndicies, paginatedIndicies, totalTableSize } =
   useDataProcessing({
     filter: { filterData, filterHash },
@@ -234,6 +246,7 @@ const dataConfig = computed(() => {
     }
     let columnConfig = {
       key,
+      id: key,
       header: currentColumns.headers.value[ind],
       subHeader: props.showSubHeaders
         ? currentColumns.subHeaders.value[ind]
@@ -324,6 +337,12 @@ const tableConfig = reactive({
   pageConfig,
 });
 
+const autoColumnSizesOptions = reactive({
+  calculateForBody: props.autoSizeColumnsToBody,
+  calculateForHeader: props.autoSizeColumnsToHeader,
+  fixedSizes: props.fixedColumnSizes || {},
+});
+
 const tableProps = reactive({
   data: paginatedData,
   bottomData: props.bottomData,
@@ -333,6 +352,7 @@ const tableProps = reactive({
   tableConfig,
   numRowsAbove: props.numRowsAbove,
   numRowsBelow: props.numRowsBelow,
+  autoColumnSizesOptions,
 });
 
 const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
@@ -347,14 +367,15 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
       backgroundColor: `var(${backgroundColor})`,
     }"
   >
-    <TableUI
+    <TableUIWithAutoSizeCalculation
+      ref="tableUIWithAutoSizeCalculation"
       v-bind="tableProps"
       @time-filter-update="onTimeFilterUpdate"
       @column-update="onColumnUpdate"
       @column-reorder="onColumnReorder"
       @group-update="onGroupUpdate"
       @search="onSearch"
-      @page-change="onPageChange"
+      @page-change="onTriggerPageChange"
       @page-size-update="onPageSizeUpdate"
       @column-sort="onColumnSort"
       @column-filter="onColumnFilter"
@@ -365,6 +386,7 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
       @column-resize="onColumnResize"
       @all-columns-resize="onAllColumnsResize"
       @update:available-width="onAvailableWidthUpdate"
+      @auto-column-sizes-update="onAutoColumnSizesUpdate"
     >
       <template
         v-for="col in currentSlottedColumns"
@@ -398,7 +420,7 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
           >
         </div>
       </template>
-    </TableUI>
+    </TableUIWithAutoSizeCalculation>
   </div>
 </template>
 

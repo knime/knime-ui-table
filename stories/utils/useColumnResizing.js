@@ -1,24 +1,40 @@
 import { ref, computed } from "vue";
 import { MIN_COLUMN_SIZE } from "@/util/constants";
 
-export default ({ currentColumnIndices }) => {
+export default ({ currentColumnIndices, currentColumnKeys }) => {
   const currentAvailableWidth = ref(0);
   const currentAllColumnSizes = ref({});
   const currentSetDefaultSize = ref(null);
 
-  const updateAvailableWidth = (newAvaliableWidth) => {
+  const updateAvailableWidth = (newAvailableWidth) => {
     if (currentAvailableWidth.value) {
       // update all non-default column widths according to the relative change in client width
-      const ratio = newAvaliableWidth / currentAvailableWidth.value;
+      const ratio = newAvailableWidth / currentAvailableWidth.value;
       Object.keys(currentAllColumnSizes).forEach((key) => {
         currentAllColumnSizes.value[key] *= ratio;
       });
       if (currentSetDefaultSize.value !== null) {
         currentSetDefaultSize.value *= ratio;
       }
-      currentAvailableWidth.value = newAvaliableWidth;
+      currentAvailableWidth.value = newAvailableWidth;
     }
-    currentAvailableWidth.value = newAvaliableWidth;
+    currentAvailableWidth.value = newAvailableWidth;
+  };
+
+  const onAutoColumnSizesUpdate = (newAutoColumnSizesByKey) => {
+    if (Reflect.ownKeys(newAutoColumnSizesByKey).length === 0) {
+      currentAllColumnSizes.value = {};
+      currentSetDefaultSize.value = null;
+    } else {
+      currentAllColumnSizes.value = currentColumnKeys.value.reduce(
+        (autoColumnSizesByIndex, columnKey, columnIndex) => ({
+          ...autoColumnSizesByIndex,
+          [currentColumnIndices.value[columnIndex]]:
+            newAutoColumnSizesByKey[columnKey],
+        }),
+        {},
+      );
+    }
   };
 
   const currentColumnSizes = computed(() => {
@@ -67,5 +83,6 @@ export default ({ currentColumnIndices }) => {
     onColumnResize,
     onAllColumnsResize,
     updateAvailableWidth,
+    onAutoColumnSizesUpdate,
   };
 };
