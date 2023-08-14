@@ -4,24 +4,17 @@ import useTableReady from "../useTableReady";
 describe("useTableReady", () => {
   it("sets tableIsInitiallyReady to true when it is not visible yet", () => {
     const {
-      tableIsVisible,
-      tableIsInitiallyReady,
-      setTableIsVisibleToTrue,
-      setAutoSizesWereInitiallyUpdatedToTrue,
-      setAvailableWidthWasInitiallyUpdatedToTrue,
+      initialSizeUpdatesFinished: ready,
+      setAutoSizesInitialized,
+      setAvailableWidthInitialized,
     } = useTableReady();
 
-    expect(tableIsInitiallyReady.value).toBeFalsy();
-    expect(tableIsVisible.value).toBeFalsy();
+    expect(ready.value).toBeFalsy();
 
-    setAutoSizesWereInitiallyUpdatedToTrue();
-    expect(tableIsInitiallyReady.value).toBeFalsy();
+    setAutoSizesInitialized();
+    expect(ready.value).toBeFalsy();
 
-    setAvailableWidthWasInitiallyUpdatedToTrue();
-    expect(tableIsInitiallyReady.value).toBeTruthy();
-
-    setTableIsVisibleToTrue();
-    expect(tableIsInitiallyReady.value).toBeFalsy();
-    expect(tableIsVisible.value).toBeTruthy();
+    setAvailableWidthInitialized();
+    expect(ready.value).toBeTruthy();
   });
 });

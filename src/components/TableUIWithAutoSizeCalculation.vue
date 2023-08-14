@@ -38,25 +38,13 @@ export default {
   },
   emits: ["autoColumnSizesUpdate", "ready", "update:available-width"],
   setup() {
-    const {
-      tableIsVisible,
-      tableIsInitiallyReady,
-      setTableIsVisibleToTrue,
-      setAutoSizesWereInitiallyUpdatedToTrue,
-      setAvailableWidthWasInitiallyUpdatedToTrue,
-    } = useTableReady();
-    return {
-      tableIsVisible,
-      tableIsInitiallyReady,
-      setTableIsVisibleToTrue,
-      setAutoSizesWereInitiallyUpdatedToTrue,
-      setAvailableWidthWasInitiallyUpdatedToTrue,
-    };
+    return useTableReady();
   },
   data() {
     return {
       currentSizes: {},
       calculateSizes: false,
+      tableIsVisible: false,
     };
   },
   computed: {
@@ -131,8 +119,8 @@ export default {
     this.triggerCalculationOfAutoColumnSizes();
   },
   async updated() {
-    if (this.tableIsInitiallyReady) {
-      this.setTableIsVisibleToTrue();
+    if (!this.tableIsVisible && this.initialSizeUpdatesFinished) {
+      this.tableIsVisible = true;
       // await for the table to be visible in the DOM
       await this.$nextTick();
       this.$emit("ready");
@@ -232,11 +220,11 @@ export default {
     },
     emitNewAutoSizes() {
       this.$emit("autoColumnSizesUpdate", this.currentSizes);
-      this.setAutoSizesWereInitiallyUpdatedToTrue();
+      this.setAutoSizesInitialized();
     },
     onUpdateAvailableWidth(newAvailableWidth) {
       this.$emit("update:available-width", newAvailableWidth);
-      this.setAvailableWidthWasInitiallyUpdatedToTrue();
+      this.setAvailableWidthInitialized();
     },
     getTableUIElement() {
       return this.$refs.tableUI.$el;
