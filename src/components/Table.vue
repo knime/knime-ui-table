@@ -480,7 +480,7 @@ export default {
   watch: {
     pageRowCount(newCount) {
       if (newCount === 0) {
-        this.onPageSizeUpdate(this.currentPageSize);
+        this.setCorrectPage();
       }
     },
     paginatedData(newPaginatedData) {
@@ -783,6 +783,10 @@ export default {
     onPageSizeUpdate(newPageSize) {
       consola.debug(`Table received: pageSizeUpdate ${newPageSize}`);
       this.currentPageSize = newPageSize;
+      this.setCorrectPage();
+      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
+    },
+    setCorrectPage() {
       let newPageNumber = getNextPage(
         this.currentPageSize,
         this.currentPage,
@@ -793,7 +797,6 @@ export default {
       if (newPageNumber && newPageNumber !== this.currentPage) {
         this.currentPage = newPageNumber;
       }
-      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
     },
     /*
      *
