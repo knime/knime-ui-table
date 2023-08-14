@@ -36,7 +36,7 @@ const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
   const scrollbarWidthCallback = throttle((entries) => {
     const totalWidth = entries[0].borderBoxSize[0].inlineSize;
     const innerWidth = entries[0].contentRect.width;
-    currentScrollBarWidth.value = totalWidth - innerWidth;
+    currentScrollBarWidth.value = Math.ceil(totalWidth - innerWidth);
   });
   const scrollbarWidthObserver = new ResizeObserver(scrollbarWidthCallback);
 
