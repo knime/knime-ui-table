@@ -13,6 +13,7 @@
 import TableUI from "./TableUI.vue";
 import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
 import useTableReady from "./composables/useTableReady";
+import { isEqual } from "lodash";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -101,8 +102,10 @@ export default {
   },
   watch: {
     autoColumnSizesOptions: {
-      handler() {
-        this.triggerCalculationOfAutoColumnSizes();
+      handler(oldVal, newVal) {
+        if (!isEqual(newVal, oldVal)) {
+          this.triggerCalculationOfAutoColumnSizes();
+        }
       },
       deep: true,
     },
