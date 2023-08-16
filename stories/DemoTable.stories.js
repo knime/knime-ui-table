@@ -403,7 +403,7 @@ export const TableUIWithAutoSizeCalculation = Template.bind({});
 TableUIWithAutoSizeCalculation.args = {
   autoSizeColumnsToBody: true,
   autoSizeColumnsToHeader: false,
-  fixedColumnSizes: { lastRun: 500, nextScheduledExecution: 500 },
+  fixedColumnSizes: { lastRun: 200, id: 100 },
   withSorting: true,
   withPagination: false,
   withColumnFilters: true,

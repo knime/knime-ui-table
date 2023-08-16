@@ -22,19 +22,16 @@ export default ({ currentColumnIndices, currentColumnKeys }) => {
   };
 
   const onAutoColumnSizesUpdate = (newAutoColumnSizesByKey) => {
-    if (Reflect.ownKeys(newAutoColumnSizesByKey).length === 0) {
-      currentAllColumnSizes.value = {};
-      currentSetDefaultSize.value = null;
-    } else {
-      currentAllColumnSizes.value = currentColumnKeys.value.reduce(
-        (autoColumnSizesByIndex, columnKey, columnIndex) => ({
-          ...autoColumnSizesByIndex,
-          [currentColumnIndices.value[columnIndex]]:
-            newAutoColumnSizesByKey[columnKey],
-        }),
-        {},
-      );
-    }
+    currentAllColumnSizes.value = {};
+    currentSetDefaultSize.value = null;
+    currentColumnIndices.value.forEach(
+      (columnIndex, indexInDisplayedColumns) => {
+        currentAllColumnSizes.value[columnIndex] =
+          newAutoColumnSizesByKey[
+            currentColumnKeys.value[indexInDisplayedColumns]
+          ];
+      },
+    );
   };
 
   const currentColumnSizes = computed(() => {

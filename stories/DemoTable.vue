@@ -1,7 +1,8 @@
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, reactive } from "vue";
 import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
 import TableUI from "@/components/TableUI.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import demoProps from "./props.json";
 import { columnTypes, tablePageSizes } from "@/config/table.config";
 
@@ -194,12 +195,6 @@ const {
   currentTableSize,
 });
 
-const tableUIWithAutoSizeCalculation = ref(null);
-const onTriggerPageChange = (pageNumberDiff) => {
-  onPageChange(pageNumberDiff);
-  tableUIWithAutoSizeCalculation.value.triggerCalculationOfAutoColumnSizes();
-};
-
 const { paginatedData, processedIndicies, paginatedIndicies, totalTableSize } =
   useDataProcessing({
     filter: { filterData, filterHash },
@@ -368,14 +363,14 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
     }"
   >
     <TableUIWithAutoSizeCalculation
-      ref="tableUIWithAutoSizeCalculation"
+      ref="table"
       v-bind="tableProps"
       @time-filter-update="onTimeFilterUpdate"
       @column-update="onColumnUpdate"
       @column-reorder="onColumnReorder"
       @group-update="onGroupUpdate"
       @search="onSearch"
-      @page-change="onTriggerPageChange"
+      @page-change="onPageChange"
       @page-size-update="onPageSizeUpdate"
       @column-sort="onColumnSort"
       @column-filter="onColumnFilter"
@@ -422,6 +417,14 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
       </template>
     </TableUIWithAutoSizeCalculation>
   </div>
+  <FunctionButton
+    v-if="autoSizeColumnsToBody || autoSizeColumnsToHeader"
+    class="trigger-auto-sizing"
+    primary
+    @click="() => $refs.table.triggerCalculationOfAutoColumnSizes()"
+  >
+    <span>Trigger auto size</span>
+  </FunctionButton>
 </template>
 
 <style>
@@ -432,5 +435,12 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
   line-height: 1.44;
   height: 100vh;
   background-color: var(--knime-porcelain);
+}
+
+.trigger-auto-sizing {
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  z-index: 10;
 }
 </style>
