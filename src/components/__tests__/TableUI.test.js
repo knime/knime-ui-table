@@ -24,8 +24,10 @@ import useCellSelection from "../composables/useCellSelection";
 const expectedNormalRowHeight = 41;
 
 const bodyWidthResult = 123;
+const fitsInsideTotalWidthResult = true;
 const availableWidthMock = {
   innerWidthToBodyWidth: vi.fn(() => bodyWidthResult),
+  fitsInsideTotalWidth: vi.fn(() => fitsInsideTotalWidthResult),
 };
 vi.mock("../composables/useAvailableWidth", () => ({
   default: vi.fn(() => availableWidthMock),
@@ -763,12 +765,16 @@ describe("TableUI.vue", () => {
   });
 
   describe("the width of the table, its header and its body", () => {
-    it("uses available width composable navigation", async () => {
+    it("uses available width composable", async () => {
       useAvailableWidth.reset();
-      const { wrapper } = doMount();
+      const { wrapper } = doMount({
+        shallow: false,
+        enableVirtualScrolling: false,
+      });
       const [
         {
           emitAvailableWidth,
+          bodyContainsScrollbar,
           refs: { scrolledElement, root: providedWrapper },
         },
       ] = useAvailableWidth.mock.calls[0];
@@ -777,6 +783,15 @@ describe("TableUI.vue", () => {
       expect(unref(scrolledElement)).toStrictEqual(
         wrapper.find(".vertical-scroll").element,
       );
+      expect(unref(bodyContainsScrollbar)).toBe(false);
+      await wrapper.setProps({
+        tableConfig: {
+          ...wrapper.vm.tableConfig,
+          enableVirtualScrolling:
+            !wrapper.vm.tableConfig.enableVirtualScrolling,
+        },
+      });
+      expect(unref(bodyContainsScrollbar)).toBe(true);
 
       emitAvailableWidth(123);
       expect(wrapper.emitted()["update:available-width"]).toStrictEqual([
@@ -867,9 +882,18 @@ describe("TableUI.vue", () => {
       const { wrapper } = doMount();
       expect(availableWidthMock.innerWidthToBodyWidth).toHaveBeenCalledWith(
         100,
-        false,
       );
       expect(wrapper.vm.currentBodyWidth).toBe(bodyWidthResult);
+    });
+
+    it("computes whether the body fits without a horizontal scrollbar", () => {
+      const { wrapper } = doMount();
+      expect(availableWidthMock.fitsInsideTotalWidth).toHaveBeenCalledWith(
+        bodyWidthResult,
+      );
+      expect(wrapper.vm.fitsWithoutHorizontalScrollbar).toBe(
+        fitsInsideTotalWidthResult,
+      );
     });
 
     it("uses different scrolled element in case of virtual scrolling", () => {
@@ -887,18 +911,6 @@ describe("TableUI.vue", () => {
       expect(unref(scrolledElement)).toBe(
         wrapper.findComponent(RecycleScroller).element,
       );
-    });
-
-    it("uses the scrollbar width when creating the current body width", () => {
-      const { wrapper } = doMount({
-        enableVirtualScrolling: true,
-        shallow: false,
-      });
-      expect(availableWidthMock.innerWidthToBodyWidth).toHaveBeenCalledWith(
-        100,
-        true,
-      );
-      expect(wrapper.vm.currentBodyWidth).toBe(bodyWidthResult);
     });
   });
 

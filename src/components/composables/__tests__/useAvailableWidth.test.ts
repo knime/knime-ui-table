@@ -142,7 +142,7 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const specialColumnsSizeTotal = 123;
     const wrapper = mount(AvailableWidthTestComponent as any, {
-      props: { specialColumnsSizeTotal },
+      props: { specialColumnsSizeTotal, bodyContainsScrollbar: false },
     });
     await flushPromises();
     rootCallback(availableWidth);
@@ -150,11 +150,47 @@ describe("useAvailableWidth", () => {
     await flushPromises();
 
     const innerWidth = 123;
-    expect(wrapper.vm.innerWidthToBodyWidth(innerWidth, false)).toBe(
+    expect(wrapper.vm.innerWidthToBodyWidth(innerWidth)).toBe(
       innerWidth + specialColumnsSizeTotal,
     );
-    expect(wrapper.vm.innerWidthToBodyWidth(innerWidth, true)).toBe(
+
+    await wrapper.setProps({
+      bodyContainsScrollbar: true,
+    });
+
+    expect(wrapper.vm.innerWidthToBodyWidth(innerWidth)).toBe(
       innerWidth + specialColumnsSizeTotal + scrollbarWidth,
     );
+  });
+
+  it("detects if a given body width fits inside the total width", async () => {
+    const scrollbarWidth = 17;
+    const availableWidth = 200;
+    const specialColumnsSizeTotal = 123;
+    const wrapper = mount(AvailableWidthTestComponent as any, {
+      props: { specialColumnsSizeTotal, bodyContainsScrollbar: true },
+    });
+    await flushPromises();
+    rootCallback(availableWidth);
+    scrolledElementCallback(scrollbarWidth);
+    await flushPromises();
+
+    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth)).toBeTruthy();
+    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth + 0.01)).toBeTruthy();
+    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth + 1)).toBeFalsy();
+
+    await wrapper.setProps({
+      bodyContainsScrollbar: false,
+    });
+
+    expect(
+      wrapper.vm.fitsInsideTotalWidth(availableWidth - scrollbarWidth),
+    ).toBeTruthy();
+    expect(
+      wrapper.vm.fitsInsideTotalWidth(availableWidth - scrollbarWidth + 0.01),
+    ).toBeTruthy();
+    expect(
+      wrapper.vm.fitsInsideTotalWidth(availableWidth - scrollbarWidth + 1),
+    ).toBeFalsy();
   });
 });

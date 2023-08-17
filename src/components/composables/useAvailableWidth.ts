@@ -10,7 +10,7 @@ import {
 } from "vue";
 import throttle from "raf-throttle";
 
-const useTotalWidth = (root: Ref<HTMLElement>) => {
+const useTotalWidth = (root: Ref<null | HTMLElement>) => {
   const totalWidth: Ref<null | number> = ref(null);
 
   const rootResizeCallback = throttle((entries) => {
@@ -20,18 +20,22 @@ const useTotalWidth = (root: Ref<HTMLElement>) => {
   const rootResizeObserver = new ResizeObserver(rootResizeCallback);
 
   onMounted(() => {
-    rootResizeObserver.observe(root.value);
+    if (root.value) {
+      rootResizeObserver.observe(root.value);
+    }
   });
 
   onBeforeUnmount(() => {
-    rootResizeObserver.unobserve(root.value);
+    if (root.value) {
+      rootResizeObserver.unobserve(root.value);
+    }
   });
 
   return totalWidth;
 };
 
-const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
-  const currentScrollBarWidth: Ref<number | null> = ref(null);
+const useScrollbarWidth = (scrolledElement: Ref<null | HTMLElement>) => {
+  const currentScrollBarWidth: Ref<null | number> = ref(null);
 
   const scrollbarWidthCallback = throttle((entries) => {
     const totalWidth = entries[0].borderBoxSize[0].inlineSize;
@@ -43,7 +47,9 @@ const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
   onMounted(() => {
     // next tick necessary for the virtual scroller to be rendered
     nextTick(() => {
-      scrollbarWidthObserver.observe(scrolledElement.value);
+      if (scrolledElement.value) {
+        scrollbarWidthObserver.observe(scrolledElement.value);
+      }
     });
   });
 
@@ -63,7 +69,9 @@ const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
   );
 
   onBeforeUnmount(() => {
-    scrollbarWidthObserver.unobserve(scrolledElement.value);
+    if (scrolledElement.value) {
+      scrollbarWidthObserver.unobserve(scrolledElement.value);
+    }
   });
 
   return currentScrollBarWidth;
@@ -72,13 +80,18 @@ const useScrollbarWidth = (scrolledElement: Ref<HTMLElement>) => {
 export default ({
   emitAvailableWidth,
   specialColumnsSizeTotal,
+  bodyContainsScrollbar,
   refs: { scrolledElement, root },
 }: {
   emitAvailableWidth: (availableWidth: number) => void;
   specialColumnsSizeTotal: Ref<number>;
+  /**
+   * If true, the width of the body/rows/header does not only depend on the column sizes but also the width of the scrollbar has to be added to it.
+   */
+  bodyContainsScrollbar: Ref<boolean>;
   refs: {
-    scrolledElement: Ref<HTMLElement>;
-    root: Ref<HTMLElement>;
+    scrolledElement: Ref<null | HTMLElement>;
+    root: Ref<null | HTMLElement>;
   };
 }) => {
   const totalWidth = useTotalWidth(root);
@@ -95,16 +108,20 @@ export default ({
     );
   });
 
-  const innerWidthToBodyWidth = (
-    availableWidth: number,
-    useScrollbarWidth: boolean,
-  ) => {
-    let totalWidthWithoutScrollbar =
-      availableWidth + specialColumnsSizeTotal.value;
-    if (useScrollbarWidth && currentScrollBarWidth.value) {
-      totalWidthWithoutScrollbar += currentScrollBarWidth.value;
+  const innerWidthToBodyWidth = (columnsWidth: number) => {
+    let bodyWidth = columnsWidth + specialColumnsSizeTotal.value;
+    if (bodyContainsScrollbar.value && currentScrollBarWidth.value) {
+      bodyWidth += currentScrollBarWidth.value;
     }
-    return totalWidthWithoutScrollbar;
+    return bodyWidth;
+  };
+
+  const fitsInsideTotalWidth = (bodyWidth: number) => {
+    let width = totalWidth.value ?? 0;
+    if (!bodyContainsScrollbar.value && currentScrollBarWidth.value) {
+      width -= currentScrollBarWidth.value;
+    }
+    return Math.floor(bodyWidth) <= width;
   };
 
   watch(
@@ -116,5 +133,5 @@ export default ({
     },
   );
 
-  return { innerWidthToBodyWidth };
+  return { innerWidthToBodyWidth, fitsInsideTotalWidth };
 };

@@ -202,12 +202,13 @@ export default {
         : 0;
     });
 
-    const { innerWidthToBodyWidth } = useAvailableWidthDetection({
+    const availableWidthMethods = useAvailableWidthDetection({
       emitAvailableWidth: (newWidth) =>
         emit("update:available-width", newWidth),
       specialColumnsSizeTotal: computed(
         () => collapserSize.value + selectionSize.value + rightSideSize.value,
       ),
+      bodyContainsScrollbar: enableVirtualScrolling,
       refs: {
         root: wrapper,
         scrolledElement,
@@ -252,7 +253,7 @@ export default {
       scroller,
       scrollWrapper,
       enableVirtualScrolling,
-      innerWidthToBodyWidth,
+      ...availableWidthMethods,
       activateCellSelectionOnMove,
       deactivateCellSelectionOnMove,
       selectCellsOnMove,
@@ -359,8 +360,10 @@ export default {
         (prev: any, curr: any) => prev + curr,
         0,
       );
-      const useScrollbarSize = this.enableVirtualScrolling;
-      return this.innerWidthToBodyWidth(widthContentColumns, useScrollbarSize);
+      return this.innerWidthToBodyWidth(widthContentColumns);
+    },
+    fitsWithoutHorizontalScrollbar() {
+      return this.fitsInsideTotalWidth(this.currentBodyWidth);
     },
     showVirtualScroller() {
       return this.enableVirtualScrolling && this.scrollData.length === 1;
@@ -770,7 +773,12 @@ export default {
           'expand-content': showVirtualScroller,
         },
       ]"
-      :style="{ overflowX: columnResizeActive ? 'hidden' : 'auto' }"
+      :style="{
+        overflowX:
+          columnResizeActive || fitsWithoutHorizontalScrollbar
+            ? 'hidden'
+            : 'auto',
+      }"
       @scroll="closeExpandedSubMenu"
     >
       <Header
