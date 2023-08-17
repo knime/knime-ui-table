@@ -1381,11 +1381,31 @@ describe("TableUI.vue", () => {
 
   it("computes drag handle height", () => {
     const { wrapper } = doMount();
-    expect(wrapper.vm.getDragHandleHeight()).toBeDefined();
+    Object.defineProperty(
+      wrapper.findComponent(Group).element,
+      "offsetHeight",
+      { value: 100 },
+    );
+    Object.defineProperty(
+      wrapper.findComponent(Header).element,
+      "offsetHeight",
+      { value: 100 },
+    );
+    expect(wrapper.vm.getDragHandleHeight()).toBe(200);
     const { wrapper: wrapperWithScroller } = doMount({
       enableVirtualScrolling: true,
       shallow: false,
     });
-    expect(wrapperWithScroller.vm.getDragHandleHeight()).toBeDefined();
+    Object.defineProperty(
+      wrapperWithScroller.findComponent(Header).element,
+      "offsetHeight",
+      { value: 100 },
+    );
+    Object.defineProperty(
+      wrapperWithScroller.findComponent(RecycleScroller).find("tbody").element,
+      "offsetHeight",
+      { value: 100 },
+    );
+    expect(wrapperWithScroller.vm.getDragHandleHeight()).toBe(200);
   });
 });

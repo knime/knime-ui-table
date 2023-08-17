@@ -706,10 +706,14 @@ export default {
     },
     getDragHandleHeight() {
       const scroller = this.$refs.scrollWrapper as any;
-      return Array(...scroller.children).reduce((prev, cur) => {
+      const scrollerChildren: HTMLElement[] = scroller.children;
+      return Array(...scrollerChildren).reduce((prev, cur) => {
         if (cur.id === this.scrollerId) {
-          // the first child of the RecycleScroller is an element of the heigt of all rows combined
-          return prev + cur.children[0].offsetHeight;
+          // we set the propoerty list-tag to tbody below for the RecycleScroller
+          const body = [...cur.children].filter(
+            ({ tagName }) => tagName === "TBODY",
+          )[0] as HTMLElement;
+          return prev + body.offsetHeight;
         } else {
           return prev + cur.offsetHeight;
         }
