@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import { isEqual } from "lodash";
 
 export type CellPosition = {
@@ -61,6 +61,15 @@ export default (enableCellSelection: Ref<boolean>) => {
     currentRectId.value = null;
   };
 
+  watch(
+    () => enableCellSelection.value,
+    (isEnabled) => {
+      if (!isEnabled) {
+        clearCellSelection();
+      }
+    },
+  );
+
   const selectCell = (cellPosition: CellPosition, rectId: RectId) => {
     if (rectId === currentRectId.value && isSingleSelectedCell(cellPosition)) {
       clearCellSelection();
@@ -89,7 +98,7 @@ export default (enableCellSelection: Ref<boolean>) => {
   return {
     selectCell: applyIfEnabled(selectCell),
     expandCellSelection: applyIfEnabled(expandCellSelection),
-    clearCellSelection: applyIfEnabled(clearCellSelection),
+    clearCellSelection,
     rectMinMax,
     currentRectId,
   };

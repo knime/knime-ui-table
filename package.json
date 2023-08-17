@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
-    "build-only": "rm -rf dist && vite build",
+    "build-only": "vite build",
     "tsc": "tsc",
     "type-check": "vue-tsc --noEmit",
     "format": "prettier --cache --write .",

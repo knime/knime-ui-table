@@ -5,7 +5,7 @@ import useCellSelection, {
   type RectId,
 } from "../useCellSelection";
 
-import { ref, type Ref } from "vue";
+import { nextTick, ref, type Ref } from "vue";
 
 describe("useCellSelection", () => {
   const id = 1;
@@ -52,6 +52,18 @@ describe("useCellSelection", () => {
     selectCell(cellPos, id);
 
     expectSingleSelectedCell(cellPos, id);
+  });
+
+  it("clears selection when enableCellSelection switches to false", async () => {
+    const cellPos: CellPosition = { x: 3, y: 5 };
+    expectEmptySelection();
+    selectCell(cellPos, id);
+    expectSingleSelectedCell(cellPos, id);
+
+    enableCellSelection.value = false;
+    await nextTick();
+
+    expectEmptySelection();
   });
 
   it("deselects cell if it was already selected", () => {
