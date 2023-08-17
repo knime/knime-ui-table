@@ -10,6 +10,7 @@ import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import ActionButton from "./ui/ActionButton.vue";
 import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
+// @ts-ignore
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import useAvailableWidthDetection from "./composables/useAvailableWidth";

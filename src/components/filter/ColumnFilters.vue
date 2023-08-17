@@ -53,6 +53,11 @@ export default {
     };
   },
   methods: {
+    getFilterConfigProps(filterConfig: FilterConfig) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { is: _, ...other } = filterConfig;
+      return other;
+    },
     onInput(colInd: number, value: FilterConfig["modelValue"]) {
       consola.debug("Updated table column filter: ", value);
       this.$emit("columnFilter", colInd, value);
@@ -80,7 +85,7 @@ export default {
         <Component
           :is="filterConfigs[ind].is"
           is-filter
-          v-bind="filterConfigs[ind]"
+          v-bind="getFilterConfigProps(filterConfigs[ind])"
           :placeholder="column"
           :aria-label="`filter-${column}`"
           @update:model-value="onInput(ind, $event)"

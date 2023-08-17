@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
+import dts from "vite-plugin-dts";
 import svgLoader from "vite-svg-loader";
 import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 
@@ -8,6 +9,16 @@ import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 export default defineConfig({
   plugins: [
     vue(),
+    dts({
+      rollupTypes: true,
+      copyDtsFiles: true,
+      staticImport: true,
+      pathsToAliases: true,
+      outDir: ["dist"],
+      compilerOptions: {
+        declarationMap: true,
+      },
+    }),
     svgLoader(),
     cssInjectedByJsPlugin(), // not supported natively in Vite yet, see https://github.com/vitejs/vite/issues/1579]
   ],
@@ -22,7 +33,7 @@ export default defineConfig({
   envPrefix: "KNIME_",
   build: {
     lib: {
-      entry: fileURLToPath(new URL("lib/main.js", import.meta.url)),
+      entry: fileURLToPath(new URL("lib/main.ts", import.meta.url)),
       fileName: "knime-ui-table",
       formats: ["es"],
     },

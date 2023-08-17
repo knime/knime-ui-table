@@ -8,7 +8,7 @@
  * @param {Number} param.currentPageSize - the current page size from the table.
  * @param {Number} [param.currentGroup] - the current group-by group (if present).
  * @param {Array<Array<Number>>} param.processedIndicies - the grouped and sorted index mapping.
- * @returns {int} index from processed mapping
+ * @returns {number} index from processed mapping
  */
 export const getProcessedRowInd = ({
   relativeInd,

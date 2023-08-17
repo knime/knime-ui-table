@@ -16,11 +16,6 @@ describe("Cell.vue", () => {
       clickable: false,
       isSlotted: false,
       selectOnMove: false,
-      isSelected: false,
-      leftIsSelected: false,
-      rightIsSelected: false,
-      aboveIsSelected: false,
-      belowIsSelected: false,
       size: 300,
       backgroundColor: null,
     };

@@ -1,14 +1,30 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.config.json"
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "exclude": [
+    "dist",
+    "demo",
+    "vue-virtual-scroller/build",
+    "stories",
+    "webapps-common/vitest.setup.ts",
+    "webapps-common/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "./dist",
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
     },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.vitest.json"
-    }
-  ]
+    "allowJs": true,
+    "types": ["node", "jsdom"],
+
+    "plugins": [],
+    "declarationDir": "dist",
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "rootDirs": ["/"]
+  }
 }
