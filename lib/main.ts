@@ -8,3 +8,7 @@ export * from "../src/config/table.config";
 export * from "../src/config/time.config";
 
 export type { Rect } from "../src/components/composables/useCellSelection";
+
+import type PossibleValue from "../src/types/PossibleValue";
+import type FilterConfig from "../src/types/FilterConfig";
+export type { PossibleValue, FilterConfig };
