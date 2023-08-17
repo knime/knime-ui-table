@@ -1340,16 +1340,30 @@ describe("TableUI.vue", () => {
       expect(row.props().selectCellsOnMove).toBeFalsy();
     });
 
-    it("emits copySelection event when pressing Ctrl + C", async () => {
+    it("emits copySelection event when copy event is received and focus is within table", async () => {
       const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
       cellSelectionMock.rectMinMax.value = rect;
       const id = 0;
       cellSelectionMock.currentRectId.value = id;
       await wrapper.vm.$nextTick();
 
-      wrapper.find("table").trigger("keydown.ctrl.c");
+      wrapper.find("table").trigger("focusin");
+      window.dispatchEvent(new Event("copy"));
 
       expect(wrapper.emitted("copySelection")[0]).toStrictEqual([{ id, rect }]);
+    });
+
+    it("does not emit copySelection event when copy event is received and focus is outside of table", async () => {
+      const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+      cellSelectionMock.rectMinMax.value = rect;
+      const id = 0;
+      cellSelectionMock.currentRectId.value = id;
+      await wrapper.vm.$nextTick();
+
+      wrapper.find("table").trigger("focusout");
+      window.dispatchEvent(new Event("copy"));
+
+      expect(wrapper.emitted("copySelection")).toBeUndefined();
     });
   });
 

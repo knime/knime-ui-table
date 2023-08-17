@@ -226,7 +226,11 @@ export default {
     );
     const cellSelection = useCellSelection(enableCellSelection);
 
+    const focusWithin = ref(false);
     const onCopySelection = () => {
+      if (!focusWithin.value) {
+        return;
+      }
       const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
@@ -240,6 +244,8 @@ export default {
       clearCellSelection: cellSelection.clearCellSelection,
     });
 
+    window.addEventListener("copy", onCopySelection);
+
     return {
       wrapper,
       scroller,
@@ -251,6 +257,7 @@ export default {
       selectCellsOnMove,
       ...cellSelection,
       onCopySelection,
+      focusWithin,
     };
   },
   data() {
@@ -466,6 +473,9 @@ export default {
     currentRowHeight(newRowHeight) {
       this.$emit("rowHeightUpdate", newRowHeight);
     },
+  },
+  beforeUnmount() {
+    window.removeEventListener("copy", this.onCopySelection);
   },
   methods: {
     // Utilities
@@ -720,6 +730,9 @@ export default {
       });
       return rowComponents;
     },
+    changeFocus(newFocus: boolean) {
+      this.focusWithin = newFocus;
+    },
   },
 };
 </script>
@@ -728,12 +741,13 @@ export default {
   <table
     ref="wrapper"
     :tabindex="-1"
-    @keydown.ctrl.c="onCopySelection"
     @pointerleave="deactivateCellSelectionOnMove"
     @pointerdown.passive.stop="
       $event.button === 0 && activateCellSelectionOnMove()
     "
     @pointerup.passive="$event.button === 0 && deactivateCellSelectionOnMove()"
+    @focusin="changeFocus(true)"
+    @focusout="changeFocus(false)"
   >
     <TopControls
       :table-config="tableConfig"
