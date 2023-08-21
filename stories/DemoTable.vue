@@ -351,6 +351,13 @@ const tableProps = reactive({
 });
 
 const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
+const alertEvent =
+  (methodName) =>
+  (...args) =>
+    window.alert(
+      `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`,
+    );
+const onCopySelection = alertEvent("copySelection");
 </script>
 
 <template>
@@ -382,6 +389,7 @@ const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
       @all-columns-resize="onAllColumnsResize"
       @update:available-width="onAvailableWidthUpdate"
       @auto-column-sizes-update="onAutoColumnSizesUpdate"
+      @copy-selection="onCopySelection"
     >
       <template
         v-for="col in currentSlottedColumns"
