@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type CellSelectionOverlayProps from "./CellSelectionOverlayProps";
 
 const props = defineProps<CellSelectionOverlayProps>();
@@ -59,22 +59,51 @@ const height = computed(() => {
 const width = computed(() => {
   return right.value - left.value;
 });
+
+const copied = ref(false);
+const triggerCopied = () => {
+  copied.value = true;
+};
+defineExpose({
+  triggerCopied,
+});
 </script>
 
 <template>
   <div
     class="overlay"
+    :class="{ copied: copied }"
     :style="{
       transform: `translateY(${top}px) translateX(${left}px)`,
       width: `${width}px`,
       height: `${height}px`,
     }"
+    @animationend="copied = false"
   />
 </template>
 
 <style lang="postcss" scoped>
+.copied {
+  animation: flash 0.5s;
+}
+
+@keyframes flash {
+  0% {
+    background-color: var(--selected-cells-background-color);
+  }
+
+  50% {
+    background-color: var(--selected-cells-background-color-copied);
+  }
+
+  100% {
+    background-color: var(--selected-cells-background-color);
+  }
+}
+
 .overlay {
   --selected-cells-background-color: rgb(30 109 168 / 9%);
+  --selected-cells-background-color-copied: rgb(30 109 168 / 30%);
   --selected-cells-border: 1px solid rgb(55 109 168);
 
   background-color: var(--selected-cells-background-color);

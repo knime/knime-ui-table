@@ -176,6 +176,7 @@ export default {
     const wrapper: Ref<any> = ref(null);
     const scroller: Ref<any> = ref(null);
     const scrollWrapper: Ref<any> = ref(null);
+    const selectionOverlay: Ref<any> = ref([]);
 
     const enableVirtualScrolling = computed(
       () => props.tableConfig.enableVirtualScrolling,
@@ -233,6 +234,13 @@ export default {
       if (!focusWithin.value) {
         return;
       }
+      if (selectionOverlay.value) {
+        if (Array.isArray(selectionOverlay.value)) {
+          selectionOverlay.value[0].triggerCopied();
+        } else {
+          selectionOverlay.value.triggerCopied();
+        }
+      }
       const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
@@ -251,6 +259,7 @@ export default {
     return {
       wrapper,
       scroller,
+      selectionOverlay,
       scrollWrapper,
       enableVirtualScrolling,
       ...availableWidthMethods,
@@ -854,6 +863,7 @@ export default {
         <template #before>
           <CellSelectionOverlay
             v-if="rectMinMax"
+            ref="selectionOverlay"
             :rect="rectMinMax"
             :row-height="scrollerItemSize"
             :table-config="tableConfig"
@@ -974,6 +984,7 @@ export default {
       >
         <CellSelectionOverlay
           v-if="rectMinMax && currentRectId === groupInd"
+          ref="selectionOverlay"
           :rect="rectMinMax"
           :row-height="scrollerItemSize"
           :table-config="tableConfig"

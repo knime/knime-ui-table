@@ -3,7 +3,7 @@ import CellSelectionOverlay from "../CellSelectionOverlay.vue";
 import { beforeEach, describe, expect, it } from "vitest";
 import type CellSelectionOverlayProps from "../CellSelectionOverlayProps";
 
-describe("MyComponent", () => {
+describe("CellSelectionOverlay", () => {
   let props: CellSelectionOverlayProps, wrapper: any;
 
   beforeEach(() => {
@@ -132,6 +132,19 @@ describe("MyComponent", () => {
       });
 
       expect(wrapper.element.style.width).toBe("10px");
+    });
+  });
+
+  describe("copy event", () => {
+    it("checks that correct class is set when copy is triggered", async () => {
+      wrapper.vm.triggerCopied();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.copied).toBe(true);
+      expect(wrapper.classes()).toContain("copied");
+
+      wrapper.trigger("animationend");
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.copied).toBe(false);
     });
   });
 });

@@ -1353,16 +1353,31 @@ describe("TableUI.vue", () => {
     });
 
     it("emits copySelection event when copy event is received and focus is within table", async () => {
+      const triggerCopied = vi.fn();
+      const stubs = {
+        CellSelectionOverlay: {
+          template: "<div/>",
+          methods: {
+            triggerCopied,
+          },
+        },
+      };
+      const comp = doMount({}, stubs);
+      wrapper = comp.wrapper;
       const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
       cellSelectionMock.rectMinMax.value = rect;
       const id = 0;
       cellSelectionMock.currentRectId.value = id;
       await wrapper.vm.$nextTick();
 
+      const overlay = wrapper.findComponent(SelectedCellsOverlay);
+      expect(overlay.exists()).toBeTruthy();
+
       wrapper.find("table").trigger("focusin");
       window.dispatchEvent(new Event("copy"));
 
       expect(wrapper.emitted("copySelection")[0]).toStrictEqual([{ id, rect }]);
+      expect(triggerCopied).toHaveBeenCalled();
     });
 
     it("does not emit copySelection event when copy event is received and focus is outside of table", async () => {
