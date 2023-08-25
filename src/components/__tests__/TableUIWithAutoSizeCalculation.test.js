@@ -238,9 +238,24 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     props.autoColumnSizesOptions.fixedSizes = { [column1.id]: 80, c: 90 };
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
     await loadFonts(wrapper);
-    expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 80, b: 60 });
+    expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 90, b: 60 });
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+  });
+
+  it("adds the padding of the column value of the first row to the fixed sizes", async () => {
+    props.data[0][0].a = { color: "red", value: "group0row0cellA" };
+    props.data[0][1].a = { color: "red", value: "group0row0cellB" };
+    props.autoColumnSizesOptions.fixedSizes = {
+      [column1.id]: 80,
+      [column2.id]: 80,
+    };
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    await loadFonts(wrapper);
+    expect(wrapper.vm.currentSizes).toStrictEqual({
+      [column1.id]: 100,
+      [column2.id]: 90,
+    });
   });
 
   it("enforces a maximum column size", async () => {

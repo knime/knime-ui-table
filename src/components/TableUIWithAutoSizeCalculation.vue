@@ -14,6 +14,7 @@ import TableUI from "./TableUI.vue";
 import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
 import useTableReady from "./composables/useTableReady";
 import { isEqual } from "lodash";
+import { getCellPaddingLeft, getColor, getPropertiesFromColumns } from "@/util";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -27,8 +28,9 @@ export default {
     tableConfig: { type: Object, default: () => ({}) },
     /** This object contains all the options necessary to calculate the sizes based on the
      * content. In case only one of calculateForBody/calculateForHeader is true, the emitted object contains auto
-     * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes no
-     * body sizes are calculated.
+     * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes only
+     * header sizes are calculated and the body sizes will be increased by the padding that the column will have based
+     * on the first row.
      * {
      *      calculateForBody: boolean,
      *      calculateForHeader: boolean,
@@ -53,9 +55,10 @@ export default {
       return this.data !== null && this.calculateSizes;
     },
     dataConfigIds() {
-      return this.dataConfig.columnConfigs.map(
-        (columnConfig) => columnConfig.id,
-      );
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "id");
+    },
+    dataConfigKeys() {
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "key");
     },
     removedColumnIds() {
       const removedColumnIds = new Set();
@@ -97,6 +100,21 @@ export default {
       return (
         this.autoColumnSizesOptions.calculateForBody ||
         this.autoColumnSizesOptions.calculateForHeader
+      );
+    },
+    columnPaddingsLeft() {
+      const firstRowData =
+        this.paginatedDataForAutoColumnSizesCalculation[0][0];
+      return this.dataConfigKeys.reduce(
+        (columnPaddingsLeft, columnKey, columnIndex) => {
+          const columnId = this.dataConfigIds[columnIndex];
+          const columnValue = firstRowData[columnKey];
+          columnPaddingsLeft[columnId] = getCellPaddingLeft(
+            getColor(columnValue),
+          );
+          return columnPaddingsLeft;
+        },
+        {},
       );
     },
   },
@@ -181,7 +199,7 @@ export default {
         if (this.currentSizes.hasOwnProperty(columnId)) {
           this.currentSizes[columnId] = Math.max(
             MIN_COLUMN_SIZE,
-            fixedSizes[columnId],
+            fixedSizes[columnId] + this.columnPaddingsLeft[columnId],
           );
         }
       });

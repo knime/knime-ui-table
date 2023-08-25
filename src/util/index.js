@@ -33,3 +33,15 @@ export const isMissingValue = (val) =>
   (isObjectRepresentation(val) && val?.hasOwnProperty("metadata"));
 export const isEmpty = (val) =>
   typeof unpackObjectRepresentation(val) === "undefined";
+
+export const getPropertiesFromColumns = (columnConfigs, key) => {
+  return columnConfigs.map((colConfig) => colConfig[key]);
+};
+
+const PADDING_LEFT_DEFAULT_CELL = 10;
+const PADDING_LEFT_COLORED_CELL = 20;
+export const getCellPaddingLeft = (backgroundColor) => {
+  return backgroundColor === null
+    ? PADDING_LEFT_DEFAULT_CELL
+    : PADDING_LEFT_COLORED_CELL;
+};

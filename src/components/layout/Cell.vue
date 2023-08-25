@@ -3,18 +3,12 @@ import throttle from "raf-throttle";
 import { computed, ref, type Ref } from "vue";
 import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import type { CellProps } from "./CellProps";
+import { getCellPaddingLeft } from "@/util";
 
 const emit = defineEmits(["click", "input", "select"]);
 const props = defineProps<CellProps>();
 
-const PADDING_LEFT_DEFAULT_CELL = 10;
-const PADDING_LEFT_COLORED_CELL = 20;
-const paddingLeft = computed(() => {
-  const { backgroundColor } = props;
-  return backgroundColor === null
-    ? PADDING_LEFT_DEFAULT_CELL
-    : PADDING_LEFT_COLORED_CELL;
-});
+const paddingLeft = computed(() => getCellPaddingLeft(props.backgroundColor));
 
 const totalWidth = computed(() => props.size ?? 100);
 

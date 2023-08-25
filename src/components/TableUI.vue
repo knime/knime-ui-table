@@ -23,6 +23,7 @@ import {
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
   SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
+import { getPropertiesFromColumns } from "@/util";
 import { computed, ref, toRefs, type Ref } from "vue";
 
 /**
@@ -305,25 +306,34 @@ export default {
      * Current table config. E.g. if 4/10 columns displayed, 'current' fields return values w/ length 4.
      */
     columnHeaders() {
-      return this.getPropertiesFromColumns("header");
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "header");
     },
     columnSubHeaders() {
-      return this.getPropertiesFromColumns("subHeader");
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "subHeader",
+      );
     },
     columnHeaderSubMenuItems() {
-      return this.getPropertiesFromColumns("headerSubMenuItems");
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "headerSubMenuItems",
+      );
     },
     columnSizes() {
-      return this.getPropertiesFromColumns("size");
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "size");
     },
     columnTypes() {
-      return this.getPropertiesFromColumns("type");
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "type");
     },
     columnFilterConfigs() {
-      return this.getPropertiesFromColumns("filterConfig");
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "filterConfig",
+      );
     },
     columnKeys() {
-      return this.getPropertiesFromColumns("key");
+      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "key");
     },
     columnSortConfigs() {
       return this.dataConfig.columnConfigs.map((columnConfig: any) =>
@@ -333,21 +343,25 @@ export default {
       );
     },
     slottedColumns() {
-      return this.getPropertiesFromColumns("hasSlotContent")
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "hasSlotContent",
+      )
         .map((hasSlotContent: any, colInd: any) =>
           hasSlotContent ? colInd : null,
         )
         .filter((colInd: any) => colInd !== null);
     },
     popoverRenderers() {
-      return this.getPropertiesFromColumns("popoverRenderer").map(
-        (renderer: any, colInd: any) => {
-          if (renderer && typeof renderer === "boolean") {
-            renderer = this.columnTypes[colInd];
-          }
-          return renderer;
-        },
-      );
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "popoverRenderer",
+      ).map((renderer: any, colInd: any) => {
+        if (renderer && typeof renderer === "boolean") {
+          renderer = this.columnTypes[colInd];
+        }
+        return renderer;
+      });
     },
     tableHeaderClass() {
       return [
@@ -487,11 +501,6 @@ export default {
   },
   methods: {
     // Utilities
-    getPropertiesFromColumns(key: any) {
-      return this.dataConfig.columnConfigs.map(
-        (colConfig: any) => colConfig[key],
-      );
-    },
     getGroupName(ind: number) {
       return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || "";
     },
