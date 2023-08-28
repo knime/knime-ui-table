@@ -1352,33 +1352,38 @@ describe("TableUI.vue", () => {
       expect(row.props().selectCellsOnMove).toBeFalsy();
     });
 
-    it("emits copySelection event when copy event is received and focus is within table", async () => {
-      const triggerCopied = vi.fn();
-      const stubs = {
-        CellSelectionOverlay: {
-          template: "<div/>",
-          methods: {
-            triggerCopied,
+    it.each([false, true])(
+      "emits copySelection event when copy event is received and focus is within table with virtualScrolling = %s",
+      async (enableVirtualScrolling) => {
+        const triggerCopied = vi.fn();
+        const stubs = {
+          CellSelectionOverlay: {
+            template: "<div/>",
+            methods: {
+              triggerCopied,
+            },
           },
-        },
-      };
-      const comp = doMount({}, stubs);
-      wrapper = comp.wrapper;
-      const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-      cellSelectionMock.rectMinMax.value = rect;
-      const id = 0;
-      cellSelectionMock.currentRectId.value = id;
-      await wrapper.vm.$nextTick();
+        };
+        const comp = doMount({ enableVirtualScrolling, shallow: false }, stubs);
+        wrapper = comp.wrapper;
+        const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+        cellSelectionMock.rectMinMax.value = rect;
+        const id = 0;
+        cellSelectionMock.currentRectId.value = id;
+        await wrapper.vm.$nextTick();
 
-      const overlay = wrapper.findComponent(SelectedCellsOverlay);
-      expect(overlay.exists()).toBeTruthy();
+        const overlay = wrapper.findComponent(SelectedCellsOverlay);
+        expect(overlay.exists()).toBeTruthy();
 
-      wrapper.find("table").trigger("focusin");
-      window.dispatchEvent(new Event("copy"));
+        wrapper.find("table").trigger("focusin");
+        window.dispatchEvent(new Event("copy"));
 
-      expect(wrapper.emitted("copySelection")[0]).toStrictEqual([{ id, rect }]);
-      expect(triggerCopied).toHaveBeenCalled();
-    });
+        expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
+          { id, rect },
+        ]);
+        expect(triggerCopied).toHaveBeenCalled();
+      },
+    );
 
     it("does not emit copySelection event when copy event is received and focus is outside of table", async () => {
       const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };

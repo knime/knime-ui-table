@@ -23,7 +23,7 @@ import {
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
   SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
-import { computed, ref, toRefs, type Ref, defineExpose } from "vue";
+import { computed, ref, toRefs, type Ref } from "vue";
 
 /**
  * @see README.md
@@ -234,13 +234,12 @@ export default {
       if (!focusWithin.value) {
         return;
       }
-      if (selectionOverlay.value) {
-        if (Array.isArray(selectionOverlay.value)) {
-          selectionOverlay.value[0].triggerCopied();
-        } else {
-          selectionOverlay.value.triggerCopied();
-        }
+      if (Array.isArray(selectionOverlay.value)) {
+        selectionOverlay.value[0]?.triggerCopied();
+      } else if (selectionOverlay.value) {
+        selectionOverlay.value.triggerCopied();
       }
+
       const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
@@ -249,10 +248,6 @@ export default {
         });
       }
     };
-
-    defineExpose({
-      clearCellSelection: cellSelection.clearCellSelection,
-    });
 
     window.addEventListener("copy", onCopySelection);
 

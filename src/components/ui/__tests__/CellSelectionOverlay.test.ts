@@ -3,7 +3,7 @@ import CellSelectionOverlay from "../CellSelectionOverlay.vue";
 import { beforeEach, describe, expect, it } from "vitest";
 import type CellSelectionOverlayProps from "../CellSelectionOverlayProps";
 
-describe("CellSelectionOverlay", () => {
+describe("CellSelectionOverlay.vue", () => {
   let props: CellSelectionOverlayProps, wrapper: any;
 
   beforeEach(() => {
@@ -136,15 +136,14 @@ describe("CellSelectionOverlay", () => {
   });
 
   describe("copy event", () => {
-    it("checks that correct class is set when copy is triggered", async () => {
+    it("sets the correct class to trigger the copy animation and removes it after the animation", async () => {
       wrapper.vm.triggerCopied();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.copied).toBe(true);
       expect(wrapper.classes()).toContain("copied");
 
       wrapper.trigger("animationend");
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.copied).toBe(false);
+      expect(wrapper.classes()).not.toContain("copied");
     });
   });
 });
