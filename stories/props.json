@@ -57,7 +57,7 @@
       "executionRetries": 0,
       "user": "example-user2",
       "configuration": {},
-      "status": true,
+      "status": { "value": true, "color": "#88FF88" },
       "nextScheduledExecution": "2021-08-19T00:40+02:00[Europe/Berlin]"
     },
     {
@@ -126,7 +126,7 @@
       "executionRetries": 0,
       "user": "example-user2",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
     },
     {
@@ -194,7 +194,7 @@
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T18:00+02:00[Europe/Berlin]"
     },
     {
@@ -254,7 +254,7 @@
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T14:21+02:00[Europe/Berlin]"
     },
     {
@@ -324,7 +324,7 @@
       "executionRetries": 0,
       "user": "example-user2",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T14:15+02:00[Europe/Berlin]"
     },
     {
@@ -394,7 +394,7 @@
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
     },
     {
@@ -454,7 +454,7 @@
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {},
-      "status": false,
+      "status": { "value": false, "color": "#FF0000" },
       "nextScheduledExecution": "2021-08-18T14:39+02:00[Europe/Berlin]"
     },
     {
@@ -532,7 +532,7 @@
           "password": "*************"
         }
       },
-      "status": true,
+      "status": { "value": true, "color": "#88FF88" },
       "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]"
     },
     {
@@ -615,7 +615,7 @@
       "executionRetries": 0,
       "user": "example-user",
       "configuration": {},
-      "status": true,
+      "status": { "value": true, "color": "#88FF88" },
       "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]"
     },
     {
@@ -684,7 +684,7 @@
           "password": "*************"
         }
       },
-      "status": true,
+      "status": { "value": true, "color": "#88FF88" },
       "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]"
     },
     {
@@ -761,7 +761,7 @@
           "password": "*************"
         }
       },
-      "status": true,
+      "status": { "value": true, "color": "#88FF88" },
       "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]"
     },
     {
