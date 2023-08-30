@@ -302,7 +302,7 @@ const Template = (args) => {
 export const Hub = Template.bind({});
 // More on args: https://storybook.js.org/docs/vue/writing-stories/args
 Hub.args = {
-  allDataLength: 11,
+  allDataLength: 0,
   withSorting: true,
   withColumnFilters: true,
   withPagination: true,

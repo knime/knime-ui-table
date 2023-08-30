@@ -6,6 +6,8 @@ import FilterInputField from "../filter/FilterInputField.vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SearchIcon from "webapps-common/ui/assets/img/icons/lens.svg";
+import SettingsIcon from "webapps-common/ui/assets/img/icons/settings.svg";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 import { tableTimeFilters } from "@/config/time.config";
 import isSinglePage from "@/util/isSinglePage";
@@ -31,6 +33,8 @@ export default {
     ControlMultiselect,
     FunctionButton,
     SearchIcon,
+    SettingsIcon,
+    SubMenu,
   },
   props: {
     tableConfig: {
@@ -53,6 +57,7 @@ export default {
     return {
       searchActive: false,
       timeFilters: Object.keys(tableTimeFilters),
+      showOnlySelectedRows: true,
     };
   },
   computed: {
@@ -202,6 +207,24 @@ export default {
       >
         <SearchIcon />
       </FunctionButton>
+      <SubMenu
+        ref="subMenu"
+        :items="[
+          {
+            text: 'Show only selected rows',
+            checkbox: {
+              checked: showOnlySelectedRows,
+              setBoolean: (checked) => {
+                showOnlySelectedRows = checked;
+              },
+            },
+          },
+        ]"
+        orientation="right"
+        button-title="Open settings"
+      >
+        <SettingsIcon class="icon" />
+      </SubMenu>
     </template>
   </BaseControls>
 </template>
@@ -217,7 +240,7 @@ export default {
     line-height: 50px;
   }
 
-  & :deep(.function-button) {
+  & .search-toggle {
     position: relative;
     margin: none;
     height: 28px;
