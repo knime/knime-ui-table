@@ -14,7 +14,7 @@ const props = defineProps<CellProps>();
 
 const paddingLeft = computed(() => getCellPaddingLeft(props.cellData));
 
-const backgroundColor = computed(() => getColor(props.cellData));
+const color = computed(() => getColor(props.cellData));
 
 const isClickable = computed(() => {
   const { cellData, isClickableByConfig } = props;
@@ -80,7 +80,7 @@ defineExpose({
     :is-slotted="props.isSlotted"
     :text="formattedValue"
     :title="title"
-    :background-color="backgroundColor"
+    :color="color"
     :padding-left="paddingLeft"
     :classes="classes"
     :select-on-move="props.selectOnMove"

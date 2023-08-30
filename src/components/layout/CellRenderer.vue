@@ -7,12 +7,12 @@ import type { CellRendererProps } from "./CellRendererProps";
 const emit = defineEmits(["click", "input", "select"]);
 const props = defineProps<CellRendererProps>();
 
-const cellBackgroundColorStyle = computed(() => {
-  const { backgroundColor } = props;
-  return backgroundColor === null
+const dataCellColorStyle = computed(() => {
+  const { color } = props;
+  return color === null
     ? {}
     : {
-        "--data-cell-color": backgroundColor,
+        "--data-cell-color": color,
       };
 });
 
@@ -42,19 +42,19 @@ const onPointerOver = throttle(() => {
       classes,
       'data-cell',
       {
-        clickable: props.isClickable,
-        'colored-cell': backgroundColor,
+        clickable: isClickable,
+        'colored-cell': color,
       },
     ]"
     :style="{
-      width: `calc(${props.size}px)`,
-      paddingLeft: `${props.paddingLeft}px`,
-      ...cellBackgroundColorStyle,
+      width: `calc(${size}px)`,
+      paddingLeft: `${paddingLeft}px`,
+      ...dataCellColorStyle,
     }"
     :title="title === null ? undefined : title"
     @click="
       (event: MouseEvent) => {
-        if (props.isClickable) {
+        if (isClickable) {
           emit('click', { event, cell: $el });
         }
       }
@@ -68,7 +68,7 @@ const onPointerOver = throttle(() => {
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >
     <CircleHelpIcon v-if="isMissing" class="missing-value-icon" />
-    <slot v-else-if="isSlotted" :width="props.size - props.paddingLeft" />
+    <slot v-else-if="isSlotted" :width="size - paddingLeft" />
     <span v-else>
       {{ text }}
     </span>

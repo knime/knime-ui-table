@@ -15,7 +15,7 @@ describe("Cell.vue", () => {
       isSlotted: false,
       text: "Text",
       title: "Title",
-      backgroundColor: "#abcdef",
+      color: "#abcdef",
       paddingLeft: 10,
       classes: [],
       selectOnMove: false,
@@ -35,7 +35,7 @@ describe("Cell.vue", () => {
   });
 
   it("renders with the given styles without color", () => {
-    props.backgroundColor = null;
+    props.color = null;
     const wrapper = mount(CellRenderer, { props });
     expect(wrapper.attributes("style")).not.toContain(
       "--data-cell-color: #abcdef;",

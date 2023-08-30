@@ -24,7 +24,7 @@ describe("Cell.vue", () => {
     const wrapper = mount(Cell, { props });
     expect(wrapper.findComponent(CellRenderer).exists()).toBeTruthy();
     expect(wrapper.findComponent(CellRenderer).props()).toStrictEqual({
-      backgroundColor: null,
+      color: null,
       classes: [],
       isClickable: false,
       isMissing: false,
@@ -80,7 +80,7 @@ describe("Cell.vue", () => {
   });
 
   describe("coloring", () => {
-    it("does not pass a backgroundColor, but the correct padding to the CellRenderer", () => {
+    it("does not pass a color, but the correct padding to the CellRenderer", () => {
       props.cellData = { value: "value", color: null };
       const wrapper = mount(Cell, { props });
       expect(wrapper.classes()).not.toContain("colored-cell");

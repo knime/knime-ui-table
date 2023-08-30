@@ -4,7 +4,7 @@ interface CellRendererProps {
   isSlotted: boolean;
   text: string | undefined;
   title: string | null;
-  backgroundColor: string | null;
+  color: string | null;
   paddingLeft: number;
   classes: (string | null)[];
   selectOnMove: boolean;
