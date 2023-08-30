@@ -6,7 +6,7 @@ import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import { DEFAULT_ROW_HEIGHT } from "@/util/constants";
-import { isMissingValue, getColor, unpackObjectRepresentation } from "@/util";
+import { unpackObjectRepresentation } from "@/util";
 import Cell from "./Cell.vue";
 import throttle from "raf-throttle";
 
@@ -199,7 +199,6 @@ export default {
     getPropertiesFromColumns(key) {
       return this.columnConfigs.map((colConfig) => colConfig[key]);
     },
-    isMissingValue,
     onRowExpand() {
       this.showContent = !this.showContent;
       this.$nextTick(() => this.$emit("rowExpand", this.showContent));
@@ -230,39 +229,14 @@ export default {
     onSubMenuToggle(callback) {
       this.$emit("rowSubMenuExpand", callback);
     },
-    isClickable(data, ind) {
-      return (
-        this.tableConfig.showPopovers &&
-        Boolean(data) &&
-        data !== "-" &&
-        this.clickableColumns[ind]
-      );
+    isClickableByConfig(ind) {
+      return this.tableConfig.showPopovers && this.clickableColumns[ind];
     },
     getCellContentSlotName(columnKeys, columnId) {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
       return `cellContent-${columnKeys[columnId]}`;
     },
-    getCellTitle(data, ind) {
-      if (this.isMissingValue(data)) {
-        const missingValueMsg = data === null ? "" : ` (${data.metadata})`;
-        return `Missing Value${missingValueMsg}`;
-      }
-      if (this.isClickable(data, ind)) {
-        return null;
-      }
-      const formattedValue = this.getFormattedValue(data, ind);
-      if (typeof formattedValue === "undefined") {
-        return null;
-      } else {
-        return String(formattedValue);
-      }
-    },
-    getFormattedValue(data, ind) {
-      const formatter = this.formatters[ind];
-      return formatter(unpackObjectRepresentation(data));
-    },
     unpackObjectRepresentation,
-    getColor,
     onPointerDown(event) {
       consola.debug("Resize via row drag triggered: ", event);
       // stop the event from propagating up the DOM tree
@@ -344,15 +318,13 @@ export default {
         v-for="(data, ind) in row"
         :ref="`cell-${ind}`"
         :key="ind"
-        :title="getCellTitle(data, ind)"
-        :clickable="isClickable(data, ind)"
-        :is-missing="isMissingValue(data)"
-        :is-slotted="slottedColumns[ind]"
+        :cell-data="data"
         :select-on-move="selectCellsOnMove"
-        :text="getFormattedValue(data, ind)"
-        :size="columnSizes[ind] || 100"
-        :background-color="getColor(data)"
+        :is-slotted="slottedColumns[ind]"
+        :size="columnSizes[ind] ?? 100"
         :class-generators="classGenerators[ind]"
+        :is-clickable-by-config="isClickableByConfig(ind)"
+        :formatter="formatters[ind]"
         @click="onCellClick($event, ind, data)"
         @select="onCellSelect({ ...$event, ind })"
         @input="onInput"

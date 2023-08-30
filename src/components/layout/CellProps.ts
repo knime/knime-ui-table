@@ -1,17 +1,15 @@
 interface CellProps {
-  text: string | undefined;
-  title: string | null;
-  isMissing: boolean;
+  cellData: any;
   selectOnMove: boolean;
-  clickable: boolean;
   isSlotted: boolean;
-  size?: number;
+  size: number;
   classGenerators?: (
     | ((val: string | undefined) => string)
     | Record<string, string>
     | string
   )[];
-  backgroundColor: string | null;
+  isClickableByConfig: boolean;
+  formatter: any;
 }
 
 export type { CellProps };

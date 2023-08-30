@@ -1,133 +1,96 @@
 <script setup lang="ts">
-import throttle from "raf-throttle";
 import { computed, ref, type Ref } from "vue";
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import type { CellProps } from "./CellProps";
-import { getCellPaddingLeft } from "@/util";
+import {
+  getCellPaddingLeft,
+  getColor,
+  isMissingValue,
+  unpackObjectRepresentation,
+} from "@/util";
+import CellRenderer from "./CellRenderer.vue";
 
 const emit = defineEmits(["click", "input", "select"]);
 const props = defineProps<CellProps>();
 
-const paddingLeft = computed(() => getCellPaddingLeft(props.backgroundColor));
+const paddingLeft = computed(() => getCellPaddingLeft(props.cellData));
 
-const totalWidth = computed(() => props.size ?? 100);
+const backgroundColor = computed(() => getColor(props.cellData));
 
-const cellBackgroundColorStyle = computed(() => {
-  const { backgroundColor } = props;
-  return backgroundColor === null
-    ? {}
-    : {
-        "--data-cell-color": backgroundColor,
-      };
+const isClickable = computed(() => {
+  const { cellData, isClickableByConfig } = props;
+  return isClickableByConfig && Boolean(cellData) && cellData !== "-";
 });
+
+const isMissing = computed(() => isMissingValue(props.cellData));
+
+const formattedValue = computed(() => {
+  const { formatter, cellData } = props;
+  return formatter(unpackObjectRepresentation(cellData));
+});
+
+const title = computed(() => {
+  const { cellData } = props;
+  if (isMissingValue(cellData)) {
+    const missingValueMsg = cellData === null ? "" : ` (${cellData.metadata})`;
+    return `Missing Value${missingValueMsg}`;
+  }
+  if (isClickable.value) {
+    return null;
+  }
+  if (typeof formattedValue.value === "undefined") {
+    return null;
+  } else {
+    return String(formattedValue.value);
+  }
+});
+
 const classes = computed(() => {
-  const { classGenerators, text: value } = props;
+  const { classGenerators } = props;
   if (typeof classGenerators === "undefined") {
     return [];
   }
   return classGenerators
     .map((classItem) => {
       if (typeof classItem === "function") {
-        return typeof value === "undefined" ? null : classItem(value);
+        return typeof formattedValue.value === "undefined"
+          ? null
+          : classItem(formattedValue.value);
       }
       if (typeof classItem === "object") {
-        return classItem[value as string];
+        return classItem[formattedValue.value as string];
       }
       return classItem;
     })
     .filter((obj) => obj !== null);
 });
 
-const dataCell: Ref<HTMLElement | null> = ref(null);
-const getCellContentWidth = () => {
-  const widthDataCellFirstChild = Math.ceil(
-    dataCell.value?.firstElementChild?.getBoundingClientRect().width ?? 0,
-  );
-  return paddingLeft.value + widthDataCellFirstChild;
-};
+const cellRenderer: Ref<InstanceType<typeof CellRenderer> | null> = ref(null);
+const getCellContentWidth = () => cellRenderer.value?.getCellContentWidth();
 
 defineExpose({
   getCellContentWidth,
 });
-
-const onPointerOver = throttle(() => {
-  if (props.selectOnMove) {
-    emit("select", { expandSelection: true });
-  }
-});
 </script>
 
 <template>
-  <td
-    ref="dataCell"
-    :class="[
-      classes,
-      'data-cell',
-      {
-        clickable,
-        'colored-cell': backgroundColor,
-      },
-    ]"
-    :style="{
-      width: `calc(${totalWidth}px)`,
-      paddingLeft: `${paddingLeft}px`,
-      ...cellBackgroundColorStyle,
-    }"
-    :title="title === null ? undefined : title"
-    @click="
-      (event: MouseEvent) => {
-        if (clickable) {
-          emit('click', { event, cell: $el });
-        }
-      }
-    "
-    @pointerover="onPointerOver"
-    @pointerdown="
-      (event: MouseEvent) =>
-        event.button === 0 &&
-        emit('select', { expandSelection: event.shiftKey })
-    "
-    @input="(val: any) => emit('input', { value: val, cell: $el })"
+  <CellRenderer
+    ref="cellRenderer"
+    :is-clickable="isClickable"
+    :is-missing="isMissing"
+    :is-slotted="props.isSlotted"
+    :text="formattedValue"
+    :title="title"
+    :background-color="backgroundColor"
+    :padding-left="paddingLeft"
+    :classes="classes"
+    :select-on-move="props.selectOnMove"
+    :size="props.size"
+    @click="(value) => emit('click', value)"
+    @select="(value) => emit('select', value)"
+    @input="(value) => emit('input', value)"
   >
-    <CircleHelpIcon v-if="isMissing" class="missing-value-icon" />
-    <slot v-else-if="isSlotted" :width="totalWidth - paddingLeft" />
-    <span v-else>
-      {{ text }}
-    </span>
-  </td>
+    <template v-for="(_, name) in $slots" #[name]="slotData"
+      ><slot :name="name" v-bind="slotData"
+    /></template>
+  </CellRenderer>
 </template>
-
-<style lang="postcss" scoped>
-& td {
-  background-clip: border-box;
-  user-select: none;
-
-  &.colored-cell {
-    background-size: 4px;
-    background-repeat: no-repeat;
-    background-position: 10px 0;
-    background-image: linear-gradient(
-      90deg,
-      var(--data-cell-color),
-      var(--data-cell-color)
-    );
-  }
-
-  & .missing-value-icon {
-    vertical-align: middle;
-    min-height: 100%;
-    width: 14px;
-    stroke-width: calc(32px / 14);
-    stroke: var(--theme-color-kudos);
-  }
-
-  &.clickable {
-    cursor: pointer;
-    color: var(--knime-dove-gray);
-
-    &:hover {
-      color: var(--knime-masala);
-    }
-  }
-}
-</style>

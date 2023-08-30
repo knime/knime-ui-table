@@ -1,93 +1,95 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import Cell from "../Cell.vue";
 import type { CellProps } from "../CellProps";
+import CellRenderer from "../CellRenderer.vue";
 
 describe("Cell.vue", () => {
   let props: CellProps;
 
   beforeEach(() => {
     props = {
-      text: "Text",
-      title: "Title",
-      isMissing: false,
-      clickable: false,
-      isSlotted: false,
+      cellData: "cellValue",
       selectOnMove: false,
+      isSlotted: false,
       size: 300,
-      backgroundColor: null,
+      classGenerators: [],
+      isClickableByConfig: false,
+      formatter: (value: string) => value,
     };
   });
 
   it("renders", () => {
     const wrapper = mount(Cell, { props });
-    expect(wrapper.attributes("title")).toBe("Title");
-    expect(wrapper.text()).toBe("Text");
-    expect(wrapper.attributes("style")).toContain("width: calc(300px);");
+    expect(wrapper.findComponent(CellRenderer).exists()).toBeTruthy();
+    expect(wrapper.findComponent(CellRenderer).props()).toStrictEqual({
+      backgroundColor: null,
+      classes: [],
+      isClickable: false,
+      isMissing: false,
+      isSlotted: false,
+      paddingLeft: 10,
+      selectOnMove: false,
+      size: 300,
+      text: "cellValue",
+      title: "cellValue",
+    });
   });
 
-  it("renders slot if isSlotted is true", () => {
-    const slots = { default: "<h3>This is a Slot!</h3>" };
-    const wrapper = mount(Cell, { props, slots });
-    expect(wrapper.text()).toBe("Text");
-    props.isSlotted = true;
-    const slottedWrapper = mount(Cell, { props, slots });
-    expect(slottedWrapper.text()).toBe("This is a Slot!");
-  });
-
-  it("renders CircleHelpIcon if missing", () => {
-    props.isMissing = true;
+  it.each([
+    ["input", { event: {}, cell: {} }],
+    ["click", { event: {}, cell: {} }],
+    ["select", { expandSelection: {} }],
+  ])("emits %s to the parent component", (emitMethod, emitValue) => {
     const wrapper = mount(Cell, { props });
-    expect(wrapper.findComponent(CircleHelpIcon).exists()).toBeTruthy();
-    expect(wrapper.text()).toBe("");
-  });
-
-  it("emits event on input", () => {
-    const wrapper = mount(Cell, { props });
-
-    wrapper.find("td").trigger("input");
     // @ts-ignore
-    expect(wrapper.emitted().input[0][0]).toStrictEqual({
-      cell: wrapper.element,
-      value: expect.anything(),
-    });
+    wrapper.findComponent(CellRenderer).vm.$emit(emitMethod, emitValue);
+    // @ts-ignore
+    expect(wrapper.emitted()[emitMethod][0][0]).toStrictEqual(emitValue);
   });
 
-  describe("onClick", () => {
-    it("does not emit click event if not clickable", () => {
-      props.clickable = false;
-      const wrapper = mount(Cell, { props });
-      wrapper.find("td").trigger("click");
-      expect(wrapper.emitted().click).toBeUndefined();
+  describe("title", () => {
+    it("creates the correct title for missing values without metadata", () => {
+      props.cellData = null;
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().title).toBe(
+        "Missing Value",
+      );
     });
 
-    it("emits click event if clickable", () => {
-      props.clickable = true;
-      const wrapper = mount(Cell, { props });
-      expect(wrapper.classes()).toContain("clickable");
+    it("creates the correct title for missing values with metadata", () => {
+      props.cellData = { metadata: "Missing Value Message" };
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().title).toBe(
+        "Missing Value (Missing Value Message)",
+      );
+    });
 
-      wrapper.find("td").trigger("click");
-      // @ts-ignore
-      expect(wrapper.emitted().click[0][0]).toStrictEqual({
-        cell: wrapper.element,
-        event: expect.anything(),
-      });
+    it("creates the correct title for clickable cells", () => {
+      props.isClickableByConfig = true;
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().title).toBeNull();
+    });
+
+    it("creates the correct title for undefined cellData", () => {
+      props.cellData = undefined;
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().title).toBeNull();
     });
   });
 
   describe("coloring", () => {
-    it("does not set any additional color styles if no background color is given", () => {
-      props.backgroundColor = null;
+    it("does not pass a backgroundColor, but the correct padding to the CellRenderer", () => {
+      props.cellData = { value: "value", color: null };
       const wrapper = mount(Cell, { props });
       expect(wrapper.classes()).not.toContain("colored-cell");
       expect(wrapper.attributes("style")).not.toContain("--data-cell-color");
       expect(wrapper.attributes("style")).toContain("padding-left: 10px");
     });
 
-    it("sets background color and check for additional padding", () => {
-      props.backgroundColor = "#abcdef";
+    it("passes the background color and the correct padding to the CellRenderer", () => {
+      props.cellData = { value: "value", color: "#abcdef" };
       const wrapper = mount(Cell, { props });
       expect(wrapper.classes()).toContain("colored-cell");
       expect(wrapper.attributes("style")).toContain(
@@ -97,38 +99,8 @@ describe("Cell.vue", () => {
     });
   });
 
-  describe("width computation", () => {
-    it("sets the correct width", () => {
-      const wrapper = mount(Cell, { props });
-      expect(wrapper.attributes("style")).toContain(
-        `width: calc(${props.size}px)`,
-      );
-    });
-
-    it("sets width property for slot", () => {
-      props.isSlotted = true;
-      props.size = 300;
-      const wrapper = mount(Cell, {
-        props,
-        slots: { default: (props) => `${JSON.stringify(props)}` },
-      });
-      expect(wrapper.text()).toContain('"width":290');
-    });
-
-    it("sets width property for slot with color", () => {
-      props.isSlotted = true;
-      props.backgroundColor = "#abcdef";
-      props.size = 300;
-      const wrapper = mount(Cell, {
-        props,
-        slots: { default: (props) => `${JSON.stringify(props)}` },
-      });
-      expect(wrapper.text()).toContain('"width":280');
-    });
-  });
-
   describe("classes and styles", () => {
-    it("applies object map class generators to the data", () => {
+    it("passes the correct classes based on object map class generators to the CellRenderer", () => {
       const classMap = {
         data1: "width-1",
         data2: "width-2",
@@ -136,37 +108,60 @@ describe("Cell.vue", () => {
         data4: "width-4",
         data5: "width-5",
       };
-      props.text = "data3";
+      props.cellData = "data3";
       props.classGenerators = [classMap];
       const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.element.classList.contains("width-1")).toBeFalsy();
-      expect(wrapper.element.classList.contains("width-3")).toBeTruthy();
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        ["width-3"],
+      );
     });
 
     it("applies function class generators to the data", () => {
       const classFunction = (data: string | undefined) =>
         `width-${data?.slice(-1)}`;
-      props.text = "data3";
+      props.cellData = "data3";
       props.classGenerators = [classFunction];
       const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.element.classList.contains("width-1")).toBeFalsy();
-      expect(wrapper.element.classList.contains("width-3")).toBeTruthy();
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        ["width-3"],
+      );
     });
 
     it("uses custom classes", () => {
       props.classGenerators = ["width-3"];
       const wrapper = shallowMount(Cell, { props });
-      expect(wrapper.element.classList.contains("width-3")).toBeTruthy();
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        ["width-3"],
+      );
+    });
+
+    it("does not use classes when class generators are undefined", () => {
+      props.classGenerators = undefined;
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        [],
+      );
+    });
+
+    it("does not use the class function when the cell data is undefined", () => {
+      const classFunction = (data: string | undefined) =>
+        `width-${data?.slice(-1)}`;
+      props.cellData = undefined;
+      props.classGenerators = [classFunction];
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        [],
+      );
     });
   });
 
-  it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
-    props.selectOnMove = true;
-    const wrapper = shallowMount(Cell, { props });
-    wrapper.find("td").trigger("pointerover");
-    await wrapper.vm.$nextTick();
-    expect(wrapper.emitted().select).toStrictEqual([
-      [{ expandSelection: true }],
-    ]);
+  it("calls getCellContentWidth in the CellRenderer", () => {
+    const wrapper = mount(Cell, { props });
+    const spy = vi.spyOn(
+      wrapper.findComponent(CellRenderer).vm,
+      "getCellContentWidth",
+    );
+    wrapper.findComponent(CellRenderer).vm.getCellContentWidth();
+    expect(spy).toHaveBeenCalled();
   });
 });

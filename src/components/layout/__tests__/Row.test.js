@@ -349,30 +349,6 @@ describe("Row.vue", () => {
       await wrapper.setData({ showContent: true });
       expect(wrapper.find(".expandable-content").exists()).toBeTruthy();
     });
-
-    it("renders the correct title", () => {
-      wrapper = mount(Row, {
-        props: {
-          ...props,
-          row: ["data1", undefined, { metadata: "Col2" }, "data4", null],
-        },
-      });
-      expect(wrapper.findAll(".data-cell").at(0).attributes("title")).toBe(
-        "data1",
-      );
-      expect(
-        wrapper.findAll(".data-cell").at(1).attributes("title"),
-      ).toBeUndefined();
-      expect(wrapper.findAll(".data-cell").at(2).attributes("title")).toBe(
-        "Missing Value (Col2)",
-      );
-      expect(wrapper.findAll(".data-cell").at(3).attributes("title")).toBe(
-        "data4",
-      );
-      expect(wrapper.findAll(".data-cell").at(4).attributes("title")).toBe(
-        "Missing Value",
-      );
-    });
   });
 
   describe("events", () => {

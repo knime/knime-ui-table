@@ -14,7 +14,7 @@ import TableUI from "./TableUI.vue";
 import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
 import useTableReady from "./composables/useTableReady";
 import { isEqual } from "lodash";
-import { getCellPaddingLeft, getColor, getPropertiesFromColumns } from "@/util";
+import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -109,9 +109,7 @@ export default {
         (columnPaddingsLeft, columnKey, columnIndex) => {
           const columnId = this.dataConfigIds[columnIndex];
           const columnValue = firstRowData[columnKey];
-          columnPaddingsLeft[columnId] = getCellPaddingLeft(
-            getColor(columnValue),
-          );
+          columnPaddingsLeft[columnId] = getCellPaddingLeft(columnValue);
           return columnPaddingsLeft;
         },
         {},
