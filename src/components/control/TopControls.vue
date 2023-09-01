@@ -7,6 +7,7 @@ import FilterInputField from "../filter/FilterInputField.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SearchIcon from "webapps-common/ui/assets/img/icons/lens.svg";
 
+import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
 import { tableTimeFilters } from "@/config/time.config";
 import isSinglePage from "@/util/isSinglePage";
 
@@ -22,6 +23,7 @@ import isSinglePage from "@/util/isSinglePage";
  * @emits groupUpdate when the selected group change.
  * @emits searchUpdate when the search field value changes.
  * @emits $listeners from @see BaseControls
+ * @emits toggleFilter event when the filter-toggle control is clicked.
  */
 export default {
   components: {
@@ -31,6 +33,7 @@ export default {
     ControlMultiselect,
     FunctionButton,
     SearchIcon,
+    FilterIcon,
   },
   props: {
     tableConfig: {
@@ -48,6 +51,7 @@ export default {
     "columnUpdate",
     "groupUpdate",
     "searchUpdate",
+    "toggleFilter",
   ],
   data() {
     return {
@@ -144,6 +148,9 @@ export default {
       this.$emit("searchUpdate", input);
     },
   },
+  onToggleFilter() {
+    this.$emit("toggleFilter");
+  },
 };
 </script>
 
@@ -201,6 +208,9 @@ export default {
         @click="onSearchClick"
       >
         <SearchIcon />
+      </FunctionButton>
+      <FunctionButton @click="onToggleFilter">
+        <FilterIcon />
       </FunctionButton>
     </template>
   </BaseControls>

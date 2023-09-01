@@ -780,6 +780,7 @@ export default {
       @group-update="onGroupUpdate"
       @search-update="onSearch"
       @time-filter-update="onTimeFilterUpdate"
+      @toggle-filter="onToggleFilter"
     />
     <div
       ref="scrollWrapper"
@@ -813,7 +814,6 @@ export default {
         :style="{ width: `${currentBodyWidth}px` }"
         @header-select="onSelectAll"
         @column-sort="onColumnSort"
-        @toggle-filter="onToggleFilter"
         @column-resize="onColumnResize"
         @all-columns-resize="onAllColumnsResize"
         @column-resize-start="onColumnResizeStart"

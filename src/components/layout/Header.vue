@@ -1,10 +1,8 @@
 <script>
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ArrowDropdown from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
-import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
 import throttle from "raf-throttle";
 import {
   MIN_COLUMN_SIZE,
@@ -21,17 +19,14 @@ import {
  *
  * @emits headerSelect event when the checkbox is selected for table-wide toggling of selection.
  * @emits columnSort event when a column name is clicked to trigger sorting.
- * @emits toggleFilter event when the filter-toggle control is clicked.
  * @emits subMenuItemSelection event when the selection of a submenu item is changed
  */
 export default {
   components: {
-    FunctionButton,
     Checkbox,
     SubMenu,
     ArrowIcon,
     ArrowDropdown,
-    FilterIcon,
   },
   props: {
     tableConfig: {
@@ -74,7 +69,6 @@ export default {
   emits: [
     "headerSelect",
     "columnSort",
-    "toggleFilter",
     "showColumnBorder",
     "columnResize",
     "hideColumnBorder",
@@ -137,9 +131,6 @@ export default {
       if (this.isColumnSortable(ind)) {
         this.$emit("columnSort", ind, this.columnHeaders[ind]);
       }
-    },
-    onToggleFilter() {
-      this.$emit("toggleFilter");
     },
     onPointerOver(event, columnIndex) {
       consola.debug("Begin hover over drag handle: ", event);
@@ -318,14 +309,6 @@ export default {
           @lostpointercapture="onLostPointerCapture"
         />
       </th>
-      <th
-        v-if="tableConfig.showColumnFilters"
-        :class="['action', { 'filter-active': filtersActive }]"
-      >
-        <FunctionButton @click="onToggleFilter">
-          <FilterIcon />
-        </FunctionButton>
-      </th>
     </tr>
     <tr v-else>
       <slot />
@@ -371,41 +354,6 @@ thead {
           max-width: unset;
           bottom: 3px;
           left: 8px;
-        }
-      }
-
-      &.action {
-        position: sticky;
-        right: 0;
-        background-color: var(--knime-porcelain);
-        align-items: center;
-        display: flex;
-        overflow: visible;
-        min-width: 30px;
-
-        & :deep(.function-button) {
-          display: flex;
-          align-self: stretch;
-          align-items: center;
-          height: 40px;
-          width: 30px;
-          border-radius: 0;
-          transition: background-color 0.15s;
-
-          & svg {
-            stroke: var(--knime-masala);
-          }
-        }
-
-        &.filter-active {
-          background-color: var(--knime-silver-sand);
-
-          & :deep(.function-button) {
-            & svg {
-              fill: var(--knime-masala);
-              stroke: var(--knime-masala);
-            }
-          }
         }
       }
 
