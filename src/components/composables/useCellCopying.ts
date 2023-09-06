@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted, ref, type Ref } from "vue";
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import type CellSelectionOverlay from "../ui/CellSelectionOverlay.vue";
 
 export default ({
@@ -8,7 +9,7 @@ export default ({
   selectionOverlay: Ref<
     null | typeof CellSelectionOverlay | (typeof CellSelectionOverlay)[]
   >;
-  onCopy: () => void;
+  onCopy: ({ withHeaders }: { withHeaders: boolean }) => void;
 }) => {
   const focusWithin = ref(false);
 
@@ -24,21 +25,32 @@ export default ({
     }
   };
 
-  const onCopySelection = () => {
+  const onCopySelection = ({ withHeaders }: { withHeaders: boolean }) => {
     if (!focusWithin.value) {
       return;
     }
     triggerCopyAnimation();
-    onCopy();
+    onCopy({ withHeaders });
+  };
+
+  const handleDefaultCopyEvent = () => {
+    onCopySelection({ withHeaders: false });
+  };
+
+  const primaryModifierKey = getMetaOrCtrlKey();
+  const handleCopyOnKeydown = (e: KeyboardEvent) => {
+    if (e[primaryModifierKey]) {
+      onCopySelection({ withHeaders: true });
+    }
   };
 
   onMounted(() => {
-    window.addEventListener("copy", onCopySelection);
+    window.addEventListener("copy", handleDefaultCopyEvent);
   });
 
   onUnmounted(() => {
-    window.removeEventListener("copy", onCopySelection);
+    window.removeEventListener("copy", handleDefaultCopyEvent);
   });
 
-  return { changeFocus };
+  return { changeFocus, handleCopyOnKeydown };
 };

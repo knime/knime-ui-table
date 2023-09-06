@@ -50,6 +50,11 @@ vi.mock("../composables/useCellSelection", () => ({
   default: vi.fn(() => cellSelectionMock),
 }));
 
+let getMetaOrCtrlKeyMockReturnValue = "";
+vi.mock("webapps-common/util/navigator", () => ({
+  getMetaOrCtrlKey: vi.fn(() => getMetaOrCtrlKeyMockReturnValue),
+}));
+
 const getProps = ({
   includeSubHeaders = true,
   enableRowResize = true,
@@ -1445,11 +1450,12 @@ describe("TableUI.vue", () => {
       expect(row.props().selectCellsOnMove).toBeFalsy();
     });
 
-    it.each([false, true])(
-      "emits copySelection event when copy event is received and focus is within table with virtualScrolling = %s",
-      async (enableVirtualScrolling) => {
-        const triggerCopied = vi.fn();
-        const stubs = {
+    describe("emit copySelection event", () => {
+      let triggerCopied, stubs;
+
+      beforeEach(() => {
+        triggerCopied = vi.fn();
+        stubs = {
           CellSelectionOverlay: {
             template: "<div/>",
             methods: {
@@ -1457,26 +1463,53 @@ describe("TableUI.vue", () => {
             },
           },
         };
-        const comp = doMount({ enableVirtualScrolling, shallow: false }, stubs);
-        wrapper = comp.wrapper;
+      });
+
+      it.each([false, true])(
+        "when copy event is received and focus is within table with virtualScrolling = %s",
+        async (enableVirtualScrolling) => {
+          const comp = doMount(
+            { enableVirtualScrolling, shallow: false },
+            stubs,
+          );
+          wrapper = comp.wrapper;
+          const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+          cellSelectionMock.rectMinMax.value = rect;
+          const id = 0;
+          cellSelectionMock.currentRectId.value = id;
+          await wrapper.vm.$nextTick();
+
+          const overlay = wrapper.findComponent(SelectedCellsOverlay);
+          expect(overlay.exists()).toBeTruthy();
+
+          wrapper.find("table").trigger("focusin");
+          window.dispatchEvent(new Event("copy"));
+
+          expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
+            { id, rect, withHeaders: false },
+          ]);
+          expect(triggerCopied).toHaveBeenCalled();
+        },
+      );
+
+      it.each([
+        ["meta.shift.c", "mac", "metaKey"],
+        ["ctrl.shift.c", "different os than mac", "ctrlKey"],
+      ])("when pressing %s on %s", async (copyKeys, _, metaOrCtrlKey) => {
+        getMetaOrCtrlKeyMockReturnValue = metaOrCtrlKey;
+        const { wrapper } = doMount({ shallow: false }, stubs);
         const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
         cellSelectionMock.rectMinMax.value = rect;
         const id = 0;
         cellSelectionMock.currentRectId.value = id;
         await wrapper.vm.$nextTick();
-
-        const overlay = wrapper.findComponent(SelectedCellsOverlay);
-        expect(overlay.exists()).toBeTruthy();
-
-        wrapper.find("table").trigger("focusin");
-        window.dispatchEvent(new Event("copy"));
-
+        await wrapper.find("table").trigger("focusin");
+        await wrapper.find("table").trigger(`keydown.${copyKeys}.exact`);
         expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
-          { id, rect },
+          { id, rect, withHeaders: true },
         ]);
-        expect(triggerCopied).toHaveBeenCalled();
-      },
-    );
+      });
+    });
 
     it("does not emit copySelection event when copy event is received and focus is outside of table", async () => {
       const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
@@ -1490,6 +1523,21 @@ describe("TableUI.vue", () => {
 
       expect(wrapper.emitted("copySelection")).toBeUndefined();
     });
+
+    it.each([
+      ["meta.shift.c", "different os than mac", "metaKey"],
+      ["ctrl.shift.c", "mac", "ctrlKey"],
+    ])(
+      "does not emit copySelection event when pressing %s on %s",
+      async (copyKeys, _, metaOrCtrlKey) => {
+        getMetaOrCtrlKeyMockReturnValue = metaOrCtrlKey;
+        await wrapper.vm.$nextTick();
+        await wrapper.find("table").trigger("focusin");
+
+        wrapper.find("table").trigger(`keydown.${copyKeys}.exact`);
+        expect(wrapper.emitted("copySelection")).toBeUndefined();
+      },
+    );
   });
 
   describe("drag handle height", () => {

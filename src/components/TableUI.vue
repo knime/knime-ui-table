@@ -190,19 +190,21 @@ export default {
     const cellSelection = useCellSelection(enableCellSelection);
     const selectCellsOnMove = useBoolean(false);
     // cell copying
-    const emitCopySelection = () => {
+    const emitCopySelection = ({ withHeaders }: { withHeaders: boolean }) => {
       const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
           rect: rectMinMax.value,
           id: currentRectId.value,
+          withHeaders,
         });
       }
     };
-    const { changeFocus } = useCellCopying({
+    const { changeFocus, handleCopyOnKeydown } = useCellCopying({
       selectionOverlay,
       onCopy: emitCopySelection,
     });
+
     return {
       wrapper,
       totalWidth,
@@ -211,6 +213,7 @@ export default {
       selectCellsOnMove,
       ...cellSelection,
       changeFocus,
+      handleCopyOnKeydown,
     };
   },
   data() {
@@ -684,6 +687,8 @@ export default {
       $event.button === 0 && selectCellsOnMove.setTrue()
     "
     @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
+    @keydown.ctrl.shift.c.exact="handleCopyOnKeydown"
+    @keydown.meta.shift.c.exact="handleCopyOnKeydown"
     @focusin="changeFocus(true)"
     @focusout="changeFocus(false)"
   >
