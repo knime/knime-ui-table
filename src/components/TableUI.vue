@@ -902,7 +902,7 @@ export default {
             :row-height="currentRowHeight"
             :min-row-height="initialRowHeight"
             :margin-bottom="rowMarginBottom"
-            :is-selected="currentSelectionMap(item.scrollIndex, item.isTop)"
+            :is-selected="currentSelectionMap(item.index, item.isTop)"
             :select-cells-on-move="selectCellsOnMove"
             :show-border-column-index="showBorderColumnIndex"
             :style="{

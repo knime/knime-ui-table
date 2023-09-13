@@ -76,11 +76,13 @@ const getProps = ({
   },
   searchConfig = { searchQuery: "" },
   numRowsAbove = 0,
+  numRowsBelow = 0,
   bottomData = [],
 }) => ({
   data,
   bottomData,
   numRowsAbove,
+  numRowsBelow,
   currentSelection,
   currentBottomSelection,
   dataConfig: {
@@ -157,6 +159,16 @@ const getProps = ({
 
 describe("TableUI.vue", () => {
   let bodySizeEvent;
+
+  const fillRecycleScroller = async (wrapper) => {
+    const scroller = wrapper.findComponent(RecycleScroller);
+    Object.defineProperty(scroller.vm.$el, "clientHeight", {
+      value: 1000,
+    });
+    scroller.vm.updateVisibleItems();
+    await wrapper.vm.$nextTick();
+  };
+
   const doMount = (
     {
       includeSubHeaders = true,
@@ -188,6 +200,7 @@ describe("TableUI.vue", () => {
       },
       searchConfig = { searchQuery: "" },
       numRowsAbove = 0,
+      numRowsBelow = 0,
       shallow = true,
       wrapperHeight = 1000,
       bottomData = [],
@@ -215,6 +228,7 @@ describe("TableUI.vue", () => {
       pageConfig,
       searchConfig,
       numRowsAbove,
+      numRowsBelow,
       bottomData,
     });
 
@@ -595,15 +609,6 @@ describe("TableUI.vue", () => {
       });
 
       describe("row resize with virtual scrolling enabled", () => {
-        const fillRecycleScroller = async (wrapper) => {
-          const scroller = wrapper.findComponent(RecycleScroller);
-          Object.defineProperty(scroller.vm.$el, "clientHeight", {
-            value: 1000,
-          });
-          scroller.vm.updateVisibleItems();
-          await wrapper.vm.$nextTick();
-        };
-
         it("handles rowResize event for single row", async () => {
           const { wrapper } = doMount({
             enableVirtualScrolling: true,
@@ -1086,15 +1091,29 @@ describe("TableUI.vue", () => {
       ]);
     });
 
-    it("computes selection for top and bottom rows", () => {
+    it("computes selection for top and bottom rows", async () => {
       const numRowsAbove = 3;
+      const numRowsBelow = 3;
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
         numRowsAbove,
+        numRowsBelow,
         currentSelection: [[true, false, true]],
         currentBottomSelection: [true, true],
+        data: [
+          [
+            { a: "aGroup1Row1", b: "bGroup1Row1" },
+            { a: "aGroup1Row2", b: "bGroup1Row2" },
+            { a: "aGroup1Row3", b: "bGroup1Row3" },
+          ],
+        ],
+        bottomData: [
+          { a: "aBottomRow1", b: "bBottomRow1" },
+          { a: "aBottomRow2", b: "bBottomRow2" },
+        ],
       });
+
       const selectionMap = wrapper.vm.currentSelectionMap;
 
       expect(selectionMap(0, true)).toBe(true);
@@ -1103,6 +1122,25 @@ describe("TableUI.vue", () => {
       expect(selectionMap(0, false)).toBe(true);
       expect(selectionMap(1, false)).toBe(true);
       expect(selectionMap(undefined, true)).toBe(false);
+
+      await fillRecycleScroller(wrapper);
+
+      const rows = wrapper.findAllComponents(Row);
+      // Above rows
+      expect(rows[0].props().isSelected).toBe(false);
+      expect(rows[1].props().isSelected).toBe(false);
+      expect(rows[2].props().isSelected).toBe(false);
+      // Top rows
+      expect(rows[3].props().isSelected).toBe(true);
+      expect(rows[4].props().isSelected).toBe(false);
+      expect(rows[5].props().isSelected).toBe(true);
+      // Bottom rows
+      expect(rows[6].props().isSelected).toBe(true);
+      expect(rows[7].props().isSelected).toBe(true);
+      // Below rows
+      expect(rows[8].props().isSelected).toBe(false);
+      expect(rows[9].props().isSelected).toBe(false);
+      expect(rows[10].props().isSelected).toBe(false);
     });
 
     it("selects nothing when selection is not shown", () => {
