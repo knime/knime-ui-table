@@ -96,7 +96,7 @@ const onPointerOver = throttle(() => {
     min-height: 100%;
     width: 14px;
     stroke-width: calc(32px / 14);
-    stroke: var(--theme-color-kudos);
+    stroke: var(--theme-color-error);
   }
 
   &.clickable {

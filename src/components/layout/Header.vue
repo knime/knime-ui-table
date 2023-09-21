@@ -443,7 +443,7 @@ thead {
               text-overflow: ellipsis;
               font-weight: 700;
               line-height: 16px;
-              font-size: 14px;
+              font-size: 13px;
             }
 
             & .icon {
