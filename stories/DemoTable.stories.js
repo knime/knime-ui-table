@@ -212,6 +212,12 @@ export default {
         category: "Header",
       },
     },
+    checkboxSettings: {
+      name: "Checkbox settings",
+      table: {
+        category: "Header",
+      },
+    },
     actionButtonText: {
       name: "Action button text",
       table: {
@@ -302,7 +308,7 @@ const Template = (args) => {
 export const Hub = Template.bind({});
 // More on args: https://storybook.js.org/docs/vue/writing-stories/args
 Hub.args = {
-  allDataLength: 0,
+  allDataLength: 11,
   withSorting: true,
   withColumnFilters: true,
   withPagination: true,
@@ -389,6 +395,7 @@ TableView.args = {
     { text: "Item 2", id: "s2i2", selected: false, section: "section2" },
   ],
   showBottomControls: false,
+  checkboxSettings: ["I am a custom checkbox title", "I am another one"],
   showCollapser: false,
   showSubHeaders: true,
   withSelection: true,

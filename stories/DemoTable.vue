@@ -17,6 +17,7 @@ import {
   useColumnResizing,
   useSelection,
   generateAllData,
+  useCheckboxItem,
 } from "./utils";
 
 const props = defineProps({
@@ -53,6 +54,10 @@ const props = defineProps({
   withColumnSelection: Boolean,
   withGroupBy: Boolean,
   withSearch: Boolean,
+  checkboxSettings: {
+    type: Array,
+    default: () => [],
+  },
   withColumnFilters: Boolean,
   withHeaderSubMenu: Boolean,
   headerSubMenu: {
@@ -332,6 +337,7 @@ const tableConfig = reactive({
   enableColumnResizing: props.enableColumnResize,
   groupByConfig,
   timeFilterConfig,
+  settingsItems: props.checkboxSettings.map(useCheckboxItem),
   searchConfig,
   columnSelectionConfig,
   sortConfig,

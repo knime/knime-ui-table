@@ -57,7 +57,6 @@ export default {
     return {
       searchActive: false,
       timeFilters: Object.keys(tableTimeFilters),
-      showOnlySelectedRows: true,
     };
   },
   computed: {
@@ -208,18 +207,9 @@ export default {
         <SearchIcon />
       </FunctionButton>
       <SubMenu
+        v-if="tableConfig.settingsItems?.length"
         ref="subMenu"
-        :items="[
-          {
-            text: 'Show only selected rows',
-            checkbox: {
-              checked: showOnlySelectedRows,
-              setBoolean: (checked) => {
-                showOnlySelectedRows = checked;
-              },
-            },
-          },
-        ]"
+        :items="tableConfig.settingsItems"
         orientation="right"
         button-title="Open settings"
       >

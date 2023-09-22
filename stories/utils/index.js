@@ -8,6 +8,7 @@ import useFormatters from "./useFormatters";
 import useSelection from "./useSelection";
 import useColumnResizing from "./useColumnResizing";
 import generateAllData from "./generateAllData";
+import useCheckboxItem from "./useCheckboxItem";
 
 // Composables holding reactive state using the vue3 composition api
 export {
@@ -20,6 +21,7 @@ export {
   usePages,
   useDataProcessing,
   useSelection,
+  useCheckboxItem,
 };
 
 // other utils

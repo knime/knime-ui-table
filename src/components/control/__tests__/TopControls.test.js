@@ -7,6 +7,7 @@ import ControlDropdown from "../ControlDropdown.vue";
 import ControlMultiselect from "../ControlMultiselect.vue";
 import FilterInputField from "@/components/filter/FilterInputField.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 describe("TopControls.vue", () => {
   let props;
@@ -48,6 +49,7 @@ describe("TopControls.vue", () => {
     expect(wrapper.findAllComponents(ControlDropdown).length).toBe(2);
     expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(true);
     expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+    expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
   });
 
   it("controls component visibility via prop", async () => {
@@ -58,6 +60,7 @@ describe("TopControls.vue", () => {
     expect(wrapper.findAllComponents(ControlDropdown).length).toBe(2);
     expect(wrapper.findComponent(ControlMultiselect).exists()).toBe(true);
     expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+    expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
     await wrapper.setProps({
       tableConfig: {
         ...props.tableConfig,
@@ -86,7 +89,14 @@ describe("TopControls.vue", () => {
         searchConfig: null,
       },
     });
-    expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
+    expect(wrapper.findAllComponents(FunctionButton).length).toBe(0);
+    await wrapper.setProps({
+      tableConfig: {
+        ...props.tableConfig,
+        settingsItems: [{ text: "Menu item" }],
+      },
+    });
+    expect(wrapper.findAllComponents(SubMenu).length).toBe(1);
   });
 
   it("creates dropdown items when provided with a list of possible values", () => {
