@@ -219,17 +219,13 @@ defineExpose({
     <div
       ref="nonVirtualScroller"
       :class="[
-        'horizontal-scroll',
+        'groups-wrapper',
         {
+          'horizontal-scroll':
+            !columnResize.active && !fitsWithoutHorizontalScrollbar,
           'vertical-scroll': !columnResize.active,
         },
       ]"
-      :style="{
-        overflowX:
-          columnResize.active || fitsWithoutHorizontalScrollbar
-            ? 'hidden'
-            : 'auto',
-      }"
       @scroll="closeExpandedSubMenu"
     >
       <slot
@@ -294,14 +290,18 @@ defineExpose({
   }
 }
 
-.horizontal-scroll {
+.groups-wrapper {
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
 
   &.vertical-scroll {
     overflow-y: auto;
+  }
+
+  &.horizontal-scroll {
+    overflow-x: auto;
   }
 }
 

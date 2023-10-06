@@ -940,8 +940,8 @@ describe("TableUI.vue", () => {
       expect(availableWidthMock.fitsInsideTotalWidth).toHaveBeenCalledWith(
         bodyWidthResult,
       );
-      expect(wrapper.findComponent(TableCore).element.style.overflowX).toBe(
-        "hidden",
+      expect(wrapper.findComponent(TableCore).classes()).not.toContain(
+        "horizontal-scroll",
       );
     });
 
