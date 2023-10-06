@@ -10,7 +10,7 @@ import {
 } from "vue";
 import throttle from "raf-throttle";
 
-const useTotalWidth = (root: Ref<null | HTMLElement>) => {
+export const useTotalWidth = (root: Ref<null | HTMLElement>) => {
   const totalWidth: Ref<null | number> = ref(null);
 
   const rootResizeCallback = throttle((entries) => {
@@ -81,7 +81,8 @@ export default ({
   emitAvailableWidth,
   specialColumnsSizeTotal,
   bodyContainsScrollbar,
-  refs: { scrolledElement, root },
+  refs: { scrolledElement },
+  totalWidth,
 }: {
   emitAvailableWidth: (availableWidth: number) => void;
   specialColumnsSizeTotal: Ref<number>;
@@ -91,10 +92,9 @@ export default ({
   bodyContainsScrollbar: Ref<boolean>;
   refs: {
     scrolledElement: Ref<null | HTMLElement>;
-    root: Ref<null | HTMLElement>;
   };
+  totalWidth: Ref<null | number>;
 }) => {
-  const totalWidth = useTotalWidth(root);
   const currentScrollBarWidth = useScrollbarWidth(scrolledElement);
 
   const currentDataWidth = computed(() => {

@@ -13,18 +13,20 @@ import TablePopover from "./popover/TablePopover.vue";
 // @ts-ignore
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
-import useAvailableWidthDetection from "./composables/useAvailableWidth";
+import { useTotalWidth } from "./composables/useAvailableWidth";
 import useCellSelection from "./composables/useCellSelection";
+import useCellCopying from "./composables/useCellCopying";
+import useBoolean from "./composables/useBoolean";
 
 import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_HEIGHT,
   ROW_MARGIN_BOTTOM,
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
-  SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
 import { getPropertiesFromColumns } from "@/util";
-import { computed, ref, toRefs, type Ref } from "vue";
+import { computed, ref, type Ref, type PropType } from "vue";
+import TableCore from "./TableCore.vue";
 
 /**
  * @see README.md
@@ -45,6 +47,7 @@ export default {
     TablePopover,
     RecycleScroller,
     CellSelectionOverlay,
+    TableCore,
   } as any,
   props: {
     /**
@@ -55,7 +58,7 @@ export default {
       default: () => [],
     },
     currentSelection: {
-      type: Array,
+      type: Array as PropType<Array<Array<boolean>>>,
       default: () => [],
     },
     /**
@@ -175,72 +178,17 @@ export default {
   ],
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
-    const scroller: Ref<any> = ref(null);
-    const scrollWrapper: Ref<any> = ref(null);
+    const tableCore: Ref<any> = ref(null);
     const selectionOverlay: Ref<any> = ref([]);
-
-    const enableVirtualScrolling = computed(
-      () => props.tableConfig.enableVirtualScrolling,
-    );
-    const scrolledElement = computed(() => {
-      if (enableVirtualScrolling.value) {
-        return scroller.value === null ? null : scroller.value.$el;
-      }
-      return scrollWrapper.value;
-    });
-    const { tableConfig } = toRefs(props);
-
-    const collapserSize = computed(() =>
-      tableConfig.value.showCollapser ? SPECIAL_COLUMNS_SIZE : 0,
-    );
-    const selectionSize = computed(() =>
-      tableConfig.value.showSelection ? SPECIAL_COLUMNS_SIZE : 0,
-    );
-    const rightSideSize = computed(() => {
-      return tableConfig.value.showColumnFilters ||
-        tableConfig.value.subMenuItems.length > 0 ||
-        tableConfig.value.showSubMenu === "always"
-        ? SPECIAL_COLUMNS_SIZE
-        : 0;
-    });
-
-    const availableWidthMethods = useAvailableWidthDetection({
-      emitAvailableWidth: (newWidth) =>
-        emit("update:available-width", newWidth),
-      specialColumnsSizeTotal: computed(
-        () => collapserSize.value + selectionSize.value + rightSideSize.value,
-      ),
-      bodyContainsScrollbar: enableVirtualScrolling,
-      refs: {
-        root: wrapper,
-        scrolledElement,
-      },
-    });
-
-    const selectCellsOnMove = ref(false);
-    const activateCellSelectionOnMove = () => {
-      selectCellsOnMove.value = true;
-    };
-    const deactivateCellSelectionOnMove = () => {
-      selectCellsOnMove.value = false;
-    };
-
+    const totalWidth = useTotalWidth(wrapper);
     const enableCellSelection = computed(() =>
       Boolean(props.tableConfig.enableCellSelection),
     );
+    // cell selection
     const cellSelection = useCellSelection(enableCellSelection);
-
-    const focusWithin = ref(false);
-    const onCopySelection = () => {
-      if (!focusWithin.value) {
-        return;
-      }
-      if (Array.isArray(selectionOverlay.value)) {
-        selectionOverlay.value[0]?.triggerCopied();
-      } else if (selectionOverlay.value) {
-        selectionOverlay.value.triggerCopied();
-      }
-
+    const selectCellsOnMove = useBoolean(false);
+    // cell copying
+    const emitCopySelection = () => {
       const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
@@ -249,22 +197,18 @@ export default {
         });
       }
     };
-
-    window.addEventListener("copy", onCopySelection);
-
+    const { changeFocus } = useCellCopying({
+      selectionOverlay,
+      onCopy: emitCopySelection,
+    });
     return {
       wrapper,
-      scroller,
+      totalWidth,
+      tableCore,
       selectionOverlay,
-      scrollWrapper,
-      enableVirtualScrolling,
-      ...availableWidthMethods,
-      activateCellSelectionOnMove,
-      deactivateCellSelectionOnMove,
       selectCellsOnMove,
       ...cellSelection,
-      onCopySelection,
-      focusWithin,
+      changeFocus,
     };
   },
   data() {
@@ -373,15 +317,8 @@ export default {
         },
       ];
     },
-    currentBodyWidth() {
-      const widthContentColumns = this.columnSizes.reduce(
-        (prev: any, curr: any) => prev + curr,
-        0,
-      );
-      return this.innerWidthToBodyWidth(widthContentColumns);
-    },
-    fitsWithoutHorizontalScrollbar() {
-      return this.fitsInsideTotalWidth(this.currentBodyWidth);
+    enableVirtualScrolling() {
+      return this.tableConfig.enableVirtualScrolling;
     },
     showVirtualScroller() {
       return this.enableVirtualScrolling && this.scrollData.length === 1;
@@ -449,14 +386,10 @@ export default {
       if (!this.tableConfig.showSelection) {
         return () => false;
       }
-      return (index: any, isTop: any) => {
-        if (typeof index === "undefined") {
-          return false;
-        }
+      return (rowInd: number, groupInd: number, isTop: any) => {
         return isTop
-          ? // @ts-ignore
-            this.currentSelection[0][index]
-          : this.currentBottomSelection[index];
+          ? this.currentSelection[groupInd][rowInd]
+          : this.currentBottomSelection[rowInd];
       };
     },
     enableRowResize() {
@@ -495,9 +428,6 @@ export default {
     currentRowHeight(newRowHeight) {
       this.$emit("rowHeightUpdate", newRowHeight);
     },
-  },
-  beforeUnmount() {
-    window.removeEventListener("copy", this.onCopySelection);
   },
   methods: {
     // Utilities
@@ -633,7 +563,7 @@ export default {
     onResizeAllRows(currentSize: number, row: any, scrollIndex: number) {
       this.currentRowSizeDelta = 0;
       if (this.enableVirtualScrolling) {
-        const previousScrollTop = this.scroller.getScroll().start;
+        const previousScrollTop = this.tableCore.getScrollStart();
         const heightAboveCurrentRow = scrollIndex * this.currentRowHeight;
         const offset = heightAboveCurrentRow - previousScrollTop;
         this.resizedRowHeight = currentSize;
@@ -650,10 +580,10 @@ export default {
           // scroll was temporarily disabled to avoid sending scroll events during resize
           this.currentResizedScrollIndex = null;
         }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
-        this.scroller.scrollToPosition(scrollPosition);
+        this.tableCore.scrollToPosition(scrollPosition);
         resizeObserver.disconnect();
       });
-      resizeObserver.observe(this.scroller.$refs.wrapper);
+      resizeObserver.observe(this.tableCore.getRecycleScrollerWrapper());
     },
     onRowInput(event: any) {
       consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -669,12 +599,6 @@ export default {
       if (event.callback) {
         event.callback(row, this);
       }
-    },
-    registerExpandedSubMenu(callback: any) {
-      // Timeout to prevent the sub menu to be closed due to scroll event triggered by clicking a row/group
-      setTimeout(() => {
-        this.closeExpandedSubMenu = callback;
-      }, 100);
     },
     openPopover(event: any) {
       consola.debug("TableUI: open popover", event);
@@ -717,21 +641,6 @@ export default {
         this.$refs[`row-${index}`]?.$el.children[1]?.clientHeight;
       return contentHeight || 0;
     },
-    getDragHandleHeight() {
-      const scroller = this.$refs.scrollWrapper as any;
-      const scrollerChildren: HTMLElement[] = scroller.children;
-      return Array(...scrollerChildren).reduce((prev, cur) => {
-        if (cur.id === this.scrollerId) {
-          // we set the propoerty list-tag to tbody below for the RecycleScroller
-          const body = [...cur.children].filter(
-            ({ tagName }) => tagName === "TBODY",
-          )[0] as HTMLElement;
-          return prev + body.offsetHeight;
-        } else {
-          return prev + cur.offsetHeight;
-        }
-      }, 0);
-    },
     getCellContentSlotName(columnKeys: any, columnId: any) {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
       return `cellContent-${columnKeys[columnId]}`;
@@ -745,14 +654,17 @@ export default {
         group.forEach((_: any, rowIndex: number) =>
           rowComponents.push(
             // @ts-ignore
-            this.$refs[`group-${groupIndex}-row-${rowIndex}`][0],
+            this.$refs[this.getRowRefName(groupIndex, rowIndex)],
           ),
         );
       });
       return rowComponents;
     },
-    changeFocus(newFocus: boolean) {
-      this.focusWithin = newFocus;
+    getRowRefName(groupInd: null | number, rowInd: number) {
+      if (groupInd === null) {
+        return `row-${rowInd}`;
+      }
+      return `group-${groupInd}-row-${rowInd}`;
     },
   },
 };
@@ -762,11 +674,11 @@ export default {
   <table
     ref="wrapper"
     :tabindex="-1"
-    @pointerleave="deactivateCellSelectionOnMove"
+    @pointerleave="selectCellsOnMove.setFalse"
     @pointerdown.passive.stop="
-      $event.button === 0 && activateCellSelectionOnMove()
+      $event.button === 0 && selectCellsOnMove.setTrue()
     "
-    @pointerup.passive="$event.button === 0 && deactivateCellSelectionOnMove()"
+    @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
     @focusin="changeFocus(true)"
     @focusout="changeFocus(false)"
   >
@@ -781,262 +693,94 @@ export default {
       @search-update="onSearch"
       @time-filter-update="onTimeFilterUpdate"
     />
-    <div
-      ref="scrollWrapper"
-      :class="[
-        'horizontal-scroll',
-        {
-          'vertical-scroll': !showVirtualScroller && !columnResizeActive,
-          'expand-content': showVirtualScroller,
-        },
-      ]"
-      :style="{
-        overflowX:
-          columnResizeActive || fitsWithoutHorizontalScrollbar
-            ? 'hidden'
-            : 'auto',
+    <TableCore
+      ref="tableCore"
+      :key="scrollerKey"
+      :scroll-data="scrollData"
+      :total-width="totalWidth"
+      :column-sizes="columnSizes"
+      :column-resize="{ active: columnResizeActive }"
+      :row-resize="
+        currentResizedScrollIndex === null || currentRowSizeDelta == null
+          ? { active: false }
+          : { active: true, currentResizedScrollIndex, currentRowSizeDelta }
+      "
+      :table-config="tableConfig"
+      :current-rect-id="currentRectId"
+      :recycle-scroller-config="{
+        scrollerItemSize,
+        numRowsAbove,
+        numRowsBelow,
       }"
-      @scroll="closeExpandedSubMenu"
+      @group-sub-menu-click="onGroupSubMenuClick"
+      @scroller-update="onScroll"
+      @update:available-width="$emit('update:available-width', $event)"
     >
-      <Header
-        ref="header"
-        :table-config="tableConfig"
-        :column-headers="columnHeaders"
-        :column-sub-headers="columnSubHeaders"
-        :column-sizes="columnSizes"
-        :column-sub-menu-items="columnHeaderSubMenuItems"
-        :column-sort-configs="columnSortConfigs"
-        :is-selected="totalSelected > 0"
-        :filters-active="filterActive"
-        :get-drag-handle-height="getDragHandleHeight"
-        :class="tableHeaderClass"
-        :style="{ width: `${currentBodyWidth}px` }"
-        @header-select="onSelectAll"
-        @column-sort="onColumnSort"
-        @toggle-filter="onToggleFilter"
-        @column-resize="onColumnResize"
-        @all-columns-resize="onAllColumnsResize"
-        @column-resize-start="onColumnResizeStart"
-        @column-resize-end="onColumnResizeEnd"
-        @sub-menu-item-selection="onHeaderSubMenuItemSelection"
-      />
-      <ColumnFilters
-        v-if="filterActive"
-        class="column-filter"
-        :filter-configs="columnFilterConfigs"
-        :column-headers="columnHeaders"
-        :column-sizes="columnSizes"
-        :types="columnTypes"
-        :show-collapser="tableConfig.showCollapser"
-        :show-selection="tableConfig.showSelection"
-        :style="{ width: `${currentBodyWidth}px` }"
-        @column-filter="onColumnFilter"
-        @clear-filter="onClearFilter"
-      />
-      <RecycleScroller
-        v-if="showVirtualScroller"
-        :id="scrollerId"
-        ref="scroller"
-        :key="scrollerKey"
-        :style="{
-          width: `${currentBodyWidth}px`,
-          overflowY: currentResizedScrollIndex === null ? 'auto' : 'hidden',
+      <template
+        #row="{
+          row,
+          groupInd = null,
+          rowInd,
+          scrollIndex,
+          isTop,
+          tableConfig: itemTableConfig = null,
+          transform = null,
+          registerExpandedSubMenu,
         }"
-        :items="scrollData[0]"
-        :num-items-above="numRowsAbove"
-        :num-items-below="numRowsBelow"
-        :empty-item="{
-          data: [],
-          size: scrollerItemSize,
-          tableConfig: {
-            showCollapser: false,
-            showSelection: false,
-            subMenuItems: [],
-            showPopovers: false,
-          },
-          showDragHandle: false,
-        }"
-        class="scroller"
-        :emit-update="true"
-        :page-mode="false"
-        list-tag="tbody"
-        item-tag="tr"
-        @scroll="closeExpandedSubMenu"
-        @update="onScroll"
       >
-        <template #before>
-          <CellSelectionOverlay
-            v-if="rectMinMax"
-            ref="selectionOverlay"
-            :rect="rectMinMax"
-            :row-height="scrollerItemSize"
-            :table-config="tableConfig"
-            :row-resize-index="currentResizedScrollIndex"
-            :row-resize-delta="currentRowSizeDelta"
-            :column-sizes="columnSizes"
-          />
-        </template>
-        <template #default="{ item }">
-          <PlaceholderRow
-            v-if="item.dots"
-            :height="item.size"
-            :style="{
-              transform: `translateY(${
-                currentResizedScrollIndex !== null &&
-                item.scrollIndex > currentResizedScrollIndex
-                  ? currentRowSizeDelta
-                  : 0
-              }px)`,
-            }"
-          />
-          <Row
-            v-else
-            :key="item.id"
-            :ref="`row-${item.id}`"
-            :row-data="item.data"
-            :row="columnKeys.map((column: any) => item.data[column])"
-            :table-config="item.tableConfig || tableConfig"
-            :show-drag-handle="enableRowResize && (item.showDragHandle ?? true)"
-            :column-configs="dataConfig.columnConfigs"
-            :row-config="dataConfig.rowConfig"
-            :row-height="currentRowHeight"
-            :min-row-height="initialRowHeight"
-            :margin-bottom="rowMarginBottom"
-            :is-selected="currentSelectionMap(item.index, item.isTop)"
-            :select-cells-on-move="selectCellsOnMove"
-            :show-border-column-index="showBorderColumnIndex"
-            :style="{
-              transform: `translateY(${
-                currentResizedScrollIndex !== null &&
-                item.scrollIndex > currentResizedScrollIndex
-                  ? currentRowSizeDelta
-                  : 0
-              }px)`,
-            }"
-            @row-select="onRowSelect($event, item.index, 0, item.isTop)"
-            @cell-select="
-              (cellInd: number) =>
-                selectCell({ x: cellInd, y: item.scrollIndex }, item.isTop)
-            "
-            @expand-cell-select="
-              (cellInd: number) =>
-                expandCellSelection(
-                  { x: cellInd, y: item.scrollIndex },
-                  item.isTop,
-                )
-            "
-            @row-expand="onRowExpand($event, item.scrollIndex)"
-            @row-input="
-              onRowInput({
-                ...$event,
-                rowInd: item.index,
-                id: item.data.id,
-                groupInd: 0,
-                isTop: item.isTop,
-              })
-            "
-            @row-sub-menu-expand="registerExpandedSubMenu"
-            @row-sub-menu-click="
-              (event: any) => onRowSubMenuClick(event, item.data)
-            "
-            @resize-all-rows="
-              (currentSize: number, row: any) =>
-                onResizeAllRows(currentSize, row, item.scrollIndex)
-            "
-            @resize-row="
-              (rowSizeDelta: number) =>
-                onResizeRow(rowSizeDelta, item.scrollIndex)
-            "
-          >
-            <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-            <!-- eslint-disable vue/valid-v-slot -->
-            <template
-              v-for="colInd in slottedColumns"
-              #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-              :key="item.index + '_' + colInd"
-            >
-              <span>
-                <slot
-                  :name="`cellContent-${columnKeys[colInd]}`"
-                  :data="{
-                    ...cellData,
-                    key: columnKeys[colInd],
-                    rowInd: item.index,
-                    colInd,
-                  }"
-                />
-              </span>
-            </template>
-            <template #rowCollapserContent>
-              <slot name="collapserContent" :row="item" />
-            </template>
-          </Row>
-        </template>
-      </RecycleScroller>
-      <Group
-        v-for="(dataGroup, groupInd) in scrollData"
-        v-else
-        :key="groupInd"
-        :style="{ width: `${currentBodyWidth}px` }"
-        :title="getGroupName(groupInd)"
-        :group-sub-menu-items="tableConfig.groupSubMenuItems"
-        :show="data.length > 1 && dataGroup.length > 0"
-        @group-sub-menu-expand="registerExpandedSubMenu"
-        @group-sub-menu-click="
-          (event: any) => onGroupSubMenuClick(event, dataGroup)
-        "
-      >
-        <CellSelectionOverlay
-          v-if="rectMinMax && currentRectId === groupInd"
-          ref="selectionOverlay"
-          :rect="rectMinMax"
-          :row-height="scrollerItemSize"
-          :table-config="tableConfig"
-          :row-resize-index="currentResizedScrollIndex"
-          :row-resize-delta="currentRowSizeDelta"
-          :column-sizes="columnSizes"
-        />
         <Row
-          v-for="(row, rowInd) in dataGroup"
-          :ref="`group-${groupInd}-row-${row.id}`"
-          :key="row.data.id"
-          :row-data="row"
-          :row="columnKeys.map((column: any) => row.data[column])"
-          :table-config="tableConfig"
+          :key="row.id"
+          :ref="getRowRefName(groupInd, rowInd)"
+          :row-data="data"
+          :row="columnKeys.map((column: any) => row[column])"
+          :table-config="itemTableConfig || tableConfig"
+          :show-drag-handle="
+            enableRowResize &&
+            (!itemTableConfig || itemTableConfig.enableRowResize)
+          "
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
           :min-row-height="initialRowHeight"
           :margin-bottom="rowMarginBottom"
-          :is-selected="
-            currentSelection[groupInd] === undefined
-              ? false
-              : // @ts-ignore
-                currentSelection[groupInd][rowInd] || false
-          "
-          :select-cells-on-move="selectCellsOnMove"
+          :is-selected="currentSelectionMap(rowInd, groupInd || 0, isTop)"
+          :select-cells-on-move="selectCellsOnMove.state"
           :show-border-column-index="showBorderColumnIndex"
-          :show-drag-handle="dataConfig.rowConfig.enableRowResize"
+          :style="transform === null ? {} : { transform }"
+          @row-select="onRowSelect($event, rowInd, groupInd || 0, isTop)"
           @cell-select="
-            (cellInd: number) => selectCell({ x: cellInd, y: rowInd }, groupInd)
+            (cellInd: number) =>
+              selectCell(
+                { x: cellInd, y: scrollIndex },
+                groupInd === null ? isTop : groupInd,
+              )
           "
           @expand-cell-select="
             (cellInd: number) =>
-              expandCellSelection({ x: cellInd, y: rowInd }, groupInd)
+              expandCellSelection(
+                { x: cellInd, y: scrollIndex },
+                groupInd === null ? isTop : groupInd,
+              )
           "
-          @row-select="onRowSelect($event, rowInd, groupInd, true)"
+          @row-expand="onRowExpand($event, scrollIndex)"
           @row-input="
             onRowInput({
               ...$event,
               rowInd,
-              id: row.data.id,
-              groupInd,
-              isTop: true,
+              id: row.id,
+              groupInd: 0,
+              isTop,
             })
           "
           @row-sub-menu-expand="registerExpandedSubMenu"
-          @row-sub-menu-click="onRowSubMenuClick($event, row.data)"
-          @resize-all-rows="onResizeAllRows"
+          @row-sub-menu-click="(event: any) => onRowSubMenuClick(event, row)"
+          @resize-all-rows="
+            (currentSize: number, row: any) =>
+              onResizeAllRows(currentSize, row, scrollIndex)
+          "
+          @resize-row="
+            (rowSizeDelta: number) => onResizeRow(rowSizeDelta, scrollIndex)
+          "
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <!-- eslint-disable vue/valid-v-slot -->
@@ -1048,16 +792,70 @@ export default {
             <span>
               <slot
                 :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{ ...cellData, key: columnKeys[colInd], rowInd, colInd }"
+                :data="{
+                  ...cellData,
+                  key: columnKeys[colInd],
+                  rowInd: rowInd,
+                  colInd,
+                }"
               />
             </span>
           </template>
           <template #rowCollapserContent>
-            <slot name="collapserContent" :row="row" />
+            <slot name="collapserContent" :row="data" />
           </template>
         </Row>
-      </Group>
-    </div>
+      </template>
+      <template #header="{ getDragHandleHeight, width = null }">
+        <Header
+          ref="header"
+          :style="width === null ? {} : { width: `${width}px` }"
+          :table-config="tableConfig"
+          :column-headers="columnHeaders"
+          :column-sub-headers="columnSubHeaders"
+          :column-sizes="columnSizes"
+          :column-sub-menu-items="columnHeaderSubMenuItems"
+          :column-sort-configs="columnSortConfigs"
+          :is-selected="totalSelected > 0"
+          :filters-active="filterActive"
+          :get-drag-handle-height="getDragHandleHeight"
+          :class="tableHeaderClass"
+          @header-select="onSelectAll"
+          @column-sort="onColumnSort"
+          @toggle-filter="onToggleFilter"
+          @column-resize="onColumnResize"
+          @all-columns-resize="onAllColumnsResize"
+          @column-resize-start="onColumnResizeStart"
+          @column-resize-end="onColumnResizeEnd"
+          @sub-menu-item-selection="onHeaderSubMenuItemSelection"
+        />
+        <ColumnFilters
+          v-if="filterActive"
+          class="column-filter"
+          :style="width === null ? {} : { width: `${width}px` }"
+          :filter-configs="columnFilterConfigs"
+          :column-headers="columnHeaders"
+          :column-sizes="columnSizes"
+          :types="columnTypes"
+          :show-collapser="tableConfig.showCollapser"
+          :show-selection="tableConfig.showSelection"
+          @column-filter="onColumnFilter"
+          @clear-filter="onClearFilter"
+        />
+      </template>
+      <template #cell-selection-overlay>
+        <CellSelectionOverlay
+          v-if="rectMinMax"
+          ref="selectionOverlay"
+          :rect="rectMinMax"
+          :row-height="scrollerItemSize"
+          :table-config="tableConfig"
+          :row-resize-index="currentResizedScrollIndex"
+          :row-resize-delta="currentRowSizeDelta"
+          :column-sizes="columnSizes"
+        />
+      </template>
+    </TableCore>
     <BottomControls
       v-if="tableConfig.showBottomControls"
       :page-config="tableConfig.pageConfig"
@@ -1091,15 +889,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.scroller {
-  flex: 1 1 0;
-
-  /* stylelint-disable-next-line selector-class-pattern */
-  & :deep(.vue-recycle-scroller__item-wrapper) {
-    height: 100%;
-  }
-}
-
 table {
   height: 100%;
   width: 100%;
@@ -1113,40 +902,6 @@ table {
 
   &:focus {
     outline: none;
-  }
-
-  & .horizontal-scroll {
-    display: flex;
-    flex-direction: column;
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    &.expand-content {
-      flex: 1;
-    }
-
-    &.vertical-scroll {
-      overflow-y: auto;
-    }
-
-    & :deep(tbody) {
-      display: block;
-      min-height: 0;
-      flex-shrink: 0;
-    }
-  }
-
-  & :deep(td > a) {
-    text-decoration: none;
-    display: block;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 100%;
-    padding-right: 15px;
-  }
-
-  & :deep(td:first-child > a) {
-    padding-left: 15px;
   }
 }
 

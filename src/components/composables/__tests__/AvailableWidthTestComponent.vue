@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toRef, type Ref } from "vue";
-import useAvailableWidth from "../useAvailableWidth";
+import useAvailableWidth, { useTotalWidth } from "../useAvailableWidth";
 
 const props = defineProps({
   specialColumnsSizeTotal: {
@@ -19,12 +19,12 @@ const emit = defineEmits(["availableWidthChanged"]);
 
 const { innerWidthToBodyWidth, fitsInsideTotalWidth } = useAvailableWidth({
   refs: {
-    root,
     scrolledElement,
   },
   bodyContainsScrollbar: toRef(props, "bodyContainsScrollbar"),
   specialColumnsSizeTotal: toRef(props, "specialColumnsSizeTotal"),
   emitAvailableWidth: (width) => emit("availableWidthChanged", width),
+  totalWidth: useTotalWidth(root),
 });
 const useFirstScroller = ref(true);
 const refreshScroller = () => {
