@@ -424,6 +424,7 @@ export default {
   width: fit-content;
   margin-top: -1px;
   background: var(--knime-white);
+  z-index: var(--z-index-control-multiselect);
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 
   & .item-container {
@@ -457,7 +458,6 @@ export default {
   max-height: calc(32px * 7); /* show max 7 items */
   overflow-y: auto;
   position: absolute;
-  z-index: 2;
   width: fit-content;
   margin-top: -1.5px;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
@@ -524,7 +524,7 @@ export default {
 
     &.drag-first {
       top: 0;
-      z-index: 2;
+      z-index: var(--z-index-control-multiselect);
       margin-top: unset;
       margin-bottom: unset;
     }

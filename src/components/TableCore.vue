@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef, toRefs, type Ref } from "vue";
 import useCloseSubMenusOnScroll from "./composables/useCloseSubMenusOnScroll";
+import "./global-z-indices.css";
 
 // @ts-ignore
 import { RecycleScroller } from "vue-virtual-scroller";
@@ -283,7 +284,7 @@ defineExpose({
     display: flex;
     position: sticky;
     top: 0;
-    z-index: 2; /* TODO */
+    z-index: var(--z-index-sticky-header);
   }
 
   & .header-container {

@@ -192,7 +192,7 @@ export default {
       top: calc(100% + 7px);
       right: 20px;
       content: "";
-      z-index: 5;
+      z-index: var(--z-index-table-popover-before);
       width: 0;
       height: 0;
       border-left: var(--popover-arrow-size) solid transparent;
@@ -205,7 +205,7 @@ export default {
       top: calc(100% + 6px);
       right: 19px;
       content: "";
-      z-index: 4;
+      z-index: var(--z-index-table-popover-after);
       width: 0;
       height: 0;
       border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
@@ -233,7 +233,7 @@ export default {
   & .content {
     max-width: 300px;
     position: absolute;
-    z-index: 4;
+    z-index: var(--z-index-table-popover-content);
     right: 0;
     background: var(--knime-white);
     width: fit-content;

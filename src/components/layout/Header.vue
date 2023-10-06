@@ -522,7 +522,7 @@ thead {
 
           &.drag {
             /* otherwise the handle will be behind rows when virtual scrolling */
-            z-index: 10;
+            z-index: var(--z-index-column-resize-drag-handle);
             width: 1px;
             opacity: 1;
           }

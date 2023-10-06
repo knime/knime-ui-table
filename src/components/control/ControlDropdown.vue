@@ -396,7 +396,7 @@ export default {
 /* this selector is required to override some * rules interfere (overflow) - so do not simplify */
 [role="listbox"] {
   overflow-y: auto;
-  z-index: 2;
+  z-index: var(--z-index-control-dropdown);
   max-height: calc(22px * 7); /* show max 7 items */
   min-height: 22px;
   width: fit-content;

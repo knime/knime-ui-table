@@ -495,7 +495,7 @@ tr.collapser-row {
       height: 24px;
       width: 24px;
       padding: 3px;
-      z-index: 1;
+      z-index: var(--z-index-collapser-button);
 
       & svg {
         position: relative;

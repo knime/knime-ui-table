@@ -1,0 +1,11 @@
+:root {
+  --z-index-cell-selection-overlay: 1;
+  --z-index-sticky-header: 2;
+  --z-index-control-dropdown: 2;
+  --z-index-control-multiselect: 2;
+  --z-index-collapser-button: 2;
+  --z-index-column-resize-drag-handle: 3;
+  --z-index-table-popover-content: 4;
+  --z-index-table-popover-before: 4;
+  --z-index-table-popover-after: 5;
+}

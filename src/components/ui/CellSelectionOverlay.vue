@@ -109,7 +109,7 @@ defineExpose({
   background-color: var(--selected-cells-background-color);
   border: var(--selected-cells-border);
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-index-cell-selection-overlay);
   pointer-events: none;
 }
 </style>
