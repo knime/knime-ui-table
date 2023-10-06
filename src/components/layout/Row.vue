@@ -226,7 +226,7 @@ export default {
       }
       return true;
     },
-    onSubMenuToggle(callback) {
+    onSubMenuToggle(_event, callback) {
       this.$emit("rowSubMenuExpand", callback);
     },
     isClickableByConfig(ind) {
