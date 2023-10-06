@@ -1476,38 +1476,66 @@ describe("TableUI.vue", () => {
     });
   });
 
-  it("computes drag handle height", async () => {
-    const { wrapper } = doMount();
-    Object.defineProperty(
-      wrapper.find(".vertical-scroll").element,
-      "offsetHeight",
-      { value: 200 },
-    );
-    expect(wrapper.findComponent(Header).props().getDragHandleHeight()).toBe(
-      200,
-    );
-    const { wrapper: wrapperWithScroller } = doMount({
-      enableVirtualScrolling: true,
-      shallow: false,
+  describe("drag handle height", () => {
+    const setHeight = (element, value) => {
+      Object.defineProperty(element, "offsetHeight", { value });
+    };
+
+    it("computes drag handle height", () => {
+      const { wrapper } = doMount();
+      setHeight(wrapper.find(".vertical-scroll").element, 100);
+      expect(wrapper.findComponent(Header).props().getDragHandleHeight()).toBe(
+        100,
+      );
     });
-    await fillRecycleScroller(wrapperWithScroller);
-    Object.defineProperty(
-      wrapperWithScroller.find(".header-container").element,
-      "offsetHeight",
-      { value: 100 },
-    );
-    Object.defineProperty(
-      wrapperWithScroller.findComponent(RecycleScroller).find("tbody").element,
-      "offsetHeight",
-      { value: 100 },
-    );
-    Object.defineProperty(
-      wrapperWithScroller.findComponent(RecycleScroller).element,
-      "offsetHeight",
-      { value: 100 },
-    );
-    expect(
-      wrapperWithScroller.findComponent(Header).props().getDragHandleHeight(),
-    ).toBe(200);
+
+    describe("virtual scrolling", () => {
+      let wrapper;
+
+      beforeEach(() => {
+        wrapper = doMount({
+          enableVirtualScrolling: true,
+          shallow: false,
+        }).wrapper;
+      });
+
+      const setHeaderHeight = (value) => {
+        setHeight(
+          wrapper.find(".vue-recycle-scroller__slot").element.children[0],
+          value,
+        );
+      };
+
+      const setBodyHeight = (value) => {
+        setHeight(
+          wrapper.findComponent(RecycleScroller).find("tbody").element,
+          value,
+        );
+      };
+
+      const setTotalScrollerHeight = (value) => {
+        setHeight(wrapper.findComponent(RecycleScroller).element, value);
+      };
+
+      it("computes drag handle height from header and body for non-scrollable RecycleScroller", () => {
+        setHeaderHeight(100);
+        setBodyHeight(100);
+        setTotalScrollerHeight(1000); // > 100 + 100
+
+        expect(
+          wrapper.findComponent(Header).props().getDragHandleHeight(),
+        ).toBe(200);
+      });
+
+      it("computes drag handle height from root scroller element for scrollable RecycleScroller", () => {
+        setHeaderHeight(100);
+        setBodyHeight(100);
+        setTotalScrollerHeight(50); // < 100 + 100
+
+        expect(
+          wrapper.findComponent(Header).props().getDragHandleHeight(),
+        ).toBe(50);
+      });
+    });
   });
 });

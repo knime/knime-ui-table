@@ -80,16 +80,11 @@ const useScrollbarWidth = (scrolledElement: Ref<null | HTMLElement>) => {
 export default ({
   emitAvailableWidth,
   specialColumnsSizeTotal,
-  bodyContainsScrollbar,
   refs: { scrolledElement },
   totalWidth,
 }: {
   emitAvailableWidth: (availableWidth: number) => void;
   specialColumnsSizeTotal: Ref<number>;
-  /**
-   * If true, the width of the body/rows/header does not only depend on the column sizes but also the width of the scrollbar has to be added to it.
-   */
-  bodyContainsScrollbar: Ref<boolean>;
   refs: {
     scrolledElement: Ref<null | HTMLElement>;
   };
@@ -109,16 +104,12 @@ export default ({
   });
 
   const innerWidthToBodyWidth = (columnsWidth: number) => {
-    let bodyWidth = columnsWidth + specialColumnsSizeTotal.value;
-    if (bodyContainsScrollbar.value && currentScrollBarWidth.value) {
-      bodyWidth += currentScrollBarWidth.value;
-    }
-    return bodyWidth;
+    return columnsWidth + specialColumnsSizeTotal.value;
   };
 
   const fitsInsideTotalWidth = (bodyWidth: number) => {
     let width = totalWidth.value ?? 0;
-    if (!bodyContainsScrollbar.value && currentScrollBarWidth.value) {
+    if (currentScrollBarWidth.value) {
       width -= currentScrollBarWidth.value;
     }
     return Math.floor(bodyWidth) <= width;

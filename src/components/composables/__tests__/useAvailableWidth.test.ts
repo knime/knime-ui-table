@@ -142,7 +142,7 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const specialColumnsSizeTotal = 123;
     const wrapper = mount(AvailableWidthTestComponent as any, {
-      props: { specialColumnsSizeTotal, bodyContainsScrollbar: false },
+      props: { specialColumnsSizeTotal },
     });
     await flushPromises();
     rootCallback(availableWidth);
@@ -153,14 +153,6 @@ describe("useAvailableWidth", () => {
     expect(wrapper.vm.innerWidthToBodyWidth(innerWidth)).toBe(
       innerWidth + specialColumnsSizeTotal,
     );
-
-    await wrapper.setProps({
-      bodyContainsScrollbar: true,
-    });
-
-    expect(wrapper.vm.innerWidthToBodyWidth(innerWidth)).toBe(
-      innerWidth + specialColumnsSizeTotal + scrollbarWidth,
-    );
   });
 
   it("detects if a given body width fits inside the total width", async () => {
@@ -168,20 +160,12 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const specialColumnsSizeTotal = 123;
     const wrapper = mount(AvailableWidthTestComponent as any, {
-      props: { specialColumnsSizeTotal, bodyContainsScrollbar: true },
+      props: { specialColumnsSizeTotal },
     });
     await flushPromises();
     rootCallback(availableWidth);
     scrolledElementCallback(scrollbarWidth);
     await flushPromises();
-
-    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth)).toBeTruthy();
-    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth + 0.01)).toBeTruthy();
-    expect(wrapper.vm.fitsInsideTotalWidth(availableWidth + 1)).toBeFalsy();
-
-    await wrapper.setProps({
-      bodyContainsScrollbar: false,
-    });
 
     expect(
       wrapper.vm.fitsInsideTotalWidth(availableWidth - scrollbarWidth),

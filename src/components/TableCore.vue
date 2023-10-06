@@ -90,7 +90,6 @@ const { fitsInsideTotalWidth, innerWidthToBodyWidth } = useAvailableWidth({
   specialColumnsSizeTotal: computed(
     () => collapserSize.value + selectionSize.value + rightSideSize.value,
   ),
-  bodyContainsScrollbar: enableVirtualScrolling,
   refs: {
     scrolledElement,
   },
@@ -110,7 +109,7 @@ const fitsWithoutHorizontalScrollbar = computed(() =>
 
 const headerContainer: Ref<null | HTMLElement> = ref(null);
 const getHeaderHeight = () => {
-  return headerContainer.value?.offsetHeight || 0;
+  return headerContainer.value?.offsetHeight ?? 0;
 };
 
 const getDragHandleHeightForVirtualScroller = () => {
@@ -119,17 +118,14 @@ const getDragHandleHeightForVirtualScroller = () => {
     return 0;
   }
   const headerHeight = getHeaderHeight();
-
   /**
    * If the second argument is the smaller one, this means that the scroller is
    * not scrollable at the moment, i.e. adding the header height to the body height
    * is the desired height, as they cannot overlap.
    */
-  return (
-    Math.min(
-      recycleScroller.$el.offsetHeight,
-      recycleScroller.$refs.wrapper.offsetHeight,
-    ) + headerHeight
+  return Math.min(
+    recycleScroller.$el.offsetHeight,
+    recycleScroller.$refs.wrapper.offsetHeight + headerHeight,
   );
 };
 
@@ -147,14 +143,6 @@ const getTransformShiftForRowResize = computed(() => {
     }px)`;
 });
 
-const getDragHandleHeight = () => {
-  if (showVirtualScroller.value) {
-    return getDragHandleHeightForVirtualScroller();
-  } else {
-    return getDragHandleHeightForNonVirtualScroller();
-  }
-};
-
 defineExpose({
   scrollToPosition: (scrollPosition: number) =>
     virtualScroller.value?.scrollToPosition(scrollPosition),
@@ -164,35 +152,11 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    ref="nonVirtualScroller"
-    :class="[
-      'horizontal-scroll',
-      {
-        'vertical-scroll': !showVirtualScroller && !columnResize.active,
-        'expand-content': showVirtualScroller,
-      },
-    ]"
-    :style="{
-      overflowX:
-        columnResize.active || fitsWithoutHorizontalScrollbar
-          ? 'hidden'
-          : 'auto',
-    }"
-    @scroll="closeExpandedSubMenu"
-  >
-    <div ref="headerContainer" class="header-container">
-      <slot
-        name="header"
-        :width="currentBodyWidth"
-        :get-drag-handle-height="getDragHandleHeight"
-      />
-    </div>
+  <template v-if="showVirtualScroller">
     <RecycleScroller
-      v-if="showVirtualScroller"
       ref="virtualScroller"
       :style="{
-        width: `${currentBodyWidth}px`,
+        '--current-body-width': `${currentBodyWidth}px`,
         overflowY: rowResize.active ? 'hidden' : 'auto',
       }"
       :items="scrollData[0]"
@@ -218,6 +182,14 @@ defineExpose({
       @update="() => $emit('scroller-update')"
     >
       <template #before>
+        <div ref="headerContainer" class="header-container">
+          <slot
+            name="header"
+            :get-drag-handle-height="getDragHandleHeightForVirtualScroller"
+          />
+        </div>
+      </template>
+      <template #in-wrapper>
         <slot name="cell-selection-overlay" />
       </template>
       <template #default="{ item }">
@@ -241,71 +213,94 @@ defineExpose({
         />
       </template>
     </RecycleScroller>
-    <Group
-      v-for="(dataGroup, groupInd) in scrollData"
-      v-else
-      :key="groupInd"
-      :style="{ width: `${currentBodyWidth}px` }"
-      :title="getGroupName(groupInd)"
-      :group-sub-menu-items="tableConfig.groupSubMenuItems"
-      :show="scrollData.length > 1 && dataGroup.length > 0"
-      @group-sub-menu-expand="registerExpandedSubMenu"
-      @group-sub-menu-click="
-        (event: any) => $emit('group-sub-menu-click', event, dataGroup)
-      "
+  </template>
+  <template v-else>
+    <div
+      ref="nonVirtualScroller"
+      :class="[
+        'horizontal-scroll',
+        {
+          'vertical-scroll': !columnResize.active,
+        },
+      ]"
+      :style="{
+        overflowX:
+          columnResize.active || fitsWithoutHorizontalScrollbar
+            ? 'hidden'
+            : 'auto',
+      }"
+      @scroll="closeExpandedSubMenu"
     >
       <slot
-        v-if="currentRectId === groupInd"
-        name="cell-selection-overlay"
-        :group-ind="groupInd"
+        name="header"
+        :width="currentBodyWidth"
+        :get-drag-handle-height="getDragHandleHeightForNonVirtualScroller"
       />
-      <slot
-        v-for="(row, rowInd) in dataGroup"
-        name="row"
-        :row="row.data"
-        :row-ind="rowInd"
-        :scroll-index="rowInd"
-        :group-ind="groupInd"
-        :is-top="true"
-        :register-expanded-sub-menu="registerExpandedSubMenu"
-      />
-    </Group>
-  </div>
+      <Group
+        v-for="(dataGroup, groupInd) in scrollData"
+        :key="groupInd"
+        :style="{ width: `${currentBodyWidth}px` }"
+        :title="getGroupName(groupInd)"
+        :group-sub-menu-items="tableConfig.groupSubMenuItems"
+        :show="scrollData.length > 1 && dataGroup.length > 0"
+        @group-sub-menu-expand="registerExpandedSubMenu"
+        @group-sub-menu-click="
+          (event: any) => $emit('group-sub-menu-click', event, dataGroup)
+        "
+      >
+        <slot
+          v-if="currentRectId === groupInd"
+          name="cell-selection-overlay"
+          :group-ind="groupInd"
+        />
+        <slot
+          v-for="(row, rowInd) in dataGroup"
+          name="row"
+          :row="row.data"
+          :row-ind="rowInd"
+          :scroll-index="rowInd"
+          :group-ind="groupInd"
+          :is-top="true"
+          :register-expanded-sub-menu="registerExpandedSubMenu"
+        />
+      </Group>
+    </div>
+  </template>
 </template>
 
 <style scoped lang="postcss">
 .scroller {
   flex: 1 1 0;
+  overflow-x: auto;
 
   /* stylelint-disable-next-line selector-class-pattern */
   & :deep(.vue-recycle-scroller__item-wrapper) {
-    height: 100%;
+    width: calc(var(--current-body-width));
+  }
+
+  /* stylelint-disable-next-line selector-class-pattern */
+  & :deep(.vue-recycle-scroller__slot) {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 2; /* TODO */
+  }
+
+  & .header-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 }
 
-& .horizontal-scroll {
+.horizontal-scroll {
   display: flex;
   flex-direction: column;
   overflow-x: auto;
   overflow-y: hidden;
 
-  &.expand-content {
-    flex: 1;
-  }
-
   &.vertical-scroll {
     overflow-y: auto;
-  }
-
-  & :deep(tbody) {
-    display: block;
-    min-height: 0;
-    flex-shrink: 0;
-  }
-
-  & .header-container {
-    display: flex;
-    flex-direction: column;
   }
 }
 

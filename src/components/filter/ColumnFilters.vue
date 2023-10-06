@@ -109,6 +109,7 @@ tr {
     height 0.3s,
     box-shadow 0.15s;
   background-color: var(--knime-silver-sand-semi);
+  backdrop-filter: blur(5px);
 
   & th {
     white-space: nowrap;

@@ -7,11 +7,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  bodyContainsScrollbar: {
-    type: Boolean,
-    required: false,
-    default: false,
-  },
 });
 const root: Ref<null | HTMLElement> = ref(null);
 const scrolledElement: Ref<null | HTMLElement> = ref(null);
@@ -21,7 +16,6 @@ const { innerWidthToBodyWidth, fitsInsideTotalWidth } = useAvailableWidth({
   refs: {
     scrolledElement,
   },
-  bodyContainsScrollbar: toRef(props, "bodyContainsScrollbar"),
   specialColumnsSizeTotal: toRef(props, "specialColumnsSizeTotal"),
   emitAvailableWidth: (width) => emit("availableWidthChanged", width),
   totalWidth: useTotalWidth(root),

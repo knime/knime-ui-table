@@ -336,6 +336,7 @@ export default {
 <style lang="postcss" scoped>
 thead {
   height: 41px;
+  background-color: var(--knime-porcelain);
 
   & tr {
     display: flex;
