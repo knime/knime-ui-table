@@ -143,13 +143,19 @@ export default {
     compactMode: {
       name: "Compact rows",
       table: {
-        category: "Rows",
+        category: "Row size",
+      },
+    },
+    rowHeight: {
+      name: "Row height",
+      table: {
+        category: "Row size",
       },
     },
     enableRowResize: {
       name: "Enable row resize",
       table: {
-        category: "Rows",
+        category: "Row size",
       },
     },
     enableColumnResize: {

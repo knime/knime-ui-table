@@ -246,6 +246,11 @@ export default {
         ? COMPACT_ROW_HEIGHT
         : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
     },
+    minRowHeight() {
+      return this.dataConfig.rowConfig.compactMode
+        ? COMPACT_ROW_HEIGHT
+        : DEFAULT_ROW_HEIGHT;
+    },
     /*
      * Current table config. E.g. if 4/10 columns displayed, 'current' fields return values w/ length 4.
      */
@@ -741,7 +746,7 @@ export default {
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
-          :min-row-height="initialRowHeight"
+          :min-row-height="minRowHeight"
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(rowInd, groupInd || 0, isTop)"
           :select-cells-on-move="selectCellsOnMove.state"
