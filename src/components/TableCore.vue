@@ -3,12 +3,13 @@ import { computed, ref, toRef, toRefs, type Ref } from "vue";
 import useCloseSubMenusOnScroll from "./composables/useCloseSubMenusOnScroll";
 import "./global-z-indices.css";
 
-// @ts-ignore
-import { RecycleScroller } from "vue-virtual-scroller";
 import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import Group from "./layout/Group.vue";
 import useAvailableWidth from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
+
+import { RecycleScroller as RC } from "vue-virtual-scroller";
+const RecycleScroller = RC as any;
 
 const props = defineProps<{
   scrollData: any[][];
