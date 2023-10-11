@@ -110,29 +110,28 @@ describe("Header.vue", () => {
   });
 
   it("hides the checkbox via config", () => {
+    props.tableConfig.showSelection = false;
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        tableConfig: {
-          ...props.tableConfig,
-          showSelection: false,
-        },
-      },
+      props,
     });
 
     expect(wrapper.findComponent(Header).exists()).toBe(true);
     expect(wrapper.findComponent(Checkbox).exists()).toBe(false);
   });
 
-  it("hides the column filter toggle via config", () => {
+  it("disables the checkbox via prop", () => {
+    props.tableConfig.disableSelection = true;
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        tableConfig: {
-          ...props.tableConfig,
-          showColumnFilters: false,
-        },
-      },
+      props,
+    });
+
+    expect(wrapper.findComponent(Checkbox).attributes().disabled).toBeTruthy();
+  });
+
+  it("hides the column filter toggle viaconfig", () => {
+    props.tableConfig.showColumnFilters = false;
+    wrapper = shallowMount(Header, {
+      props,
     });
 
     expect(wrapper.findComponent(Header).exists()).toBe(true);
@@ -140,14 +139,9 @@ describe("Header.vue", () => {
   });
 
   it("adds a collapser control spacer via config", () => {
+    props.tableConfig.showCollapser = true;
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        tableConfig: {
-          ...props.tableConfig,
-          showCollapser: true,
-        },
-      },
+      props,
     });
 
     expect(wrapper.findComponent(Header).exists()).toBe(true);
@@ -269,11 +263,9 @@ describe("Header.vue", () => {
       id: "rend1",
       section: "dataRendering",
     };
+    props.columnSubMenuItems = new Array(5).fill(columnSubMenuItems);
     wrapper = mount(Header, {
-      props: {
-        ...props,
-        columnSubMenuItems: new Array(5).fill(columnSubMenuItems),
-      },
+      props,
     });
     wrapper
       .findAllComponents(SubMenu)
@@ -288,7 +280,7 @@ describe("Header.vue", () => {
   });
 
   it("does not display the drag handler if column resizing is disabled", () => {
-    props.tableConfig = { ...props.tableConfig, enableColumnResizing: false };
+    props.tableConfig.enableColumnResizing = false;
     wrapper = shallowMount(Header, { props });
 
     expect(wrapper.find(".drag-handle").exists()).toBeFalsy();
@@ -333,14 +325,9 @@ describe("Header.vue", () => {
   });
 
   it("disables sorting via config", () => {
+    props.tableConfig.sortConfig = null;
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        tableConfig: {
-          ...props.tableConfig,
-          sortConfig: null,
-        },
-      },
+      props,
     });
 
     expect(wrapper.findComponent(Header).emitted().columnSort).toBeFalsy();
@@ -355,11 +342,9 @@ describe("Header.vue", () => {
   });
 
   it("disables sorting for specific columns via the columnSortConfig", () => {
+    props.columnSortConfigs = [true, true, false, false, true];
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        columnSortConfigs: [true, true, false, false, true],
-      },
+      props,
     });
 
     const wrappers = wrapper.findAll("th > .column-header-content");
@@ -371,11 +356,10 @@ describe("Header.vue", () => {
   });
 
   it("enables sorting for specific columns via the columnSortConfig", () => {
+    props.columnSortConfig = [true, true, false, false, true];
+
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        columnSortConfigs: [true, true, false, false, true],
-      },
+      props,
     });
 
     const wrappers = wrapper.findAll("th > .column-header-content");
@@ -388,15 +372,11 @@ describe("Header.vue", () => {
   });
 
   it("general sortConfig overrides columns specific columnSortConfig", () => {
+    props.tableConfig.sortConfig = null;
+    props.columnSortConfig = [true, true, false, false, true];
+
     wrapper = shallowMount(Header, {
-      props: {
-        ...props,
-        tableConfig: {
-          ...props.tableConfig,
-          sortConfig: null,
-        },
-        columnSortConfigs: [true, true, false, false, true],
-      },
+      props,
     });
 
     wrapper.findAll("th > .column-header-content").forEach((thWrapper) => {

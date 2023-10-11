@@ -16,33 +16,36 @@ describe("Row.vue", () => {
   let wrapper;
 
   let f = (item) => item;
-  let props = {
-    row: ["data1", "data2", "data3", "data4", "data5"],
-    tableConfig: {
-      showPopovers: true,
-      showSelection: true,
-      showCollapser: false,
-      subMenuItems: [{ id: "action", text: "Action" }],
-    },
-    columnConfigs: [],
-  };
-  props.row.forEach((data, i) =>
-    props.columnConfigs.push({
-      key: `col${i.toString()}`,
-      formatter: f,
-      classGenerator: [],
-      size: 20,
-      hasSlotContent: false,
-      popoverRenderer: false,
-    }),
-  );
-  let getUpdatedProps = (colProp, values) => {
-    let updatedProps = JSON.parse(JSON.stringify(props));
-    updatedProps.columnConfigs.forEach((colConfig, colInd) => {
+  let props;
+
+  beforeEach(() => {
+    props = {
+      row: ["data1", "data2", "data3", "data4", "data5"],
+      tableConfig: {
+        showPopovers: true,
+        showSelection: true,
+        showCollapser: false,
+        subMenuItems: [{ id: "action", text: "Action" }],
+      },
+      columnConfigs: [],
+    };
+    props.row.forEach((data, i) =>
+      props.columnConfigs.push({
+        key: `col${i.toString()}`,
+        formatter: f,
+        classGenerator: [],
+        size: 20,
+        hasSlotContent: false,
+        popoverRenderer: false,
+      }),
+    );
+  });
+
+  let updateProps = (colProp, values) => {
+    props.columnConfigs.forEach((colConfig, colInd) => {
       colConfig.formatter = f;
       colConfig[colProp] = values[colInd];
     });
-    return updatedProps;
   };
   const rowDragHandleClass = ".row-drag-handle";
 
@@ -51,6 +54,13 @@ describe("Row.vue", () => {
             :width="100"
         />
     </div>`;
+
+  const shallowMountRow = (params = {}) =>
+    shallowMount(Row, {
+      props,
+      global: { stubs: { Cell: { template: stubbedCell } } },
+      ...params,
+    });
 
   describe("rendering", () => {
     it('displays empty "tr" element if no data provided', () => {
@@ -68,10 +78,7 @@ describe("Row.vue", () => {
     });
 
     it("renders default table row", () => {
-      wrapper = shallowMount(Row, {
-        props,
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      wrapper = shallowMountRow();
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
       expect(wrapper.findComponent(CollapserToggle).exists()).toBeFalsy();
       expect(wrapper.findComponent(SubMenu).exists()).toBeTruthy();
@@ -85,48 +92,35 @@ describe("Row.vue", () => {
     });
 
     it("shows the collapser toggle via prop", () => {
-      wrapper = shallowMount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            showCollapser: true,
-          },
-        },
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      props.tableConfig.showCollapser = true;
+      wrapper = shallowMountRow();
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
       expect(wrapper.findComponent(CollapserToggle).exists()).toBeTruthy();
     });
 
     it("hides the checkbox via prop", () => {
-      wrapper = shallowMount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            showSelection: false,
-          },
-        },
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      props.tableConfig.showSelection = false;
+      wrapper = shallowMountRow();
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
       expect(wrapper.findComponent(Checkbox).exists()).toBeFalsy();
     });
 
+    it("disables the checkbox via prop", () => {
+      props.tableConfig.disableSelection = true;
+      wrapper = shallowMountRow();
+
+      expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+      expect(
+        wrapper.findComponent(Checkbox).attributes().disabled,
+      ).toBeTruthy();
+    });
+
     it("hides the submenu if no items are provided", () => {
-      wrapper = shallowMount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            subMenuItems: [],
-          },
-        },
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      props.tableConfig.subMenuItems = [];
+
+      wrapper = shallowMountRow();
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
       expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
@@ -171,14 +165,9 @@ describe("Row.vue", () => {
           hideOn: () => true,
         },
       ];
+      props.tableConfig.subMenuItems = subMenuItems;
       wrapper = mount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            subMenuItems,
-          },
-        },
+        props,
       });
       // Open sub menu so that the menu items are rendered
       await wrapper.findComponent(SubMenu).find("button").trigger("click");
@@ -199,14 +188,9 @@ describe("Row.vue", () => {
           hideOn: false,
         },
       ];
+      props.tableConfig.subMenuItems = subMenuItems;
       wrapper = mount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            subMenuItems,
-          },
-        },
+        props,
       });
       // Open sub menu so that the menu items are rendered
       await wrapper.findComponent(SubMenu).find("button").trigger("click");
@@ -216,19 +200,11 @@ describe("Row.vue", () => {
     });
 
     it("selectively generates slots for specific columns", () => {
-      let props = getUpdatedProps("hasSlotContent", [
-        false,
-        false,
-        true,
-        false,
-        false,
-      ]);
-      wrapper = shallowMount(Row, {
-        props,
+      updateProps("hasSlotContent", [false, false, true, false, false]);
+      wrapper = shallowMountRow({
         slots: {
           "cellContent-col2": "<iframe> Custom content </iframe>",
         },
-        global: { stubs: { Cell: { template: stubbedCell } } },
       });
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -238,13 +214,7 @@ describe("Row.vue", () => {
     });
 
     it("provides column data to the slotted column", () => {
-      let props = getUpdatedProps("hasSlotContent", [
-        false,
-        false,
-        true,
-        false,
-        false,
-      ]);
+      updateProps("hasSlotContent", [false, false, true, false, false]);
       wrapper = mount(Row, {
         props,
         slots: {
@@ -272,7 +242,7 @@ describe("Row.vue", () => {
 
     describe("formatters", () => {
       it("uses formatters for rendering", () => {
-        let props = getUpdatedProps("formatter", [
+        updateProps("formatter", [
           (val) => val.toUpperCase(),
           (val) => val.val,
           (val) => typeof val,
@@ -294,7 +264,7 @@ describe("Row.vue", () => {
       });
 
       it("unpacks and formats values with object representation", () => {
-        let props = getUpdatedProps("formatter", [
+        updateProps("formatter", [
           (val) => val.toUpperCase(),
           (val) => val.val,
           (val) => typeof val,
@@ -353,10 +323,7 @@ describe("Row.vue", () => {
 
   describe("events", () => {
     it("emits a rowSelect event when the checkbox is clicked", () => {
-      wrapper = shallowMount(Row, {
-        props,
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      wrapper = shallowMountRow();
 
       expect(wrapper.findComponent(Row).emitted().rowSelect).toBeFalsy();
       wrapper.findComponent(Checkbox).vm.$emit("update:modelValue", true);
@@ -365,13 +332,7 @@ describe("Row.vue", () => {
     });
 
     it("emits a rowInput event when a cell is clicked if popover column", () => {
-      let props = getUpdatedProps("popoverRenderer", [
-        true,
-        false,
-        false,
-        false,
-        false,
-      ]);
+      updateProps("popoverRenderer", [true, false, false, false, false]);
       wrapper = mount(Row, {
         props,
       });
@@ -412,16 +373,8 @@ describe("Row.vue", () => {
     });
 
     it("toggles the expandable content when the collapser toggle is clicked and emits rowExpand", async () => {
-      wrapper = shallowMount(Row, {
-        props: {
-          ...props,
-          tableConfig: {
-            ...props.tableConfig,
-            showCollapser: true,
-          },
-        },
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      props.tableConfig.showCollapser = true;
+      wrapper = shallowMountRow();
       expect(wrapper.vm.showContent).toBeFalsy();
       wrapper.findComponent(CollapserToggle).vm.$emit("collapserExpand");
       await wrapper.vm.$nextTick();
@@ -434,10 +387,7 @@ describe("Row.vue", () => {
     });
 
     it("emits a rowSubMenuClick event when the submenu is clicked", () => {
-      wrapper = shallowMount(Row, {
-        props,
-        global: { stubs: { Cell: { template: stubbedCell } } },
-      });
+      wrapper = shallowMountRow();
       expect(wrapper.emitted().rowSubMenuClick).toBeFalsy();
       wrapper
         .findComponent(SubMenu)
@@ -505,15 +455,14 @@ describe("Row.vue", () => {
     });
 
     describe("row resize", () => {
+      let wrapper;
+
       beforeEach(() => {
         props.showDragHandle = true;
+        wrapper = shallowMountRow();
       });
 
       it("sets rowHeightOnDragStart and activeDrag on pointer down on drag handle", async () => {
-        wrapper = shallowMount(Row, {
-          props,
-          global: { stubs: { Cell: { template: stubbedCell } } },
-        });
         const rowDragHandle = wrapper.find(rowDragHandleClass);
         rowDragHandle.element.setPointerCapture = (_pointerId) => null;
         wrapper.find(rowDragHandleClass).trigger("pointerdown");
@@ -523,10 +472,6 @@ describe("Row.vue", () => {
       });
 
       it("emits resizeRow event on drag handle move", () => {
-        wrapper = shallowMount(Row, {
-          props,
-          global: { stubs: { Cell: { template: stubbedCell } } },
-        });
         const rowDragHandle = wrapper.find(rowDragHandleClass);
         rowDragHandle.element.setPointerCapture = (_pointerId) => null;
 
@@ -539,10 +484,6 @@ describe("Row.vue", () => {
       });
 
       it("emits resizeAllRows on pointer up on drag handle", () => {
-        wrapper = shallowMount(Row, {
-          props,
-          global: { stubs: { Cell: { template: stubbedCell } } },
-        });
         const rowDragHandle = wrapper.find(rowDragHandleClass);
         rowDragHandle.element.setPointerCapture = (_pointerId) => null;
 
@@ -557,10 +498,6 @@ describe("Row.vue", () => {
       });
 
       it("stops resizing if pointer is lost during drag", () => {
-        wrapper = shallowMount(Row, {
-          props,
-          global: { stubs: { Cell: { template: stubbedCell } } },
-        });
         const rowDragHandle = wrapper.findAll(rowDragHandleClass).at(0);
         rowDragHandle.element.setPointerCapture = (_pointerId) => null;
 
@@ -571,10 +508,6 @@ describe("Row.vue", () => {
       });
 
       it("watches for row height changes from outside", async () => {
-        wrapper = shallowMount(Row, {
-          props,
-          global: { stubs: { Cell: { template: stubbedCell } } },
-        });
         wrapper.setProps({ rowHeight: 999 });
         await wrapper.vm.$nextTick();
         expect(wrapper.find(".row").attributes("style")).contains(

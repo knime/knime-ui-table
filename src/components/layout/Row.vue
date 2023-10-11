@@ -312,7 +312,11 @@ export default {
         @collapser-expand="onRowExpand"
       />
       <td v-if="tableConfig.showSelection" class="select-cell">
-        <Checkbox :model-value="isSelected" @update:model-value="onSelect" />
+        <Checkbox
+          :model-value="isSelected"
+          :disabled="tableConfig.disableSelection"
+          @update:model-value="onSelect"
+        />
       </td>
       <Cell
         v-for="(data, ind) in row"

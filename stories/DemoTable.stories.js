@@ -117,7 +117,13 @@ export default {
       },
     },
     withSelection: {
-      name: "Selection",
+      name: "Row Selection",
+      table: {
+        category: "Rows",
+      },
+    },
+    disableSelection: {
+      name: "Disable Row Selection",
       table: {
         category: "Rows",
       },

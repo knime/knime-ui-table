@@ -246,7 +246,11 @@ export default {
         v-if="tableConfig.showSelection"
         :class="['select-cell', { 'with-subheaders': hasSubHeaders }]"
       >
-        <Checkbox :model-value="isSelected" @update:model-value="onSelect" />
+        <Checkbox
+          :model-value="isSelected"
+          :disabled="tableConfig.disableSelection"
+          @update:model-value="onSelect"
+        />
       </th>
       <th
         v-for="(header, ind) in columnHeaders"

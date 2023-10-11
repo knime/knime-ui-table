@@ -63,6 +63,7 @@ const props = defineProps({
   showCollapser: Boolean,
   showSubHeaders: Boolean,
   withSelection: Boolean,
+  disableSelection: Boolean,
   withCellSelection: Boolean,
   showActionButton: Boolean,
   allSlottedColumns: {
@@ -316,6 +317,7 @@ const pageConfig = reactive({
 
 const tableConfig = reactive({
   showSelection: props.withSelection,
+  disableSelection: props.disableSelection,
   enableCellSelection: props.withCellSelection,
   showCollapser: props.showCollapser,
   showPopovers: props.showPopovers,
