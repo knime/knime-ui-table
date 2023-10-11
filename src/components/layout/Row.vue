@@ -453,6 +453,10 @@ tr.row {
         transition: background-color 0.15s;
       }
     }
+
+    & :deep(.missing-value-icon) {
+      height: 40px;
+    }
   }
 
   &.compact-mode {
@@ -464,6 +468,10 @@ tr.row {
       }
 
       &.action :deep(.submenu-toggle) {
+        height: 24px;
+      }
+
+      & :deep(.missing-value-icon) {
         height: 24px;
       }
     }
