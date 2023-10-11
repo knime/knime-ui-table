@@ -30,4 +30,9 @@ export const ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY = 100;
 // the width of the column resize drag handle
 export const COLUMN_RESIZE_DRAG_HANDLE_WIDTH = 5;
 
-export default { MIN_COLUMN_SIZE, SPECIAL_COLUMNS_SIZE };
+export default {
+  MIN_COLUMN_SIZE,
+  SPECIAL_COLUMNS_SIZE,
+  DEFAULT_ROW_HEIGHT,
+  COMPACT_ROW_HEIGHT,
+};
