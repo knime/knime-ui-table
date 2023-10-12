@@ -1022,9 +1022,9 @@ describe("TableUI.vue", () => {
         shallow: false,
       });
 
-      wrapper.vm.onScroll(0, 0);
+      wrapper.findComponent(RecycleScroller).vm.$emit("update", 0, 0);
       expect(wrapper.emitted().lazyload).toBeFalsy();
-      wrapper.vm.onScroll(0, 10);
+      wrapper.findComponent(RecycleScroller).vm.$emit("update", 0, 10);
       expect(wrapper.emitted().lazyload).toBeTruthy();
     });
 

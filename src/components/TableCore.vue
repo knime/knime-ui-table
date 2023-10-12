@@ -181,7 +181,10 @@ defineExpose({
       list-tag="tbody"
       item-tag="tr"
       @scroll="closeExpandedSubMenu"
-      @update="() => $emit('scroller-update')"
+      @update="
+        (startIndex: number, endIndex: number) =>
+          $emit('scroller-update', startIndex, endIndex)
+      "
     >
       <template #before>
         <div ref="headerContainer" class="header-container">
