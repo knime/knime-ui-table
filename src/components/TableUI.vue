@@ -178,7 +178,7 @@ export default {
   ],
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
-    const tableCore: Ref<any> = ref(null);
+    const tableCore: Ref<typeof TableCore | null> = ref(null);
     const selectionOverlay: Ref<any> = ref([]);
     const totalWidth = useTotalWidth(wrapper);
     const enableCellSelection = computed(() =>
@@ -222,7 +222,6 @@ export default {
       showBorderColumnIndex: null,
       lastScrollIndex: 0,
       newVal: null,
-      scrollerKey: 0,
       resizeCount: 0,
       updatedBefore: false,
       currentExpanded: new Set(),
@@ -440,7 +439,7 @@ export default {
       return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || "";
     },
     refreshScroller() {
-      this.scrollerKey++;
+      this.tableCore?.refreshScroller();
     },
     resetRowHeight() {
       this.resizedRowHeight = null;
@@ -568,7 +567,7 @@ export default {
     onResizeAllRows(currentSize: number, row: any, scrollIndex: number) {
       this.currentRowSizeDelta = 0;
       if (this.enableVirtualScrolling) {
-        const previousScrollTop = this.tableCore.getScrollStart();
+        const previousScrollTop = this.tableCore?.getScrollStart();
         const heightAboveCurrentRow = scrollIndex * this.currentRowHeight;
         const offset = heightAboveCurrentRow - previousScrollTop;
         this.resizedRowHeight = currentSize;
@@ -585,10 +584,10 @@ export default {
           // scroll was temporarily disabled to avoid sending scroll events during resize
           this.currentResizedScrollIndex = null;
         }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
-        this.tableCore.scrollToPosition(scrollPosition);
+        this.tableCore?.scrollToPosition(scrollPosition);
         resizeObserver.disconnect();
       });
-      resizeObserver.observe(this.tableCore.getRecycleScrollerWrapper());
+      resizeObserver.observe(this.tableCore?.getRecycleScrollerWrapper());
     },
     onRowInput(event: any) {
       consola.debug(`TableUI emitting: tableInput ${event}`);
@@ -700,7 +699,6 @@ export default {
     />
     <TableCore
       ref="tableCore"
-      :key="scrollerKey"
       :scroll-data="scrollData"
       :total-width="totalWidth"
       :column-sizes="columnSizes"

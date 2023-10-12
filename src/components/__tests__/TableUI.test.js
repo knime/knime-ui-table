@@ -1016,6 +1016,22 @@ describe("TableUI.vue", () => {
       expect(wrapper.findComponent(RecycleScroller).exists()).toBeTruthy();
     });
 
+    it("exposes method to scroll to the top of the recycle scroller", () => {
+      const { wrapper } = doMount({
+        enableVirtualScrolling: true,
+        shallow: false,
+      });
+
+      const scrollToPositionSpy = vi.spyOn(
+        wrapper.findComponent(RecycleScroller).vm,
+        "scrollToPosition",
+      );
+
+      wrapper.vm.refreshScroller();
+
+      expect(scrollToPositionSpy).toHaveBeenCalledWith(0);
+    });
+
     it("emits lazyloading event onScroll", () => {
       const { wrapper } = doMount({
         enableVirtualScrolling: true,

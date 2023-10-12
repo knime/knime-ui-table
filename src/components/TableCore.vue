@@ -150,6 +150,7 @@ defineExpose({
     virtualScroller.value?.scrollToPosition(scrollPosition),
   getScrollStart: () => virtualScroller.value?.getScroll().start,
   getRecycleScrollerWrapper: () => virtualScroller.value?.$refs.wrapper,
+  refreshScroller: () => virtualScroller.value?.scrollToPosition(0),
 });
 </script>
 
