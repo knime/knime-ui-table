@@ -715,6 +715,7 @@ export default {
         numRowsAbove,
         numRowsBelow,
       }"
+      :current-row-height="currentRowHeight"
       @group-sub-menu-click="onGroupSubMenuClick"
       @scroller-update="onScroll"
       @update:available-width="$emit('update:available-width', $event)"

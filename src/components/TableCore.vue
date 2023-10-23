@@ -21,6 +21,7 @@ const props = defineProps<{
   tableConfig: any;
   totalWidth: null | number;
   columnSizes: number[];
+  currentRowHeight: number;
   columnResize: {
     active: boolean;
   };
@@ -176,6 +177,7 @@ defineExpose({
         },
         showDragHandle: false,
       }"
+      :buffer="Math.max(currentRowHeight, 200)"
       class="scroller"
       :emit-update="true"
       :page-mode="false"
