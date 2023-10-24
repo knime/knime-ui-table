@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /**
  * This component contains the ability to size the columns in the tableUI according to the width of its content by
  * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additional prop,
@@ -15,6 +15,7 @@ import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
 import useTableReady from "./composables/useTableReady";
 import { isEqual } from "lodash";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
+import type { PropType } from "vue";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -23,7 +24,10 @@ export default {
   inheritAttrs: false,
   props: {
     data: { type: Array, default: () => [] },
-    currentSelection: { type: Array, default: () => [] },
+    currentSelection: {
+      type: Array as PropType<Array<Array<boolean>>>,
+      default: () => [],
+    },
     dataConfig: { type: Object, default: () => ({}) },
     tableConfig: { type: Object, default: () => ({}) },
     /** This object contains all the options necessary to calculate the sizes based on the
@@ -45,7 +49,7 @@ export default {
   },
   data() {
     return {
-      currentSizes: {},
+      currentSizes: {} as Record<string | symbol, number>,
       calculateSizes: false,
       tableIsVisible: false,
     };
@@ -90,10 +94,12 @@ export default {
     dataConfigForAutoColumnSizesCalculation() {
       return {
         ...this.dataConfig,
-        columnConfigs: this.dataConfig.columnConfigs.map((columnConfig) => ({
-          ...columnConfig,
-          size: 0,
-        })),
+        columnConfigs: this.dataConfig.columnConfigs.map(
+          (columnConfig: any) => ({
+            ...columnConfig,
+            size: 0,
+          }),
+        ),
       };
     },
     autoSizingActive() {
@@ -103,7 +109,7 @@ export default {
       );
     },
     columnPaddingsLeft() {
-      const firstRowData =
+      const firstRowData: any =
         this.paginatedDataForAutoColumnSizesCalculation[0][0];
       return this.dataConfigKeys.reduce(
         (columnPaddingsLeft, columnKey, columnIndex) => {
@@ -128,7 +134,7 @@ export default {
     dataConfigIds(newIds, oldIds) {
       if (
         newIds.length !== oldIds.length ||
-        !newIds.every((el, index) => el === oldIds[index])
+        !newIds.every((el: any, index: number) => el === oldIds[index])
       ) {
         this.triggerCalculationOfAutoColumnSizes();
       }
@@ -190,7 +196,9 @@ export default {
       );
     },
     calculateAutoColumnSizesBody() {
-      const rowComponents = this.$refs.tableUIForAutoSize.getRowComponents();
+      const rowComponents = (
+        this.$refs.tableUIForAutoSize as any
+      ).getRowComponents();
 
       const { fixedSizes } = this.autoColumnSizesOptions;
       Reflect.ownKeys(fixedSizes).forEach((columnId) => {
@@ -202,7 +210,7 @@ export default {
         }
       });
 
-      rowComponents.forEach((rowComponent) => {
+      rowComponents.forEach((rowComponent: any) => {
         const cellComponents = rowComponent.getCellComponents();
         this.dataConfigIds.forEach((columnId, columnIndex) => {
           if (!fixedSizes.hasOwnProperty(columnId)) {
@@ -215,7 +223,7 @@ export default {
       });
     },
     calculateAutoColumnSizesHeader() {
-      const headerCellSizes = this.$refs.tableUIForAutoSize
+      const headerCellSizes = (this.$refs.tableUIForAutoSize as any)
         .getHeaderComponent()
         .getHeaderCellWidths();
       this.dataConfigIds.forEach((columnId, columnIndex) => {
@@ -241,18 +249,18 @@ export default {
       this.$emit("autoColumnSizesUpdate", this.currentSizes);
       this.setAutoSizesInitialized();
     },
-    onUpdateAvailableWidth(newAvailableWidth) {
+    onUpdateAvailableWidth(newAvailableWidth: number) {
       this.$emit("update:available-width", newAvailableWidth);
       this.setAvailableWidthInitialized();
     },
     getTableUIElement() {
-      return this.$refs.tableUI.$el;
+      return (this.$refs.tableUI as any).$el;
     },
     refreshScroller() {
-      this.$refs.tableUI?.refreshScroller();
+      (this.$refs.tableUI as any)?.refreshScroller();
     },
     clearCellSelection() {
-      this.$refs.tableUI?.clearCellSelection();
+      (this.$refs.tableUI as any)?.clearCellSelection();
     },
   },
 };
