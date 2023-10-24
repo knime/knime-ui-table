@@ -44,14 +44,13 @@ export default {
     autoColumnSizesOptions: { type: Object, default: () => ({}) },
   },
   emits: ["autoColumnSizesUpdate", "ready", "update:available-width"],
-  setup() {
-    return useTableReady();
+  setup(_props, { emit }) {
+    return useTableReady({ onReady: () => emit("ready") });
   },
   data() {
     return {
       currentSizes: {} as Record<string | symbol, number>,
       calculateSizes: false,
-      tableIsVisible: false,
     };
   },
   computed: {
@@ -142,14 +141,6 @@ export default {
   },
   mounted() {
     this.triggerCalculationOfAutoColumnSizes();
-  },
-  async updated() {
-    if (!this.tableIsVisible && this.initialSizeUpdatesFinished) {
-      this.tableIsVisible = true;
-      // await for the table to be visible in the DOM
-      await this.$nextTick();
-      this.$emit("ready");
-    }
   },
   methods: {
     triggerCalculationOfAutoColumnSizes() {

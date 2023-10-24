@@ -7,20 +7,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, mount, shallowMount } from "@vue/test-utils";
 
 import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
-import TableUI from "../TableUI.vue";
-import { ref } from "vue";
+import AutoSizeTestWrapperComponent from "./AutoSizeTestWrapperComponent.vue";
 
-const useTableReadyMock = {
-  initialSizeUpdatesFinished: ref(false),
-  setAutoSizesInitialized: vi.fn(),
-  setAvailableWidthInitialized: vi.fn(),
-};
-vi.mock("../composables/useTableReady", () => ({
-  default: vi.fn(() => useTableReadyMock),
-}));
+import TableUI from "../TableUI.vue";
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
   let props, tableUIStub, context, refreshScrollerMock, clearCellSelectionMock;
@@ -83,6 +75,11 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
 
     tableUIStub = {
       template: "<table />",
+      props: {
+        dataConfig: {
+          type: Object,
+        },
+      },
       methods: {
         getRowComponents: vi.fn().mockReturnValue([
           {
@@ -131,7 +128,6 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.emitted("autoColumnSizesUpdate")).toStrictEqual([[{}]]);
     expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeFalsy();
     expect(wrapper.vm.$refs).toStrictEqual({ tableUI: expect.any(Object) });
-    expect(useTableReadyMock.setAutoSizesInitialized).toHaveBeenCalled();
   });
 
   it("mounts the TableUI when calculateForBody/calculateForHeader are true and creates correct configs", async () => {
@@ -175,26 +171,34 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.emitted("update:available-width")).toStrictEqual([[200]]);
   });
 
+  const getSizeOfFirstRow = (wrapper) => {
+    return wrapper.findComponent(TableUI).props().dataConfig.columnConfigs[0]
+      .size;
+  };
+
   it("emits ready only on the first update when the sizes were calculated and the table is not visible yet", async () => {
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
+    const wrapper = mount(AutoSizeTestWrapperComponent, context).findComponent(
+      TableUIWithAutoSizeCalculation,
+    );
+
+    expect(getSizeOfFirstRow(wrapper)).toBe(100);
     expect(wrapper.emitted()).not.toHaveProperty("ready");
 
-    useTableReadyMock.initialSizeUpdatesFinished.value = true;
-    expect(wrapper.vm.initialSizeUpdatesFinished).toBeTruthy();
-    expect(wrapper.emitted()).not.toHaveProperty("ready");
+    await flushPromises(); // wait for autosizes
+    expect(getSizeOfFirstRow(wrapper)).toBe(200);
 
-    wrapper.vm.$forceUpdate();
-    await wrapper.vm.$nextTick();
-    expect(wrapper.emitted()).not.toHaveProperty("ready");
-    await wrapper.vm.$nextTick();
-    expect(wrapper.emitted()).toHaveProperty("ready");
+    wrapper.findComponent(TableUI).vm.$emit("update:available-width", 1);
+    expect(wrapper.vm.tableIsVisible).toBeTruthy();
+
+    await wrapper.vm.$nextTick(); // wait for update due to available width change
+    expect(getSizeOfFirstRow(wrapper)).toBe(300);
     expect(wrapper.findComponent({ ref: "tableUI" }).attributes().style).toBe(
       "visibility: visible;",
     );
 
-    wrapper.vm.$forceUpdate();
-    expect(wrapper.emitted("ready").length).toBe(1);
+    expect(wrapper.emitted.ready).toBeUndefined();
+    await flushPromises();
+    expect(wrapper.emitted()).toHaveProperty("ready");
   });
 
   it("does not mount the TableUI for calculation when columns were only removed", async () => {
@@ -231,7 +235,6 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.vm.currentSizes).toStrictEqual({ [column1.id]: 60, b: 60 });
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
-    expect(useTableReadyMock.setAutoSizesInitialized).toHaveBeenCalled();
   });
 
   it("adds the fixed sizes to the column sizes object when the column still exists", async () => {
@@ -328,7 +331,6 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.emitted("update:available-width")).toStrictEqual([
       [newAvailableWidth],
     ]);
-    expect(useTableReadyMock.setAvailableWidthInitialized).toHaveBeenCalled();
   });
 
   it("forwards the method to refresh the scroller", () => {

@@ -1,10 +1,10 @@
-import { computed, ref } from "vue";
+import { computed, ref, nextTick, watchEffect } from "vue";
 
-export default () => {
+export default ({ onReady }: { onReady: () => void }) => {
   const autoSizesInitialized = ref(false);
   const availableWidthInitialized = ref(false);
 
-  const initialSizeUpdatesFinished = computed(
+  const tableIsVisible = computed(
     () => autoSizesInitialized.value && availableWidthInitialized.value,
   );
 
@@ -15,8 +15,19 @@ export default () => {
     availableWidthInitialized.value = true;
   };
 
+  const waitUntilVisibleInDOMAndCallOnReady = async () => {
+    await nextTick();
+    onReady();
+  };
+
+  watchEffect(() => {
+    if (tableIsVisible.value) {
+      waitUntilVisibleInDOMAndCallOnReady();
+    }
+  });
+
   return {
-    initialSizeUpdatesFinished,
+    tableIsVisible,
     setAutoSizesInitialized,
     setAvailableWidthInitialized,
   };
