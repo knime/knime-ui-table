@@ -148,8 +148,8 @@ const getTransformShiftForRowResize = computed(() => {
 
 const DEFAULT_BUFFER = 200;
 /**
- * We need to increas the buffer in case of large row heights in order to load at
- * least two load at least each next row in both directions.
+ * We need to increase the buffer in case of large row heights in order to load
+ * at least each next row in both directions.
  */
 const buffer = computed(() => {
   if (

@@ -981,20 +981,20 @@ describe("TableUI.vue", () => {
     it("sets default height of rows if no height is given", () => {
       const { wrapper } = doMount();
 
-      expect(wrapper.vm.rowHeight).toBe(40);
+      expect(wrapper.vm.currentRowHeight).toBe(40);
     });
 
     it("sets given rowHeight", () => {
       const rowHeight = 35;
       const { wrapper } = doMount({ rowHeight });
 
-      expect(wrapper.vm.rowHeight).toEqual(rowHeight);
+      expect(wrapper.vm.currentRowHeight).toEqual(rowHeight);
     });
 
     it("sets small height of rows on compact mode", () => {
       const { wrapper } = doMount({ compactMode: true });
 
-      expect(wrapper.vm.rowHeight).toBe(24);
+      expect(wrapper.vm.currentRowHeight).toBe(24);
     });
   });
 

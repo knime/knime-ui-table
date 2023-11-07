@@ -46,23 +46,29 @@ import type { ColumnConfig, RowConfig } from "../types/DataConfig";
 import { ref, computed, watch, onMounted, nextTick, type Ref } from "vue";
 
 interface RowProps {
-  rowData: { data?: { subMenuItemsForRow?: unknown[] } };
-  row: any[];
+  rowData?: { data?: { subMenuItemsForRow?: unknown[] } };
+  row?: any[];
   tableConfig: any;
   columnConfigs: ColumnConfig[];
-  rowConfig: RowConfig;
-  rowHeight: number | "dynamic";
-  isSelected: boolean;
-  marginBottom: number;
-  minRowHeight: number;
-  showDragHandle: boolean;
-  selectCellsOnMove: boolean;
+  rowConfig?: RowConfig;
+  rowHeight?: number | "dynamic";
+  isSelected?: boolean;
+  marginBottom?: number;
+  minRowHeight?: number;
+  showDragHandle?: boolean;
+  selectCellsOnMove?: boolean;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
+  rowData: () => ({}),
+  rowConfig: () => ({}),
+  row: () => [],
   rowHeight: DEFAULT_ROW_HEIGHT,
   marginBottom: 0,
   minRowHeight: 0,
+  isSelected: false,
+  selectCellsOnMove: false,
+  showDragHandle: false,
 });
 
 const emit = defineEmits([
@@ -217,7 +223,13 @@ const onCellSelect = ({
     emit("cellSelect", ind);
   }
 };
-defineExpose({ getCellComponents });
+defineExpose({
+  getCellComponents,
+  /**
+   * For TableUI test purposes only
+   */
+  onRowExpand,
+});
 </script>
 
 <template>

@@ -64,7 +64,9 @@ describe("Row.vue", () => {
 
   describe("rendering", () => {
     it('displays empty "tr" element if no data provided', () => {
-      wrapper = shallowMount(Row);
+      wrapper = shallowMount(Row, {
+        props: { tableConfig: {}, columnConfigs: [] },
+      });
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
       expect(wrapper.findComponent(CollapserToggle).exists()).toBeFalsy();
@@ -87,8 +89,8 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(OptionsIcon).exists()).toBeTruthy();
       expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
       expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
-      expect(wrapper.vm.$refs).toHaveProperty("cell-0", expect.any(Object));
-      expect(wrapper.vm.$refs).toHaveProperty("cell-4", expect.any(Object));
+      expect(wrapper.vm.cells).toHaveProperty(0, expect.any(Object));
+      expect(wrapper.vm.cells).toHaveProperty(4, expect.any(Object));
     });
 
     it("shows the collapser toggle via prop", () => {
@@ -316,7 +318,8 @@ describe("Row.vue", () => {
         },
       });
       expect(wrapper.find(".expandable-content").exists()).toBeFalsy();
-      await wrapper.setData({ showContent: true });
+      wrapper.vm.showContent = true;
+      await wrapper.vm.$nextTick();
       expect(wrapper.find(".expandable-content").exists()).toBeTruthy();
     });
   });
