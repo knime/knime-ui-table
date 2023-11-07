@@ -21,7 +21,7 @@ const props = defineProps<{
   tableConfig: any;
   totalWidth: null | number;
   columnSizes: number[];
-  currentRowHeight: number;
+  currentRowHeight: number | "dynamic";
   columnResize: {
     active: boolean;
   };
@@ -146,6 +146,21 @@ const getTransformShiftForRowResize = computed(() => {
     }px)`;
 });
 
+const DEFAULT_BUFFER = 200;
+/**
+ * We need to increas the buffer in case of large row heights in order to load at
+ * least two load at least each next row in both directions.
+ */
+const buffer = computed(() => {
+  if (
+    props.currentRowHeight === "dynamic" ||
+    props.currentRowHeight < DEFAULT_BUFFER
+  ) {
+    return DEFAULT_BUFFER;
+  }
+  return props.currentRowHeight;
+});
+
 defineExpose({
   scrollToPosition: (scrollPosition: number) =>
     virtualScroller.value?.scrollToPosition(scrollPosition),
@@ -177,7 +192,7 @@ defineExpose({
         },
         showDragHandle: false,
       }"
-      :buffer="Math.max(currentRowHeight, 200)"
+      :buffer="buffer"
       class="scroller"
       :emit-update="true"
       :page-mode="false"

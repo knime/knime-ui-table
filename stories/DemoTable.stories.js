@@ -158,6 +158,12 @@ export default {
         category: "Row size",
       },
     },
+    dynamicRowHeight: {
+      name: "Dynamic Row heights",
+      table: {
+        category: "Row size",
+      },
+    },
     enableRowResize: {
       name: "Enable row resize",
       table: {
@@ -202,12 +208,6 @@ export default {
     },
     showTableSize: {
       name: "Show table size",
-      table: {
-        category: "Header",
-      },
-    },
-    showTopControls: {
-      name: "Show top controls",
       table: {
         category: "Header",
       },
@@ -336,7 +336,6 @@ Hub.args = {
   enableVirtualScrolling: false,
   fixHeader: false,
   showTableSize: true,
-  showTopControls: true,
   actionButtonText: "action",
   showGroupSubMenus: true,
   showSubMenus: true,
@@ -410,11 +409,26 @@ TableView.args = {
   backgroundColor: "--knime-porcelain",
   fixHeader: true,
   showTableSize: true,
-  showTopControls: true,
   showSubMenus: false,
   showGroupSubMenus: false,
   numRowsAbove: 0,
   numRowsBelow: 0,
+  allSlottedColumns: [],
+};
+
+export const ReportTableView = Template.bind({});
+
+ReportTableView.args = {
+  allDataLength: 200,
+  showSubHeaders: true,
+  fixedColumnSizes: { lastRun: 200 },
+  compactMode: false,
+  dynamicRowHeight: true,
+  autoSizeColumnsToBody: true,
+  autoSizeColumnsToHeader: false,
+  containerHeight: "100%",
+  backgroundColor: "--knime-porcelain",
+  showTableSize: true,
   allSlottedColumns: ["lastRun"],
 };
 

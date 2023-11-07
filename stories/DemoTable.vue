@@ -81,6 +81,10 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  dynamicRowHeight: {
+    type: Boolean,
+    default: false,
+  },
   enableRowResize: Boolean,
   enableColumnResize: Boolean,
   enableVirtualScrolling: Boolean,
@@ -242,7 +246,9 @@ const dataConfig = computed(() => {
     columnConfigs: [],
     rowConfig: {
       compactMode: props.compactMode,
-      ...(props.rowHeight !== null && { rowHeight: props.rowHeight }),
+      ...((props.rowHeight !== null || props.dynamicRowHeight) && {
+        rowHeight: props.dynamicRowHeight ? "dynamic" : props.rowHeight,
+      }),
       enableResizing: props.enableRowResize,
     },
   };

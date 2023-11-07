@@ -16,6 +16,7 @@ import useTableReady from "./composables/useTableReady";
 import { isEqual } from "lodash";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
+import type DataConfig from "./types/DataConfig";
 
 const DEFAULT_NUM_ROWS = 10;
 
@@ -28,7 +29,10 @@ export default {
       type: Array as PropType<Array<Array<boolean>>>,
       default: () => [],
     },
-    dataConfig: { type: Object, default: () => ({}) },
+    dataConfig: {
+      type: Object as PropType<DataConfig>,
+      default: () => ({}),
+    },
     tableConfig: { type: Object, default: () => ({}) },
     /** This object contains all the options necessary to calculate the sizes based on the
      * content. In case only one of calculateForBody/calculateForHeader is true, the emitted object contains auto

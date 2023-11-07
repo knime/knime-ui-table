@@ -1,15 +1,4 @@
-<script>
-import CollapserToggle from "../ui/CollapserToggle.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import { DEFAULT_ROW_HEIGHT } from "@/util/constants";
-import { unpackObjectRepresentation } from "@/util";
-import Cell from "./Cell.vue";
-import throttle from "raf-throttle";
-
+<script setup lang="ts">
 /**
  * A table row element which is used for displaying data in the table body. It offers a
  * wide range of functionality which is described in the following sections:
@@ -42,253 +31,197 @@ import throttle from "raf-throttle";
  *    detected.
  * @emits rowSubMenuClick event when a row SubMenu action is triggered.
  */
-export default {
-  components: {
-    CollapserToggle,
-    SubMenu,
-    Checkbox,
-    FunctionButton,
-    OptionsIcon,
-    CloseIcon,
-    Cell,
-  },
-  props: {
-    /**
-     * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
-     * property rowData contains the complete set and not just the part that is displayed per column.
-     * @param {Array} rowData.data.subMenuItemsForRow   Define a set of subMenuItems just for this row. If you use this, set showSubMenu on the Table to 'always'.
-     */
-    rowData: {
-      type: Object,
-      default: () => ({}),
-    },
-    /**
-     * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
-     */
-    row: {
-      type: Array,
-      default: () => [],
-    },
-    tableConfig: {
-      type: Object,
-      default: () => ({}),
-    },
-    columnConfigs: {
-      type: Array,
-      default: () => [],
-    },
-    rowConfig: {
-      type: Object,
-      default: () => ({}),
-    },
-    rowHeight: {
-      type: Number,
-      default: DEFAULT_ROW_HEIGHT,
-    },
-    isSelected: {
-      type: Boolean,
-      default: false,
-    },
-    showBorderColumnIndex: {
-      type: Number,
-      default: null,
-    },
-    marginBottom: {
-      type: Number,
-      default: 0,
-    },
-    minRowHeight: {
-      type: Number,
-      default: 0,
-    },
-    showDragHandle: {
-      type: Boolean,
-      default: false,
-    },
-    selectCellsOnMove: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: [
-    "rowSelect",
-    "rowInput",
-    "rowSubMenuClick",
-    "rowSubMenuExpand",
-    "rowExpand",
-    "resizeAllRows",
-    "resizeRow",
-    "cellSelect",
-    "expandCellSelect",
-  ],
-  data() {
-    return {
-      showContent: false,
-      currentRowHeight: this.rowHeight,
-      activeDrag: false,
-    };
-  },
-  computed: {
-    columnKeys() {
-      return this.getPropertiesFromColumns("key");
-    },
-    columnSizes() {
-      return this.getPropertiesFromColumns("size");
-    },
-    formatters() {
-      return this.getPropertiesFromColumns("formatter");
-    },
-    classGenerators() {
-      return this.getPropertiesFromColumns("classGenerator");
-    },
-    slottedColumns() {
-      return this.getPropertiesFromColumns("hasSlotContent");
-    },
-    clickableColumns() {
-      // enforce boolean to reduce reactivity
-      return this.getPropertiesFromColumns("popoverRenderer").map((config) =>
-        Boolean(config),
-      );
-    },
-    classes() {
-      return this.row.map((item, ind) =>
-        this.classGenerators[ind]?.map((classItem) => {
-          if (typeof classItem === "function") {
-            return classItem(item);
-          }
-          if (typeof classItem === "object") {
-            return classItem[item];
-          }
-          return classItem;
-        }),
-      );
-    },
-    filteredSubMenuItems() {
-      if (
-        !this.tableConfig.subMenuItems?.length &&
-        !this.rowData.data?.subMenuItemsForRow?.length
-      ) {
-        return [];
-      }
-      const defaultSubMenuItems = this.tableConfig.subMenuItems.filter(
-        (item) => {
-          if (typeof item.hideOn === "function") {
-            return !item.hideOn(this.row, this.rowData);
-          }
-          return true;
-        },
-      );
 
-      return this.rowData.data?.subMenuItemsForRow?.length
-        ? this.rowData.data?.subMenuItemsForRow
-        : defaultSubMenuItems;
-    },
+import CollapserToggle from "../ui/CollapserToggle.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import { DEFAULT_ROW_HEIGHT } from "@/util/constants";
+import { unpackObjectRepresentation } from "@/util";
+import Cell from "./Cell.vue";
+import throttle from "raf-throttle";
+import type { ColumnConfig, RowConfig } from "../types/DataConfig";
+import { ref, computed, watch, onMounted, nextTick, type Ref } from "vue";
+
+interface RowProps {
+  rowData: { data?: { subMenuItemsForRow?: unknown[] } };
+  row: any[];
+  tableConfig: any;
+  columnConfigs: ColumnConfig[];
+  rowConfig: RowConfig;
+  rowHeight: number | "dynamic";
+  isSelected: boolean;
+  marginBottom: number;
+  minRowHeight: number;
+  showDragHandle: boolean;
+  selectCellsOnMove: boolean;
+}
+
+const props = withDefaults(defineProps<RowProps>(), {
+  rowHeight: DEFAULT_ROW_HEIGHT,
+  marginBottom: 0,
+  minRowHeight: 0,
+});
+
+const emit = defineEmits([
+  "rowSelect",
+  "rowInput",
+  "rowSubMenuClick",
+  "rowSubMenuExpand",
+  "rowExpand",
+  "resizeAllRows",
+  "resizeRow",
+  "cellSelect",
+  "expandCellSelect",
+]);
+
+const showContent = ref(false);
+const currentRowHeight = ref(props.rowHeight);
+watch(
+  () => props.rowHeight,
+  (newRowHeight) => {
+    currentRowHeight.value = newRowHeight;
   },
-  watch: {
-    rowHeight: {
-      handler(newVal) {
-        this.currentRowHeight = newVal;
-      },
-    },
-  },
-  mounted() {
-    // Reverts emited event if component is not ready
-    this.$emit("rowExpand", this.showContent);
-  },
-  methods: {
-    getPropertiesFromColumns(key) {
-      return this.columnConfigs.map((colConfig) => colConfig[key]);
-    },
-    onRowExpand() {
-      this.showContent = !this.showContent;
-      this.$nextTick(() => this.$emit("rowExpand", this.showContent));
-    },
-    onSelect(value) {
-      this.$emit("rowSelect", value);
-    },
-    onCellClick(event, colInd, data) {
-      this.$emit("rowInput", {
-        ...event,
-        type: "click",
-        value: null,
-        colInd,
-        data,
-      });
-    },
-    onInput(event) {
-      this.$emit("rowInput", { type: "input", ...event });
-    },
-    onSubMenuItemClick(event, clickedItem) {
-      this.$emit("rowSubMenuClick", clickedItem);
-      if (clickedItem.callback) {
-        event.preventDefault();
-        return false;
+);
+const activeDrag = ref(false);
+const rowHeightOnDragStart = ref(0);
+const getPropertiesFromColumns = computed(() => (key: keyof ColumnConfig) => {
+  return props.columnConfigs.map((colConfig: ColumnConfig) => colConfig[key]);
+});
+
+const columnKeys = computed(() => getPropertiesFromColumns.value("key"));
+const columnSizes = computed(() => getPropertiesFromColumns.value("size"));
+const formatters = computed(() => getPropertiesFromColumns.value("formatter"));
+const classGenerators = computed(() =>
+  getPropertiesFromColumns.value("classGenerator"),
+);
+const slottedColumns = computed(() =>
+  getPropertiesFromColumns.value("hasSlotContent"),
+);
+const clickableColumns = computed(() =>
+  getPropertiesFromColumns
+    .value("popoverRenderer")
+    .map((config) => Boolean(config)),
+);
+const filteredSubMenuItems = computed(() => {
+  if (
+    !props.tableConfig.subMenuItems?.length &&
+    !props.rowData.data?.subMenuItemsForRow?.length
+  ) {
+    return [];
+  }
+  const defaultSubMenuItems = props.tableConfig.subMenuItems.filter(
+    (item: any) => {
+      if (typeof item.hideOn === "function") {
+        return !item.hideOn(props.row, props.rowData);
       }
       return true;
     },
-    onSubMenuToggle(_event, callback) {
-      this.$emit("rowSubMenuExpand", callback);
-    },
-    isClickableByConfig(ind) {
-      return this.tableConfig.showPopovers && this.clickableColumns[ind];
-    },
-    getCellContentSlotName(columnKeys, columnId) {
-      // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
-      return `cellContent-${columnKeys[columnId]}`;
-    },
-    unpackObjectRepresentation,
-    onPointerDown(event) {
-      consola.debug("Resize via row drag triggered: ", event);
-      // stop the event from propagating up the DOM tree
-      event.stopPropagation();
-      // capture move events until the pointer is released
-      event.target.setPointerCapture(event.pointerId);
-      this.activeDrag = true;
-      this.rowHeightOnDragStart = this.currentRowHeight;
-    },
-    onPointerUp(event) {
-      if (this.activeDrag) {
-        consola.debug("Resize via row drag ended: ", event);
-        this.activeDrag = false;
-        this.$emit("resizeAllRows", this.currentRowHeight, this.$el);
-      }
-    },
-    onPointerMove: throttle(function (event) {
-      /* eslint-disable no-invalid-this */
-      if (this.activeDrag) {
-        consola.debug("Resize via drag ongoing: ", event);
-        const newRowHeight =
-          event.clientY - this.$el.getBoundingClientRect().top;
-        this.currentRowHeight = Math.max(newRowHeight, this.minRowHeight);
-        this.$emit(
-          "resizeRow",
-          this.currentRowHeight - this.rowHeightOnDragStart,
-        );
-      }
-      /* eslint-enable no-invalid-this */
-    }),
-    onLostPointerCapture: throttle(function () {
-      // eslint-disable-next-line no-invalid-this
-      this.activeDrag = false;
-    }),
-    getCellComponents() {
-      return this.row.map(
-        (_, columnIndex) => this.$refs[`cell-${columnIndex}`][0],
-      );
-    },
-    onCellSelect({ expandSelection, ind }) {
-      if (expandSelection) {
-        this.$emit("expandCellSelect", ind);
-      } else {
-        this.$emit("cellSelect", ind);
-      }
-    },
-  },
+  );
+
+  return props.rowData.data?.subMenuItemsForRow?.length
+    ? props.rowData.data?.subMenuItemsForRow
+    : defaultSubMenuItems;
+});
+
+onMounted(() => {
+  // Reverts emitted event if component is not ready
+  emit("rowExpand", showContent.value);
+});
+const onRowExpand = () => {
+  showContent.value = !showContent.value;
+  nextTick(() => emit("rowExpand", showContent.value));
 };
+const onSelect = (value: any) => {
+  emit("rowSelect", value);
+};
+const onCellClick = (event: any, colInd: number, data: any) => {
+  emit("rowInput", {
+    ...event,
+    type: "click",
+    value: null,
+    colInd,
+    data,
+  });
+};
+const onInput = (event: any) => {
+  emit("rowInput", { type: "input", ...event });
+};
+const onSubMenuItemClick = (event: any, clickedItem: any) => {
+  emit("rowSubMenuClick", clickedItem);
+  if (clickedItem.callback) {
+    event.preventDefault();
+    return false;
+  }
+  return true;
+};
+const onSubMenuToggle = (_event: Event, callback: () => void) => {
+  emit("rowSubMenuExpand", callback);
+};
+const isClickableByConfig = (ind: number) => {
+  return props.tableConfig.showPopovers && clickableColumns.value[ind];
+};
+const getCellContentSlotName = (columnKeys: any, columnId: any) => {
+  // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
+  return `cellContent-${columnKeys[columnId]}`;
+};
+const onPointerDown = (event: PointerEvent) => {
+  if (currentRowHeight.value === "dynamic") {
+    return;
+  }
+  consola.debug("Resize via row drag triggered: ", event);
+  // stop the event from propagating up the DOM tree
+  event.stopPropagation();
+  // capture move events until the pointer is released
+  (event.target as Element).setPointerCapture(event.pointerId);
+  activeDrag.value = true;
+  rowHeightOnDragStart.value = currentRowHeight.value;
+};
+
+const rowElement: Ref<null | HTMLElement> = ref(null);
+const onPointerUp = (event: PointerEvent) => {
+  if (activeDrag.value) {
+    consola.debug("Resize via row drag ended: ", event);
+    activeDrag.value = false;
+    emit("resizeAllRows", currentRowHeight.value, rowElement);
+  }
+};
+const onPointerMove = throttle((event) => {
+  if (activeDrag.value) {
+    consola.debug("Resize via drag ongoing: ", event);
+    const newRowHeight =
+      event.clientY - rowElement.value!.getBoundingClientRect().top;
+    currentRowHeight.value = Math.max(newRowHeight, props.minRowHeight);
+    emit("resizeRow", currentRowHeight.value - rowHeightOnDragStart.value);
+  }
+});
+const onLostPointerCapture = throttle(() => {
+  activeDrag.value = false;
+});
+const cells: Ref<Record<number, any>> = ref({});
+const getCellComponents = () => {
+  return props.row.map((_, columnIndex) => cells.value[columnIndex]);
+};
+const onCellSelect = ({
+  expandSelection,
+  ind,
+}: {
+  expandSelection: boolean;
+  ind: number;
+}) => {
+  if (expandSelection) {
+    emit("expandCellSelect", ind);
+  } else {
+    emit("cellSelect", ind);
+  }
+};
+defineExpose({ getCellComponents });
 </script>
 
 <template>
-  <div>
+  <div ref="rowElement">
     <tr
       v-if="row.length > 0"
       :class="[
@@ -299,7 +232,9 @@ export default {
         },
       ]"
       :style="{
-        // height: `${currentRowHeight}px`,
+        ...(currentRowHeight === 'dynamic'
+          ? {}
+          : { height: `${currentRowHeight}px` }),
         marginBottom: `${marginBottom}px`,
         ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       }"
@@ -320,7 +255,11 @@ export default {
       </td>
       <Cell
         v-for="(data, ind) in row"
-        :ref="`cell-${ind}`"
+        :ref="
+          (el) => {
+            cells[ind] = el;
+          }
+        "
         :key="ind"
         :cell-data="data"
         :select-on-move="selectCellsOnMove"
@@ -366,11 +305,10 @@ export default {
     <div
       v-if="showDragHandle && !selectCellsOnMove"
       class="row-drag-handle"
-      @pointerdown.passive="onPointerDown($event)"
-      @pointerup.passive="onPointerUp($event)"
+      @pointerdown.passive="onPointerDown"
+      @pointerup.passive="onPointerUp"
       @pointermove="onPointerMove"
       @lostpointercapture="onLostPointerCapture"
-      @scroll="onScroll"
     />
     <tr v-if="showContent" class="collapser-row">
       <td class="expandable-content">

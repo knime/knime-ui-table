@@ -18,6 +18,8 @@ import useCellSelection from "./composables/useCellSelection";
 import useCellCopying from "./composables/useCellCopying";
 import useBoolean from "./composables/useBoolean";
 
+import type DataConfig from "./types/DataConfig";
+
 import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_HEIGHT,
@@ -100,7 +102,7 @@ export default {
      * Config props.
      */
     dataConfig: {
-      type: Object,
+      type: Object as PropType<DataConfig>,
       default: () => ({}),
     },
     tableConfig: {
@@ -218,8 +220,6 @@ export default {
       popoverData: null,
       popoverColumn: null,
       popoverRenderer: null,
-      // the index of the column that is currently being resized and for which a border should be shown
-      showBorderColumnIndex: null,
       lastScrollIndex: 0,
       newVal: null,
       resizeCount: 0,
@@ -399,12 +399,10 @@ export default {
     enableRowResize() {
       return this.dataConfig.rowConfig.enableResizing;
     },
-    rowHeight() {
-      return this.dataConfig.rowConfig.compactMode
-        ? COMPACT_ROW_HEIGHT
-        : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
-    },
     scrollerItemSize() {
+      if (this.currentRowHeight === "dynamic") {
+        return this.minRowHeight;
+      }
       // The virtual scroller does not support margins, hence we need to set a different height for the rows
       // instead
       return this.currentRowHeight + ROW_MARGIN_BOTTOM;
@@ -565,6 +563,9 @@ export default {
       this.currentResizedScrollIndex = scrollIndex;
     },
     onResizeAllRows(currentSize: number, row: any, scrollIndex: number) {
+      if (this.currentRowHeight === "dynamic") {
+        return;
+      }
       this.currentRowSizeDelta = 0;
       if (this.enableVirtualScrolling) {
         const previousScrollTop = this.tableCore?.getScrollStart();
@@ -749,7 +750,6 @@ export default {
           :margin-bottom="rowMarginBottom"
           :is-selected="currentSelectionMap(rowInd, groupInd || 0, isTop)"
           :select-cells-on-move="selectCellsOnMove.state"
-          :show-border-column-index="showBorderColumnIndex"
           :style="transform === null ? {} : { transform }"
           @row-select="onRowSelect($event, rowInd, groupInd || 0, isTop)"
           @cell-select="
