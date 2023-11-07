@@ -371,6 +371,27 @@ const alertEvent =
       `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`,
     );
 const onCopySelection = alertEvent("copySelection");
+
+const htmlSlotContent = `
+<div style="
+    border: 1px dashed black;
+    aspect-ratio: 1/1;
+    max-height: 50px;
+     min-height: 0;
+    font-size: 5px;
+    padding: 5px;
+    line-height: 10px;
+"> 
+  <div>
+    aspect-ratio: 1/1;
+  </div>
+  <div>
+    max-height: 50px;
+  </div> 
+  <div>
+    min-height: 0;
+  </div> 
+</div>`;
 </script>
 
 <template>
@@ -411,7 +432,14 @@ const onCopySelection = alertEvent("copySelection");
           data: { row, key, colInd, rowInd },
         } = { data: {} }"
       >
-        <span> {{ key }}(index:{{ rowInd }}) = {{ row[colInd] }} </span>
+        <img
+          :title="` Slot for: ${key}(index:${rowInd}) = ${JSON.stringify(
+            row[colInd],
+          )}`"
+          :style="{ maxHeight: `${20 + 20 * rowInd}px`, display: 'block' }"
+          src="https://forum-cdn.knime.com/uploads/default/original/3X/6/8/68ac3f3c3142b63b68b8ba7c58f97a2614bdf1d2.svg"
+        />
+        <span v-html="htmlSlotContent" />
       </template>
       <template #collapserContent>
         <h6>Collapser slot content:</h6>

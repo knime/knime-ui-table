@@ -368,7 +368,7 @@ Hub.args = {
       },
     },
   ],
-  allSlottedColumns: ["status"],
+  allSlottedColumns: ["lastRun", "status"],
 };
 
 export const TableView = Template.bind({});
@@ -415,6 +415,7 @@ TableView.args = {
   showGroupSubMenus: false,
   numRowsAbove: 0,
   numRowsBelow: 0,
+  allSlottedColumns: ["lastRun"],
 };
 
 export const TableUIWithAutoSizeCalculation = Template.bind({});

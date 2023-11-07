@@ -299,7 +299,7 @@ export default {
         },
       ]"
       :style="{
-        height: `${currentRowHeight}px`,
+        // height: `${currentRowHeight}px`,
         marginBottom: `${marginBottom}px`,
         ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       }"
