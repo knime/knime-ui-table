@@ -79,6 +79,8 @@ const onPointerOver = throttle(() => {
 & td {
   background-clip: border-box;
   user-select: none;
+  white-space: pre;
+  word-break: normal;
 
   &.colored-cell {
     background-size: 4px;

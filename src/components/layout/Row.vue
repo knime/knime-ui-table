@@ -355,11 +355,13 @@ tr.row {
   }
 
   & td {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 40px;
     padding: 0;
+
+    &.data-cell {
+      padding: 12px 0;
+    }
 
     &.collapser-cell {
       min-width: 30px;
@@ -368,6 +370,7 @@ tr.row {
     &.select-cell {
       min-width: 30px;
       width: 30px;
+      padding-top: 5px;
 
       & :deep(label) {
         padding: 0;
@@ -407,25 +410,21 @@ tr.row {
         transition: background-color 0.15s;
       }
     }
-
-    & :deep(.missing-value-icon) {
-      height: 40px;
-    }
   }
 
   &.compact-mode {
     & td {
-      line-height: 24px;
+      padding: 0;
+
+      &.data-cell {
+        padding: 5px 0;
+      }
 
       & :deep(label) {
         bottom: 5px;
       }
 
       &.action :deep(.submenu-toggle) {
-        height: 24px;
-      }
-
-      & :deep(.missing-value-icon) {
         height: 24px;
       }
     }
