@@ -88,6 +88,7 @@ const getProps = ({
   numRowsAbove = 0,
   numRowsBelow = 0,
   bottomData = [],
+  headerColors = {},
 }) => ({
   data,
   bottomData,
@@ -115,6 +116,7 @@ const getProps = ({
         },
         hasSlotContent: false,
         ...(enableIsSortable && { isSortable: false }),
+        ...(headerColors.a && { headerColor: headerColors.a }),
       },
       {
         key: "b",
@@ -130,6 +132,7 @@ const getProps = ({
         classGenerator: [],
         hasSlotContent: false,
         ...(enableIsSortable && { isSortable: true }),
+        ...(headerColors.b && { headerColor: headerColors.b }),
       },
     ],
     rowConfig: {

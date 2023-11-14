@@ -51,6 +51,7 @@ type ColumnConfig = {
   popoverRenderer: any;
   formatter: any;
   classGenerator: any;
+  headerColor: string;
 };
 
 export const getPropertiesFromColumns = (
@@ -60,7 +61,12 @@ export const getPropertiesFromColumns = (
 
 const PADDING_LEFT_DEFAULT_CELL = 10;
 const PADDING_LEFT_COLORED_CELL = 20;
+
+const getPaddingLeft = (color: string | null) =>
+  color === null ? PADDING_LEFT_DEFAULT_CELL : PADDING_LEFT_COLORED_CELL;
+
 export const getCellPaddingLeft = (cellData: any) =>
-  getColor(cellData) === null
-    ? PADDING_LEFT_DEFAULT_CELL
-    : PADDING_LEFT_COLORED_CELL;
+  getPaddingLeft(getColor(cellData));
+
+export const getHeaderPaddingLeft = (headerColor: string | null) =>
+  getPaddingLeft(headerColor);

@@ -51,6 +51,7 @@ describe("Header.vue", () => {
       columnSizes: [75, 75, 75, 75, 75],
       columnSubMenuItems: [],
       columnSortConfigs: [true, true, true, true, true],
+      columnHeaderColors: [null, "#ff0000", "#00ff00", "#0000ff", null],
       isSelected: false,
       filtersActive: false,
     };
@@ -413,5 +414,27 @@ describe("Header.vue", () => {
       .mockReturnValue({ width: 40 });
 
     expect(wrapper.vm.getHeaderCellWidths()).toEqual([60, 40, 40, 40, 40]);
+  });
+
+  it("computes the correct cell paddings", () => {
+    wrapper = shallowMount(Header, { props });
+    expect(wrapper.vm.columnPaddingsLeft).toStrictEqual([10, 20, 20, 20, 10]);
+  });
+
+  it("renders with the correct styles for columns with and without colors", () => {
+    wrapper = shallowMount(Header, { props });
+
+    let columns = wrapper.findAll("th.column-header");
+    expect(columns.at(0).attributes("style")).toContain("padding-left: 10px;");
+    expect(columns.at(0).attributes("style")).not.toContain(
+      "--data-cell-color",
+    );
+    expect(columns.at(0).classes()).not.toContain("colored-header");
+
+    expect(columns.at(1).attributes("style")).toContain("padding-left: 20px;");
+    expect(columns.at(1).attributes("style")).toContain(
+      "--data-cell-color: #ff0000;",
+    );
+    expect(columns.at(1).classes()).toContain("colored-header");
   });
 });

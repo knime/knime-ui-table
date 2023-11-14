@@ -13,6 +13,8 @@ import {
   COLUMN_RESIZE_DRAG_HANDLE_WIDTH,
 } from "@/util/constants";
 
+import { getHeaderPaddingLeft } from "@/util";
+
 /**
  * A table header element for displaying the column names in a table. This component
  * has a filter-toggle button to programmatically display column filters, a checkbox
@@ -55,6 +57,10 @@ export default {
       default: () => [],
     },
     columnSubMenuItems: {
+      type: Array,
+      default: () => [],
+    },
+    columnHeaderColors: {
       type: Array,
       default: () => [],
     },
@@ -124,6 +130,11 @@ export default {
     },
     currentResizeDragHandleWidth() {
       return this.enableColumnResizing ? COLUMN_RESIZE_DRAG_HANDLE_WIDTH : 0;
+    },
+    columnPaddingsLeft() {
+      return this.columnHeaderColors.map((columnHeaderColor) =>
+        getHeaderPaddingLeft(columnHeaderColor),
+      );
     },
   },
   methods: {
@@ -256,8 +267,15 @@ export default {
         v-for="(header, ind) in columnHeaders"
         :key="ind"
         :ref="`columnHeader-${ind}`"
-        :style="{ width: `calc(${columnSizes[ind] || minimumColumnWidth}px)` }"
-        class="column-header"
+        :style="{
+          width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`,
+          paddingLeft: `${columnPaddingsLeft[ind]}px`,
+          '--data-cell-color': columnHeaderColors[ind],
+        }"
+        :class="[
+          'column-header',
+          { 'colored-header': columnHeaderColors[ind] },
+        ]"
       >
         <div
           class="column-header-content"
@@ -414,12 +432,22 @@ thead {
         }
       }
 
+      &.colored-header {
+        background-size: 4px calc(100% - 1px);
+        background-repeat: no-repeat;
+        background-position: 10px 0;
+        background-image: linear-gradient(
+          90deg,
+          var(--data-cell-color),
+          var(--data-cell-color)
+        );
+      }
+
       &.column-header {
         position: relative;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        padding-left: 10px;
 
         & .column-header-content {
           display: flex;

@@ -293,6 +293,12 @@ export default {
           : true,
       );
     },
+    columnHeaderColors() {
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "headerColor",
+      );
+    },
     slottedColumns() {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
@@ -825,6 +831,7 @@ export default {
           :column-sizes="columnSizes"
           :column-sub-menu-items="columnHeaderSubMenuItems"
           :column-sort-configs="columnSortConfigs"
+          :column-header-colors="columnHeaderColors"
           :is-selected="totalSelected > 0"
           :filters-active="filterActive"
           :get-drag-handle-height="getDragHandleHeight"
