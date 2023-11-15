@@ -91,6 +91,18 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
       expect(wrapper.vm.cells).toHaveProperty(0, expect.any(Object));
       expect(wrapper.vm.cells).toHaveProperty(4, expect.any(Object));
+      expect(wrapper.vm.paddingTopBottom).toBe(11);
+    });
+
+    it("renders table row in compact mode", () => {
+      wrapper = shallowMount(Row, {
+        props: {
+          tableConfig: {},
+          columnConfigs: [],
+          rowConfig: { compactMode: true },
+        },
+      });
+      expect(wrapper.vm.paddingTopBottom).toBe(5);
     });
 
     it("shows the collapser toggle via prop", () => {

@@ -16,6 +16,7 @@ describe("Cell.vue", () => {
       size: 300,
       classGenerators: [],
       isClickableByConfig: false,
+      defaultTopBottomPadding: 12,
       formatter: (value: string) => value,
     };
   });
@@ -30,6 +31,7 @@ describe("Cell.vue", () => {
       isMissing: false,
       isSlotted: false,
       paddingLeft: 10,
+      defaultTopBottomPadding: 12,
       selectOnMove: false,
       size: 300,
       text: "cellValue",

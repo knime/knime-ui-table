@@ -10,6 +10,7 @@ interface CellProps {
   )[];
   isClickableByConfig: boolean;
   formatter: any;
+  defaultTopBottomPadding: number;
 }
 
 export type { CellProps };

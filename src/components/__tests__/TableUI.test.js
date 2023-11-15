@@ -89,6 +89,7 @@ const getProps = ({
   numRowsBelow = 0,
   bottomData = [],
   headerColors = { a: "#ff0000" },
+  dynamicRowHeight = false,
 }) => ({
   data,
   bottomData,
@@ -138,6 +139,7 @@ const getProps = ({
     rowConfig: {
       compactMode,
       ...(rowHeight ? { rowHeight } : {}),
+      ...(dynamicRowHeight ? { rowHeight: "dynamic" } : {}),
       enableResizing: enableRowResize,
     },
   },
@@ -217,6 +219,7 @@ describe("TableUI.vue", () => {
       shallow = true,
       wrapperHeight = 1000,
       bottomData = [],
+      dynamicRowHeight = false,
     } = {},
     stubs = {},
   ) => {
@@ -243,6 +246,7 @@ describe("TableUI.vue", () => {
       numRowsAbove,
       numRowsBelow,
       bottomData,
+      dynamicRowHeight,
     });
 
     bodySizeEvent.push({ contentRect: { height: wrapperHeight } });

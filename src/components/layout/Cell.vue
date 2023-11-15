@@ -84,6 +84,7 @@ defineExpose({
     :padding-left="paddingLeft"
     :classes="classes"
     :select-on-move="props.selectOnMove"
+    :default-top-bottom-padding="props.defaultTopBottomPadding"
     :size="props.size"
     @click="(value) => emit('click', value)"
     @select="(value) => emit('select', value)"

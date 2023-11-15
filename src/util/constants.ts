@@ -12,6 +12,12 @@ export const SPECIAL_COLUMNS_SIZE = 30;
 // the default height of a row
 export const DEFAULT_ROW_HEIGHT = 40;
 
+// the default top/bottom padding of a row
+export const DEFAULT_ROW_PADDING_TOP_BOTTOM = 11;
+
+// the compact top/bottom padding of a row
+export const COMPACT_ROW_PADDING_TOP_BOTTOM = 5;
+
 // the compact height of a row
 export const COMPACT_ROW_HEIGHT = 24;
 

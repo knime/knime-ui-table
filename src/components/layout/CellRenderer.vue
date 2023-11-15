@@ -33,6 +33,10 @@ const onPointerOver = throttle(() => {
     emit("select", { expandSelection: true });
   }
 });
+
+const paddingTopBottom = computed(() =>
+  !props.isSlotted || props.isMissing ? props.defaultTopBottomPadding : false,
+);
 </script>
 
 <template>
@@ -49,9 +53,13 @@ const onPointerOver = throttle(() => {
     :style="{
       width: `calc(${size}px)`,
       paddingLeft: `${paddingLeft}px`,
+      ...(paddingTopBottom && {
+        paddingTop: `${defaultTopBottomPadding}px`,
+        paddingBottom: `${defaultTopBottomPadding}px`,
+      }),
       ...dataCellColorStyle,
     }"
-    :title="title === null ? undefined : title"
+    :title="title === null || (isSlotted && !isMissing) ? undefined : title"
     @click="
       (event: MouseEvent) => {
         if (isClickable) {
@@ -81,6 +89,7 @@ const onPointerOver = throttle(() => {
   user-select: none;
   white-space: pre;
   word-break: normal;
+  line-height: initial;
 
   &.colored-cell {
     background-size: 4px;
@@ -94,7 +103,6 @@ const onPointerOver = throttle(() => {
   }
 
   & .missing-value-icon {
-    vertical-align: middle;
     width: 14px;
     stroke-width: calc(32px / 14);
     stroke: var(--theme-color-error);

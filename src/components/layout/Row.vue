@@ -38,7 +38,11 @@ import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import { DEFAULT_ROW_HEIGHT } from "@/util/constants";
+import {
+  DEFAULT_ROW_HEIGHT,
+  COMPACT_ROW_PADDING_TOP_BOTTOM,
+  DEFAULT_ROW_PADDING_TOP_BOTTOM,
+} from "@/util/constants";
 import { unpackObjectRepresentation } from "@/util";
 import Cell from "./Cell.vue";
 import throttle from "raf-throttle";
@@ -85,6 +89,12 @@ const emit = defineEmits([
 
 const showContent = ref(false);
 const currentRowHeight = ref(props.rowHeight);
+const paddingTopBottom = computed(() =>
+  props.rowConfig.compactMode
+    ? COMPACT_ROW_PADDING_TOP_BOTTOM
+    : DEFAULT_ROW_PADDING_TOP_BOTTOM,
+);
+
 watch(
   () => props.rowHeight,
   (newRowHeight) => {
@@ -99,6 +109,7 @@ const getPropertiesFromColumns = computed(() => (key: keyof ColumnConfig) => {
 
 const columnKeys = computed(() => getPropertiesFromColumns.value("key"));
 const columnSizes = computed(() => getPropertiesFromColumns.value("size"));
+
 const formatters = computed(() => getPropertiesFromColumns.value("formatter"));
 const classGenerators = computed(() =>
   getPropertiesFromColumns.value("classGenerator"),
@@ -280,6 +291,7 @@ defineExpose({
         :class-generators="classGenerators[ind]"
         :is-clickable-by-config="isClickableByConfig(ind)"
         :formatter="formatters[ind]"
+        :default-top-bottom-padding="paddingTopBottom"
         @click="onCellClick($event, ind, data)"
         @select="onCellSelect({ ...$event, ind })"
         @input="onInput"
@@ -291,6 +303,7 @@ defineExpose({
             :cell="unpackObjectRepresentation(data)"
             :height="rowHeight"
             :width="width"
+            :padding-top-bottom="paddingTopBottom"
             :ind="ind"
           />
         </template>
@@ -359,10 +372,6 @@ tr.row {
     text-overflow: ellipsis;
     padding: 0;
 
-    &.data-cell {
-      padding: 12px 0;
-    }
-
     &.collapser-cell {
       min-width: 30px;
     }
@@ -414,12 +423,6 @@ tr.row {
 
   &.compact-mode {
     & td {
-      padding: 0;
-
-      &.data-cell {
-        padding: 5px 0;
-      }
-
       & :deep(label) {
         bottom: 5px;
       }

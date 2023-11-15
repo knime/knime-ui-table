@@ -244,9 +244,6 @@ export default {
       return this.resizedRowHeight ?? this.initialRowHeight;
     },
     initialRowHeight() {
-      if (this.dataConfig.rowConfig?.rowHeight === "dynamic") {
-        return "dynamic";
-      }
       return this.dataConfig.rowConfig.compactMode
         ? COMPACT_ROW_HEIGHT
         : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
