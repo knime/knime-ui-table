@@ -241,6 +241,12 @@ const currentSlottedColumns = computed(() =>
     .filter((col) => col !== null),
 );
 
+const currentColumnHeaderColors = computed(() =>
+  currentColumns.keys.value.map(
+    (columnKey) => demoProps.allColumnHeaderColors[columnKey],
+  ),
+);
+
 const dataConfig = computed(() => {
   let dataConfig = {
     columnConfigs: [],
@@ -274,6 +280,7 @@ const dataConfig = computed(() => {
       isSortable:
         !props.withSpecificSortConfigs ||
         currentColumnSpecificSortConfigs.value[ind],
+      headerColor: currentColumnHeaderColors.value[ind] ?? null,
     };
     dataConfig.columnConfigs.push(columnConfig);
   });

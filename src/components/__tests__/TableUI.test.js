@@ -88,7 +88,7 @@ const getProps = ({
   numRowsAbove = 0,
   numRowsBelow = 0,
   bottomData = [],
-  headerColors = {},
+  headerColors = { a: "#ff0000" },
 }) => ({
   data,
   bottomData,

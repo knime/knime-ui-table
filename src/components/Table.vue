@@ -73,6 +73,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    allColumnHeaderColors: {
+      type: Object,
+      default: () => ({}),
+    },
     timeFilterKey: {
       type: String,
       default: null,
@@ -267,6 +271,7 @@ export default {
           ...(this.currentColumnSpecificSortConfigs.length !== 0 && {
             isSortable: this.currentColumnSpecificSortConfigs[ind],
           }),
+          headerColor: this.currentColumnHeaderColors[ind] ?? null,
         };
         dataConfig.columnConfigs.push(columnConfig);
       });
@@ -414,6 +419,11 @@ export default {
     currentColumnSpecificSortConfigs() {
       return this.getDataOfCurrentlyShownColumns(
         this.allColumnSpecificSortConfigs,
+      );
+    },
+    currentColumnHeaderColors() {
+      return this.currentColumnKeys.map(
+        (columnKey) => this.allColumnHeaderColors[columnKey],
       );
     },
     /*

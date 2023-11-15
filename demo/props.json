@@ -906,6 +906,10 @@
     "workflowPath": ["workflow-path"]
   },
   "allSlottedColumns": ["status"],
+  "allColumnHeaderColors": {
+    "lastRun": "#00b33c",
+    "status": "#b300b3"
+  },
   "timeFilterKey": "lastRun",
   "defaultColumns": [
     "lastRun",

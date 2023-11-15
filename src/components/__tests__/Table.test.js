@@ -35,6 +35,7 @@ describe("Table.vue", () => {
     allColumnTypes: { a: columnTypes.Number, b: columnTypes.Number },
     allFormatters: { a: (x) => x, b: (x) => x },
     allClassGenerators: {},
+    allColumnHeaderColors: { a: "#ff0000" },
     defaultColumns: ["a", "b"],
     showSorting: true,
     showColumnSelection: true,
@@ -114,6 +115,7 @@ describe("Table.vue", () => {
             popoverRenderer: expect.undefined,
             size: 50,
             type: columnTypes.Number,
+            headerColor: "#ff0000",
           },
           {
             classGenerator: [],
@@ -126,6 +128,7 @@ describe("Table.vue", () => {
             popoverRenderer: expect.undefined,
             size: 50,
             type: columnTypes.Number,
+            headerColor: null,
           },
         ],
         rowConfig: { compactMode: false },
