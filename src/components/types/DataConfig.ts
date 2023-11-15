@@ -7,8 +7,8 @@ export type RowConfig =
   | RowConfigBase
   | {
       rowHeight: "dynamic";
-      enableResizing?: false;
-      compactMode?: false;
+      enableResizing?: boolean;
+      compactMode?: boolean;
     };
 
 export type ColumnConfig = any;
