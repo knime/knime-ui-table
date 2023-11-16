@@ -427,6 +427,10 @@ tr.row {
         bottom: 5px;
       }
 
+      &.select-cell {
+        padding-top: 0;
+      }
+
       &.action :deep(.submenu-toggle) {
         height: 24px;
       }
