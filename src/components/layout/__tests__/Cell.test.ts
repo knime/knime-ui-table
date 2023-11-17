@@ -30,6 +30,7 @@ describe("Cell.vue", () => {
       isClickable: false,
       isMissing: false,
       isSlotted: false,
+      noPadding: false,
       paddingLeft: 10,
       defaultTopBottomPadding: 12,
       selectOnMove: false,

@@ -117,6 +117,8 @@ const classGenerators = computed(() =>
 const slottedColumns = computed(() =>
   getPropertiesFromColumns.value("hasSlotContent"),
 );
+const noPadding = computed(() => getPropertiesFromColumns.value("noPadding"));
+
 const clickableColumns = computed(() =>
   getPropertiesFromColumns
     .value("popoverRenderer")
@@ -287,6 +289,7 @@ defineExpose({
         :cell-data="data"
         :select-on-move="selectCellsOnMove"
         :is-slotted="slottedColumns[ind]"
+        :no-padding="noPadding[ind]"
         :size="columnSizes[ind] ?? 100"
         :class-generators="classGenerators[ind]"
         :is-clickable-by-config="isClickableByConfig(ind)"
@@ -303,7 +306,6 @@ defineExpose({
             :cell="unpackObjectRepresentation(data)"
             :height="rowHeight"
             :width="width"
-            :padding-top-bottom="paddingTopBottom"
             :ind="ind"
           />
         </template>

@@ -34,8 +34,8 @@ const onPointerOver = throttle(() => {
   }
 });
 
-const paddingTopBottom = computed(() =>
-  !props.isSlotted || props.isMissing ? props.defaultTopBottomPadding : false,
+const hasPaddingTopBottom = computed(
+  () => !(props.isSlotted && Boolean(props.noPadding)) || props.isMissing,
 );
 </script>
 
@@ -53,7 +53,7 @@ const paddingTopBottom = computed(() =>
     :style="{
       width: `calc(${size}px)`,
       paddingLeft: `${paddingLeft}px`,
-      ...(paddingTopBottom && {
+      ...(hasPaddingTopBottom && {
         paddingTop: `${defaultTopBottomPadding}px`,
         paddingBottom: `${defaultTopBottomPadding}px`,
       }),
