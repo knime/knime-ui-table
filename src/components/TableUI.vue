@@ -804,17 +804,15 @@ export default {
             #[getCellContentSlotName(columnKeys,colInd)]="cellData"
             :key="rowInd + '_' + colInd"
           >
-            <span>
-              <slot
-                :name="`cellContent-${columnKeys[colInd]}`"
-                :data="{
-                  ...cellData,
-                  key: columnKeys[colInd],
-                  rowInd: rowInd,
-                  colInd,
-                }"
-              />
-            </span>
+            <slot
+              :name="`cellContent-${columnKeys[colInd]}`"
+              :data="{
+                ...cellData,
+                key: columnKeys[colInd],
+                rowInd: rowInd,
+                colInd,
+              }"
+            />
           </template>
           <template #rowCollapserContent>
             <slot name="collapserContent" :row="data" />

@@ -87,8 +87,7 @@ const paddingTopBottom = computed(() =>
 & td {
   background-clip: border-box;
   user-select: none;
-  white-space: pre;
-  word-break: normal;
+  white-space: nowrap;
   line-height: initial;
 
   &.colored-cell {
