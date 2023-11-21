@@ -31,7 +31,9 @@ const formattedValue = computed(() => {
 const title = computed(() => {
   const { cellData } = props;
   if (isMissingValue(cellData)) {
-    const missingValueMsg = cellData === null ? "" : ` (${cellData.metadata})`;
+    const metadata = cellData?.metadata;
+    const missingValueMsg =
+      typeof metadata === "string" ? ` (${metadata})` : "";
     return `Missing Value${missingValueMsg}`;
   }
   if (isClickable.value) {

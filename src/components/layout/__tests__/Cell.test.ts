@@ -61,6 +61,14 @@ describe("Cell.vue", () => {
       );
     });
 
+    it("creates the correct title for missing values with null metadata", () => {
+      props.cellData = { metadata: null };
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().title).toBe(
+        "Missing Value",
+      );
+    });
+
     it("creates the correct title for missing values with metadata", () => {
       props.cellData = { metadata: "Missing Value Message" };
       const wrapper = shallowMount(Cell, { props });
