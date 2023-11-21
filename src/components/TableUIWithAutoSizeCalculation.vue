@@ -18,7 +18,11 @@ import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
 import type DataConfig from "./types/DataConfig";
 
-const DEFAULT_NUM_ROWS = 10;
+/**
+ * In a lot of cases, the row ids are Row0, Row1, ....
+ * With 11 rows taken into account, we respect "Row10".
+ */
+const DEFAULT_NUM_ROWS = 11;
 
 export default {
   components: { TableUI },
