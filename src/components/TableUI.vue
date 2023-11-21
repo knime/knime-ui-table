@@ -674,6 +674,14 @@ export default {
       });
       return rowComponents;
     },
+    getRowData(row: Record<string, unknown> | Array<unknown>) {
+      const isEmptyArray = Array.isArray(row) && row.length === 0;
+      return isEmptyArray
+        ? row
+        : this.columnKeys.map(
+            (column: any) => (row as Record<string, unknown>)[column],
+          );
+    },
     getRowRefName(groupInd: null | number, rowInd: number) {
       if (groupInd === null) {
         return `row-${rowInd}`;
@@ -748,7 +756,7 @@ export default {
           :key="row.id"
           :ref="getRowRefName(groupInd, rowInd)"
           :row-data="data"
-          :row="columnKeys.map((column: any) => row[column])"
+          :row="getRowData(row)"
           :table-config="itemTableConfig || tableConfig"
           :show-drag-handle="
             enableRowResize &&
