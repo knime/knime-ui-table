@@ -294,7 +294,12 @@ defineExpose({
 
   /* stylelint-disable-next-line selector-class-pattern */
   & :deep(.vue-recycle-scroller__item-wrapper) {
-    width: calc(var(--current-body-width));
+    /**
+    * !important is needed to fix UIEXT-1399. Other tables could
+    * overwrite this property. The whole style will not be
+    * necessary anymore, once we use a different scrolling library.
+    */
+    width: calc(var(--current-body-width)) !important;
   }
 
   /* stylelint-disable-next-line selector-class-pattern */
