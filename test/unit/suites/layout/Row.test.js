@@ -190,6 +190,23 @@ describe('Row.vue', () => {
             expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length);
         });
 
+        it('renders empty cell without submenu when showSubMenu is true', () => {
+            wrapper = shallowMount(Row, {
+                propsData: {
+                    ...propsData,
+                    tableConfig: {
+                        ...propsData.tableConfig,
+                        subMenuItems: []
+                    },
+                    showSubMenu: true
+                }
+            });
+
+            expect(wrapper.find(Row).exists()).toBe(true);
+            expect(wrapper.find('.action').exists()).toBe(true);
+            expect(wrapper.find(SubMenu).exists()).toBe(false);
+        });
+
         it('selectively generates slots for specific columns', () => {
             let propsData = getUpdatedPropsData('hasSlotContent', [
                 false, false, true, false, false
