@@ -84,7 +84,7 @@ const hasPaddingTopBottom = computed(
 </template>
 
 <style lang="postcss" scoped>
-& td {
+.data-cell {
   background-clip: border-box;
   user-select: none;
   white-space: nowrap;

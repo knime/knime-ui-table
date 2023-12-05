@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
 import svgLoader from "vite-svg-loader";
-import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
+import { libInjectCss } from "vite-plugin-lib-inject-css";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,22 +20,7 @@ export default defineConfig({
       },
     }),
     svgLoader(),
-    // not supported natively in Vite yet, see https://github.com/vitejs/vite/issues/1579
-    cssInjectedByJsPlugin({
-      styleId: "knime-ui-table",
-      injectCodeFunction: function injectCodeFunction(cssCode) {
-        try {
-          if (typeof document !== "undefined") {
-            const elementStyle = document.createElement("style");
-            elementStyle.appendChild(document.createTextNode(cssCode));
-            document.head.prepend(elementStyle);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error("vite-plugin-css-injected-by-js", e);
-        }
-      },
-    }),
+    libInjectCss(),
   ],
   resolve: {
     alias: {
@@ -54,6 +39,9 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["vue"],
+      output: {
+        assetFileNames: "knime-ui-table[extname]",
+      },
     },
   },
   test: {
