@@ -312,7 +312,7 @@ export default {
         },
         showSubMenu() {
             const hasRowSubMenu = this.data.some(groupData => groupData.some(rowData => rowData.subMenuItemsForRow));
-            return this.tableConfig.subMenuItems.lenght > 0 || hasRowSubMenu;
+            return this.tableConfig.subMenuItems?.lenght > 0 || hasRowSubMenu;
         }
     },
     watch: {
