@@ -140,56 +140,6 @@ describe('Row.vue', () => {
             expect(wrapper.find(SubMenu).exists()).toBe(false);
         });
 
-        it('hides submenu items if filter function is given', () => {
-            const subMenuItems = [{
-                name: 'delete',
-                text: 'Delete'
-            }, {
-                name: 'manage',
-                text: 'Manage access',
-                hideOn: () => true
-            }];
-
-            wrapper = mount(Row, {
-                propsData: {
-                    ...propsData,
-                    tableConfig: {
-                        ...propsData.tableConfig,
-                        subMenuItems
-                    }
-                }
-            });
-
-            expect(wrapper.find(SubMenu).exists()).toBe(true);
-            expect(wrapper.find(MenuItems).exists()).toBe(true);
-            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length - 1);
-        });
-
-        it('does not hide submenu items if filter is not a function', () => {
-            const subMenuItems = [{
-                name: 'delete',
-                text: 'Delete'
-            }, {
-                name: 'manage',
-                text: 'Manage access',
-                hideOn: true
-            }];
-
-            wrapper = mount(Row, {
-                propsData: {
-                    ...propsData,
-                    tableConfig: {
-                        ...propsData.tableConfig,
-                        subMenuItems
-                    }
-                }
-            });
-
-            expect(wrapper.find(SubMenu).exists()).toBe(true);
-            expect(wrapper.find(MenuItems).exists()).toBe(true);
-            expect(wrapper.findAll('.list-item').length).toBe(subMenuItems.length);
-        });
-
         it('selectively generates slots for specific columns', () => {
             let propsData = getUpdatedPropsData('hasSlotContent', [
                 false, false, true, false, false

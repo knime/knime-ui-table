@@ -41,237 +41,191 @@ import { DEFAULT_ROW_HEIGHT } from '../../util/constants';
  * @emits rowSubMenuClick event when a row SubMenu action is triggered.
  */
 export default {
-    components: {
-        CollapserToggle,
-        SubMenu,
-        Checkbox,
-        FunctionButton,
-        OptionsIcon,
-        CloseIcon,
-        CircleHelpIcon
+  components: {
+    CollapserToggle,
+    SubMenu,
+    Checkbox,
+    FunctionButton,
+    OptionsIcon,
+    CloseIcon,
+    CircleHelpIcon
+  },
+  props: {
+    /**
+     * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
+     * property rowData contains the complete set and not just the part that is displayed per column.
+     */
+    rowData: {
+      type: Object,
+      default: () => ({})
     },
-    props: {
-        /**
-         * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
-         * property rowData contains the complete set and not just the part that is displayed per column.
-         */
-        rowData: {
-            type: Object,
-            default: () => ({})
-        },
-        /**
-         * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
-         */
-        row: {
-            type: Array,
-            default: () => []
-        },
-        tableConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        columnConfigs: {
-            type: Array,
-            default: () => []
-        },
-        rowConfig: {
-            type: Object,
-            default: () => ({})
-        },
-        rowHeight: {
-            type: Number,
-            default: DEFAULT_ROW_HEIGHT
-        },
-        isSelected: {
-            type: Boolean,
-            default: false
-        },
-        showBorderColumnIndex: {
-            type: Number,
-            default: null
-        },
-        marginBottom: {
-            type: Number,
-            default: 0
-        }
+    /**
+* row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
+*/
+    row: {
+      type: Array,
+      default: () => []
     },
-    data() {
-        return {
-            showContent: false
-        };
+    tableConfig: {
+      type: Object,
+      default: () => ({})
     },
-    computed: {
-        columnKeys() {
-            return this.getPropertiesFromColumns('key');
-        },
-        columnSizes() {
-            return this.getPropertiesFromColumns('size');
-        },
-        formatters() {
-            return this.getPropertiesFromColumns('formatter');
-        },
-        classGenerators() {
-            return this.getPropertiesFromColumns('classGenerator');
-        },
-        slottedColumns() {
-            return this.getPropertiesFromColumns('hasSlotContent');
-        },
-        clickableColumns() {
-            // enforce boolean to reduce reactivity
-            return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
-        },
-        classes() {
-            return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
-                if (typeof classItem === 'function') {
-                    return classItem(item);
-                }
-                if (typeof classItem === 'object') {
-                    return classItem[item];
-                }
-                return classItem;
-            }));
-        },
-        filteredSubMenuItems() {
-            const defaultSubMenuItems = this.tableConfig.subMenuItems.filter(item => {
-                if (typeof item.hideOn === 'function') {
-                    return !item.hideOn(this.row, this.rowData);
-                }
-                return true;
-            });
-
-            return this.rowData.data?.subMenuItemsForRow?.length
-                ? this.rowData.data?.subMenuItemsForRow
-                : defaultSubMenuItems;
-        }
+    columnConfigs: {
+      type: Array,
+      default: () => []
     },
-    mounted() {
-        // Reverts emited event if component is not ready
-        this.$emit('rowExpand', this.showContent);
+    rowConfig: {
+      type: Object,
+      default: () => ({})
     },
-    methods: {
-        getPropertiesFromColumns(key) {
-            return this.columnConfigs.map(colConfig => colConfig[key]);
-        },
-        onRowExpand() {
-            this.showContent = !this.showContent;
-            this.$nextTick(() => this.$emit('rowExpand', this.showContent));
-        },
-        onSelect(value) {
-            this.$emit('rowSelect', value);
-        },
-        onCellClick(event) {
-            if (event?.clickable) {
-                this.$emit('rowInput', {
-                    ...event,
-                    type: 'click',
-                    cell: this.$refs.dataCell[event.colInd],
-                    value: null
-                });
-            }
-        },
-        onInput(val, ind) {
-            this.$emit('rowInput', { type: 'input', cell: this.$refs.dataCell[ind], value: val });
-        },
-        onSubMenuItemClick(event, clickedItem) {
-            this.$emit('rowSubMenuClick', clickedItem);
-            if (clickedItem.callback) {
-                event.preventDefault();
-                return false;
-            }
-            return true;
-        },
-        isClickable(data, ind) {
-            if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
-                return false;
-            }
-            return true;
-        }
+    rowHeight: {
+      type: Number,
+      default: DEFAULT_ROW_HEIGHT
+    },
+    isSelected: {
+      type: Boolean,
+      default: false
+    },
+    showBorderColumnIndex: {
+      type: Number,
+      default: null
+    },
+    marginBottom: {
+      type: Number,
+      default: 0
     }
+  },
+  data() {
+    return {
+      showContent: false
+    };
+  },
+  computed: {
+    columnKeys() {
+      return this.getPropertiesFromColumns('key');
+    },
+    columnSizes() {
+      return this.getPropertiesFromColumns('size');
+    },
+    formatters() {
+      return this.getPropertiesFromColumns('formatter');
+    },
+    classGenerators() {
+      return this.getPropertiesFromColumns('classGenerator');
+    },
+    slottedColumns() {
+      return this.getPropertiesFromColumns('hasSlotContent');
+    },
+    clickableColumns() {
+      // enforce boolean to reduce reactivity
+      return this.getPropertiesFromColumns('popoverRenderer').map(config => Boolean(config));
+    },
+    classes() {
+      return this.row.map((item, ind) => this.classGenerators[ind]?.map(classItem => {
+        if (typeof classItem === 'function') {
+          return classItem(item);
+        }
+        if (typeof classItem === 'object') {
+          return classItem[item];
+        }
+        return classItem;
+      }));
+    },
+    filteredSubMenuItems() {
+      if (
+        !this.tableConfig.subMenuItems?.length &&
+        !this.rowData.data?.subMenuItemsForRow?.length
+      ) {
+        return [];
+      }
+
+      return this.rowData.data?.subMenuItemsForRow?.length
+        ? this.rowData.data?.subMenuItemsForRow
+        : this.tableConfig.subMenuItems;
+    }
+  },
+  mounted() {
+    // Reverts emitted event if component is not ready
+    this.$emit('rowExpand', this.showContent);
+  },
+  methods: {
+    getPropertiesFromColumns(key) {
+      return this.columnConfigs.map(colConfig => colConfig[key]);
+    },
+    onRowExpand() {
+      this.showContent = !this.showContent;
+      this.$nextTick(() => this.$emit('rowExpand', this.showContent));
+    },
+    onSelect(value) {
+      this.$emit('rowSelect', value);
+    },
+    onCellClick(event) {
+      if (event?.clickable) {
+        this.$emit('rowInput', {
+          ...event,
+          type: 'click',
+          cell: this.$refs.dataCell[event.colInd],
+          value: null
+        });
+      }
+    },
+    onInput(val, ind) {
+      this.$emit('rowInput', { type: 'input', cell: this.$refs.dataCell[ind], value: val });
+    },
+    onSubMenuItemClick(event, clickedItem) {
+      this.$emit('rowSubMenuClick', clickedItem);
+      if (clickedItem.callback) {
+        event.preventDefault();
+        return false;
+      }
+      return true;
+    },
+    isClickable(data, ind) {
+      if (!this.tableConfig.showPopovers || !data || data === '-' || !this.clickableColumns[ind]) {
+        return false;
+      }
+      return true;
+    }
+  }
 };
 </script>
 
 <template>
   <span>
-    <tr
-      v-if="row.length > 0"
-      :class="['row', {
-        'no-sub-menu': !filteredSubMenuItems.length,
-        'compact-mode': rowConfig.compactMode
-      }]"
-      :style="{height: `${rowHeight}px`, marginBottom: `${marginBottom}px`}"
-    >
-      <CollapserToggle
-        v-if="tableConfig.showCollapser"
-        :expanded="showContent"
-        :compact-mode="rowConfig.compactMode"
-        class="collapser-cell"
-        @collapserExpand="onRowExpand"
-      />
-      <td
-        v-if="tableConfig.showSelection"
-        class="select-cell"
-      >
-        <Checkbox
-          :value="isSelected"
-          @input="onSelect"
-        />
+    <tr v-if="row.length > 0" :class="['row', {
+      'no-sub-menu': !filteredSubMenuItems.length,
+      'compact-mode': rowConfig.compactMode
+    }]" :style="{ height: `${rowHeight}px`, marginBottom: `${marginBottom}px` }">
+      <CollapserToggle v-if="tableConfig.showCollapser" :expanded="showContent" :compact-mode="rowConfig.compactMode"
+        class="collapser-cell" @collapserExpand="onRowExpand" />
+      <td v-if="tableConfig.showSelection" class="select-cell">
+        <Checkbox :value="isSelected" @input="onSelect" />
       </td>
-      <td
-        v-for="(data, ind) in row"
-        ref="dataCell"
-        :key="ind"
-        :class="[classes[ind], 'data-cell',
-                 { clickable: isClickable(data, ind) }]"
-        :style="{ width: `calc(${columnSizes[ind]|| 100}px)` }"
+      <td v-for="(data, ind) in row" ref="dataCell" :key="ind" :class="[classes[ind], 'data-cell',
+      { clickable: isClickable(data, ind) }]" :style="{ width: `calc(${columnSizes[ind] || 100}px)` }"
         :title="!isClickable(data, ind) ? data : null"
         @click="event => onCellClick({ event, colInd: ind, data, clickable: isClickable(data, ind) })"
-        @input="(val) => onInput(val, ind)"
-      >
-        <CircleHelpIcon
-          v-if="data === null"
-          class="missing-value-icon"
-        />
-        <slot
-          v-else-if="slottedColumns[ind]"
-          :name="`cellContent-${columnKeys[ind]}`"
-          :row="row"
-          :ind="ind"
-        />
+        @input="(val) => onInput(val, ind)">
+        <CircleHelpIcon v-if="data === null" class="missing-value-icon" />
+        <slot v-else-if="slottedColumns[ind]" :name="`cellContent-${columnKeys[ind]}`" :row="row" :ind="ind" />
         <span v-else>
           {{ formatters[ind](data) }}
         </span>
       </td>
-      <td
-        v-if="filteredSubMenuItems.length"
-        button-title="actions"
-        class="action"
-      >
-        <SubMenu
-          :items="filteredSubMenuItems"
-          button-title="actions"
-          @item-click="onSubMenuItemClick"
-        >
+      <td v-if="filteredSubMenuItems.length" button-title="actions" class="action">
+        <SubMenu :items="filteredSubMenuItems" button-title="actions" @item-click="onSubMenuItemClick">
           <OptionsIcon />
         </SubMenu>
       </td>
     </tr>
-    <tr
-      v-else
-      class="row empty-row"
-    >
+    <tr v-else class="row empty-row">
       <td>
         -
       </td>
     </tr>
-    <tr
-      v-if="showContent"
-      class="collapser-row"
-    >
+    <tr v-if="showContent" class="collapser-row">
       <td class="expandable-content">
-        <FunctionButton
-          class="collapser-button"
-          @click="onRowExpand"
-        >
+        <FunctionButton class="collapser-button" @click="onRowExpand">
           <CloseIcon />
         </FunctionButton>
         <slot name="rowCollapserContent" />
@@ -281,7 +235,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 tr.row {
   transition: height 0.3s, box-shadow 0.15s;
   background-color: var(--knime-white);
@@ -305,7 +258,7 @@ tr.row {
       min-width: 30px;
       width: 30px;
 
-      & >>> label {
+      &>>>label {
         padding: 0;
         display: inline;
         max-width: unset;
@@ -340,12 +293,12 @@ tr.row {
         stroke: var(--knime-dove-gray);
       }
 
-      & >>> ul {
+      &>>>ul {
         margin-top: -10px;
         right: 10px;
       }
 
-      & >>> .submenu-toggle {
+      &>>>.submenu-toggle {
         display: flex;
         align-self: stretch;
         align-items: center;
@@ -370,11 +323,11 @@ tr.row {
     & td {
       line-height: 24px;
 
-      & >>> label {
+      &>>>label {
         bottom: 5px;
       }
 
-      &.action >>> .submenu-toggle {
+      &.action>>>.submenu-toggle {
         height: 24px;
       }
     }
