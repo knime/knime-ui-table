@@ -51,17 +51,17 @@ export default {
         CircleHelpIcon
     },
     props: {
-    /**
-     * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
-     * property rowData contains the complete set and not just the part that is displayed per column.
-     */
+        /**
+         * rowData contains the data that is passed on by the overlying repeater in the table. In contrast to the row
+         * property rowData contains the complete set and not just the part that is displayed per column.
+         */
         rowData: {
             type: Object,
             default: () => ({})
         },
         /**
-* row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
-*/
+        * row contains contains the elements that are rendered per column into the row. this represents a subset of rowData.
+        */
         row: {
             type: Array,
             default: () => []
@@ -134,7 +134,7 @@ export default {
         filteredSubMenuItems() {
             if (
                 !this.tableConfig.subMenuItems?.length &&
-        !this.rowData.data?.subMenuItemsForRow?.length
+                !this.rowData.data?.subMenuItemsForRow?.length
             ) {
                 return [];
             }
@@ -145,7 +145,7 @@ export default {
         }
     },
     mounted() {
-    // Reverts emitted event if component is not ready
+        // Reverts emitted event if component is not ready
         this.$emit('rowExpand', this.showContent);
     },
     methods: {
