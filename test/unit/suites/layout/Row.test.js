@@ -6,7 +6,6 @@ import Checkbox from '~/webapps-common/ui/components/forms/Checkbox.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import OptionsIcon from '~/webapps-common/ui/assets/img/icons/menu-options.svg?inline';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 describe('Row.vue', () => {
     let wrapper;
