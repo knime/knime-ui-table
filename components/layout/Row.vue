@@ -93,6 +93,10 @@ export default {
         marginBottom: {
             type: Number,
             default: 0
+        },
+        showSubMenu: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -242,11 +246,12 @@ export default {
         </span>
       </td>
       <td
-        v-if="filteredSubMenuItems.length"
+        v-if="filteredSubMenuItems.length || showSubMenu"
         button-title="actions"
         class="action"
       >
         <SubMenu
+          v-if="filteredSubMenuItems.length"
           :items="filteredSubMenuItems"
           button-title="actions"
           @item-click="onSubMenuItemClick"
