@@ -572,6 +572,30 @@ describe('TableUI.vue', () => {
         });
     });
 
+    describe('row sub menu', () => {
+        it('sets reserveSpaceForSubMenu to false if none of the rows has a sub menu', () => {
+            const { wrapper } = doMount();
+            expect(wrapper.find(Row).props().reserveSpaceForSubMenu).toBe(false);
+        });
+
+        it('sets reserveSpaceForSubMenu to true if at least one row has a sub menu', () => {
+            const data = [[
+                { a: 'cellA', b: 'cellB' },
+                {
+                    a: 'cellA',
+                    b: 'cellB',
+                    subMenuItemsForRow: [{
+                        id: 'myId',
+                        text: 'Specific Row SubMenu item'
+                    }]
+                }
+            ]];
+
+            const { wrapper } = doMount({ data });
+            expect(wrapper.find(Row).props().reserveSpaceForSubMenu).toBe(true);
+        });
+    });
+
     describe('virtual scrolling', () => {
         it('renders dynamic scroller when virtual scrolling is enabled', () => {
             const { wrapper } = doMount({ enableVirtualScrolling: true });
