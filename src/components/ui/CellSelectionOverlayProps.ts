@@ -1,3 +1,4 @@
+import type { TableConfig } from "lib/main";
 import type { Rect } from "../composables/useCellSelection";
 
 interface CellSelectionOverlayProps {
@@ -6,10 +7,7 @@ interface CellSelectionOverlayProps {
   columnSizes: number[];
   rowResizeIndex: null | number;
   rowResizeDelta: null | number;
-  tableConfig: {
-    showSelection: boolean;
-    showCollapser: boolean;
-  };
+  tableConfig: TableConfig;
 }
 
 export default CellSelectionOverlayProps;

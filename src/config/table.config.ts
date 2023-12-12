@@ -25,14 +25,18 @@ export const filterComponents: Record<
 };
 
 export const columnTypes = {
-  Nominal: "Nominal",
-  String: "String",
-  DateTime: "DateTime",
-  Number: "Number",
-  Boolean: "Boolean",
-  Array: "Array",
-  Object: "Object",
+  Nominal: "Nominal" as const,
+  String: "String" as const,
+  DateTime: "DateTime" as const,
+  Number: "Number" as const,
+  Boolean: "Boolean" as const,
+  Array: "Array" as const,
+  Object: "Object" as const,
 };
+
+type ValueOf<T> = T[keyof T];
+
+export type ColumnType = ValueOf<typeof columnTypes>;
 
 export const columnFilterConfigs = {
   [columnTypes.Nominal]: filterComponents.Multiselect,

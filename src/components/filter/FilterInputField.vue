@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /**
  * An input field component specifically styled for use in the table. By emitting
  * a blur event, this component can be programmatically hidden when not in use.
@@ -24,16 +24,16 @@ export default {
   emits: ["update:modelValue", "blur"],
   methods: {
     getValue() {
-      return this.$refs.input.value;
+      return (this.$refs.input as HTMLInputElement).value;
     },
     onInput() {
       this.$emit("update:modelValue", this.getValue());
     },
-    onBlur(e) {
+    onBlur(e: Event) {
       this.$emit("blur", e);
     },
     focus() {
-      this.$refs.input.focus();
+      (this.$refs.input as HTMLInputElement).focus();
     },
   },
 };

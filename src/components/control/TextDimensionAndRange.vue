@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import isSinglePage from "@/util/isSinglePage";
 
 /**

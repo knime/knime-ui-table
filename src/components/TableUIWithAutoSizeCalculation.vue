@@ -16,7 +16,8 @@ import useTableReady from "./composables/useTableReady";
 import { isEqual } from "lodash";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
-import type DataConfig from "./types/DataConfig";
+import type DataConfig from "@/types/DataConfig";
+import type TableConfig from "@/types/TableConfig";
 
 /**
  * In a lot of cases, the row ids are Row0, Row1, ....
@@ -28,7 +29,7 @@ export default {
   components: { TableUI },
   inheritAttrs: false,
   props: {
-    data: { type: Array, default: () => [] },
+    data: { type: Array as PropType<Array<Array<any>>>, default: () => [] },
     currentSelection: {
       type: Array as PropType<Array<Array<boolean>>>,
       default: () => [],
@@ -37,21 +38,32 @@ export default {
       type: Object as PropType<DataConfig>,
       default: () => ({}),
     },
-    tableConfig: { type: Object, default: () => ({}) },
+    tableConfig: {
+      type: Object as PropType<TableConfig>,
+      default: () => ({}),
+    },
     /** This object contains all the options necessary to calculate the sizes based on the
      * content. In case only one of calculateForBody/calculateForHeader is true, the emitted object contains auto
      * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes only
      * header sizes are calculated and the body sizes will be increased by the padding that the column will have based
      * on the first row.
-     * {
-     *      calculateForBody: boolean,
-     *      calculateForHeader: boolean,
-     *      fixedSizes: Object of id => size
-     * }
      */
-    autoColumnSizesOptions: { type: Object, default: () => ({}) },
+    autoColumnSizesOptions: {
+      type: Object as PropType<{
+        calculateForBody: boolean;
+        calculateForHeader: boolean;
+        fixedSizes: Record<string | symbol, number>;
+      }>,
+      default: () => ({}),
+    },
   },
-  emits: ["autoColumnSizesUpdate", "ready", "update:available-width"],
+  /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  emits: {
+    autoColumnSizesUpdate: (sizes: Record<string | symbol, number>) => true,
+    ready: () => true,
+    "update:available-width": (newAvailableWidth: number) => true,
+  },
+  /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(_props, { emit }) {
     return useTableReady({ onReady: () => emit("ready") });
   },
@@ -125,7 +137,7 @@ export default {
           columnPaddingsLeft[columnId] = getCellPaddingLeft(columnValue);
           return columnPaddingsLeft;
         },
-        {},
+        {} as Record<string | symbol | number, number>,
       );
     },
   },

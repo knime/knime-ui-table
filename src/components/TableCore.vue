@@ -9,16 +9,20 @@ import useAvailableWidth from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 
 import { RecycleScroller as RC } from "vue-virtual-scroller";
+import type TableConfig from "@/types/TableConfig";
+import type { DataItem } from "./TableUI.vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+
 const RecycleScroller = RC as any;
 
 const props = defineProps<{
-  scrollData: any[][];
+  scrollData: DataItem[][];
   recycleScrollerConfig: {
     scrollerItemSize: number;
     numRowsAbove: number;
     numRowsBelow: number;
   };
-  tableConfig: any;
+  tableConfig: TableConfig;
   totalWidth: null | number;
   columnSizes: number[];
   currentRowHeight: number | "dynamic";
@@ -35,11 +39,11 @@ const props = defineProps<{
   currentRectId: any;
 }>();
 
-const emit = defineEmits([
-  "scroller-update",
-  "group-sub-menu-click",
-  "update:available-width",
-]);
+const emit = defineEmits<{
+  scrollerUpdate: [startIndex: number, endIndex: number];
+  groupSubMenuClick: [item: MenuItem, dataGroup: any[]];
+  "update:available-width": [newAvailableWidth: number];
+}>();
 
 const showVirtualScroller = computed(() =>
   Boolean(
@@ -51,7 +55,7 @@ const { closeExpandedSubMenu, registerExpandedSubMenu } =
   useCloseSubMenusOnScroll();
 
 const getGroupName = (ind: number) => {
-  return props.tableConfig.groupByConfig?.currentGroupValues?.[ind] || "";
+  return props.tableConfig.groupByConfig?.currentGroupValues?.[ind] ?? "";
 };
 
 const virtualScroller: Ref<{
@@ -82,7 +86,7 @@ const selectionSize = computed(() =>
 );
 const rightSideSize = computed(() => {
   return tableConfig.value.showColumnFilters ||
-    tableConfig.value.subMenuItems.length > 0 ||
+    (tableConfig.value.subMenuItems ?? []).length > 0 ||
     tableConfig.value.showSubMenu === "always"
     ? SPECIAL_COLUMNS_SIZE
     : 0;
@@ -137,7 +141,7 @@ const getDragHandleHeightForNonVirtualScroller = () => {
 };
 
 const getTransformShiftForRowResize = computed(() => {
-  return (scrollIndex: number) =>
+  return (scrollIndex = 0) =>
     `translateY(${
       props.rowResize.active &&
       scrollIndex > props.rowResize.currentResizedScrollIndex
@@ -184,13 +188,7 @@ defineExpose({
       :empty-item="{
         data: [],
         size: recycleScrollerConfig.scrollerItemSize,
-        tableConfig: {
-          showCollapser: false,
-          showSelection: false,
-          subMenuItems: [],
-          showPopovers: false,
-        },
-        showDragHandle: false,
+        isEmpty: true,
       }"
       :buffer="buffer"
       class="scroller"
@@ -201,7 +199,7 @@ defineExpose({
       @scroll="closeExpandedSubMenu"
       @update="
         (startIndex: number, endIndex: number) =>
-          $emit('scroller-update', startIndex, endIndex)
+          $emit('scrollerUpdate', startIndex, endIndex)
       "
     >
       <template #before>
@@ -215,7 +213,7 @@ defineExpose({
       <template #in-wrapper>
         <slot name="cell-selection-overlay" />
       </template>
-      <template #default="{ item }">
+      <template #default="{ item }: { item: DataItem }">
         <PlaceholderRow
           v-if="item.dots"
           :height="item.size"
@@ -229,7 +227,7 @@ defineExpose({
           :row="item.data"
           :row-ind="item.index"
           :scroll-index="item.scrollIndex"
-          :table-config="item.tableConfig"
+          :is-empty="item.isEmpty"
           :is-top="item.isTop"
           :register-expanded-sub-menu="registerExpandedSubMenu"
           :transform="getTransformShiftForRowResize(item.scrollIndex)"
@@ -264,7 +262,7 @@ defineExpose({
         :show="scrollData.length > 1 && dataGroup.length > 0"
         @group-sub-menu-expand="registerExpandedSubMenu"
         @group-sub-menu-click="
-          (event: any) => $emit('group-sub-menu-click', event, dataGroup)
+          (event: MenuItem) => $emit('groupSubMenuClick', event, dataGroup)
         "
       >
         <slot
@@ -281,6 +279,8 @@ defineExpose({
           :group-ind="groupInd"
           :is-top="true"
           :register-expanded-sub-menu="registerExpandedSubMenu"
+          :transform="null"
+          :is-empty="false"
         />
       </Group>
     </div>

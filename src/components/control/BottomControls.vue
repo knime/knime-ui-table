@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+import type { PropType } from "vue";
+import type { PageConfig } from "@/types/TableConfig";
 import BaseControls from "./BaseControls.vue";
 import ControlDropdown from "./ControlDropdown.vue";
 
@@ -16,40 +18,25 @@ export default {
   },
   props: {
     pageConfig: {
-      type: Object,
+      type: Object as PropType<PageConfig>,
       default: () => ({}),
-      validate(pageConfig) {
-        if (typeof pageConfig !== "object") {
-          return false;
-        }
-        const requiredProperties = [
-          "currentSize",
-          "tableSize",
-          "pageSize",
-          "currentPage",
-          "possiblePageSizes",
-        ];
-        return requiredProperties.every((key) =>
-          pageConfig.hasOwnProperty(key),
-        );
-      },
     },
   },
   emits: ["pageSizeUpdate"],
   methods: {
-    createText(size) {
+    createText(size: number) {
       return `${size.toString()} per page`;
     },
-    parseSize(sizeText) {
+    parseSize(sizeText: string) {
       let strSize = sizeText.split(" per")[0].trim();
       return parseInt(strSize, 10);
     },
-    getSelectItems(itemArr) {
+    getSelectItems(itemArr: string[]) {
       return itemArr?.length
         ? itemArr.map((item) => ({ id: item, text: item }))
         : [];
     },
-    onPageSizeSelect(newPageSize) {
+    onPageSizeSelect(newPageSize: string) {
       consola.debug("Updated table page size: ", newPageSize);
       this.$emit("pageSizeUpdate", this.parseSize(newPageSize));
     },
@@ -60,13 +47,14 @@ export default {
 <template>
   <BaseControls class="base-controls" v-bind="{ ...$props, ...$attrs }">
     <template #carousel>
+      <!-- eslint-disable vue/attribute-hyphenation typescript complains with ':aria-label' instead of ':ariaLabel'-->
       <ControlDropdown
         open-up
         :model-value="createText(pageConfig.pageSize)"
-        :aria-label="'Choose page size'"
+        :ariaLabel="'Choose page size'"
         :possible-values="
           getSelectItems(
-            pageConfig.possiblePageSizes.map((num) => createText(num)),
+            (pageConfig.possiblePageSizes ?? []).map((num) => createText(num)),
           )
         "
         class="dropdown-controls"

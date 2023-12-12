@@ -28,15 +28,15 @@ import { isEmpty, unpackObjectRepresentation } from "..";
  *      undergone some point-wise transformations depending on the table configuration.
  * @param {Object} filterConfig.types - a columnKey/type (@see table.config.js ) mapping for the columns in the data
  *      set. Allows data-type specific filtering.
- * @param {String} [filterConfig.timeFilter] - the optional active time filter value. Possible values are the keys
+ * @param {String} filterConfig.timeFilter - the optional active time filter value. Possible values are the keys
  *      found in @see time.config.js . If none is provided, no time filtering will be performed.
- * @param {String} [filterConfig.timeFilterKey] - the optional columnKey of the DateTime column which should be used
+ * @param {String} filterConfig.timeFilterKey - the optional columnKey of the DateTime column which should be used
  *      for time filtering. Require IFF a timeFilter has been provided.
- * @param {String} [filterConfig.searchQuery] - the optional global search query active for the dataset. If none is
+ * @param {String} filterConfig.searchQuery - the optional global search query active for the dataset. If none is
  *      provided, no global search or filtering will be performed.
- * @param {Object} [filterConfig.showFilter] - if column filters should be applied to the data. Provided explicitly
+ * @param {Object} filterConfig.showFilter - if column filters should be applied to the data. Provided explicitly
  *      for performance reason so potentially expensive column filtering can be avoided if inactive.
- * @param {Object} [filterConfig.filterValues] - the columnKey/value mapping for any currently active column-specific
+ * @param {Object} filterConfig.filterValues - the columnKey/value mapping for any currently active column-specific
  *      filters. If no filters are active and showFilter is true, an empty Object should be provided.
  * @returns {Object} filteredDataConfig - contains the results of the filtering operations.
  * @returns {Object[]} filteredDataConfig.filteredData - the rows which passed all provided filtering operations.

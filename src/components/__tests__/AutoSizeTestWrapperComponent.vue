@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs } from "vue";
 import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
-import type DataConfig from "../types/DataConfig";
+import type DataConfig from "@/types/DataConfig";
 
 const columnSize = ref(100);
 const attrs = useAttrs() as { dataConfig: DataConfig };

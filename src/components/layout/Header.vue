@@ -1,4 +1,5 @@
-<script>
+<!-- eslint-disable max-lines -->
+<script lang="ts">
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
@@ -12,8 +13,11 @@ import {
   MAX_SUB_MENU_WIDTH,
   COLUMN_RESIZE_DRAG_HANDLE_WIDTH,
 } from "@/util/constants";
-
 import { getHeaderPaddingLeft } from "@/util";
+
+import type TableConfig from "@/types/TableConfig";
+import type { PropType } from "vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -37,31 +41,31 @@ export default {
   },
   props: {
     tableConfig: {
-      type: Object,
+      type: Object as PropType<TableConfig>,
       default: () => ({}),
     },
     columnHeaders: {
-      type: Array,
+      type: Array as PropType<Array<string>>,
       default: () => [],
     },
     columnSubHeaders: {
-      type: Array,
+      type: Array as PropType<Array<string | undefined>>,
       default: () => [],
     },
     columnSizes: {
-      type: Array,
+      type: Array as PropType<Array<number>>,
       default: () => [],
     },
     columnSortConfigs: {
-      type: Array,
+      type: Array as PropType<Array<boolean>>,
       default: () => [],
     },
     columnSubMenuItems: {
-      type: Array,
+      type: Array as PropType<Array<MenuItem[]>>,
       default: () => [],
     },
     columnHeaderColors: {
-      type: Array,
+      type: Array as PropType<Array<string | null>>,
       default: () => [],
     },
     isSelected: {
@@ -77,25 +81,27 @@ export default {
       default: () => HEADER_HEIGHT,
     },
   },
-  emits: [
-    "headerSelect",
-    "columnSort",
-    "toggleFilter",
-    "showColumnBorder",
-    "columnResize",
-    "hideColumnBorder",
-    "subMenuItemSelection",
-    "columnResizeEnd",
-    "columnResizeStart",
-    "allColumnsResize",
-  ],
+  /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  emits: {
+    headerSelect: (selected: boolean) => true,
+    columnSort: (index: number, header: string) => true,
+    toggleFilter: () => true,
+    showColumnBorder: () => true,
+    columnResize: (index: number, newSize: number) => true,
+    hideColumnBorder: () => true,
+    subMenuItemSelection: (item: MenuItem, index: number) => true,
+    columnResizeEnd: () => true,
+    columnResizeStart: () => true,
+    allColumnsResize: (newSize: number) => true,
+  },
+  /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
     return {
       height: 40,
-      hoverIndex: null, // the index of the column that is currently being hovered over; null during resize
-      dragIndex: null, // the index of the column that is currently being dragged / resized
-      columnSizeOnDragStart: null, // the original width of the column that is currently being resized
-      pageXOnDragStart: null, // the x coordinate at which the mouse was clicked when starting the resize drag
+      hoverIndex: null as null | number, // the index of the column that is currently being hovered over; null during resize
+      dragIndex: null as null | number, // the index of the column that is currently being dragged / resized
+      columnSizeOnDragStart: 0, // the original width of the column that is currently being resized
+      pageXOnDragStart: 0, // the x coordinate at which the mouse was clicked when starting the resize drag
       minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
       maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
       currentDragHandlerHeight: 0,
@@ -105,14 +111,13 @@ export default {
     enableSorting() {
       // do not enable sorting when currently resizing or hovering over a drag handle
       return (
-        Boolean(this.tableConfig?.sortConfig) &&
+        Boolean(this.tableConfig.sortConfig) &&
         this.hoverIndex === null &&
         this.dragIndex === null
       );
     },
     enableColumnResizing() {
-      const enableColumnResizingSetting =
-        this.tableConfig?.enableColumnResizing;
+      const enableColumnResizingSetting = this.tableConfig.enableColumnResizing;
       if (typeof enableColumnResizingSetting === "undefined") {
         return true;
       } else {
@@ -120,10 +125,10 @@ export default {
       }
     },
     sortColumn() {
-      return this.tableConfig?.sortConfig?.sortColumn;
+      return this.tableConfig.sortConfig?.sortColumn;
     },
     sortDirection() {
-      return this.tableConfig?.sortConfig?.sortDirection;
+      return this.tableConfig.sortConfig?.sortDirection;
     },
     hasSubHeaders() {
       return this.columnSubHeaders.some((item) => item);
@@ -138,13 +143,13 @@ export default {
     },
   },
   methods: {
-    isColumnSortable(index) {
+    isColumnSortable(index: number) {
       return this.enableSorting && this.columnSortConfigs[index];
     },
     onSelect() {
       this.$emit("headerSelect", !this.isSelected);
     },
-    onHeaderClick(ind) {
+    onHeaderClick(ind: number) {
       if (this.isColumnSortable(ind)) {
         this.$emit("columnSort", ind, this.columnHeaders[ind]);
       }
@@ -152,19 +157,22 @@ export default {
     onToggleFilter() {
       this.$emit("toggleFilter");
     },
-    onPointerOver(event, columnIndex) {
+    onPointerOver(event: PointerEvent, columnIndex: number) {
       consola.debug("Begin hover over drag handle: ", event);
       if (this.dragIndex === null) {
         this.hoverIndex = columnIndex;
       }
     },
-    onPointerLeave(event) {
+    onPointerLeave(event: Event) {
       consola.debug("End hover over drag handle: ", event);
       if (this.dragIndex === null) {
         this.hoverIndex = null;
       }
     },
-    onPointerDown(event, columnIndex) {
+    onPointerDown(
+      event: PointerEvent & { target: HTMLElement },
+      columnIndex: number,
+    ) {
       consola.debug("Resize via drag triggered: ", event);
       // stop the event from propagating up the DOM tree
       event.stopPropagation();
@@ -176,7 +184,7 @@ export default {
       this.pageXOnDragStart = event.pageX;
       this.$emit("columnResizeStart");
     },
-    onPointerUp(event) {
+    onPointerUp(event: PointerEvent) {
       this.$emit("columnResizeEnd");
       if (event.shiftKey) {
         const newColumnSize =
@@ -187,8 +195,12 @@ export default {
         );
       }
     },
-    onPointerMove: throttle(function (event) {
-      /* eslint-disable no-invalid-this */
+    /* eslint-disable no-invalid-this */
+    onPointerMove: throttle(function (event: PointerEvent) {
+      // @ts-expect-error
+      this.unthrottledOnPointerMove(event);
+    }),
+    unthrottledOnPointerMove(event: PointerEvent) {
       if (this.dragIndex !== null) {
         consola.debug("Resize via drag ongoing: ", event);
         const newColumnSize =
@@ -199,38 +211,38 @@ export default {
           Math.max(newColumnSize, this.minimumColumnWidth),
         );
       }
-      /* eslint-enable no-invalid-this */
-    }),
+    },
     /* The lostpointercapture event is triggered if the pointer capture is lost for any reason, including its
         orderly release via a pointerup event. Because the onPointerMove function is throttled we also need to throttle
         the onLostPointerCapture function to guarantee order of event handling. */
     onLostPointerCapture: throttle(function (event) {
-      /* eslint-disable no-invalid-this */
       consola.debug("Resize via drag finished: ", event);
+      // @ts-expect-error
       this.dragIndex = null;
       /* Also have to reset hoverIndex since we might no longer be hovering over the drag handle */
+      // @ts-expect-error
       this.hoverIndex = null;
-      /* eslint-enable no-invalid-this */
     }),
-    dragHandleHeight(isDragging) {
+    /* eslint-enable no-invalid-this */
+    dragHandleHeight(isDragging: boolean) {
       return isDragging ? this.currentDragHandlerHeight : HEADER_HEIGHT;
     },
-    onSubMenuItemSelection(item, ind) {
+    onSubMenuItemSelection(item: any, ind: number) {
       this.$emit("subMenuItemSelection", item, ind);
     },
     getHeaderCellWidths() {
       return this.columnHeaders.map((_, columnIndex) => {
         const widthCompleteHeader = Math.ceil(
-          this.$refs[`columnHeader-${columnIndex}`][0].getBoundingClientRect()
-            .width,
+          (
+            this.$refs[`columnHeader-${columnIndex}`] as HTMLElement[]
+          )[0].getBoundingClientRect().width,
         );
-        const widthHeaderTextContainer =
-          this.$refs[
-            `headerTextContainer-${columnIndex}`
-          ][0].getBoundingClientRect().width;
-        const widthHeaderText =
-          this.$refs[`headerText-${columnIndex}`][0].getBoundingClientRect()
-            .width;
+        const widthHeaderTextContainer = (
+          this.$refs[`headerTextContainer-${columnIndex}`] as HTMLElement[]
+        )[0].getBoundingClientRect().width;
+        const widthHeaderText = (
+          this.$refs[`headerText-${columnIndex}`] as HTMLElement[]
+        )[0].getBoundingClientRect().width;
         const textContainerOverflow = Math.ceil(
           widthHeaderText - widthHeaderTextContainer,
         );
@@ -270,7 +282,9 @@ export default {
         :style="{
           width: `calc(${columnSizes[ind] || minimumColumnWidth}px)`,
           paddingLeft: `${columnPaddingsLeft[ind]}px`,
-          '--data-cell-color': columnHeaderColors[ind],
+          ...(columnHeaderColors[ind]
+            ? { '--data-cell-color': columnHeaderColors[ind]! }
+            : {}),
         }"
         :class="[
           'column-header',
@@ -314,7 +328,7 @@ export default {
             allow-overflow-main-axis
             button-title="Open table column header submenu"
             @item-click="
-              (_, item) => {
+              (_: Event, item: any) => {
                 onSubMenuItemSelection(item, ind);
               }
             "
@@ -334,7 +348,7 @@ export default {
           }"
           @pointerover="onPointerOver($event, ind)"
           @pointerleave="onPointerLeave"
-          @pointerdown.passive="onPointerDown($event, ind)"
+          @pointerdown.passive="onPointerDown($event as any, ind)"
           @pointerup.passive="onPointerUp($event)"
           @pointermove="onPointerMove"
           @lostpointercapture="onLostPointerCapture"

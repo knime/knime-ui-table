@@ -8,7 +8,7 @@ import useDropdownPopper from "./composables/useDropdownPopper";
 import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
-import type PossibleValue from "../../types/PossibleValue";
+import type PossibleValue from "@/types/PossibleValue";
 import useIdGeneration from "./composables/useIdGeneration";
 import useScrollToElement from "./composables/useScrollToElement";
 
@@ -51,14 +51,6 @@ export default {
     possibleValues: {
       type: Array as PropType<PossibleValue[]>,
       default: () => [],
-      validator(values) {
-        if (!Array.isArray(values)) {
-          return false;
-        }
-        return values.every(
-          (item) => item.hasOwnProperty("id") && item.hasOwnProperty("text"),
-        );
-      },
     },
     formatter: {
       type: Function,

@@ -917,5 +917,26 @@
     "configurationWithPasswords": true,
     "configuration": true
   },
-  "compactMode": false
+  "compactMode": false,
+  "allColumnSpecificSortConfigs": [
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ]
 }

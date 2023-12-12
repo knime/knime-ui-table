@@ -4,21 +4,20 @@ import TopControls from "./control/TopControls.vue";
 import BottomControls from "./control/BottomControls.vue";
 import ColumnFilters from "./filter/ColumnFilters.vue";
 import Header from "./layout/Header.vue";
-import Group from "./layout/Group.vue";
 import Row from "./layout/Row.vue";
-import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import ActionButton from "./ui/ActionButton.vue";
 import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
-// @ts-ignore
-import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import { useTotalWidth } from "./composables/useAvailableWidth";
-import useCellSelection from "./composables/useCellSelection";
+import useCellSelection, {
+  type Rect,
+  type RectId,
+} from "./composables/useCellSelection";
 import useCellCopying from "./composables/useCellCopying";
 import useBoolean from "./composables/useBoolean";
 
-import type DataConfig from "./types/DataConfig";
+import type DataConfig from "@/types/DataConfig";
 
 import {
   DEFAULT_ROW_HEIGHT,
@@ -29,12 +28,32 @@ import {
 import { getPropertiesFromColumns } from "@/util";
 import { computed, ref, type Ref, type PropType } from "vue";
 import TableCore from "./TableCore.vue";
+import type TableConfig from "@/types/TableConfig";
+import type { PopoverRenderer } from "./popover/TablePopover.vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type FilterConfig from "@/types/FilterConfig";
+
+export type DataItem =
+  | {
+      id?: string;
+      data: any;
+      size: number;
+      index?: number;
+      scrollIndex?: number;
+      isTop?: boolean;
+      isEmpty?: boolean;
+      dots?: false;
+    }
+  | {
+      id: "dots";
+      size: number;
+      scrollIndex: number;
+      dots: true;
+      data?: any;
+    };
 
 /**
  * @see README.md
- *
- * @todo WEBP-590: Add README.md + docs/demo.
- * @todo WEBP-591: Split into multiple files.
  */
 export default {
   components: {
@@ -42,21 +61,18 @@ export default {
     BottomControls,
     ColumnFilters,
     Header,
-    Group,
     Row,
-    PlaceholderRow,
     ActionButton,
     TablePopover,
-    RecycleScroller,
     CellSelectionOverlay,
     TableCore,
-  } as any,
+  },
   props: {
     /**
      * Data props.
      */
     data: {
-      type: Array,
+      type: Array as PropType<Array<Array<any>>>,
       default: () => [],
     },
     currentSelection: {
@@ -91,7 +107,7 @@ export default {
      * analogous to currentSelection but for the bottomData
      */
     currentBottomSelection: {
-      type: Array,
+      type: Array as PropType<boolean[]>,
       default: () => [],
     },
     totalSelected: {
@@ -106,7 +122,7 @@ export default {
       default: () => ({}),
     },
     tableConfig: {
-      type: Object,
+      type: Object as PropType<TableConfig>,
       default: () => ({}),
       validate(tableConfig: any) {
         if (typeof tableConfig !== "object") {
@@ -153,31 +169,46 @@ export default {
       },
     },
   },
-  emits: [
-    "timeFilterUpdate",
-    "columnUpdate",
-    "columnReorder",
-    "groupUpdate",
-    "search",
-    "pageChange",
-    "pageSizeUpdate",
-    "columnSort",
-    "columnFilter",
-    "clearFilter",
-    "toggleFilter",
-    "selectAll",
-    "rowSelect",
-    "tableInput",
-    "columnResize",
-    "headerSubMenuItemSelection",
-    "lazyload",
-    "allColumnsResize",
-    "columnResizeStart",
-    "columnResizeEnd",
-    "update:available-width",
-    "rowHeightUpdate",
-    "copySelection",
-  ],
+  /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  emits: {
+    timeFilterUpdate: (newTimeFilter: string) => true,
+    columnUpdate: (newColumnList: string[]) => true,
+    columnReorder: (colInd: number, newColInd: number) => true,
+    groupUpdate: (group: string) => true,
+    search: (input: string) => true,
+    pageChange: (pageNumberDiff: -1 | 1) => true,
+    pageSizeUpdate: (newPageSize: number) => true,
+    columnSort: (colInd: number) => true,
+    columnFilter: (colInd: number, value: FilterConfig["modelValue"]) => true,
+    clearFilter: () => true,
+    toggleFilter: (filterActive: boolean) => true,
+    selectAll: (selected: boolean) => true,
+    rowSelect: (
+      selected: boolean,
+      rowInd: number,
+      groupInd: number,
+      isTop: boolean,
+    ) => true,
+    tableInput: (event: any) => true,
+    columnResize: (columnIndex: number, newColumnSize: number) => true,
+    headerSubMenuItemSelection: (item: MenuItem, colInd: number) => true,
+    lazyload: (lazyloadParams: {
+      direction: 1 | -1;
+      startIndex: number;
+      endIndex: number;
+    }) => true,
+    allColumnsResize: (newColumnSize: number) => true,
+    columnResizeStart: () => true,
+    columnResizeEnd: () => true,
+    "update:available-width": (newAvailableWidth: number) => true,
+    rowHeightUpdate: (newRowHeight: number | null | "dynamic") => true,
+    copySelection: (copySelectionParams: {
+      rect: Rect;
+      id: RectId | null;
+      withHeaders: boolean;
+    }) => true,
+  },
+  /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
     const tableCore: Ref<typeof TableCore | null> = ref(null);
@@ -218,11 +249,11 @@ export default {
   },
   data() {
     return {
-      filterActive: this.tableConfig.columnFilterInitiallyActive || false,
+      filterActive: this.tableConfig.columnFilterInitiallyActive ?? false,
       popoverTarget: null,
       popoverData: null,
-      popoverColumn: null,
-      popoverRenderer: null,
+      popoverColumn: null as null | string | number | symbol,
+      popoverRenderer: null as null | false | undefined | PopoverRenderer,
       lastScrollIndex: 0,
       newVal: null,
       resizeCount: 0,
@@ -269,7 +300,7 @@ export default {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
         "headerSubMenuItems",
-      );
+      ).map((items) => items ?? []);
     },
     columnSizes() {
       return getPropertiesFromColumns(this.dataConfig.columnConfigs, "size");
@@ -287,17 +318,16 @@ export default {
       return getPropertiesFromColumns(this.dataConfig.columnConfigs, "key");
     },
     columnSortConfigs() {
-      return this.dataConfig.columnConfigs.map((columnConfig: any) =>
-        columnConfig.hasOwnProperty("isSortable")
-          ? columnConfig.isSortable
-          : true,
-      );
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "isSortable",
+      ).map((isSortable) => isSortable ?? true);
     },
     columnHeaderColors() {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
         "headerColor",
-      );
+      ).map((color) => color ?? null);
     },
     slottedColumns() {
       return getPropertiesFromColumns(
@@ -313,7 +343,7 @@ export default {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
         "popoverRenderer",
-      ).map((renderer: any, colInd: any) => {
+      ).map((renderer, colInd: any) => {
         if (renderer && typeof renderer === "boolean") {
           renderer = this.columnTypes[colInd];
         }
@@ -347,8 +377,8 @@ export default {
       if (this.data === null || this.data.length === 0) {
         return [];
       }
-      const data = this.data?.map((groupData: any) =>
-        groupData.map((rowData: any, index: any) => {
+      const data: DataItem[][] = this.data?.map((groupData) =>
+        groupData.map((rowData, index) => {
           const id = (index + this.numRowsAbove).toString();
           return {
             id,
@@ -399,7 +429,7 @@ export default {
       if (!this.tableConfig.showSelection) {
         return () => false;
       }
-      return (rowInd: number, groupInd: number, isTop: any) => {
+      return (rowInd: number, groupInd: number, isTop: boolean) => {
         return isTop
           ? this.currentSelection[groupInd][rowInd]
           : this.currentBottomSelection[rowInd];
@@ -459,7 +489,7 @@ export default {
       ) {
         return;
       }
-      const direction = this.lastScrollIndex < endIndex ? 1 : -1;
+      const direction: 1 | -1 = this.lastScrollIndex < endIndex ? 1 : -1;
       this.lastScrollIndex = endIndex;
       this.collapseAllUnusedRows(startIndex, endIndex);
       this.$emit("lazyload", { direction, startIndex, endIndex });
@@ -493,17 +523,17 @@ export default {
       this.clearCellSelection();
       this.$emit("columnReorder", colInd, newColInd);
     },
-    onGroupUpdate(group: any) {
+    onGroupUpdate(group: string) {
       consola.debug(`TableUI emitting: groupUpdate ${group}`);
       this.clearCellSelection();
       this.$emit("groupUpdate", group);
     },
-    onSearch(input: any) {
+    onSearch(input: string) {
       consola.debug(`TableUI emitting: search ${input}`);
       this.clearCellSelection();
       this.$emit("search", input);
     },
-    onPageChange(pageNumberDiff: any) {
+    onPageChange(pageNumberDiff: 1 | -1) {
       consola.debug(`TableUI emitting: pageChange ${pageNumberDiff}`);
       this.clearCellSelection();
       this.$emit("pageChange", pageNumberDiff);
@@ -518,7 +548,7 @@ export default {
       this.clearCellSelection();
       this.$emit("columnSort", colInd);
     },
-    onColumnFilter(colInd: number, value: any) {
+    onColumnFilter(colInd: number, value: FilterConfig["modelValue"]) {
       consola.debug(`TableUI emitting: columnFilter ${colInd} ${value}`);
       this.clearCellSelection();
       this.$emit("columnFilter", colInd, value);
@@ -534,18 +564,18 @@ export default {
       this.clearCellSelection();
       this.$emit("toggleFilter", this.filterActive);
     },
-    onSelectAll(selected: any) {
+    onSelectAll(selected: boolean) {
       consola.debug(`TableUI emitting: selectAll ${selected}`);
       this.$emit("selectAll", selected);
     },
-    onHeaderSubMenuItemSelection(item: any, colInd: any) {
+    onHeaderSubMenuItemSelection(item: MenuItem, colInd: number) {
       consola.debug(
         `TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`,
       );
       this.$emit("headerSubMenuItemSelection", item, colInd);
     },
     onRowSelect(
-      selected: any,
+      selected: boolean,
       rowInd: number,
       groupInd: number,
       isTop: boolean,
@@ -571,7 +601,11 @@ export default {
       this.currentRowSizeDelta = rowSizeDelta;
       this.currentResizedScrollIndex = scrollIndex;
     },
-    onResizeAllRows(currentSize: number, row: any, scrollIndex: number) {
+    onResizeAllRows(
+      currentSize: number,
+      row: HTMLElement,
+      scrollIndex: number,
+    ) {
       if (this.currentRowHeight === "dynamic") {
         return;
       }
@@ -585,7 +619,7 @@ export default {
         this.keepScrollerPositionOnRowResize(scrollPosition);
       } else {
         this.resizedRowHeight = currentSize;
-        row.scrollIntoView();
+        row?.scrollIntoView();
       }
     },
     keepScrollerPositionOnRowResize(scrollPosition: number) {
@@ -747,21 +781,27 @@ export default {
           rowInd,
           scrollIndex,
           isTop,
-          tableConfig: itemTableConfig = null,
-          transform = null,
+          isEmpty,
+          transform,
           registerExpandedSubMenu,
         }"
       >
         <Row
           :key="row.id"
           :ref="getRowRefName(groupInd, rowInd)"
-          :row-data="data"
+          :row-data="row"
           :row="getRowData(row)"
-          :table-config="itemTableConfig || tableConfig"
-          :show-drag-handle="
-            enableRowResize &&
-            (!itemTableConfig || itemTableConfig.enableRowResize)
+          :table-config="
+            isEmpty
+              ? {
+                  showCollapser: false,
+                  showSelection: false,
+                  subMenuItems: [],
+                  showPopovers: false,
+                }
+              : tableConfig
           "
+          :show-drag-handle="enableRowResize && !isEmpty"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
@@ -772,14 +812,14 @@ export default {
           :style="transform === null ? {} : { transform }"
           @row-select="onRowSelect($event, rowInd, groupInd || 0, isTop)"
           @cell-select="
-            (cellInd: number) =>
+            (cellInd) =>
               selectCell(
                 { x: cellInd, y: scrollIndex },
                 groupInd === null ? isTop : groupInd,
               )
           "
           @expand-cell-select="
-            (cellInd: number) =>
+            (cellInd) =>
               expandCellSelection(
                 { x: cellInd, y: scrollIndex },
                 groupInd === null ? isTop : groupInd,
@@ -796,14 +836,11 @@ export default {
             })
           "
           @row-sub-menu-expand="registerExpandedSubMenu"
-          @row-sub-menu-click="(event: any) => onRowSubMenuClick(event, row)"
+          @row-sub-menu-click="onRowSubMenuClick($event, row)"
           @resize-all-rows="
-            (currentSize: number, row: any) =>
-              onResizeAllRows(currentSize, row, scrollIndex)
+            (currentSize, row) => onResizeAllRows(currentSize, row, scrollIndex)
           "
-          @resize-row="
-            (rowSizeDelta: number) => onResizeRow(rowSizeDelta, scrollIndex)
-          "
+          @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, scrollIndex)"
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <!-- eslint-disable vue/valid-v-slot -->
@@ -813,7 +850,7 @@ export default {
             :key="rowInd + '_' + colInd"
           >
             <slot
-              :name="`cellContent-${columnKeys[colInd]}`"
+              :name="`cellContent-${columnKeys[colInd].toString()}`"
               :data="{
                 ...cellData,
                 key: columnKeys[colInd],
@@ -890,7 +927,9 @@ export default {
       :config="tableConfig.actionButtonConfig"
     />
     <TablePopover
-      v-if="popoverTarget && typeof popoverData !== 'undefined'"
+      v-if="
+        popoverRenderer && popoverTarget && typeof popoverData !== 'undefined'
+      "
       ref="tablePopover"
       initially-expanded
       :use-button="false"

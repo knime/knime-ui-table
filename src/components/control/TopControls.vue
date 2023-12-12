@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import BaseControls from "./BaseControls.vue";
 import ControlDropdown from "./ControlDropdown.vue";
 import ControlMultiselect from "./ControlMultiselect.vue";
@@ -11,6 +11,8 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 import { tableTimeFilters } from "@/config/time.config";
 import isSinglePage from "@/util/isSinglePage";
+import type TableConfig from "@/types/TableConfig";
+import type { PropType } from "vue";
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,
@@ -20,7 +22,6 @@ import isSinglePage from "@/util/isSinglePage";
  * @emits timeFilterUpdate when the time filter value changes.
  * @emits columnUpdate when the selected columns change.
  * @emits columnReorder when column order changes.
- * @emits columnUpdate when the selected columns change.
  * @emits groupUpdate when the selected group change.
  * @emits searchUpdate when the search field value changes.
  * @emits $listeners from @see BaseControls
@@ -38,21 +39,23 @@ export default {
   },
   props: {
     tableConfig: {
-      type: Object,
+      type: Object as PropType<TableConfig>,
       default: () => ({}),
     },
     columnHeaders: {
-      type: Array,
+      type: Array as PropType<Array<string>>,
       default: () => [],
     },
   },
-  emits: [
-    "timeFilterUpdate",
-    "columnReorder",
-    "columnUpdate",
-    "groupUpdate",
-    "searchUpdate",
-  ],
+  /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  emits: {
+    timeFilterUpdate: (newTimeFilter: string) => true,
+    columnReorder: (colInd: number, newInd: number) => true,
+    columnUpdate: (newColumns: string[]) => true,
+    groupUpdate: (newGroup: string) => true,
+    searchUpdate: (newSearchQuers: string) => true,
+  },
+  /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
     return {
       searchActive: false,
@@ -61,31 +64,31 @@ export default {
   },
   computed: {
     showTimeFilter() {
-      return Boolean(this.tableConfig?.timeFilterConfig);
+      return Boolean(this.tableConfig.timeFilterConfig);
     },
     timeFilter() {
-      return this.tableConfig?.timeFilterConfig?.currentTimeFilter;
+      return this.tableConfig.timeFilterConfig?.currentTimeFilter;
     },
     showColumnSelection() {
-      return Boolean(this.tableConfig?.columnSelectionConfig);
+      return Boolean(this.tableConfig.columnSelectionConfig);
     },
     possibleColumns() {
-      return this.tableConfig?.columnSelectionConfig?.possibleColumns;
+      return this.tableConfig.columnSelectionConfig?.possibleColumns;
     },
     showGroupBy() {
-      return Boolean(this.tableConfig?.groupByConfig);
+      return Boolean(this.tableConfig.groupByConfig);
     },
     currentGroup() {
-      return this.tableConfig?.groupByConfig?.currentGroup;
+      return this.tableConfig.groupByConfig?.currentGroup;
     },
     possibleGroups() {
-      return this.tableConfig?.groupByConfig?.possibleGroups;
+      return this.tableConfig.groupByConfig?.possibleGroups;
     },
     showSearch() {
-      return this.tableConfig?.searchConfig;
+      return this.tableConfig.searchConfig;
     },
     searchQuery() {
-      return this.tableConfig?.searchConfig?.searchQuery;
+      return this.tableConfig.searchConfig?.searchQuery;
     },
     hasCarousel() {
       return (
@@ -106,24 +109,24 @@ export default {
     },
   },
   methods: {
-    getSelectItems(itemArr) {
+    getSelectItems(itemArr: string[]) {
       return itemArr?.length
         ? itemArr.map((item) => ({ id: item, text: item }))
         : [];
     },
-    onTimeFilterSelect(timeFilter) {
+    onTimeFilterSelect(timeFilter: string) {
       consola.debug("Updated time filter: ", timeFilter);
       this.$emit("timeFilterUpdate", timeFilter);
     },
-    onColumnSelect(columns) {
+    onColumnSelect(columns: string[]) {
       consola.debug("Updated table column filter: ", columns);
       this.$emit("columnUpdate", columns);
     },
-    onColumnReorder(columnInd, newInd) {
+    onColumnReorder(columnInd: number, newInd: number) {
       consola.debug("Updated table column order: ", columnInd, newInd);
       this.$emit("columnReorder", columnInd, newInd);
     },
-    onGroupSelect(group) {
+    onGroupSelect(group: string) {
       consola.debug("Updated table group filter: ", group);
       this.$emit("groupUpdate", group);
     },
@@ -131,8 +134,9 @@ export default {
       this.searchActive = !this.searchActive;
       if (this.showSearch && this.searchActive) {
         this.$nextTick(() => {
-          if (typeof this.$refs.searchField?.focus === "function") {
-            this.$refs.searchField.focus();
+          const focus = (this.$refs.searchField as HTMLElement)?.focus;
+          if (typeof focus === "function") {
+            focus();
           }
         });
       } else {
@@ -143,7 +147,7 @@ export default {
       this.searchActive = false;
       this.$emit("searchUpdate", "");
     },
-    onSearch(input) {
+    onSearch(input: string) {
       consola.debug("Updated search: ", input);
       this.$emit("searchUpdate", input);
     },
@@ -160,19 +164,20 @@ export default {
     :has-carousel="hasCarousel"
   >
     <template #carousel>
+      <!-- eslint-disable vue/attribute-hyphenation typescript complains with ':aria-label' instead of ':ariaLabel'-->
       <ControlDropdown
         v-if="showTimeFilter"
         :model-value="timeFilter"
         :possible-values="getSelectItems(timeFilters)"
         :placeholder="timeFilter"
-        :aria-label="'Filter by time'"
+        :ariaLabel="'Filter by time'"
         @update:model-value="onTimeFilterSelect"
       />
       <ControlMultiselect
         v-if="showColumnSelection"
         lock-placeholder
         :model-value="columnHeaders"
-        :possible-values="getSelectItems(possibleColumns)"
+        :possible-values="getSelectItems(possibleColumns!)"
         placeholder="Select columns"
         @update:model-value="onColumnSelect"
         @column-reorder="onColumnReorder"
@@ -181,10 +186,10 @@ export default {
         v-if="showGroupBy"
         include-placeholder
         :model-value="currentGroup || ''"
-        :possible-values="getSelectItems(possibleGroups)"
+        :possible-values="getSelectItems(possibleGroups!)"
         :placeholder="'Group by…'"
-        :aria-label="'Group by category'"
-        :formatter="(group) => `Grouped by '${group}'`"
+        :ariaLabel="'Group by category'"
+        :formatter="(group: string) => `Grouped by '${group}'`"
         @update:model-value="onGroupSelect"
       />
     </template>

@@ -1,5 +1,5 @@
-<script>
-import { columnTypes } from "@/config/table.config";
+<script lang="ts">
+import { columnTypes, type ColumnType } from "@/config/table.config";
 import { mixin as VueClickAway } from "vue3-click-away";
 import StringRenderer from "./StringRenderer.vue";
 import ObjectRenderer from "./ObjectRenderer.vue";
@@ -7,9 +7,17 @@ import ArrayRenderer from "./ArrayRenderer.vue";
 import MessageRenderer from "./MessageRenderer.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import type { PropType } from "vue";
 
 const PARENT_RATIO = 0.5;
 const MAX_TOTAL_HEIGHT = 300;
+
+export type PopoverRenderer =
+  | ColumnType
+  | {
+      type: string;
+      process?: (data: any) => any;
+    };
 
 /**
  * This component is a global popover which dynamically determines where it should
@@ -48,7 +56,7 @@ export default {
       required: true,
     },
     renderer: {
-      type: [Object, String],
+      type: [Object, String] as PropType<PopoverRenderer>,
       default: columnTypes.Object,
     },
     rowHeight: {
@@ -61,7 +69,8 @@ export default {
     // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
     return {
       expanded: this.initiallyExpanded,
-      type: this.renderer?.type || this.renderer,
+      type:
+        typeof this.renderer === "string" ? this.renderer : this.renderer.type,
       offsetParentHeight: this.target.offsetParent.clientHeight,
       offsetTop: this.target.offsetTop,
       offsetParentOffsetTop: this.target.offsetParent.offsetTop,
@@ -74,7 +83,7 @@ export default {
   },
   computed: {
     componentType() {
-      if (this.renderer?.type) {
+      if (typeof this.renderer === "object") {
         return this.renderer.type;
       }
       switch (this.renderer) {
@@ -91,7 +100,11 @@ export default {
       }
     },
     processedData() {
-      return this.renderer?.process?.(this.data) || this.data;
+      return (
+        (typeof this.renderer === "object" &&
+          this.renderer?.process?.(this.data)) ||
+        this.data
+      );
     },
     displayTop() {
       return this.offsetTop / this.offsetParentHeight >= PARENT_RATIO;
@@ -167,7 +180,7 @@ export default {
     >
       <div class="content-container">
         <slot name="content" :style="childMaxHeight">
-          <Component
+          <component
             :is="componentType"
             :data="processedData"
             :style="childMaxHeight"

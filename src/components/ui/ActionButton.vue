@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
+import type { ActionButtonConfig } from "@/types/TableConfig";
+import type { PropType } from "vue";
 
 /**
  * Button displayed at the bottom of the table instead of page size controls.
@@ -14,7 +16,7 @@ export default {
   },
   props: {
     config: {
-      type: Object,
+      type: Object as PropType<ActionButtonConfig>,
       default: () => ({}),
     },
   },

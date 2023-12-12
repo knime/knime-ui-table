@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
+import type { PropType } from "vue";
 import PageControls from "./PageControls.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
-
+import type { PageConfig } from "@/types/TableConfig";
 /**
  * Base table header component with table page controls on the left of the table row
  * and a slot for additional controls on the right.
@@ -16,23 +17,8 @@ export default {
   },
   props: {
     pageConfig: {
-      type: Object,
+      type: Object as PropType<PageConfig>,
       default: () => null,
-      validate(pageConfig) {
-        if (typeof pageConfig !== "object") {
-          return false;
-        }
-        const requiredProperties = [
-          "currentSize",
-          "tableSize",
-          "pageSize",
-          "currentPage",
-          "possiblePageSizes",
-        ];
-        return requiredProperties.every((key) =>
-          pageConfig.hasOwnProperty(key),
-        );
-      },
     },
     hasCarousel: {
       type: Boolean,

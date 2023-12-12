@@ -79,6 +79,8 @@ export default defineConfig({
         "**/*.d.ts",
         "**/__tests__/**",
         "test-setup/**",
+        "types/**",
+        "src/types/**",
         "**/{vite,vitest,postcss}.config.{js,cjs,mjs,ts}",
         "**/.{eslint,prettier,stylelint}rc.{js,cjs,yml}",
       ],

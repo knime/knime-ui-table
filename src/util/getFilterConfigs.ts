@@ -1,4 +1,5 @@
 import { columnFilterConfigs } from "../config/table.config";
+import type FilterConfig from "@/types/FilterConfig";
 
 export const getDefaultFilterValues = (
   columns: string[],
@@ -32,10 +33,21 @@ export const getFilterConfigs = ({
   types: Record<string, keyof typeof columnFilterConfigs>;
   values: Record<string, any>;
 }) =>
-  columns.map((col: string) => ({
-    is: columnFilterConfigs[types[col]].is,
-    modelValue: values[col],
-    ...(domains[col]
-      ? { possibleValues: domains[col].map((val) => ({ id: val, text: val })) }
-      : {}),
-  }));
+  columns.map((col: string): FilterConfig => {
+    const is = columnFilterConfigs[types[col]].is;
+    if (is === "FilterInputField") {
+      return {
+        is,
+        modelValue: values[col],
+      };
+    }
+
+    return {
+      is,
+      modelValue: values[col],
+      possibleValues: (domains[col] ?? []).map((val) => ({
+        id: val,
+        text: val,
+      })),
+    };
+  });

@@ -6,25 +6,25 @@ export enum FilterComponent {
   FilterInputField,
 }
 
-interface FilterConfigBase {
+export interface FilterConfigBase {
   placeholder?: string;
 }
 
-type FilterConfigDropdownBase = FilterConfigBase & {
+export type FilterConfigDropdownBase = FilterConfigBase & {
   possibleValues: PossibleValue[];
 };
 
-type FilterConfigDropdown = FilterConfigDropdownBase & {
+export type FilterConfigDropdown = FilterConfigDropdownBase & {
   is: "ControlDropdown";
   modelValue?: string;
 };
 
-type FilterConfigMultiselect = FilterConfigDropdownBase & {
+export type FilterConfigMultiselect = FilterConfigDropdownBase & {
   is: "ControlMultiselect";
   modelValue?: Array<string>;
 };
 
-type FilterConfigInput = FilterConfigBase & {
+export type FilterConfigInput = FilterConfigBase & {
   is: "FilterInputField";
   disabled?: boolean;
   modelValue?: number | string;

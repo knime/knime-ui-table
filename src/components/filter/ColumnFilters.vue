@@ -2,7 +2,7 @@
 import ControlMultiselect from "../control/ControlMultiselect.vue";
 import FilterInputField from "./FilterInputField.vue";
 import ControlDropdown from "../control/ControlDropdown.vue";
-import type FilterConfig from "../../types/FilterConfig";
+import type FilterConfig from "@/types/FilterConfig";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import { MIN_COLUMN_SIZE } from "@/util/constants";
@@ -26,15 +26,15 @@ export default {
   },
   props: {
     filterConfigs: {
-      type: Array as PropType<Array<FilterConfig>>,
+      type: Array as PropType<Array<FilterConfig | undefined>>,
       default: () => [],
     },
     columnHeaders: {
-      type: Array,
+      type: Array as PropType<Array<string>>,
       default: () => [],
     },
     columnSizes: {
-      type: Array,
+      type: Array as PropType<Array<number>>,
       default: () => [],
     },
     showCollapser: {
@@ -46,7 +46,12 @@ export default {
       default: false,
     },
   },
-  emits: ["columnFilter", "clearFilter"],
+  /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  emits: {
+    columnFilter: (colInd: number, value: FilterConfig["modelValue"]) => true,
+    clearFilter: () => true,
+  },
+  /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
     return {
       MIN_COLUMN_SIZE,
@@ -82,14 +87,16 @@ export default {
         :cell-type="'th'"
         class="filter"
       >
-        <Component
-          :is="filterConfigs[ind].is"
-          is-filter
-          v-bind="getFilterConfigProps(filterConfigs[ind])"
-          :placeholder="column"
-          :aria-label="`filter-${column}`"
-          @update:model-value="onInput(ind, $event)"
-        />
+        <template v-if="filterConfigs[ind]">
+          <Component
+            :is="filterConfigs[ind]!.is"
+            is-filter
+            v-bind="getFilterConfigProps(filterConfigs[ind]!)"
+            :placeholder="column"
+            :aria-label="`filter-${column}`"
+            @update:model-value="onInput(ind, $event)"
+          />
+        </template>
       </th>
       <th class="action">
         <FunctionButton @click="onClearFilter">

@@ -1,15 +1,16 @@
+export type ClassGenerator =
+  | ((val: string | undefined) => string)
+  | Record<string, string>
+  | string;
+
 interface CellProps {
   cellData: any;
   selectOnMove: boolean;
   isSlotted: boolean;
   size: number;
-  classGenerators?: (
-    | ((val: string | undefined) => string)
-    | Record<string, string>
-    | string
-  )[];
+  classGenerators?: ClassGenerator[];
   isClickableByConfig: boolean;
-  formatter: any;
+  formatter: (value: any) => string;
   defaultTopBottomPadding: number;
 }
 

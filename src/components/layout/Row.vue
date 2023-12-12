@@ -43,16 +43,18 @@ import {
   COMPACT_ROW_PADDING_TOP_BOTTOM,
   DEFAULT_ROW_PADDING_TOP_BOTTOM,
 } from "@/util/constants";
-import { unpackObjectRepresentation } from "@/util";
+import { getPropertiesFromColumns, unpackObjectRepresentation } from "@/util";
 import Cell from "./Cell.vue";
 import throttle from "raf-throttle";
-import type { ColumnConfig, RowConfig } from "../types/DataConfig";
+import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
 import { ref, computed, watch, onMounted, nextTick, type Ref } from "vue";
+import type TableConfig from "@/types/TableConfig";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface RowProps {
-  rowData?: { data?: { subMenuItemsForRow?: unknown[] } };
+  rowData?: { data?: { subMenuItemsForRow?: MenuItem[] } };
   row?: any[];
-  tableConfig: any;
+  tableConfig: TableConfig;
   columnConfigs: ColumnConfig[];
   rowConfig?: RowConfig;
   rowHeight?: number | "dynamic";
@@ -75,17 +77,17 @@ const props = withDefaults(defineProps<RowProps>(), {
   showDragHandle: false,
 });
 
-const emit = defineEmits([
-  "rowSelect",
-  "rowInput",
-  "rowSubMenuClick",
-  "rowSubMenuExpand",
-  "rowExpand",
-  "resizeAllRows",
-  "resizeRow",
-  "cellSelect",
-  "expandCellSelect",
-]);
+const emit = defineEmits<{
+  rowSelect: [value: any];
+  rowInput: [event: any];
+  rowSubMenuClick: [item: any];
+  rowSubMenuExpand: [callback: () => void];
+  rowExpand: [expanded: boolean];
+  resizeAllRows: [size: number, rowElement: HTMLElement];
+  resizeRow: [size: number];
+  cellSelect: [index: number];
+  expandCellSelect: [index: number];
+}>();
 
 const showContent = ref(false);
 const currentRowHeight = ref(props.rowHeight);
@@ -103,26 +105,31 @@ watch(
 );
 const activeDrag = ref(false);
 const rowHeightOnDragStart = ref(0);
-const getPropertiesFromColumns = computed(() => (key: keyof ColumnConfig) => {
-  return props.columnConfigs.map((colConfig: ColumnConfig) => colConfig[key]);
-});
 
-const columnKeys = computed(() => getPropertiesFromColumns.value("key"));
-const columnSizes = computed(() => getPropertiesFromColumns.value("size"));
+const columnKeys = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "key"),
+);
+const columnSizes = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "size"),
+);
 
-const formatters = computed(() => getPropertiesFromColumns.value("formatter"));
+const formatters = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "formatter"),
+);
 const classGenerators = computed(() =>
-  getPropertiesFromColumns.value("classGenerator"),
+  getPropertiesFromColumns(props.columnConfigs, "classGenerator"),
 );
 const slottedColumns = computed(() =>
-  getPropertiesFromColumns.value("hasSlotContent"),
+  getPropertiesFromColumns(props.columnConfigs, "hasSlotContent"),
 );
-const noPadding = computed(() => getPropertiesFromColumns.value("noPadding"));
+const noPadding = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "noPadding"),
+);
 
 const clickableColumns = computed(() =>
-  getPropertiesFromColumns
-    .value("popoverRenderer")
-    .map((config) => Boolean(config)),
+  getPropertiesFromColumns(props.columnConfigs, "popoverRenderer").map(
+    (config) => Boolean(config),
+  ),
 );
 const filteredSubMenuItems = computed(() => {
   if (
@@ -131,7 +138,7 @@ const filteredSubMenuItems = computed(() => {
   ) {
     return [];
   }
-  const defaultSubMenuItems = props.tableConfig.subMenuItems.filter(
+  const defaultSubMenuItems = (props.tableConfig.subMenuItems ?? []).filter(
     (item: any) => {
       if (typeof item.hideOn === "function") {
         return !item.hideOn(props.row, props.rowData);
@@ -168,7 +175,7 @@ const onCellClick = (event: any, colInd: number, data: any) => {
 const onInput = (event: any) => {
   emit("rowInput", { type: "input", ...event });
 };
-const onSubMenuItemClick = (event: any, clickedItem: any) => {
+const onSubMenuItemClick = (event: Event, clickedItem: any) => {
   emit("rowSubMenuClick", clickedItem);
   if (clickedItem.callback) {
     event.preventDefault();
@@ -180,7 +187,7 @@ const onSubMenuToggle = (_event: Event, callback: () => void) => {
   emit("rowSubMenuExpand", callback);
 };
 const isClickableByConfig = (ind: number) => {
-  return props.tableConfig.showPopovers && clickableColumns.value[ind];
+  return Boolean(props.tableConfig.showPopovers) && clickableColumns.value[ind];
 };
 const getCellContentSlotName = (columnKeys: any, columnId: any) => {
   // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
@@ -204,7 +211,7 @@ const onPointerUp = (event: PointerEvent) => {
   if (activeDrag.value) {
     consola.debug("Resize via row drag ended: ", event);
     activeDrag.value = false;
-    emit("resizeAllRows", currentRowHeight.value, rowElement);
+    emit("resizeAllRows", currentRowHeight.value as number, rowElement.value!);
   }
 };
 const onPointerMove = throttle((event) => {
@@ -236,6 +243,13 @@ const onCellSelect = ({
     emit("cellSelect", ind);
   }
 };
+
+const rowHeightStyle = computed(() =>
+  currentRowHeight.value === "dynamic"
+    ? {}
+    : { height: `${currentRowHeight.value}px` },
+);
+
 defineExpose({
   getCellComponents,
   /**
@@ -257,9 +271,7 @@ defineExpose({
         },
       ]"
       :style="{
-        ...(currentRowHeight === 'dynamic'
-          ? {}
-          : { height: `${currentRowHeight}px` }),
+        ...rowHeightStyle,
         marginBottom: `${marginBottom}px`,
         ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       }"
@@ -288,7 +300,7 @@ defineExpose({
         :key="ind"
         :cell-data="data"
         :select-on-move="selectCellsOnMove"
-        :is-slotted="slottedColumns[ind]"
+        :is-slotted="Boolean(slottedColumns[ind])"
         :no-padding="noPadding[ind]"
         :size="columnSizes[ind] ?? 100"
         :class-generators="classGenerators[ind]"
@@ -326,7 +338,7 @@ defineExpose({
         </SubMenu>
       </td>
     </tr>
-    <tr v-else class="row empty-row">
+    <tr v-else class="row empty-row" :style="rowHeightStyle">
       <td>-</td>
     </tr>
     <div

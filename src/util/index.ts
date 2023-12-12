@@ -1,3 +1,5 @@
+import type { ColumnConfig } from "@/types/DataConfig";
+
 const isNonEmptyObject = (val: any) =>
   val !== null &&
   typeof val === "object" &&
@@ -38,26 +40,10 @@ export const isMissingValue = (val: any): val is { metadata: string } | null =>
 export const isEmpty = (val: any): val is { value: undefined } | undefined =>
   typeof unpackObjectRepresentation(val) === "undefined";
 
-type ColumnConfig = {
-  header: any;
-  subHeader: any;
-  headerSubMenuItems: any;
-  filterConfig: any;
-  size: any;
-  type: any;
-  key: any;
-  id: any;
-  hasSlotContent: any;
-  popoverRenderer: any;
-  formatter: any;
-  classGenerator: any;
-  headerColor: string;
-};
-
-export const getPropertiesFromColumns = (
+export const getPropertiesFromColumns = <T extends keyof ColumnConfig>(
   columnConfigs: ColumnConfig[],
-  key: keyof ColumnConfig,
-) => columnConfigs.map((colConfig) => colConfig[key]);
+  key: T,
+): Array<ColumnConfig[T]> => columnConfigs.map((colConfig) => colConfig[key]);
 
 const PADDING_LEFT_DEFAULT_CELL = 10;
 const PADDING_LEFT_COLORED_CELL = 20;
