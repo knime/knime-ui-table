@@ -94,7 +94,7 @@ export default {
             type: Number,
             default: 0
         },
-        showSubMenu: {
+        reserveSpaceForSubMenu: {
             type: Boolean,
             default: false
         }
@@ -246,7 +246,7 @@ export default {
         </span>
       </td>
       <td
-        v-if="filteredSubMenuItems.length || showSubMenu"
+        v-if="filteredSubMenuItems.length || reserveSpaceForSubMenu"
         button-title="actions"
         class="action"
       >

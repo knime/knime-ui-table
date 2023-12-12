@@ -310,9 +310,11 @@ export default {
             const bottomControlsHeight = this.tableConfig.showBottomControls ? CONTROLS_HEIGHT : 0;
             return actualHeaderHeight + this.filterHeight + CONTROLS_HEIGHT + bottomControlsHeight;
         },
-        showSubMenu() {
-            const hasRowSubMenu = this.data.some(groupData => groupData.some(rowData => rowData.subMenuItemsForRow));
-            return this.tableConfig.subMenuItems?.lenght > 0 || hasRowSubMenu;
+        reserveSpaceForSubMenu() {
+          if(this.tableConfig.subMenuItems?.lenght > 0){
+            return true
+          }
+          return this.data.some(groupData => groupData.some(rowData => rowData.subMenuItemsForRow));
         }
     },
     watch: {
@@ -619,7 +621,7 @@ export default {
             :row-height="rowHeight"
             :margin-bottom="rowMarginBottom"
             :is-selected="currentSelection[groupInd][rowInd]"
-            :show-sub-menu="showSubMenu"
+            :reserve-space-for-sub-menu="reserveSpaceForSubMenu"
             @rowSelect="selected => onRowSelect(selected, rowInd, groupInd, true)"
             @rowInput="event => onRowInput({ ...event, rowInd, id: row.data.id, groupInd, isTop: true})"
             @rowSubMenuClick="event => onRowSubMenuClick(event, row.data)"

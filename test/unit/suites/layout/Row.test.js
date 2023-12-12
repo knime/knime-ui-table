@@ -139,7 +139,7 @@ describe('Row.vue', () => {
             expect(wrapper.find(SubMenu).exists()).toBe(false);
         });
 
-        it('renders empty cell without submenu when showSubMenu is true', () => {
+        it('renders empty cell without submenu when reserveSpaceForSubMenu is true', () => {
             wrapper = shallowMount(Row, {
                 propsData: {
                     ...propsData,
@@ -147,7 +147,7 @@ describe('Row.vue', () => {
                         ...propsData.tableConfig,
                         subMenuItems: []
                     },
-                    showSubMenu: true
+                    reserveSpaceForSubMenu: true
                 }
             });
 
