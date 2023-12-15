@@ -52,7 +52,7 @@ import type TableConfig from "@/types/TableConfig";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 interface RowProps {
-  rowData?: { data?: { subMenuItemsForRow?: MenuItem[] } };
+  rowData?: { subMenuItemsForRow?: MenuItem[] };
   row?: any[];
   tableConfig: TableConfig;
   columnConfigs: ColumnConfig[];
@@ -134,22 +134,14 @@ const clickableColumns = computed(() =>
 const filteredSubMenuItems = computed(() => {
   if (
     !props.tableConfig.subMenuItems?.length &&
-    !props.rowData.data?.subMenuItemsForRow?.length
+    !props.rowData?.subMenuItemsForRow?.length
   ) {
     return [];
   }
-  const defaultSubMenuItems = (props.tableConfig.subMenuItems ?? []).filter(
-    (item: any) => {
-      if (typeof item.hideOn === "function") {
-        return !item.hideOn(props.row, props.rowData);
-      }
-      return true;
-    },
-  );
 
-  return props.rowData.data?.subMenuItemsForRow?.length
-    ? props.rowData.data?.subMenuItemsForRow
-    : defaultSubMenuItems;
+  return props.rowData?.subMenuItemsForRow?.length
+    ? props.rowData?.subMenuItemsForRow
+    : props.tableConfig.subMenuItems;
 });
 
 onMounted(() => {
@@ -266,7 +258,7 @@ defineExpose({
       :class="[
         'row',
         {
-          'no-sub-menu': !filteredSubMenuItems.length,
+          'no-sub-menu': !filteredSubMenuItems?.length,
           'compact-mode': rowConfig.compactMode,
         },
       ]"
@@ -323,7 +315,7 @@ defineExpose({
         </template>
       </Cell>
       <td
-        v-if="filteredSubMenuItems.length"
+        v-if="filteredSubMenuItems?.length"
         button-title="actions"
         class="action"
       >

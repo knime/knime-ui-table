@@ -151,16 +151,6 @@ export default {
       type: Array,
       default: () => [],
     },
-    /**
-     * The table automatically shows the subMenu or not
-     * if you use table-wide subMenuItems and cares about resizing correctly.
-     * If you use custom subMenuItemsForRows in Row.vue, set this to 'always'.
-     */
-    showSubMenu: {
-      type: String,
-      default: "auto",
-      validate: (val) => ["auto", "always"].includes(val),
-    },
     groupSubMenuItems: {
       type: Array,
       default: () => [],
@@ -288,7 +278,7 @@ export default {
           Boolean(Object.keys(this.initialFilterValues).length),
         showBottomControls: this.showBottomControls,
         subMenuItems: this.subMenuItems,
-        showSubMenu: this.showSubMenu,
+        reserveSpaceForSubMenu: this.reserveSpaceForSubMenu,
         groupSubMenuItems: this.groupSubMenuItems,
         enableVirtualScrolling: this.enableVirtualScrolling,
         enableColumnResizing: false,
@@ -485,6 +475,12 @@ export default {
         calculateForBody: this.autoSizeColumnsToContent,
         calculateForHeader: this.autoSizeColumnsToContentInclHeaders,
       };
+    },
+    reserveSpaceForSubMenu() {
+      const hasRowSubMenu = this.paginatedData?.some((groupData) =>
+        groupData?.some((rowData) => rowData?.subMenuItemsForRow),
+      );
+      return this.subMenuItems?.length > 0 || hasRowSubMenu ? "always" : "auto";
     },
   },
   watch: {

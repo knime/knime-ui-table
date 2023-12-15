@@ -160,7 +160,7 @@ describe("Table.vue", () => {
         },
         searchConfig: { searchQuery: "" },
         sortConfig: { sortColumn: 0, sortDirection: -1 },
-        showSubMenu: "auto",
+        reserveSpaceForSubMenu: "auto",
         subMenuItems: [],
         groupSubMenuItems: [],
         columnFilterInitiallyActive: false,
@@ -247,6 +247,52 @@ describe("Table.vue", () => {
           }),
         ]),
       );
+    });
+
+    it("sets reserveSpaceForSubMenu to 'auto' if the table subMenuItems is not provided, and none of the rows has a sub menu", () => {
+      let allData = [];
+      for (let i = 0; i < 100; i++) {
+        allData.push({ a: i, b: i + 1 });
+      }
+      allData[20].subMenuItemsForRow = [
+        {
+          text: "Apples",
+          title: "Tastier Apples",
+        },
+      ];
+      const { wrapper } = doMount({
+        shallow: false,
+        customProps: {
+          subMenuItems: [],
+          allData,
+          dataCount: 10,
+        },
+      });
+
+      expect(wrapper.vm.tableConfig.reserveSpaceForSubMenu).toBe("auto");
+    });
+
+    it("sets reserveSpaceForSubMenu to 'always' if the table subMenuItems is not provided, and at least one row has a sub menu", () => {
+      let allData = [];
+      for (let i = 0; i < 10; i++) {
+        allData.push({ a: i, b: i + 1 });
+      }
+      allData[0].subMenuItemsForRow = [
+        {
+          text: "Apples",
+          title: "Tastier Apples",
+        },
+      ];
+      const { wrapper } = doMount({
+        shallow: false,
+        customProps: {
+          subMenuItems: [],
+          allData,
+          dataCount: 10,
+        },
+      });
+
+      expect(wrapper.vm.tableConfig.reserveSpaceForSubMenu).toBe("always");
     });
   });
 
