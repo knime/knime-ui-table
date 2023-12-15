@@ -1,7 +1,7 @@
 <script lang="ts">
 import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import { ref, computed, toRefs } from "vue";
+import { ref, computed, toRefs, inject } from "vue";
 import type { Ref, PropType } from "vue";
 import { isMissingValue } from "@/util";
 import useDropdownFloating from "./composables/useDropdownFloating";
@@ -75,6 +75,7 @@ export default {
     const ul: Ref<HTMLUListElement | null> = ref(null);
     const options: Ref<HTMLLIElement[] | null> = ref([]);
     const isExpanded = ref(false);
+    const shadowRoot = inject<ShadowRoot | null>("shadowRoot", null);
 
     const { scrollTo } = useScrollToElement({ toggleButton: button });
 
@@ -146,6 +147,7 @@ export default {
     return {
       updateFloating,
       floatingStyles,
+      shadowRoot,
       onKeydown,
       resetNavigation,
       generateOptionId,
@@ -242,7 +244,7 @@ export default {
       <span v-else>{{ displayText }}</span>
       <DropdownIcon :class="['icon', { 'open-up': openUp }]" />
     </div>
-    <Teleport to="body">
+    <Teleport :to="shadowRoot || 'body'">
       <ul
         v-show="isExpanded"
         ref="ul"

@@ -4,7 +4,7 @@ import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg"
 import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import type { Ref, PropType } from "vue";
-import { ref, toRefs, computed } from "vue";
+import { ref, toRefs, computed, inject } from "vue";
 import { isMissingValue } from "@/util";
 import useDropdownFloating from "./composables/useDropdownFloating";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
@@ -76,6 +76,8 @@ export default {
   setup(props) {
     const { possibleValues } = toRefs(props);
 
+    const shadowRoot = inject<ShadowRoot | null>("shadowRoot", null);
+
     const toggleButton: Ref<HTMLElement | null> = ref(null);
     const optionsPopover: Ref<HTMLElement | null> = ref(null);
     const option: Ref<{ $el: HTMLElement }[]> = ref([]);
@@ -132,6 +134,7 @@ export default {
     return {
       updateFloating,
       floatingStyles,
+      shadowRoot,
       onKeydown,
       resetNavigation,
       selectedIndex,
@@ -267,7 +270,7 @@ export default {
     </div>
     <DropdownIcon class="icon" />
 
-    <Teleport to="body">
+    <Teleport :to="shadowRoot || 'body'">
       <div
         v-show="isExpanded"
         ref="optionsPopover"

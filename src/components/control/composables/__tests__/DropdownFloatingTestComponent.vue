@@ -10,12 +10,12 @@ const props = defineProps({
   },
 });
 
-const reference = ref(null);
-const floating = ref<HTMLElement | null>(null);
+const referenceElement = ref<HTMLElement | null>(null);
+const floatingElement = ref<HTMLElement | null>(null);
 
 const { update, floatingStyles, placement } = useDropdownFloating(
-  reference,
-  floating,
+  referenceElement,
+  floatingElement,
   props.openUp,
 );
 
@@ -23,11 +23,12 @@ defineExpose({
   update,
   floatingStyles,
   placement,
-  floatingElement: floating,
+  floatingElement,
+  referenceElement,
 });
 </script>
 
 <template>
-  <div id="toggle" ref="reference" />
-  <div id="popover" ref="floating" :style="floatingStyles" />
+  <div id="toggle" ref="referenceElement" />
+  <div id="popover" ref="floatingElement" :style="floatingStyles" />
 </template>
