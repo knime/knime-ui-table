@@ -4,7 +4,7 @@ import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg"
 import { ref, computed, toRefs } from "vue";
 import type { Ref, PropType } from "vue";
 import { isMissingValue } from "@/util";
-import useDropdownPopper from "./composables/useDropdownPopper";
+import useDropdownFloating from "./composables/useDropdownFloating";
 import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
@@ -97,8 +97,9 @@ export default {
       isExpanded.value = false;
     };
 
-    const { updatePopper } = useDropdownPopper(
-      { popperTarget: ul, referenceEl: button },
+    const { update: updateFloating, floatingStyles } = useDropdownFloating(
+      button,
+      ul,
       props.openUp,
     );
     const {
@@ -143,7 +144,8 @@ export default {
       "dropdown-input",
     );
     return {
-      updatePopper,
+      updateFloating,
+      floatingStyles,
       onKeydown,
       resetNavigation,
       generateOptionId,
@@ -202,12 +204,12 @@ export default {
     onOptionClick(value: string) {
       this.setSelected(value);
       this.isExpanded = false;
-      this.updatePopper();
+      this.updateFloating();
     },
     toggleExpanded() {
       this.isExpanded = !this.isExpanded;
       this.resetNavigation();
-      this.updatePopper();
+      this.updateFloating();
     },
   },
 };
@@ -246,6 +248,7 @@ export default {
         ref="ul"
         role="listbox"
         tabindex="-1"
+        :style="floatingStyles"
         :class="{
           'open-up': openUp,
           'with-placeholder': includePlaceholder,

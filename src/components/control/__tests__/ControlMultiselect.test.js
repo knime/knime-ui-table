@@ -14,12 +14,11 @@ vi.mock("webapps-common/ui/composables/useDropdownNavigation", () => ({
   default: vi.fn(() => dropdownNavigation),
 }));
 
-const dropdownPopper = {
-  updatePopper: vi.fn(),
-  popperInstance: { setOptions: vi.fn() },
+const dropdownFloating = {
+  update: vi.fn(),
 };
-vi.mock("../composables/useDropdownPopper", () => ({
-  default: vi.fn(() => dropdownPopper),
+vi.mock("../composables/useDropdownFloating", () => ({
+  default: vi.fn(() => dropdownFloating),
 }));
 const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
@@ -29,7 +28,7 @@ vi.mock("webapps-common/ui/composables/useClickOutside", () => ({
   default: vi.fn(),
 }));
 
-import useDropdownPopper from "../composables/useDropdownPopper";
+import useDropdownFloating from "../composables/useDropdownFloating";
 import useScrollToElement from "../composables/useScrollToElement";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
@@ -324,15 +323,15 @@ describe("ControlMultiselect.vue", () => {
     });
   });
 
-  it("uses dropdown popper", () => {
-    useDropdownPopper.reset();
+  it("uses dropdown floating ui", () => {
+    useDropdownFloating.reset();
     const wrapper = mount(ControlMultiselect, { props });
-    const [{ popperTarget, referenceEl }] = useDropdownPopper.mock.calls[0];
+    const [referenceEl, floatingElement] = useDropdownFloating.mock.calls[0];
 
     expect(unref(referenceEl)).toStrictEqual(
       wrapper.find('[role="button"]').element,
     );
-    expect(unref(popperTarget)).toStrictEqual(
+    expect(unref(floatingElement)).toStrictEqual(
       wrapper.find({ ref: "optionsPopover" }).element,
     );
   });

@@ -6,7 +6,7 @@ import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg
 import type { Ref, PropType } from "vue";
 import { ref, toRefs, computed } from "vue";
 import { isMissingValue } from "@/util";
-import useDropdownPopper from "./composables/useDropdownPopper";
+import useDropdownFloating from "./composables/useDropdownFloating";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
 import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
@@ -102,10 +102,10 @@ export default {
       isExpanded.value = false;
     };
 
-    const { updatePopper } = useDropdownPopper({
-      popperTarget: optionsPopover,
-      referenceEl: toggleButton,
-    });
+    const { update: updateFloating, floatingStyles } = useDropdownFloating(
+      toggleButton,
+      optionsPopover,
+    );
     const {
       onKeydown,
       resetNavigation,
@@ -130,7 +130,8 @@ export default {
       "control-multiselect",
     );
     return {
-      updatePopper,
+      updateFloating,
+      floatingStyles,
       onKeydown,
       resetNavigation,
       selectedIndex,
@@ -204,7 +205,7 @@ export default {
     toggle() {
       this.isExpanded = !this.isExpanded;
       this.resetNavigation();
-      this.updatePopper();
+      this.updateFloating();
     },
     isChecked(itemId: string) {
       return this.checkedValue.indexOf(itemId) > -1;
@@ -271,6 +272,7 @@ export default {
         v-show="isExpanded"
         ref="optionsPopover"
         role="options"
+        :style="floatingStyles"
         :class="{ filter: isFilter }"
         @dragleave.stop.prevent
       >

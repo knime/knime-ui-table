@@ -120,8 +120,6 @@ Use in Template
 The KNIME-Table expects that the embedding app provides the following:
 
 - Vue and Consola compatible to the versions defined in [`package.json`](package.json)
-- global `window.Vue` object
-- global `window.consola` instance for logging
 
 [Vue]: https://vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation

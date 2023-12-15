@@ -14,12 +14,11 @@ vi.mock("webapps-common/ui/composables/useDropdownNavigation", () => ({
   default: vi.fn(() => dropdownNavigation),
 }));
 
-const dropdownPopper = {
-  updatePopper: vi.fn(),
-  popperInstance: { setOptions: vi.fn() },
+const dropdownFloating = {
+  update: vi.fn(),
 };
-vi.mock("../composables/useDropdownPopper", () => ({
-  default: vi.fn(() => dropdownPopper),
+vi.mock("../composables/useDropdownFloating", () => ({
+  default: vi.fn(() => dropdownFloating),
 }));
 const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
@@ -29,7 +28,7 @@ vi.mock("webapps-common/ui/composables/useClickOutside", () => ({
   default: vi.fn(),
 }));
 
-import useDropdownPopper from "../composables/useDropdownPopper";
+import useDropdownFloating from "../composables/useDropdownFloating";
 import useScrollToElement from "../composables/useScrollToElement";
 import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
@@ -394,8 +393,8 @@ describe("ControlDropdown.vue", () => {
   });
 
   describe("dropdown popover", () => {
-    it("uses dropdown popper", () => {
-      useDropdownPopper.reset();
+    it("uses dropdown floating ui", () => {
+      useDropdownFloating.reset();
       const wrapper = shallowMount(ControlDropdown, {
         props: {
           possibleValues: [
@@ -415,20 +414,20 @@ describe("ControlDropdown.vue", () => {
           ariaLabel: "foo",
         },
       });
-      const [{ popperTarget, referenceEl }, openUp] =
-        useDropdownPopper.mock.calls[0];
+      const [referenceEl, floatingElement, openUp] =
+        useDropdownFloating.mock.calls[0];
 
       expect(unref(referenceEl)).toStrictEqual(
         wrapper.find('[role="button"]').element,
       );
-      expect(unref(popperTarget)).toStrictEqual(
+      expect(unref(floatingElement)).toStrictEqual(
         wrapper.find({ ref: "ul" }).element,
       );
       expect(openUp).toBe(false);
     });
 
     it("reverses direction on openUp", () => {
-      useDropdownPopper.reset();
+      useDropdownFloating.reset();
       shallowMount(ControlDropdown, {
         props: {
           possibleValues: [
@@ -449,7 +448,7 @@ describe("ControlDropdown.vue", () => {
           openUp: true,
         },
       });
-      const openUp = useDropdownPopper.mock.calls[0][1];
+      const openUp = useDropdownFloating.mock.calls[0][2];
       expect(openUp).toBe(true);
     });
   });
