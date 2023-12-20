@@ -87,7 +87,7 @@ const selectionSize = computed(() =>
 const rightSideSize = computed(() => {
   return tableConfig.value.showColumnFilters ||
     (tableConfig.value.subMenuItems ?? []).length > 0 ||
-    tableConfig.value.showSubMenu === "always"
+    tableConfig.value.reserveSpaceForSubMenu === "always"
     ? SPECIAL_COLUMNS_SIZE
     : 0;
 });

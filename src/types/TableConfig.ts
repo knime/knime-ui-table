@@ -54,7 +54,7 @@ interface TableConfig {
   showColumnFilters?: boolean;
   subMenuItems?: MenuItem[];
   groupSubMenuItems?: MenuItem[];
-  showSubMenu?: "always" | "auto";
+  reserveSpaceForSubMenu?: "always" | "auto";
   showPopovers?: boolean;
   enableCellSelection?: boolean;
   columnFilterInitiallyActive?: boolean;

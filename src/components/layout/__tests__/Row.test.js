@@ -10,7 +10,6 @@ import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 
 describe("Row.vue", () => {
   let wrapper;
@@ -151,11 +150,7 @@ describe("Row.vue", () => {
         props: {
           ...props,
           row: ["data1"],
-          rowData: {
-            data: {
-              subMenuItemsForRow: customSubMenuItemsForRow,
-            },
-          },
+          rowData: { subMenuItemsForRow: customSubMenuItemsForRow },
         },
         global: { stubs: { Cell: { template: stubbedCell } } },
       });
@@ -165,52 +160,6 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         customSubMenuItemsForRow,
       );
-    });
-
-    it("hides submenu items if hideOn function is given", async () => {
-      const subMenuItems = [
-        {
-          name: "delete",
-          text: "Delete",
-        },
-        {
-          name: "manage",
-          text: "Manage access",
-          hideOn: () => true,
-        },
-      ];
-      props.tableConfig.subMenuItems = subMenuItems;
-      wrapper = mount(Row, {
-        props,
-      });
-      // Open sub menu so that the menu items are rendered
-      await wrapper.findComponent(SubMenu).find("button").trigger("click");
-      const menuItems = wrapper.findComponent(MenuItems);
-      const listItem = menuItems.findAll(".list-item");
-      expect(listItem.length).toBe(subMenuItems.length - 1);
-    });
-
-    it("does not hide submenu items if hideOn is not a function", async () => {
-      const subMenuItems = [
-        {
-          name: "delete",
-          text: "Delete",
-        },
-        {
-          name: "manage",
-          text: "Manage access",
-          hideOn: false,
-        },
-      ];
-      props.tableConfig.subMenuItems = subMenuItems;
-      wrapper = mount(Row, {
-        props,
-      });
-      // Open sub menu so that the menu items are rendered
-      await wrapper.findComponent(SubMenu).find("button").trigger("click");
-      const menuItems = wrapper.findComponent(MenuItems);
-      const listItem = menuItems.findAll(".list-item");
-      expect(listItem.length).toBe(subMenuItems.length);
     });
 
     it("selectively generates slots for specific columns", () => {

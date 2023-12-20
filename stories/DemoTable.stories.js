@@ -236,6 +236,14 @@ export default {
         category: "Rows",
       },
     },
+    subMenuReservedSpace: {
+      name: "Reserved space for sub menu",
+      table: {
+        category: "Rows",
+      },
+      options: ["always", "auto"],
+      control: { type: "select" },
+    },
     subMenuItems: {
       name: "Row submenu options",
       table: {

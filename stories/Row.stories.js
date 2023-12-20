@@ -59,18 +59,16 @@ export const RowWithSpecificSubMenu = Template.bind({});
 RowWithSpecificSubMenu.args = {
   ...defaultArgs,
   rowData: {
-    data: {
-      subMenuItemsForRow: [
-        {
-          id: "myId",
-          text: "Specific Row SubMenu item",
-        },
-      ],
-    },
+    subMenuItemsForRow: [
+      {
+        id: "myId",
+        text: "Specific Row SubMenu item",
+      },
+    ],
   },
   tableConfig: {
     ...defaultArgs.tableConfig,
-    showSubMenu: "always", // needed to make sure RowWithSpecificSubMenu works
+    reserveSpaceForSubMenu: "always", // needed to make sure RowWithSpecificSubMenu works
     subMenuItems: [
       {
         id: "foo",

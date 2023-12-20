@@ -1,4 +1,8 @@
-# Table UI component for KNIME Analytics Platform & KNIME Hub
+# KNIME® UI Table
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-ui-table&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-ui-table)
+
+This repository is maintained by the [KNIME UI Extensions Development Team](mailto:team-ui-extensions@knime.com).
 
 This repository contains the table component used by e.g. the TableView of KNIME Analytics Platform and KNIME Hub. It is based on the [Vue] JavaScript framework.
 

@@ -108,6 +108,10 @@ const props = defineProps({
     default: "",
   },
   showSubMenus: Boolean,
+  subMenuReservedSpace: {
+    type: String,
+    default: "auto",
+  },
   subMenuItems: {
     type: Array,
     default: () => [],
@@ -345,6 +349,7 @@ const tableConfig = reactive({
     Boolean(Object.keys(props.initialFilterValues).length),
   showBottomControls: props.showBottomControls,
   subMenuItems: props.showSubMenus ? props.subMenuItems : [],
+  reserveSpaceForSubMenu: props.subMenuReservedSpace,
   groupSubMenuItems: props.showGroupSubMenus ? props.groupSubMenuItems : [],
   enableVirtualScrolling: props.enableVirtualScrolling,
   enableColumnResizing: props.enableColumnResize,
