@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef, toRefs, type Ref } from "vue";
 import useCloseSubMenusOnScroll from "./composables/useCloseSubMenusOnScroll";
-import "./global-z-indices.css";
+import "./main.css";
 
 import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import Group from "./layout/Group.vue";
