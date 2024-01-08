@@ -300,7 +300,7 @@ export default {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
         "headerSubMenuItems",
-      ).map((items) => items ?? []);
+      );
     },
     columnSizes() {
       return getPropertiesFromColumns(this.dataConfig.columnConfigs, "size");

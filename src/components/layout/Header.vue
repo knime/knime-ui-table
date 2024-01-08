@@ -61,7 +61,7 @@ export default {
       default: () => [],
     },
     columnSubMenuItems: {
-      type: Array as PropType<Array<MenuItem[]>>,
+      type: Array as PropType<Array<MenuItem[] | undefined>>,
       default: () => [],
     },
     columnHeaderColors: {
@@ -322,7 +322,7 @@ export default {
         <div v-if="columnSubMenuItems[ind]" class="sub-menu-select-header">
           <SubMenu
             ref="subMenu"
-            :items="columnSubMenuItems[ind]"
+            :items="columnSubMenuItems[ind]!"
             orientation="left"
             :max-menu-width="maximumSubMenuWidth"
             allow-overflow-main-axis
