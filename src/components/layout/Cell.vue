@@ -23,10 +23,13 @@ const isClickable = computed(() => {
 
 const isMissing = computed(() => isMissingValue(props.cellData));
 
-const formattedValue = computed(() => {
-  const { formatter, cellData } = props;
-  return formatter(unpackObjectRepresentation(cellData));
-});
+const unpackedValue = computed(() =>
+  unpackObjectRepresentation(props.cellData),
+);
+
+const formattedValue = computed(() =>
+  props.formatter(unpackObjectRepresentation(unpackedValue.value)),
+);
 
 const title = computed(() => {
   const { cellData } = props;
@@ -54,12 +57,12 @@ const classes = computed(() => {
   return classGenerators
     .map((classItem) => {
       if (typeof classItem === "function") {
-        return typeof formattedValue.value === "undefined"
+        return typeof unpackedValue.value === "undefined"
           ? null
-          : classItem(formattedValue.value);
+          : classItem(unpackedValue.value);
       }
       if (typeof classItem === "object") {
-        return classItem[formattedValue.value as string];
+        return classItem[unpackedValue.value as string];
       }
       return classItem;
     })

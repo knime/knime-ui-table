@@ -127,11 +127,31 @@ describe("Cell.vue", () => {
       );
     });
 
+    const classFunction = (data: string | undefined) =>
+      `width-${data?.slice(-1)}`;
+
     it("applies function class generators to the data", () => {
-      const classFunction = (data: string | undefined) =>
-        `width-${data?.slice(-1)}`;
       props.cellData = "data3";
       props.classGenerators = [classFunction];
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        ["width-3"],
+      );
+    });
+
+    it("handles class generators in combination with object representation", () => {
+      props.cellData = { value: "data3", color: "#123456" };
+      props.classGenerators = [classFunction];
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
+        ["width-3"],
+      );
+    });
+
+    it("handles class generators in combination with formatters", () => {
+      props.cellData = { value: "data3", color: "#123456" };
+      props.classGenerators = [classFunction];
+      props.formatter = () => "foo";
       const wrapper = shallowMount(Cell, { props });
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
