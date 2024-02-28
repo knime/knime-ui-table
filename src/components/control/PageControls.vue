@@ -42,6 +42,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    showPageControls: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ["nextPage", "prevPage"],
   computed: {
@@ -84,14 +88,14 @@ export default {
       :page-range-end="pageRangeEnd"
     />
     <FunctionButton
-      v-if="hasNextPage || hasPreviousPage"
+      v-if="showPageControls && (hasNextPage || hasPreviousPage)"
       :disabled="!hasPreviousPage"
       @click="onPrevPage"
     >
       <ArrowPrevIcon />
     </FunctionButton>
     <FunctionButton
-      v-if="hasNextPage || hasPreviousPage"
+      v-if="showPageControls && (hasNextPage || hasPreviousPage)"
       :disabled="!hasNextPage"
       @click="onNextPage"
     >

@@ -8,6 +8,7 @@ export interface PageConfig {
   columnCount: number;
   possiblePageSizes?: number[];
   showTableSize?: boolean;
+  showPageControls?: boolean;
 }
 
 export interface SortConfig {
