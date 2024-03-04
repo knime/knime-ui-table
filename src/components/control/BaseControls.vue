@@ -45,6 +45,7 @@ export default {
     <tr>
       <PageControls
         :total-items="pageConfig.tableSize"
+        :show-page-controls="pageConfig.showPageControls"
         :current-items="pageConfig.currentSize"
         :page-size="pageConfig.pageSize"
         :current-page="pageConfig.currentPage"

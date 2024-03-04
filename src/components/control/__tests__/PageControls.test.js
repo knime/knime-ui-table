@@ -71,4 +71,19 @@ describe("PageControls.vue", () => {
     buttons.at(0).vm.$emit("click");
     expect(wrapper.emitted().prevPage).toBeTruthy();
   });
+
+  it("does not render page controls if disabled", () => {
+    wrapper = shallowMount(PageControls, {
+      props: {
+        totalItems: 12,
+        currentItems: 12,
+        pageSize: 5,
+        currentPage: 3,
+        showPageControls: false,
+      },
+    });
+    expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
+    expect(wrapper.findComponent(ArrowNextIcon).exists()).toBe(false);
+    expect(wrapper.findComponent(ArrowPrevIcon).exists()).toBe(false);
+  });
 });
