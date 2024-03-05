@@ -860,7 +860,7 @@ export default {
             />
           </template>
           <template #rowCollapserContent>
-            <slot name="collapserContent" :row="data" />
+            <slot name="collapserContent" :row="row" />
           </template>
         </Row>
       </template>
