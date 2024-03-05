@@ -76,7 +76,7 @@ export default {
 </script>
 
 <template>
-  <th class="left-controls">
+  <div class="controls left-controls">
     <TextDimensionAndRange
       :total-items="totalItems"
       :current-items="currentItems"
@@ -101,11 +101,11 @@ export default {
     >
       <ArrowNextIcon />
     </FunctionButton>
-  </th>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
-th.left-controls {
+.left-controls {
   display: flex;
   align-items: center;
 

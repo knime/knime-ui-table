@@ -41,8 +41,8 @@ export default {
 </script>
 
 <template>
-  <thead>
-    <tr>
+  <caption>
+    <div class="row">
       <PageControls
         :total-items="pageConfig.tableSize"
         :show-page-controls="pageConfig.showPageControls"
@@ -54,7 +54,7 @@ export default {
         @next-page="onNextPage"
         @prev-page="onPrevPage"
       />
-      <th class="right-controls">
+      <div class="controls right-controls">
         <div v-if="hasCarousel" ref="carousel-wrapper" class="carousel-wrapper">
           <Carousel>
             <div class="wrapper">
@@ -65,21 +65,21 @@ export default {
         <div class="wrapper">
           <slot name="rightmost-control" />
         </div>
-      </th>
-    </tr>
-  </thead>
+      </div>
+    </div>
+  </caption>
 </template>
 
 <style lang="postcss" scoped>
-thead {
-  & tr {
+caption {
+  & .row {
     display: flex;
     justify-content: space-between;
     padding: 0;
     margin: 0;
     height: 40px;
 
-    & th {
+    & .controls {
       padding: 0;
       font-weight: 500;
       color: var(--knime-dove-gray);
