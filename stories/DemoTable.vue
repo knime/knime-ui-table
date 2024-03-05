@@ -1,7 +1,6 @@
 <script setup>
 import { computed, reactive } from "vue";
 import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
-import TableUI from "@/components/TableUI.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import demoProps from "./props.json";
 import { columnTypes, tablePageSizes } from "@/config/table.config";
@@ -459,17 +458,9 @@ const htmlSlotContent = `
         />
         <span v-html="htmlSlotContent" />
       </template>
-      <template #collapserContent>
-        <h6>Collapser slot content:</h6>
-        <TableUI v-bind="tableProps">
-          <template #collapserContent="{ row }">
-            <h6>Example collapser slot:</h6>
-            <pre>
-                {{ JSON.stringify(row, null, 4) }}
-              </pre
-            >
-          </template>
-        </TableUI>
+      <template #collapserContent="availableData">
+        <h6>Data available in this slot content:</h6>
+        <pre>{{ JSON.stringify(availableData, undefined, 4) }}</pre>
       </template>
       <template #popoverContent="slotContent">
         <div
