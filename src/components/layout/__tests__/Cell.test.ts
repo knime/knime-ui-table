@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
 import Cell from "../Cell.vue";
@@ -188,11 +188,6 @@ describe("Cell.vue", () => {
 
   it("calls getCellContentWidth in the CellRenderer", () => {
     const wrapper = mount(Cell, { props });
-    const spy = vi.spyOn(
-      wrapper.findComponent(CellRenderer).vm,
-      "getCellContentWidth",
-    );
-    wrapper.findComponent(CellRenderer).vm.getCellContentWidth();
-    expect(spy).toHaveBeenCalled();
+    expect(wrapper.vm.getCellContentWidth()).toBe(10);
   });
 });

@@ -1,4 +1,4 @@
-import type { TableConfig } from "lib/main";
+import type TableConfig from "../../types/TableConfig";
 import type { Rect } from "../composables/useCellSelection";
 
 interface CellSelectionOverlayProps {

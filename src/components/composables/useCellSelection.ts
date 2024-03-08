@@ -1,5 +1,5 @@
 import { computed, ref, watch, type Ref } from "vue";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 
 export type CellPosition = {
   x: number;

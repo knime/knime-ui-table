@@ -8,6 +8,7 @@ import Group from "./layout/Group.vue";
 import useAvailableWidth from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 
+// @ts-ignore
 import { RecycleScroller as RC } from "vue-virtual-scroller";
 import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";
@@ -320,8 +321,7 @@ defineExpose({
 .groups-wrapper {
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden hidden;
 
   &.vertical-scroll {
     overflow-y: auto;

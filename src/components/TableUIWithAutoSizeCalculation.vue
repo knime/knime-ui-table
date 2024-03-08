@@ -13,7 +13,7 @@
 import TableUI from "./TableUI.vue";
 import { MIN_COLUMN_SIZE, MAX_AUTO_COLUMN_SIZE } from "../util/constants";
 import useTableReady from "./composables/useTableReady";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
 import type DataConfig from "@/types/DataConfig";

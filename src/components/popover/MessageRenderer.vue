@@ -106,8 +106,7 @@ export default {
 
   & .content {
     max-height: 230px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden auto;
     white-space: normal;
     text-overflow: ellipsis;
     line-height: 20px;

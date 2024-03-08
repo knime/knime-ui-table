@@ -4,6 +4,8 @@ import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
 import svgLoader from "vite-svg-loader";
 import { libInjectCss } from "vite-plugin-lib-inject-css";
+// @ts-ignore
+import { svgoConfig } from "webapps-common/config/svgo.config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -18,8 +20,9 @@ export default defineConfig({
       compilerOptions: {
         declarationMap: true,
       },
+      tsconfigPath: "tsconfig.app.json",
     }),
-    svgLoader(),
+    svgLoader({ svgoConfig }),
     libInjectCss(),
   ],
   resolve: {

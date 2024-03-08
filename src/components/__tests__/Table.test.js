@@ -4,10 +4,10 @@ import { shallowMount, mount } from "@vue/test-utils";
 
 import Table from "../Table.vue";
 import TableUI from "../TableUI.vue";
+import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
 
 import { columnTypes } from "@/config/table.config";
 import { MIN_COLUMN_SIZE } from "@/util/constants";
-import { TableUIWithAutoSizeCalculation } from "lib/main";
 
 const headerSubMenuItems = [
   [

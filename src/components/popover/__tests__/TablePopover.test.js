@@ -36,7 +36,7 @@ describe("TablePopover.vue", () => {
       },
       props: { target, data: [] },
     });
-    expect(wrapper.find(".content").isVisible()).toBeFalsy();
+    expect(wrapper.find(".content").isVisible()).toBeTruthy();
     expect(wrapper.find(".content .closer").exists()).toBeTruthy();
     expect(wrapper.find(".content").text()).toContain("contentText");
   });

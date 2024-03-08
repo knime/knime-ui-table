@@ -1,5 +1,5 @@
 import { ref, watch, computed, unref, onMounted } from "vue";
-import _ from "lodash";
+import _ from "lodash-es";
 
 export default ({
   filter: { filterData, filterHash },

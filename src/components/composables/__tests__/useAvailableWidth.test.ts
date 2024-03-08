@@ -51,7 +51,7 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const scrollbarWidth = 0;
 
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
@@ -68,7 +68,7 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const scrollbarWidth = 10;
 
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
@@ -86,7 +86,7 @@ describe("useAvailableWidth", () => {
     const availableWidth = 200;
     const scrollbarWidth = 0;
 
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
@@ -103,7 +103,7 @@ describe("useAvailableWidth", () => {
     const scrollbarWidth = 17;
     const availableWidth = 200;
 
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
@@ -117,7 +117,7 @@ describe("useAvailableWidth", () => {
   });
 
   it("unobserves both elements on unmount", async () => {
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
@@ -126,7 +126,7 @@ describe("useAvailableWidth", () => {
   });
 
   it("reobserves scrolled element when it changes", async () => {
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
@@ -141,7 +141,7 @@ describe("useAvailableWidth", () => {
     const scrollbarWidth = 17;
     const availableWidth = 200;
     const specialColumnsSizeTotal = 123;
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
@@ -159,7 +159,7 @@ describe("useAvailableWidth", () => {
     const scrollbarWidth = 17;
     const availableWidth = 200;
     const specialColumnsSizeTotal = 123;
-    const wrapper = mount(AvailableWidthTestComponent as any, {
+    const wrapper = mount(AvailableWidthTestComponent, {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();

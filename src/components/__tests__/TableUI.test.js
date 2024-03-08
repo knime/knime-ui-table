@@ -822,8 +822,8 @@ describe("TableUI.vue", () => {
 
   describe("the width of the table, its header and its body", () => {
     it("uses available width composables", async () => {
-      useTotalWidth.reset();
-      useAvailableWidth.reset();
+      useTotalWidth.mockClear();
+      useAvailableWidth.mockClear();
       const { wrapper } = doMount({
         shallow: false,
         enableVirtualScrolling: false,
@@ -850,7 +850,7 @@ describe("TableUI.vue", () => {
 
     describe("specialColumnsTotalWidth", () => {
       const getSpecialColumnsSizeTotal = (settings) => {
-        useAvailableWidth.reset();
+        useAvailableWidth.mockClear();
         doMount(settings);
         const [{ specialColumnsSizeTotal }] = useAvailableWidth.mock.calls[0];
         return specialColumnsSizeTotal;
@@ -957,7 +957,7 @@ describe("TableUI.vue", () => {
     });
 
     it("uses different scrolled element in case of virtual scrolling", () => {
-      useAvailableWidth.reset();
+      useAvailableWidth.mockClear();
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
@@ -1289,7 +1289,7 @@ describe("TableUI.vue", () => {
     let wrapper;
 
     beforeEach(() => {
-      useCellSelection.reset();
+      useCellSelection.mockClear();
       cellSelectionMock.selectCell = vi.fn();
       cellSelectionMock.expandCellSelection = vi.fn();
       cellSelectionMock.rectMinMax = ref(null);

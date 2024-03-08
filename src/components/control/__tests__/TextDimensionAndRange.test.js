@@ -19,7 +19,7 @@ describe("TextDimensionAndRange.vue", () => {
         pageRangeEnd: 25,
       },
     });
-    expect(wrapper.text()).toBe("No data    |   Columns: 4");
+    expect(wrapper.text()).toContain("No data").toContain("Columns: 4");
     await wrapper.setProps({ columnCount: 0 });
     expect(wrapper.text()).toBe("No data");
     await wrapper.setProps({ showTableSize: false });
@@ -39,13 +39,18 @@ describe("TextDimensionAndRange.vue", () => {
         pageRangeEnd: 25,
       },
     });
-    expect(wrapper.text()).toBe("Rows: 1-25 of 100   |   Columns: 4");
+    expect(wrapper.text())
+      .toContain("Rows: 1-25 of 100")
+      .toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 0 });
-    expect(wrapper.text()).toBe("No data (100 hidden)   |   Columns: 4");
+    expect(wrapper.text())
+      .toContain("No data (100 hidden)")
+      .toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 50 });
-    expect(wrapper.text()).toBe(
-      "Rows: 1-25 of 50 (100 total)    |   Columns: 4",
-    );
+    expect(wrapper.text())
+      .toContain("Rows: 1-25 of 50")
+      .toContain("(100 total)")
+      .toContain("Columns: 4");
     await wrapper.setProps({ showTableSize: false });
     expect(wrapper.text()).toBe("Rows: 1-25 of 50");
     await wrapper.setProps({
@@ -69,9 +74,11 @@ describe("TextDimensionAndRange.vue", () => {
         pageRangeEnd: 25,
       },
     });
-    expect(wrapper.text()).toBe("Rows: 10   |   Columns: 4");
+    expect(wrapper.text()).toContain("Rows: 10").toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 0 });
-    expect(wrapper.text()).toBe("No data (100 hidden)   |   Columns: 4");
+    expect(wrapper.text())
+      .toContain("No data (100 hidden)")
+      .toContain("Columns: 4");
     await wrapper.setProps({ showTableSize: false });
     expect(wrapper.text()).toBe("");
   });

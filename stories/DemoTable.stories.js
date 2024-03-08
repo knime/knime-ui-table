@@ -10,6 +10,13 @@ export default {
   component: DemoTable,
   parameters: {
     layout: "fullscreen",
+    docs: {
+      description: {
+        component:
+          "Changing the storybook settings does not update the view directly. " +
+          "Instead the page needs to be refreshed once an update is desired.",
+      },
+    },
   },
   argTypes: {
     initialSortDirection: {

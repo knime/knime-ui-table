@@ -1,13 +1,13 @@
 <script lang="ts">
 import { columnTypes, type ColumnType } from "@/config/table.config";
-import { mixin as VueClickAway } from "vue3-click-away";
 import StringRenderer from "./StringRenderer.vue";
 import ObjectRenderer from "./ObjectRenderer.vue";
 import ArrayRenderer from "./ArrayRenderer.vue";
 import MessageRenderer from "./MessageRenderer.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import type { PropType } from "vue";
+import { ref, type PropType } from "vue";
+import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 
 const PARENT_RATIO = 0.5;
 const MAX_TOTAL_HEIGHT = 300;
@@ -39,12 +39,7 @@ export default {
     FunctionButton,
     CloseIcon,
   },
-  mixins: [VueClickAway],
   props: {
-    initiallyExpanded: {
-      type: Boolean,
-      default: false,
-    },
     data: {
       type: null,
       default: null,
@@ -65,10 +60,15 @@ export default {
     },
   },
   emits: ["close"],
+  setup(_props, { emit }) {
+    const close = () => emit("close");
+    const wrapper = ref<null | HTMLElement>(null);
+    useClickOutside({ callback: close, targets: [wrapper] });
+    return { close, wrapper };
+  },
   data() {
     // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
     return {
-      expanded: this.initiallyExpanded,
       type:
         typeof this.renderer === "string" ? this.renderer : this.renderer.type,
       offsetParentHeight: this.target.offsetParent.clientHeight,
@@ -151,30 +151,13 @@ export default {
       );
     },
   },
-  methods: {
-    closeMenu() {
-      consola.trace("Closing popover menu");
-      this.$emit("close");
-      this.expanded = false;
-    },
-    openMenu() {
-      consola.trace("Opening popover menu");
-      this.expanded = true;
-    },
-  },
 };
 </script>
 
 <template>
-  <div
-    ref="wrapper"
-    v-click-away="closeMenu"
-    :class="['popover', { expanded }, { top: displayTop }]"
-    :style="style"
-    :expanded="expanded"
-  >
+  <div ref="wrapper" :class="['popover', { top: displayTop }]" :style="style">
     <div
-      v-show="expanded && show"
+      v-show="show"
       :style="contentStyle"
       :class="['content', type.toLowerCase()]"
     >
@@ -187,7 +170,7 @@ export default {
           />
         </slot>
       </div>
-      <FunctionButton class="closer" @click="closeMenu">
+      <FunctionButton class="closer" @click="close">
         <CloseIcon />
       </FunctionButton>
     </div>
@@ -199,48 +182,46 @@ export default {
   position: absolute;
   --popover-arrow-size: 15px;
 
-  &.expanded {
-    &::before {
-      position: absolute;
-      top: calc(100% + 7px);
-      right: 20px;
-      content: "";
-      z-index: var(--z-index-table-popover-before);
-      width: 0;
-      height: 0;
-      border-left: var(--popover-arrow-size) solid transparent;
-      border-right: var(--popover-arrow-size) solid transparent;
-      border-bottom: var(--popover-arrow-size) solid var(--knime-white);
-    }
+  &::before {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 20px;
+    content: "";
+    z-index: var(--z-index-table-popover-before);
+    width: 0;
+    height: 0;
+    border-left: var(--popover-arrow-size) solid transparent;
+    border-right: var(--popover-arrow-size) solid transparent;
+    border-bottom: var(--popover-arrow-size) solid var(--knime-white);
+  }
 
-    &::after {
-      position: absolute;
-      top: calc(100% + 6px);
-      right: 19px;
-      content: "";
-      z-index: var(--z-index-table-popover-after);
-      width: 0;
-      height: 0;
-      border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
-      border-right: calc(var(--popover-arrow-size) + 1px) solid transparent;
-      border-bottom: calc(var(--popover-arrow-size) + 1px) solid
-        var(--knime-silver-sand-semi);
-    }
+  &::after {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 19px;
+    content: "";
+    z-index: var(--z-index-table-popover-after);
+    width: 0;
+    height: 0;
+    border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
+    border-right: calc(var(--popover-arrow-size) + 1px) solid transparent;
+    border-bottom: calc(var(--popover-arrow-size) + 1px) solid
+      var(--knime-silver-sand-semi);
+  }
 
-    &.top::before {
-      bottom: calc(100% + 7px);
-      top: unset;
-      border-bottom: none;
-      border-top: var(--popover-arrow-size) solid var(--knime-white);
-    }
+  &.top::before {
+    bottom: calc(100% + 7px);
+    top: unset;
+    border-bottom: none;
+    border-top: var(--popover-arrow-size) solid var(--knime-white);
+  }
 
-    &.top::after {
-      bottom: calc(100% + 6px);
-      top: unset;
-      border-bottom: none;
-      border-top: calc(var(--popover-arrow-size) + 1px) solid
-        var(--knime-silver-sand-semi);
-    }
+  &.top::after {
+    bottom: calc(100% + 6px);
+    top: unset;
+    border-bottom: none;
+    border-top: calc(var(--popover-arrow-size) + 1px) solid
+      var(--knime-silver-sand-semi);
   }
 
   & .content {
