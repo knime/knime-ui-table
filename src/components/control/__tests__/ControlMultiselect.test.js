@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount, shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { ref, unref } from "vue";
 
 import ControlMultiselect from "../ControlMultiselect.vue";
@@ -227,11 +227,11 @@ describe("ControlMultiselect.vue", () => {
     });
 
     /**
-     * TODO: Reenable once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
+     * TODO: Use shallow mount in this test again once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
      */
-    it.skip("uses close function which emits @close", () => {
+    it("uses close function which emits @close", () => {
       useDropdownNavigation.mockClear();
-      const wrapper = shallowMount(ControlMultiselect, { props });
+      const wrapper = mount(ControlMultiselect, { props });
       const { close } = useDropdownNavigation.mock.calls[0][0];
       wrapper.vm.toggle();
 

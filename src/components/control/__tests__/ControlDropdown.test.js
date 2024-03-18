@@ -287,11 +287,11 @@ describe("ControlDropdown.vue", () => {
     });
 
     /**
-     * TODO: Reenable once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
+     * TODO: Use shallow mount in this test again once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
      */
-    it.skip("uses close function which emits @close", () => {
+    it("uses close function which emits @close", () => {
       useDropdownNavigation.mockClear();
-      const wrapper = shallowMount(ControlDropdown, { props });
+      const wrapper = mount(ControlDropdown, { props });
       const { close } = useDropdownNavigation.mock.calls[0][0];
       wrapper.find('[role="button"]').trigger("click");
 
@@ -379,10 +379,10 @@ describe("ControlDropdown.vue", () => {
     });
 
     /**
-     * TODO: Reenable once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
+     * TODO: Use shallow mount in this test again once this does not throw an error anymore due to https://github.com/vuejs/core/issues/10214
      */
-    it.skip("resets navigation on toggle", () => {
-      const wrapper = shallowMount(ControlDropdown, { props });
+    it("resets navigation on toggle", () => {
+      const wrapper = mount(ControlDropdown, { props });
       const button = wrapper.find('[role="button"]');
       button.trigger("click");
       expect(dropdownNavigation.resetNavigation).toHaveBeenCalled();
