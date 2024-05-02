@@ -1,7 +1,7 @@
 /* eslint-disable vitest/max-nested-describe */
 /* eslint-disable max-lines */
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import TableUI from "../TableUI.vue";
 import TableCore from "../TableCore.vue";
@@ -15,7 +15,6 @@ import SelectedCellsOverlay from "@/components/ui/CellSelectionOverlay.vue";
 import Row from "@/components/layout/Row.vue";
 import ActionButton from "@/components/ui/ActionButton.vue";
 import TablePopover from "@/components/popover/TablePopover.vue";
-import { RecycleScroller } from "vue-virtual-scroller";
 import { columnTypes } from "@/config/table.config";
 import useAvailableWidth, {
   useTotalWidth,
@@ -23,8 +22,9 @@ import useAvailableWidth, {
 import { ref, unref } from "vue";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import useCellSelection from "../composables/useCellSelection";
-
-const expectedNormalRowHeight = 41;
+import TableCoreGroups from "../TableCoreGroups.vue";
+import TableCoreVirtual from "../TableCoreVirtual.vue";
+import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 const bodyWidthResult = 123;
 const fitsInsideTotalWidthResult = true;
@@ -175,12 +175,13 @@ const getProps = ({
 describe("TableUI.vue", () => {
   let bodySizeEvent;
 
-  const fillRecycleScroller = async (wrapper) => {
-    const scroller = wrapper.findComponent(RecycleScroller);
-    Object.defineProperty(scroller.vm.$el, "clientHeight", {
+  const fillVirtualScroller = async (wrapper) => {
+    const scroller = wrapper.findComponent(TableCore).find("div");
+    Object.defineProperty(scroller.element, "clientHeight", {
       value: 1000,
     });
-    scroller.vm.updateVisibleItems();
+    wrapper.vm.tableCore.virtualScrollToPosition(1);
+    wrapper.vm.tableCore.virtualScrollToPosition(0);
     await wrapper.vm.$nextTick();
   };
 
@@ -254,7 +255,9 @@ describe("TableUI.vue", () => {
     const wrapper = mount(TableUI, {
       props,
       shallow,
-      global: { stubs: { TableCore, ...stubs } },
+      global: {
+        stubs: { TableCore, TableCoreGroups, TableCoreVirtual, ...stubs },
+      },
     });
 
     return { wrapper, props };
@@ -281,7 +284,6 @@ describe("TableUI.vue", () => {
   describe("configuration", () => {
     it("renders", () => {
       const { wrapper } = doMount();
-
       expect(wrapper.findComponent(TableUI).exists()).toBe(true);
       expect(wrapper.findComponent(TopControls).exists()).toBe(true);
       expect(wrapper.findComponent(BottomControls).exists()).toBe(true);
@@ -500,44 +502,32 @@ describe("TableUI.vue", () => {
           .findComponent(Group)
           .vm.$emit("groupSubMenuClick", { callback: callbackMock });
         expect(callbackMock).toHaveBeenCalledWith(
-          [
-            {
-              data: { a: "cellA", b: "cellB" },
-              id: "0",
-              index: 0,
-              size: expectedNormalRowHeight,
-              scrollIndex: 0,
-              isTop: true,
-            },
-          ],
+          [{ data: { a: "cellA", b: "cellB" } }],
           expect.anything(),
         );
       });
 
       it("collapses expanded submenu on scroll", async () => {
-        const { wrapper } = doMount();
-
+        const { wrapper } = doMount({ showSubMenuItems: true, shallow: false });
         const callbackMockRow = vi.fn();
         wrapper
           .findComponent(Row)
-          .vm.$emit("rowSubMenuExpand", callbackMockRow);
+          .findComponent(SubMenu)
+          .vm.$emit("toggle", {}, callbackMockRow);
         vi.advanceTimersToNextTimer();
         expect(callbackMockRow).toHaveBeenCalledTimes(0);
-        wrapper
-          .find(".vertical-scroll")
-          .element.dispatchEvent(new Event("scroll"));
+        wrapper.findComponent(TableCoreGroups).trigger("scroll");
         await wrapper.vm.$nextTick();
         expect(callbackMockRow).toHaveBeenCalledTimes(1);
 
         const callbackMockGroup = vi.fn();
         wrapper
           .findComponent(Group)
-          .vm.$emit("groupSubMenuExpand", callbackMockGroup);
+          .findComponent(SubMenu)
+          .vm.$emit("toggle", {}, callbackMockGroup);
         vi.advanceTimersToNextTimer();
         expect(callbackMockGroup).toHaveBeenCalledTimes(0);
-        wrapper
-          .find(".vertical-scroll")
-          .element.dispatchEvent(new Event("scroll"));
+        wrapper.findComponent(TableCoreGroups).trigger("scroll");
         expect(callbackMockRow).toHaveBeenCalledTimes(1);
         expect(callbackMockGroup).toHaveBeenCalledTimes(1);
       });
@@ -620,55 +610,17 @@ describe("TableUI.vue", () => {
       });
 
       describe("row resize with virtual scrolling enabled", () => {
-        describe("single row resize", () => {
-          it("handles rowResize event for single row", async () => {
-            const { wrapper } = doMount({
-              enableVirtualScrolling: true,
-              shallow: false,
-            });
-            const resizeRowSpy = vi.spyOn(wrapper.vm, "onResizeRow");
-            await fillRecycleScroller(wrapper);
-            const row = wrapper.findComponent(Row);
-            expect(row.exists()).toBeTruthy();
-            row.vm.$emit("resizeRow", 123);
-            expect(resizeRowSpy).toHaveBeenCalledWith(123, 0);
+        it("handles rowResize event for single row", async () => {
+          const { wrapper } = doMount({
+            enableVirtualScrolling: true,
+            shallow: false,
           });
-
-          it("applies a transform for below rows if virtual scrolling is enabled", async () => {
-            const { wrapper } = doMount({
-              enableVirtualScrolling: true,
-              shallow: false,
-              data: [
-                [
-                  { a: "g1r1a", b: "g1r1b" },
-                  { a: "g1r2a", b: "g1r2b" },
-                ],
-              ],
-              bottomRows: [{ a: "br1a", b: "br1b" }],
-            });
-            await fillRecycleScroller(wrapper);
-            const rows = wrapper.findAllComponents(Row);
-            rows[0].vm.$emit("resizeRow", 123);
-            await wrapper.vm.$nextTick();
-            expect(rows[1].attributes().style).toContain(
-              "transform: translateY(123px);",
-            );
-          });
-
-          it("does not apply a transform for below rows if virtual scrolling is disabled", async () => {
-            const { wrapper } = doMount({
-              data: [
-                [
-                  { a: "g1r1a", b: "g1r1b" },
-                  { a: "g1r2a", b: "g1r2b" },
-                ],
-              ],
-            });
-            const rows = wrapper.findAllComponents(Row);
-            rows[0].vm.$emit("resizeRow", 123);
-            await wrapper.vm.$nextTick();
-            expect(rows[1].attributes().style).toBeUndefined();
-          });
+          const resizeRowSpy = vi.spyOn(wrapper.vm, "onResizeRow");
+          await fillVirtualScroller(wrapper);
+          const row = wrapper.findComponent(Row);
+          expect(row.exists()).toBeTruthy();
+          row.vm.$emit("resizeRow", 123);
+          expect(resizeRowSpy).toHaveBeenCalledWith(123, 0);
         });
 
         describe("resize all rows", () => {
@@ -678,7 +630,7 @@ describe("TableUI.vue", () => {
               shallow: false,
             });
             const resizeRowSpy = vi.spyOn(wrapper.vm, "onResizeAllRows");
-            await fillRecycleScroller(wrapper);
+            await fillVirtualScroller(wrapper);
             const row = wrapper.findComponent(Row);
             row.vm.$emit("resizeAllRows", 123, row);
             expect(resizeRowSpy).toHaveBeenCalled();
@@ -686,16 +638,15 @@ describe("TableUI.vue", () => {
 
           it("onResizeAllRows updates all row sizes", () => {
             vi.useFakeTimers();
-            const scrollToPosition = vi.fn();
+            const virtualScrollToPosition = vi.fn();
             const start = 100;
             const stubs = {
-              RecycleScroller: {
+              TableCore: {
                 template: "<span/>",
                 methods: {
-                  getScroll: () => ({
-                    start,
-                  }),
-                  scrollToPosition,
+                  getVirtualScrollStart: () => start,
+                  virtualScrollToPosition,
+                  getVirtualBody: () => ({}),
                 },
               },
             };
@@ -729,7 +680,7 @@ describe("TableUI.vue", () => {
             vi.runAllTimers();
             expect(wrapper.vm.currentResizedScrollIndex).toBeNull();
             const offset = scrollIndex * oldSize - start;
-            expect(scrollToPosition).toHaveBeenCalledWith(
+            expect(virtualScrollToPosition).toHaveBeenCalledWith(
               scrollIndex * newSize - offset,
             );
             vi.useRealTimers();
@@ -839,7 +790,7 @@ describe("TableUI.vue", () => {
       await wrapper.vm.$nextTick();
       expect(unref(providedWrapper)).toBe(wrapper.find("table").wrapperElement);
       expect(unref(scrolledElement)).toStrictEqual(
-        wrapper.find(".vertical-scroll").element,
+        wrapper.findComponent(TableCoreGroups).element,
       );
       expect(unref(totalWidth)).toBe(totalWidthMock);
       emitAvailableWidth(123);
@@ -969,7 +920,7 @@ describe("TableUI.vue", () => {
       ] = useAvailableWidth.mock.calls[0];
 
       expect(unref(scrolledElement)).toBe(
-        wrapper.findComponent(RecycleScroller).element,
+        wrapper.findComponent(TableCore).find("div").element,
       );
     });
   });
@@ -1018,13 +969,13 @@ describe("TableUI.vue", () => {
       }));
     });
 
-    it("renders dynamic scroller when virtual scrolling is enabled", () => {
+    it("renders virtual scroller when enabled", () => {
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
       });
 
-      expect(wrapper.findComponent(RecycleScroller).exists()).toBeTruthy();
+      expect(wrapper.findComponent(TableCoreVirtual).exists()).toBeTruthy();
     });
 
     it("exposes method to scroll to the top of the recycle scroller", () => {
@@ -1032,30 +983,40 @@ describe("TableUI.vue", () => {
         enableVirtualScrolling: true,
         shallow: false,
       });
-
-      const scrollToPositionSpy = vi.spyOn(
-        wrapper.findComponent(RecycleScroller).vm,
-        "scrollToPosition",
-      );
+      wrapper.vm.tableCore.virtualScrollToPosition(1);
+      expect(wrapper.vm.tableCore.getVirtualScrollStart()).toBe(1);
 
       wrapper.vm.refreshScroller();
-
-      expect(scrollToPositionSpy).toHaveBeenCalledWith(0);
+      expect(wrapper.vm.tableCore.getVirtualScrollStart()).toBe(0);
     });
 
-    it("emits lazyloading event onScroll", () => {
+    it("emits lazyloading event onScroll", async () => {
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
+        data: [
+          Array.from({ length: 1000 }, (_v, i) => ({
+            a: `a_${i}`,
+            b: `b_${i}`,
+          })),
+        ],
       });
-
-      wrapper.findComponent(RecycleScroller).vm.$emit("update", 0, 0);
-      expect(wrapper.emitted().lazyload).toBeFalsy();
-      wrapper.findComponent(RecycleScroller).vm.$emit("update", 0, 10);
-      expect(wrapper.emitted().lazyload).toBeTruthy();
+      expect(wrapper.emitted().lazyload[0][0]).toStrictEqual({
+        direction: 1,
+        startIndex: 0,
+        endIndex: 13,
+      });
+      wrapper.vm.tableCore.virtualScrollToPosition(1000);
+      await flushPromises();
+      await flushPromises();
+      expect(wrapper.emitted().lazyload[1][0]).toStrictEqual({
+        direction: 1,
+        startIndex: 12,
+        endIndex: 37,
+      });
     });
 
-    it("supplies data with ids and sizes", () => {
+    it("supplies scroll data", () => {
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
@@ -1064,11 +1025,6 @@ describe("TableUI.vue", () => {
         [
           {
             data: { a: "cellA", b: "cellB" },
-            id: "0",
-            index: 0,
-            size: expectedNormalRowHeight,
-            scrollIndex: 0,
-            isTop: true,
           },
         ],
       ]);
@@ -1084,28 +1040,13 @@ describe("TableUI.vue", () => {
         [
           {
             data: { a: "cellA", b: "cellB" },
-            id: "0",
-            index: 0,
-            size: expectedNormalRowHeight,
-            scrollIndex: 0,
-            isTop: true,
           },
-          { dots: true, id: "dots", scrollIndex: 1, size: 41 },
+          { dots: true },
           {
             data: ["foo"],
-            id: "2",
-            index: 0,
-            size: expectedNormalRowHeight,
-            scrollIndex: 2,
-            isTop: false,
           },
           {
             data: ["bar"],
-            id: "3",
-            index: 1,
-            size: expectedNormalRowHeight,
-            scrollIndex: 3,
-            isTop: false,
           },
         ],
       ]);
@@ -1123,40 +1064,9 @@ describe("TableUI.vue", () => {
         [
           {
             data: ["foo"],
-            id: "2",
-            index: 0,
-            size: expectedNormalRowHeight,
-            scrollIndex: 2,
-            isTop: false,
           },
           {
             data: ["bar"],
-            id: "3",
-            index: 1,
-            size: expectedNormalRowHeight,
-            scrollIndex: 3,
-            isTop: false,
-          },
-        ],
-      ]);
-    });
-
-    it("shifts data by number of rows above", () => {
-      const numRowsAbove = 3;
-      const { wrapper } = doMount({
-        enableVirtualScrolling: true,
-        numRowsAbove,
-        shallow: false,
-      });
-      expect(wrapper.vm.scrollData).toStrictEqual([
-        [
-          {
-            data: { a: "cellA", b: "cellB" },
-            id: `${numRowsAbove}`,
-            index: 0,
-            scrollIndex: numRowsAbove,
-            size: expectedNormalRowHeight,
-            isTop: true,
           },
         ],
       ]);
@@ -1165,6 +1075,7 @@ describe("TableUI.vue", () => {
     it("computes selection for top and bottom rows", async () => {
       const numRowsAbove = 3;
       const numRowsBelow = 3;
+
       const { wrapper } = doMount({
         enableVirtualScrolling: true,
         shallow: false,
@@ -1185,24 +1096,16 @@ describe("TableUI.vue", () => {
         ],
       });
 
-      await fillRecycleScroller(wrapper);
+      await fillVirtualScroller(wrapper);
 
       const rows = wrapper.findAllComponents(Row);
-      // Above rows
-      expect(rows[0].props().isSelected).toBe(false);
-      expect(rows[1].props().isSelected).toBe(false);
-      expect(rows[2].props().isSelected).toBe(false);
       // Top rows
-      expect(rows[3].props().isSelected).toBe(true);
-      expect(rows[4].props().isSelected).toBe(false);
-      expect(rows[5].props().isSelected).toBe(true);
+      expect(rows[0].props().isSelected).toBe(true);
+      expect(rows[1].props().isSelected).toBe(false);
+      expect(rows[2].props().isSelected).toBe(true);
       // Bottom rows
-      expect(rows[6].props().isSelected).toBe(true);
-      expect(rows[7].props().isSelected).toBe(true);
-      // Below rows
-      expect(rows[8].props().isSelected).toBe(false);
-      expect(rows[9].props().isSelected).toBe(false);
-      expect(rows[10].props().isSelected).toBe(false);
+      expect(rows[3].props().isSelected).toBe(true);
+      expect(rows[4].props().isSelected).toBe(true);
     });
 
     it("selects nothing when selection is not shown", () => {
@@ -1214,74 +1117,6 @@ describe("TableUI.vue", () => {
       expect(selectionMap(0, true)).toBe(false);
       expect(selectionMap(1, true)).toBe(false);
       expect(selectionMap(2, true)).toBe(false);
-    });
-
-    describe("supports expanding and collapsing rows", () => {
-      const rowWithoutSize = {
-        data: { a: "cellA", b: "cellB" },
-        id: "0",
-        index: 0,
-        scrollIndex: 0,
-        isTop: true,
-      };
-
-      it("changes the size of the rows if they are expanded", async () => {
-        const { wrapper } = doMount({
-          enableVirtualScrolling: true,
-          shallow: false,
-          attachTo: document.body,
-        });
-        // simulate the expanded content
-        const expandedContentHeight = 20;
-        const scroller = wrapper.findComponent(RecycleScroller);
-        Object.defineProperty(scroller.vm.$el, "clientHeight", { value: 1000 });
-        scroller.vm.updateVisibleItems();
-        await wrapper.vm.$nextTick();
-        const firstRow = wrapper.vm.$refs["row-0"];
-        firstRow.onRowExpand();
-        await wrapper.vm.$nextTick();
-        Object.defineProperty(firstRow.$el.children[1], "clientHeight", {
-          value: expandedContentHeight,
-        });
-
-        expect(wrapper.vm.currentExpanded).toContain(0);
-
-        expect(wrapper.vm.scrollData).toStrictEqual([
-          [
-            {
-              ...rowWithoutSize,
-              size: expectedNormalRowHeight + expandedContentHeight,
-            },
-          ],
-        ]);
-        firstRow.onRowExpand();
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.currentExpanded).not.toContain(0);
-        expect(wrapper.vm.scrollData).toStrictEqual([
-          [{ ...rowWithoutSize, size: expectedNormalRowHeight }],
-        ]);
-      });
-
-      it("calculates the height with virtual elements", () => {
-        const { wrapper } = doMount({
-          enableVirtualScrolling: true,
-          shallow: false,
-        });
-        const currentExpanded = wrapper.vm.currentExpanded;
-        wrapper.vm.onRowExpand(false, 0);
-        expect(wrapper.vm.currentExpanded).toBe(currentExpanded);
-      });
-
-      it("collapses unused rows on scroll", () => {
-        const { wrapper } = doMount({
-          enableVirtualScrolling: true,
-          shallow: false,
-        });
-        wrapper.vm.onRowExpand(true, 0);
-        expect(wrapper.vm.currentExpanded).toContain(0);
-        wrapper.vm.onScroll(1, 2);
-        expect(wrapper.vm.currentExpanded).not.toContain(0);
-      });
     });
   });
 
@@ -1553,7 +1388,7 @@ describe("TableUI.vue", () => {
 
     it("computes drag handle height", () => {
       const { wrapper } = doMount();
-      setHeight(wrapper.find(".vertical-scroll").element, 100);
+      setHeight(wrapper.findComponent(TableCoreGroups).element, 100);
       expect(wrapper.findComponent(Header).props().getDragHandleHeight()).toBe(
         100,
       );
@@ -1570,21 +1405,15 @@ describe("TableUI.vue", () => {
       });
 
       const setHeaderHeight = (value) => {
-        setHeight(
-          wrapper.find(".vue-recycle-scroller__slot").element.children[0],
-          value,
-        );
+        setHeight(wrapper.find(".header-container").element, value);
       };
 
       const setBodyHeight = (value) => {
-        setHeight(
-          wrapper.findComponent(RecycleScroller).find("tbody").element,
-          value,
-        );
+        setHeight(wrapper.find("tbody").element, value);
       };
 
       const setTotalScrollerHeight = (value) => {
-        setHeight(wrapper.findComponent(RecycleScroller).element, value);
+        setHeight(wrapper.findComponent(TableCore).find("div").element, value);
       };
 
       it("computes drag handle height from header and body for non-scrollable RecycleScroller", () => {

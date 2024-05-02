@@ -42,14 +42,17 @@ import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_PADDING_TOP_BOTTOM,
   DEFAULT_ROW_PADDING_TOP_BOTTOM,
+  ROW_MARGIN_BOTTOM,
 } from "@/util/constants";
 import { getPropertiesFromColumns, unpackObjectRepresentation } from "@/util";
 import Cell from "./Cell.vue";
 import throttle from "raf-throttle";
 import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
-import { ref, computed, watch, onMounted, nextTick, type Ref } from "vue";
+import { ref, computed, watch, type Ref, toRef } from "vue";
 import type TableConfig from "@/types/TableConfig";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
 
 interface RowProps {
   rowData?: { subMenuItemsForRow?: MenuItem[] };
@@ -59,7 +62,6 @@ interface RowProps {
   rowConfig?: RowConfig;
   rowHeight?: number | "dynamic";
   isSelected?: boolean;
-  marginBottom?: number;
   minRowHeight?: number;
   showDragHandle?: boolean;
   selectCellsOnMove?: boolean;
@@ -70,19 +72,20 @@ const props = withDefaults(defineProps<RowProps>(), {
   rowConfig: () => ({}),
   row: () => [],
   rowHeight: DEFAULT_ROW_HEIGHT,
-  marginBottom: 0,
   minRowHeight: 0,
   isSelected: false,
   selectCellsOnMove: false,
   showDragHandle: false,
 });
 
+const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
+  toRef(props, "row"),
+);
+
 const emit = defineEmits<{
   rowSelect: [value: any];
   rowInput: [event: any];
   rowSubMenuClick: [item: any];
-  rowSubMenuExpand: [callback: () => void];
-  rowExpand: [expanded: boolean];
   resizeAllRows: [size: number, rowElement: HTMLElement];
   resizeRow: [size: number];
   cellSelect: [index: number];
@@ -143,14 +146,8 @@ const filteredSubMenuItems = computed(() => {
     ? props.rowData?.subMenuItemsForRow
     : props.tableConfig.subMenuItems;
 });
-
-onMounted(() => {
-  // Reverts emitted event if component is not ready
-  emit("rowExpand", showContent.value);
-});
 const onRowExpand = () => {
   showContent.value = !showContent.value;
-  nextTick(() => emit("rowExpand", showContent.value));
 };
 const onSelect = (value: any) => {
   emit("rowSelect", value);
@@ -175,9 +172,9 @@ const onSubMenuItemClick = (event: Event, clickedItem: any) => {
   }
   return true;
 };
-const onSubMenuToggle = (_event: Event, callback: () => void) => {
-  emit("rowSubMenuExpand", callback);
-};
+const registerExpandedSubMenu = injectRegisterExpandedSubMenu();
+const onSubMenuToggle = (_event: Event, callback: () => void) =>
+  registerExpandedSubMenu(callback);
 const isClickableByConfig = (ind: number) => {
   return Boolean(props.tableConfig.showPopovers) && clickableColumns.value[ind];
 };
@@ -252,9 +249,15 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="rowElement">
+  <div
+    :style="{
+      ...rowHeightStyle,
+      marginBottom: `${ROW_MARGIN_BOTTOM}px`,
+    }"
+  >
     <tr
       v-if="row.length > 0"
+      ref="rowElement"
       :class="[
         'row',
         {
@@ -263,8 +266,7 @@ defineExpose({
         },
       ]"
       :style="{
-        ...rowHeightStyle,
-        marginBottom: `${marginBottom}px`,
+        ...rowStyles,
         ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       }"
     >
@@ -283,14 +285,14 @@ defineExpose({
         />
       </td>
       <Cell
-        v-for="(data, ind) in row"
+        v-for="[cell, ind] of indexedRow"
         :ref="
           (el) => {
             cells[ind] = el;
           }
         "
         :key="ind"
-        :cell-data="data"
+        :cell-data="cell"
         :select-on-move="selectCellsOnMove"
         :is-slotted="Boolean(slottedColumns[ind])"
         :no-padding="noPadding[ind]"
@@ -299,7 +301,7 @@ defineExpose({
         :is-clickable-by-config="isClickableByConfig(ind)"
         :formatter="formatters[ind]"
         :default-top-bottom-padding="paddingTopBottom"
-        @click="onCellClick($event, ind, data)"
+        @click="onCellClick($event, ind, cell)"
         @select="onCellSelect({ ...$event, ind })"
         @input="onInput"
       >
@@ -307,7 +309,7 @@ defineExpose({
           <slot
             :name="getCellContentSlotName(columnKeys, ind)"
             :row="row"
-            :cell="unpackObjectRepresentation(data)"
+            :cell="unpackObjectRepresentation(cell)"
             :height="rowHeight"
             :width="width"
             :ind="ind"
@@ -333,23 +335,23 @@ defineExpose({
     <tr v-else class="row empty-row" :style="rowHeightStyle">
       <td>-</td>
     </tr>
-    <div
-      v-if="showDragHandle && !selectCellsOnMove"
-      class="row-drag-handle"
-      @pointerdown.passive="onPointerDown"
-      @pointerup.passive="onPointerUp"
-      @pointermove="onPointerMove"
-      @lostpointercapture="onLostPointerCapture"
-    />
-    <tr v-if="showContent" class="collapser-row">
-      <td class="expandable-content">
-        <FunctionButton class="collapser-button" @click="onRowExpand">
-          <CloseIcon />
-        </FunctionButton>
-        <slot name="rowCollapserContent" />
-      </td>
-    </tr>
   </div>
+  <div
+    v-if="showDragHandle && !selectCellsOnMove"
+    class="row-drag-handle"
+    @pointerdown.passive="onPointerDown"
+    @pointerup.passive="onPointerUp"
+    @pointermove="onPointerMove"
+    @lostpointercapture="onLostPointerCapture"
+  />
+  <tr v-if="showContent" class="collapser-row">
+    <td class="expandable-content">
+      <FunctionButton class="collapser-button" @click="onRowExpand">
+        <CloseIcon />
+      </FunctionButton>
+      <slot name="rowCollapserContent" />
+    </td>
+  </tr>
 </template>
 
 <style lang="postcss" scoped>
@@ -357,17 +359,9 @@ tr {
   display: flex;
 }
 
-.row-drag-handle {
-  height: 5px;
-  opacity: 0;
-  bottom: 5px;
-  margin-bottom: -5px;
-  cursor: row-resize;
-  position: relative;
-}
-
 tr.row {
   background-color: var(--knime-white);
+  height: 100%;
 
   &.empty-row {
     padding-left: 20px;
@@ -451,6 +445,15 @@ tr.row {
   & a {
     outline: none;
   }
+}
+
+.row-drag-handle {
+  height: 5px;
+  opacity: 0;
+  bottom: 5px;
+  margin-bottom: -5px;
+  cursor: row-resize;
+  position: relative;
 }
 
 tr.collapser-row {

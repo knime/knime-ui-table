@@ -8,7 +8,6 @@ import Row from "./layout/Row.vue";
 import ActionButton from "./ui/ActionButton.vue";
 import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
-import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import { useTotalWidth } from "./composables/useAvailableWidth";
 import useCellSelection, {
   type Rect,
@@ -35,21 +34,11 @@ import type FilterConfig from "@/types/FilterConfig";
 
 export type DataItem =
   | {
-      id?: string;
       data: any;
-      size: number;
-      index?: number;
-      scrollIndex?: number;
-      isTop?: boolean;
-      isEmpty?: boolean;
       dots?: false;
     }
   | {
-      id: "dots";
-      size: number;
-      scrollIndex: number;
       dots: true;
-      data?: any;
     };
 
 /**
@@ -211,7 +200,7 @@ export default {
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
-    const tableCore: Ref<typeof TableCore | null> = ref(null);
+    const tableCore: Ref<InstanceType<typeof TableCore> | null> = ref(null);
     const selectionOverlay: Ref<any> = ref([]);
     const totalWidth = useTotalWidth(wrapper);
     const enableCellSelection = computed(() =>
@@ -258,8 +247,6 @@ export default {
       newVal: null,
       resizeCount: 0,
       updatedBefore: false,
-      currentExpanded: new Set(),
-      rowMarginBottom: ROW_MARGIN_BOTTOM,
       wrapperWidth: 0,
       // used for temporarily hiding the vertical scrollbar while changing column sizes to avoid flickering
       columnResizeActive: false,
@@ -370,69 +357,35 @@ export default {
       if (this.data === null || this.data.length === 0) {
         return 0;
       }
-      // @ts-ignore
       return this.data[0].length;
+    },
+    numPlaceholderRows() {
+      return this.topDataLength ? 1 : 0;
     },
     scrollData() {
       if (this.data === null || this.data.length === 0) {
         return [];
       }
-      const data: DataItem[][] = this.data?.map((groupData) =>
-        groupData.map((rowData, index) => {
-          const id = (index + this.numRowsAbove).toString();
-          return {
-            id,
-            data: rowData,
-            size: this.scrollerItemSize,
-            index,
-            scrollIndex: index + this.numRowsAbove,
-            isTop: true,
-          };
-        }),
+      const dataItems: DataItem[][] = this.data?.map((groupData) =>
+        groupData.map((data) => ({ data })),
       );
-      if (this.enableVirtualScrolling) {
-        if (this.bottomData.length > 0) {
-          let hasPlaceholder = this.topDataLength > 0;
-          if (hasPlaceholder) {
-            data[0].push({
-              id: "dots",
-              size: this.scrollerItemSize,
-              scrollIndex: this.numRowsAbove + this.topDataLength,
-              dots: true,
-            });
-          }
-          this.bottomData.forEach((rowData, index) => {
-            const scrollIndex =
-              index +
-              this.numRowsAbove +
-              this.topDataLength +
-              (hasPlaceholder ? 1 : 0);
-            const id = scrollIndex.toString();
-            data[0].push({
-              id,
-              data: rowData,
-              size: this.scrollerItemSize,
-              index,
-              scrollIndex,
-              isTop: false,
-            });
-          });
+      if (this.enableVirtualScrolling && this.bottomData.length > 0) {
+        if (this.numPlaceholderRows) {
+          dataItems[0].push({ dots: true });
         }
+        dataItems[0].push(...this.bottomData.map((data) => ({ data })));
       }
-      this.currentExpanded.forEach((scrollIndex: any) => {
-        const contentHeight = this.getContentHeight(scrollIndex);
-        data[0][scrollIndex - this.numRowsAbove].size += contentHeight;
-      });
-      return data;
+      return dataItems;
     },
     currentSelectionMap() {
       if (!this.tableConfig.showSelection) {
         return () => false;
       }
-      return (rowInd: number, groupInd: number, isTop: boolean) => {
+      return (rowInd: number, groupInd: number) => {
+        const { isTop, indexInInput } = this.resolveRowIndex(rowInd);
         return isTop
-          ? this.currentSelection[groupInd][rowInd]
-          : this.currentBottomSelection[rowInd];
+          ? this.currentSelection[groupInd][indexInInput]
+          : this.currentBottomSelection[indexInInput];
       };
     },
     enableRowResize() {
@@ -472,14 +425,30 @@ export default {
   },
   methods: {
     // Utilities
-    getGroupName(ind: number) {
-      return this.tableConfig.groupByConfig?.currentGroupValues?.[ind] || "";
-    },
     refreshScroller() {
-      this.tableCore?.refreshScroller();
+      this.tableCore?.virtualScrollToPosition(0);
     },
     resetRowHeight() {
       this.resizedRowHeight = null;
+    },
+    resolveRowIndex(index: number) {
+      if (index < this.numRowsAbove) {
+        throw Error(`Accessing invalid row index: ${index}`);
+      }
+      if (index < this.topDataLength + this.numRowsAbove) {
+        return {
+          isTop: true,
+          indexInInput: index - this.numRowsAbove,
+        };
+      }
+      return {
+        isTop: false,
+        indexInInput:
+          index -
+          this.numRowsAbove -
+          this.numPlaceholderRows -
+          this.topDataLength,
+      };
     },
     // Event handling
     onScroll(startIndex: number, endIndex: number) {
@@ -491,22 +460,7 @@ export default {
       }
       const direction: 1 | -1 = this.lastScrollIndex < endIndex ? 1 : -1;
       this.lastScrollIndex = endIndex;
-      this.collapseAllUnusedRows(startIndex, endIndex);
       this.$emit("lazyload", { direction, startIndex, endIndex });
-    },
-    collapseAllUnusedRows(startIndex: number, endIndex: number) {
-      let needsCollapse = false;
-      const usedExpanded = new Set();
-      this.currentExpanded.forEach((i: any) => {
-        if (i < endIndex && i >= startIndex) {
-          usedExpanded.add(i);
-        } else {
-          needsCollapse = true;
-        }
-      });
-      if (needsCollapse) {
-        this.currentExpanded = usedExpanded;
-      }
     },
     onTimeFilterUpdate(newTimeFilter: any) {
       consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
@@ -574,48 +528,46 @@ export default {
       );
       this.$emit("headerSubMenuItemSelection", item, colInd);
     },
-    onRowSelect(
-      selected: boolean,
-      rowInd: number,
-      groupInd: number,
-      isTop: boolean,
-    ) {
+    onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
+      const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       consola.debug(
-        `TableUI emitting: rowSelect ${selected} ${rowInd} ${groupInd} ${isTop}`,
+        `TableUI emitting: rowSelect ${selected} ${indexInInput} ${groupInd} ${isTop}`,
       );
-      this.$emit("rowSelect", selected, rowInd, groupInd, isTop);
+      this.$emit("rowSelect", selected, indexInInput, groupInd, isTop);
     },
-    onRowExpand(expanded: boolean, scrollIndex: number) {
-      // We need to change the reference of this.currentExpanded so that this.scrollerData gets recomputed.
-      if (expanded) {
-        this.currentExpanded.add(scrollIndex);
-        this.currentExpanded = new Set(this.currentExpanded);
-      } else {
-        const hasDeleted = this.currentExpanded.delete(scrollIndex);
-        if (hasDeleted) {
-          this.currentExpanded = new Set(this.currentExpanded);
-        }
-      }
+    onCellSelect(cellInd: number, rowInd: number, groupInd: null | number) {
+      const { isTop, indexInInput } = this.resolveRowIndex(rowInd);
+      this.selectCell(
+        { x: cellInd, y: indexInInput },
+        groupInd === null ? isTop : groupInd,
+      );
+    },
+    onExpandCellSelect(
+      cellInd: number,
+      rowInd: number,
+      groupInd: null | number,
+    ) {
+      const { isTop, indexInInput } = this.resolveRowIndex(rowInd);
+      this.expandCellSelection(
+        { x: cellInd, y: indexInInput },
+        groupInd === null ? isTop : groupInd,
+      );
     },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
       this.currentRowSizeDelta = rowSizeDelta;
       this.currentResizedScrollIndex = scrollIndex;
     },
-    onResizeAllRows(
-      currentSize: number,
-      row: HTMLElement,
-      scrollIndex: number,
-    ) {
+    onResizeAllRows(currentSize: number, row: HTMLElement, rowInd: number) {
       if (this.currentRowHeight === "dynamic") {
         return;
       }
       this.currentRowSizeDelta = 0;
       if (this.enableVirtualScrolling) {
-        const previousScrollTop = this.tableCore?.getScrollStart();
-        const heightAboveCurrentRow = scrollIndex * this.currentRowHeight;
+        const previousScrollTop = this.tableCore?.getVirtualScrollStart()!;
+        const heightAboveCurrentRow = rowInd * this.currentRowHeight;
         const offset = heightAboveCurrentRow - previousScrollTop;
         this.resizedRowHeight = currentSize;
-        const scrollPosition = scrollIndex * this.currentRowHeight - offset;
+        const scrollPosition = rowInd * this.currentRowHeight - offset;
         this.keepScrollerPositionOnRowResize(scrollPosition);
       } else {
         this.resizedRowHeight = currentSize;
@@ -628,12 +580,25 @@ export default {
           // scroll was temporarily disabled to avoid sending scroll events during resize
           this.currentResizedScrollIndex = null;
         }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
-        this.tableCore?.scrollToPosition(scrollPosition);
+        this.tableCore?.virtualScrollToPosition(scrollPosition);
         resizeObserver.disconnect();
       });
-      resizeObserver.observe(this.tableCore?.getRecycleScrollerWrapper());
+      resizeObserver.observe(this.tableCore?.getVirtualBody()!);
     },
-    onRowInput(event: any) {
+    onRowInput(
+      _event: any,
+      rowInd: number,
+      groupInd: number,
+      row: { id: string },
+    ) {
+      const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
+      const event = {
+        ..._event,
+        rowInd: indexInInput,
+        id: row.id,
+        groupInd,
+        isTop,
+      };
       consola.debug(`TableUI emitting: tableInput ${event}`);
       this.$emit("tableInput", event);
       this.openPopover(event);
@@ -680,14 +645,6 @@ export default {
     onColumnResizeEnd() {
       this.columnResizeActive = false;
       this.$emit("columnResizeEnd");
-    },
-    // Find the additional height added by expanded content of a row
-    getContentHeight(index: number) {
-      // The second child of the dom element referenced by the row is the expanded content.
-      const contentHeight =
-        // @ts-ignore
-        this.$refs[`row-${index}`]?.$el.children[1]?.clientHeight;
-      return contentHeight || 0;
     },
     getCellContentSlotName(columnKeys: any, columnId: any) {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
@@ -757,15 +714,10 @@ export default {
       :total-width="totalWidth"
       :column-sizes="columnSizes"
       :column-resize="{ active: columnResizeActive }"
-      :row-resize="
-        currentResizedScrollIndex === null || currentRowSizeDelta == null
-          ? { active: false }
-          : { active: true, currentResizedScrollIndex, currentRowSizeDelta }
-      "
       :table-config="tableConfig"
       :current-rect-id="currentRectId"
-      :recycle-scroller-config="{
-        scrollerItemSize,
+      :scroll-config="{
+        itemSize: scrollerItemSize,
         numRowsAbove,
         numRowsBelow,
       }"
@@ -774,73 +726,30 @@ export default {
       @scroller-update="onScroll"
       @update:available-width="$emit('update:available-width', $event)"
     >
-      <template
-        #row="{
-          row,
-          groupInd = null,
-          rowInd,
-          scrollIndex,
-          isTop,
-          isEmpty,
-          transform,
-          registerExpandedSubMenu,
-        }"
-      >
+      <template #row="{ row, groupInd = null, rowInd }">
         <Row
-          :key="row.id"
           :ref="getRowRefName(groupInd, rowInd)"
           :row-data="row"
           :row="getRowData(row)"
-          :table-config="
-            isEmpty
-              ? {
-                  showCollapser: false,
-                  showSelection: false,
-                  subMenuItems: [],
-                  showPopovers: false,
-                }
-              : tableConfig
-          "
-          :show-drag-handle="enableRowResize && !isEmpty"
+          :table-config="tableConfig"
+          :show-drag-handle="enableRowResize"
           :column-configs="dataConfig.columnConfigs"
           :row-config="dataConfig.rowConfig"
           :row-height="currentRowHeight"
           :min-row-height="minRowHeight"
-          :margin-bottom="rowMarginBottom"
-          :is-selected="currentSelectionMap(rowInd, groupInd || 0, isTop)"
+          :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
           :select-cells-on-move="selectCellsOnMove.state"
-          :style="transform === null ? {} : { transform }"
-          @row-select="onRowSelect($event, rowInd, groupInd || 0, isTop)"
-          @cell-select="
-            (cellInd) =>
-              selectCell(
-                { x: cellInd, y: scrollIndex },
-                groupInd === null ? isTop : groupInd,
-              )
-          "
+          @row-select="onRowSelect($event, rowInd, groupInd || 0)"
+          @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
           @expand-cell-select="
-            (cellInd) =>
-              expandCellSelection(
-                { x: cellInd, y: scrollIndex },
-                groupInd === null ? isTop : groupInd,
-              )
+            (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
           "
-          @row-expand="onRowExpand($event, scrollIndex)"
-          @row-input="
-            onRowInput({
-              ...$event,
-              rowInd,
-              id: row.id,
-              groupInd: 0,
-              isTop,
-            })
-          "
-          @row-sub-menu-expand="registerExpandedSubMenu"
+          @row-input="(event) => onRowInput(event, rowInd, groupInd ?? 0, row)"
           @row-sub-menu-click="onRowSubMenuClick($event, row)"
           @resize-all-rows="
-            (currentSize, row) => onResizeAllRows(currentSize, row, scrollIndex)
+            (currentSize, row) => onResizeAllRows(currentSize, row, rowInd)
           "
-          @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, scrollIndex)"
+          @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, rowInd)"
         >
           <!-- Vue requires named slots on "custom" elements (i.e. template). -->
           <!-- eslint-disable vue/valid-v-slot -->
@@ -849,12 +758,18 @@ export default {
             #[getCellContentSlotName(columnKeys,colInd)]="cellData"
             :key="rowInd + '_' + colInd"
           >
+            <!-- 
+              TODO: UIEXT-1753:
+              not yet working properly with empty and bottom rows, 
+              since rowInd is the actual scroll index and not the input in the input data
+              in this case
+             -->
             <slot
               :name="`cellContent-${columnKeys[colInd].toString()}`"
               :data="{
                 ...cellData,
                 key: columnKeys[colInd],
-                rowInd: rowInd,
+                rowInd,
                 colInd,
               }"
             />

@@ -16,8 +16,11 @@ import {
 import { getHeaderPaddingLeft } from "@/util";
 
 import type TableConfig from "@/types/TableConfig";
-import type { PropType } from "vue";
+import { toRef, type PropType } from "vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+
+const BORDER_TOP = 1;
 
 /**
  * A table header element for displaying the column names in a table. This component
@@ -94,6 +97,11 @@ export default {
     columnResizeStart: () => true,
     allColumnsResize: (newSize: number) => true,
   },
+  setup(props) {
+    const { indexedData: indexedColumnHeaders, style: headerStyles } =
+      useIndicesAndStylesFor(toRef(props, "columnHeaders"));
+    return { indexedColumnHeaders, headerStyles };
+  },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
     return {
@@ -105,6 +113,7 @@ export default {
       minimumColumnWidth: MIN_COLUMN_SIZE, // need to add this here since it is referenced in the template
       maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
       currentDragHandlerHeight: 0,
+      borderTop: BORDER_TOP,
     };
   },
   computed: {
@@ -149,9 +158,9 @@ export default {
     onSelect() {
       this.$emit("headerSelect", !this.isSelected);
     },
-    onHeaderClick(ind: number) {
+    onHeaderClick(ind: number, header: string) {
       if (this.isColumnSortable(ind)) {
-        this.$emit("columnSort", ind, this.columnHeaders[ind]);
+        this.$emit("columnSort", ind, header);
       }
     },
     onToggleFilter() {
@@ -179,7 +188,8 @@ export default {
       // capture move events until the pointer is released
       event.target.setPointerCapture(event.pointerId);
       this.dragIndex = columnIndex;
-      this.currentDragHandlerHeight = this.getDragHandleHeight();
+      this.currentDragHandlerHeight =
+        this.getDragHandleHeight() - this.borderTop;
       this.columnSizeOnDragStart = this.columnSizes[columnIndex];
       this.pageXOnDragStart = event.pageX;
       this.$emit("columnResizeStart");
@@ -258,8 +268,8 @@ export default {
 </script>
 
 <template>
-  <thead>
-    <tr v-if="columnHeaders.length">
+  <thead :style="{ '--border-top': `${borderTop}px` }">
+    <tr v-if="columnHeaders.length" :style="{ ...headerStyles }">
       <th
         v-if="tableConfig.showCollapser"
         :cell-type="'th'"
@@ -276,7 +286,7 @@ export default {
         />
       </th>
       <th
-        v-for="(header, ind) in columnHeaders"
+        v-for="[header, ind] in indexedColumnHeaders"
         :key="ind"
         :ref="`columnHeader-${ind}`"
         :style="{
@@ -302,8 +312,8 @@ export default {
             },
           ]"
           tabindex="0"
-          @click="onHeaderClick(ind)"
-          @keydown.space="onHeaderClick(ind)"
+          @click="onHeaderClick(ind, header)"
+          @keydown.space="onHeaderClick(ind, header)"
         >
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
@@ -380,7 +390,7 @@ thead {
     transition:
       height 0.3s,
       box-shadow 0.15s;
-    border-top: 1px solid var(--knime-silver-sand-semi);
+    border-top: var(--border-top) solid var(--knime-silver-sand-semi);
 
     & th {
       white-space: nowrap;

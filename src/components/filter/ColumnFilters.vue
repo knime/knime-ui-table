@@ -6,7 +6,8 @@ import type FilterConfig from "@/types/FilterConfig";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import { MIN_COLUMN_SIZE } from "@/util/constants";
-import type { PropType } from "vue";
+import { toRef, type PropType } from "vue";
+import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 
 /**
  * A table header element which dynamically created table data elements containing
@@ -51,6 +52,11 @@ export default {
     columnFilter: (colInd: number, value: FilterConfig["modelValue"]) => true,
     clearFilter: () => true,
   },
+  setup(props) {
+    const { indexedData: indexedColumnHeaders, style: headerStyle } =
+      useIndicesAndStylesFor(toRef(props, "columnHeaders"));
+    return { indexedColumnHeaders, headerStyle };
+  },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
     return {
@@ -77,11 +83,11 @@ export default {
 
 <template>
   <thead>
-    <tr>
+    <tr :style="{ ...headerStyle }">
       <th v-if="showCollapser" class="collapser-cell-spacer" />
       <th v-if="showSelection" class="select-cell-spacer" />
       <th
-        v-for="(column, ind) in columnHeaders"
+        v-for="[header, ind] in indexedColumnHeaders"
         :key="ind + 'filter'"
         :style="{ width: `calc(${columnSizes[ind] || MIN_COLUMN_SIZE}px)` }"
         :cell-type="'th'"
@@ -92,8 +98,8 @@ export default {
             :is="filterConfigs[ind]!.is"
             is-filter
             v-bind="getFilterConfigProps(filterConfigs[ind]!)"
-            :placeholder="column"
-            :aria-label="`filter-${column}`"
+            :placeholder="header"
+            :aria-label="`filter-${header}`"
             @update:model-value="onInput(ind, $event)"
           />
         </template>

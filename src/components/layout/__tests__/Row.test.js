@@ -10,6 +10,7 @@ import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
 
 describe("Row.vue", () => {
   let wrapper;
@@ -57,13 +58,33 @@ describe("Row.vue", () => {
   const shallowMountRow = (params = {}) =>
     shallowMount(Row, {
       props,
-      global: { stubs: { Cell: { template: stubbedCell } } },
+      global: {
+        stubs: { Cell: { template: stubbedCell } },
+        provide: {
+          [useCloseSubMenusOnScrollInjectionKey]: {
+            registerExpandedSubMenu: () => {},
+          },
+        },
+      },
+      ...params,
+    });
+
+  const mountRow = (params = {}) =>
+    mount(Row, {
+      props,
+      global: {
+        provide: {
+          [useCloseSubMenusOnScrollInjectionKey]: {
+            registerExpandedSubMenu: () => {},
+          },
+        },
+      },
       ...params,
     });
 
   describe("rendering", () => {
     it('displays empty "tr" element if no data provided', () => {
-      wrapper = shallowMount(Row, {
+      wrapper = shallowMountRow({
         props: { tableConfig: {}, columnConfigs: [] },
       });
 
@@ -94,7 +115,7 @@ describe("Row.vue", () => {
     });
 
     it("renders table row in compact mode", () => {
-      wrapper = shallowMount(Row, {
+      wrapper = shallowMountRow({
         props: {
           tableConfig: {},
           columnConfigs: [],
@@ -146,13 +167,12 @@ describe("Row.vue", () => {
           text: "bla",
         },
       ];
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props: {
           ...props,
           row: ["data1"],
           rowData: { subMenuItemsForRow: customSubMenuItemsForRow },
         },
-        global: { stubs: { Cell: { template: stubbedCell } } },
       });
 
       expect(wrapper.findComponent(Row).exists()).toBeTruthy();
@@ -178,7 +198,7 @@ describe("Row.vue", () => {
 
     it("provides column data to the slotted column", () => {
       updateProps("hasSlotContent", [false, false, true, false, false]);
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props,
         slots: {
           "cellContent-col2": (props) => `${JSON.stringify(props)}`,
@@ -194,12 +214,12 @@ describe("Row.vue", () => {
     });
 
     it("does not display drag handle for row resizing per default", () => {
-      wrapper = mount(Row, { props });
+      wrapper = mountRow({ props });
       expect(wrapper.find(rowDragHandleClass).exists()).toBeFalsy();
     });
 
     it("displays drag handle for row resizing if enabled", () => {
-      wrapper = mount(Row, { props: { ...props, showDragHandle: true } });
+      wrapper = mountRow({ props: { ...props, showDragHandle: true } });
       expect(wrapper.find(rowDragHandleClass).exists()).toBeTruthy();
     });
 
@@ -212,7 +232,7 @@ describe("Row.vue", () => {
           (val) => val || "-",
           (val) => val % 33,
         ]);
-        wrapper = mount(Row, {
+        wrapper = mountRow({
           props: {
             ...props,
             row: ["val", { val: "val" }, [null], false, 100],
@@ -234,7 +254,7 @@ describe("Row.vue", () => {
           (val) => val || "-",
           (val) => val % 33,
         ]);
-        wrapper = mount(Row, {
+        wrapper = mountRow({
           props: {
             ...props,
             row: [
@@ -260,7 +280,7 @@ describe("Row.vue", () => {
         ...props,
         row: [{ value: "Text", color: "#123456" }, ...props.row.slice(1)],
       };
-      const wrapper = mount(Row, { props: propsWithColoredRows });
+      const wrapper = mountRow({ props: propsWithColoredRows });
       const firstCell = wrapper.findComponent(Cell);
       expect(firstCell.text()).toBe("Text");
       expect(firstCell.attributes("style")).toContain(
@@ -269,7 +289,7 @@ describe("Row.vue", () => {
     });
 
     it("conditionally renders expandable row content", async () => {
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props: {
           ...props,
           tableConfig: {
@@ -297,7 +317,7 @@ describe("Row.vue", () => {
 
     it("emits a rowInput event when a cell is clicked if popover column", () => {
       updateProps("popoverRenderer", [true, false, false, false, false]);
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props,
       });
       let event = new MouseEvent("click");
@@ -317,7 +337,7 @@ describe("Row.vue", () => {
     });
 
     it("does not emit a rowInput event when a cell is clicked if not popover column", () => {
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props,
       });
       let event = new MouseEvent("click");
@@ -328,7 +348,7 @@ describe("Row.vue", () => {
     });
 
     it("emits a rowInput event when a there is input in a cell", () => {
-      wrapper = mount(Row, {
+      wrapper = mountRow({
         props,
       });
       expect(wrapper.findComponent(Row).emitted().rowInput).toBeFalsy();
@@ -336,7 +356,7 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(Row).emitted().rowInput).toBeTruthy();
     });
 
-    it("toggles the expandable content when the collapser toggle is clicked and emits rowExpand", async () => {
+    it("toggles the expandable content when the collapser toggle is clicked", async () => {
       props.tableConfig.showCollapser = true;
       wrapper = shallowMountRow();
       expect(wrapper.vm.showContent).toBeFalsy();
@@ -344,10 +364,6 @@ describe("Row.vue", () => {
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.showContent).toBe(true);
       expect(wrapper.findComponent(CloseIcon).exists()).toBeTruthy();
-      await wrapper.vm.$nextTick();
-      expect(wrapper.emitted().rowExpand).toBeTruthy();
-      expect(wrapper.emitted().rowExpand[0][0]).toBe(false);
-      expect(wrapper.emitted().rowExpand[1][0]).toBe(true);
     });
 
     it("emits a rowSubMenuClick event when the submenu is clicked", () => {
@@ -368,7 +384,7 @@ describe("Row.vue", () => {
 
     describe("cell selection", () => {
       it("emits a cellSelect event when a cell is clicked", () => {
-        const wrapper = mount(Row, {
+        const wrapper = mountRow({
           props,
         });
         const colInd = 2;
@@ -382,7 +398,7 @@ describe("Row.vue", () => {
       });
 
       it("does not emits a cellSelect event when a cell is clicked with a non-left button", () => {
-        const wrapper = mount(Row, {
+        const wrapper = mountRow({
           props,
         });
         const colInd = 2;
@@ -394,7 +410,7 @@ describe("Row.vue", () => {
       });
 
       it("emits a expandCellSelect event when a cell is clicked with shift pressed", () => {
-        const wrapper = mount(Row, {
+        const wrapper = mountRow({
           props,
         });
         const colInd = 2;
@@ -408,7 +424,7 @@ describe("Row.vue", () => {
       });
 
       it("passes selectOnMove down to the Cell", async () => {
-        const wrapper = mount(Row, {
+        const wrapper = mountRow({
           props,
         });
 
@@ -474,7 +490,7 @@ describe("Row.vue", () => {
       it("watches for row height changes from outside", async () => {
         wrapper.setProps({ rowHeight: 999 });
         await wrapper.vm.$nextTick();
-        expect(wrapper.find(".row").attributes("style")).contains(
+        expect(wrapper.find("div").attributes("style")).contains(
           "height: 999px",
         );
       });

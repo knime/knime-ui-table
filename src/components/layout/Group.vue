@@ -3,6 +3,7 @@ import type { PropType } from "vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
 
 /**
  * This component is a wrapper for groups of table rows. It can display a "group" row
@@ -34,9 +35,11 @@ export default {
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
     groupSubMenuClick: (clickedItem: MenuItem) => true,
-    groupSubMenuExpand: (callback: () => void) => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
+  setup() {
+    return { registerExpandedSubMenu: injectRegisterExpandedSubMenu() };
+  },
   methods: {
     onSubMenuItemClick(event: Event, clickedItem: MenuItem) {
       this.$emit("groupSubMenuClick", clickedItem);
@@ -44,7 +47,7 @@ export default {
       return false;
     },
     onSubMenuToggle(_event: Event, callback: () => void) {
-      this.$emit("groupSubMenuExpand", callback);
+      this.registerExpandedSubMenu(callback);
     },
   },
 };

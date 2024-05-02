@@ -232,7 +232,9 @@ describe("Header.vue", () => {
     dragHandle.element.setPointerCapture = (_pointerId) => null;
     dragHandle.trigger("pointerdown", 0);
     await wrapper.vm.$nextTick();
-    expect(dragHandle.element.style.height).toBe(`${dragHandlerHeightMock}px`);
+    expect(dragHandle.element.style.height).toBe(
+      `${dragHandlerHeightMock - 1}px`,
+    );
   });
 
   it("emits a columnResize event on pointermove during drag", () => {

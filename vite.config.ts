@@ -63,7 +63,6 @@ export default defineConfig({
         "coverage/**",
         "dist/**",
         "webapps-common/**",
-        "vue-virtual-scroller/**",
         "demo/**",
         "stories/**",
         "lib/**",

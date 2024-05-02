@@ -4,12 +4,26 @@ import { shallowMount } from "@vue/test-utils";
 import Group from "../Group.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
 
 describe("Group.vue", () => {
   let wrapper;
 
+  const shallowMountGroup = ({ props, slots }) =>
+    shallowMount(Group, {
+      props,
+      slots,
+      global: {
+        provide: {
+          [useCloseSubMenusOnScrollInjectionKey]: {
+            registerExpandedSubMenu: () => {},
+          },
+        },
+      },
+    });
+
   it("renders a table group", () => {
-    wrapper = shallowMount(Group, {
+    wrapper = shallowMountGroup({
       props: {
         title: "Group 1",
         show: true,
@@ -29,7 +43,7 @@ describe("Group.vue", () => {
   });
 
   it("shows slotted content", () => {
-    wrapper = shallowMount(Group, {
+    wrapper = shallowMountGroup({
       props: {
         title: "Group 1",
         show: true,
@@ -53,7 +67,7 @@ describe("Group.vue", () => {
   });
 
   it("hides group but shows slotted content", () => {
-    wrapper = shallowMount(Group, {
+    wrapper = shallowMountGroup({
       props: {
         title: "Group 1",
         show: false,
@@ -76,7 +90,7 @@ describe("Group.vue", () => {
   });
 
   it("hides group submenu if no items", () => {
-    wrapper = shallowMount(Group, {
+    wrapper = shallowMountGroup({
       props: {
         title: "Group 1",
         show: true,
@@ -101,7 +115,7 @@ describe("Group.vue", () => {
         text: "test",
       },
     ];
-    wrapper = shallowMount(Group, {
+    wrapper = shallowMountGroup({
       props: {
         title: "Group 1",
         show: true,

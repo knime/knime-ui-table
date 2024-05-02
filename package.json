@@ -28,7 +28,7 @@
     "raf-throttle": "2.0.6",
     "uuid": "9.0.1",
     "vue": "3.4.21",
-    "vue-virtual-scroller": "file:vue-virtual-scroller",
+    "@knime/vue-headless-virtual-scroller": "0.1.1",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
