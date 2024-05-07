@@ -13,6 +13,7 @@ export interface Props {
     selectionSize: number;
     rightSideSize: number;
   };
+  currentBodyWidth: number;
 }
 </script>
 
@@ -166,6 +167,7 @@ defineExpose({
           :key="rowInd"
           #default="{ row }"
           :row-height="scrollConfig.itemSize"
+          :body-width="currentBodyWidth"
           :data-item="scrollData[rowInd - scrollConfig.numRowsAbove]"
         >
           <slot name="row" :row-ind="rowInd" :row="row" />

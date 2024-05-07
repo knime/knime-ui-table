@@ -1,17 +1,6 @@
-<script>
-export default {
-  props: {
-    height: {
-      type: Number,
-      default: 0,
-    },
-  },
-  data() {
-    return {
-      fontSize: 25,
-    };
-  },
-};
+<script setup lang="ts">
+defineProps<{ height: number }>();
+const fontSize = 25;
 </script>
 
 <template>

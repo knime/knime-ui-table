@@ -103,6 +103,7 @@ provideCommonScrollContainerProps(scrolledElement, {
       selectionSize,
       rightSideSize,
     }"
+    :current-body-width="currentBodyWidth"
     @scroller-update="
       (startIndex, endIndex) => emit('scrollerUpdate', startIndex, endIndex)
     "
