@@ -147,8 +147,8 @@ defineExpose({
     v-if="containerProps"
     :ref="
       (element) => {
-        containerProps.ref.value = element;
-        injectedContainerRef = element as HTMLElement | null;
+        containerProps.ref.value = injectedContainerRef =
+          element as HTMLElement | null;
       }
     "
     :style="overflowStyles"
