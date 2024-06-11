@@ -959,6 +959,7 @@ table {
   flex-direction: column;
   margin-left: 0;
   margin-right: auto;
+  position: relative;
 
   &:focus {
     outline: none;
