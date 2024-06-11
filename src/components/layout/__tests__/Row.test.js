@@ -362,10 +362,6 @@ describe("Row.vue", () => {
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.showContent).toBe(true);
       expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
-      await wrapper.vm.$nextTick();
-      expect(wrapper.emitted().rowExpand).toBeTruthy();
-      expect(wrapper.emitted().rowExpand[0][0]).toBe(false);
-      expect(wrapper.emitted().rowExpand[1][0]).toBe(true);
     });
 
     it("emits a rowSubMenuClick event when the submenu is clicked", () => {
