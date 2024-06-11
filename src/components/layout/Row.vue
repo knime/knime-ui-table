@@ -35,9 +35,7 @@
 import CollapserToggle from "../ui/CollapserToggle.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_PADDING_TOP_BOTTOM,
@@ -346,9 +344,6 @@ defineExpose({
   />
   <tr v-if="showContent" class="collapser-row">
     <td class="expandable-content">
-      <FunctionButton class="collapser-button" @click="onRowExpand">
-        <CloseIcon />
-      </FunctionButton>
       <slot name="rowCollapserContent" />
     </td>
   </tr>
@@ -464,26 +459,6 @@ tr.collapser-row {
 
   & td.expandable-content {
     width: 100%;
-
-    & .collapser-button {
-      position: absolute;
-      right: 50px;
-      top: 20px;
-      height: 24px;
-      width: 24px;
-      padding: 3px;
-      z-index: var(--z-index-collapser-button);
-
-      & svg {
-        position: relative;
-        margin: auto;
-        width: 14px;
-        height: 14px;
-        stroke-width: calc(32px / 12);
-        stroke: var(--knime-masala);
-        top: 0;
-      }
-    }
   }
 }
 </style>

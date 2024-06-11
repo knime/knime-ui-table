@@ -94,7 +94,6 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(Checkbox).exists()).toBeFalsy();
       expect(wrapper.findComponent(FunctionButton).exists()).toBeFalsy();
       expect(wrapper.findComponent(OptionsIcon).exists()).toBeFalsy();
-      expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
       expect(wrapper.find("td.data-cell").exists()).toBeFalsy();
       expect(wrapper.find("tr td").text()).toBe("-");
     });
@@ -107,7 +106,6 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(Checkbox).exists()).toBeTruthy();
       expect(wrapper.findComponent(FunctionButton).exists()).toBeFalsy();
       expect(wrapper.findComponent(OptionsIcon).exists()).toBeTruthy();
-      expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
       expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
       expect(wrapper.vm.cells).toHaveProperty(0, expect.any(Object));
       expect(wrapper.vm.cells).toHaveProperty(4, expect.any(Object));
@@ -363,7 +361,11 @@ describe("Row.vue", () => {
       wrapper.findComponent(CollapserToggle).vm.$emit("collapserExpand");
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.showContent).toBe(true);
-      expect(wrapper.findComponent(CloseIcon).exists()).toBeTruthy();
+      expect(wrapper.findComponent(CloseIcon).exists()).toBeFalsy();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.emitted().rowExpand).toBeTruthy();
+      expect(wrapper.emitted().rowExpand[0][0]).toBe(false);
+      expect(wrapper.emitted().rowExpand[1][0]).toBe(true);
     });
 
     it("emits a rowSubMenuClick event when the submenu is clicked", () => {
