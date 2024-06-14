@@ -16,6 +16,7 @@ const props = defineProps<{
     itemSize: number;
     numRowsAbove: number;
     numRowsBelow: number;
+    compact: boolean;
   };
   tableConfig: TableConfig;
   totalWidth: null | number;
@@ -104,6 +105,7 @@ provideCommonScrollContainerProps(scrolledElement, {
       rightSideSize,
     }"
     :current-body-width="currentBodyWidth"
+    :table-config="tableConfig"
     @scroller-update="
       (startIndex, endIndex) => emit('scrollerUpdate', startIndex, endIndex)
     "

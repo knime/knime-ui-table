@@ -84,16 +84,21 @@ describe("TableCoreVirtual", () => {
       },
     };
     props = {
+      currentBodyWidth: 100,
       specialColumnSizes: {
         collapserSize: 1,
         selectionSize: 10,
         rightSideSize: 100,
       },
       columnSizes: [1, 10, 100],
+      tableConfig: {
+        showSelection: true,
+      },
       scrollConfig: {
         itemSize: 7,
         numRowsAbove: 0,
         numRowsBelow: 0,
+        compact: false,
       },
       scrollData: generateScrollData({ height: scrollDataLength, width: 3 }),
     };

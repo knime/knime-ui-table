@@ -1,11 +1,14 @@
 <script lang="ts">
 import type { DataItem } from "./TableUI.vue";
+import type TableConfig from "@/types/TableConfig";
+
 export interface Props {
   scrollData: DataItem[];
   scrollConfig: {
     numRowsAbove: number;
     numRowsBelow: number;
     itemSize: number;
+    compact: boolean;
   };
   columnSizes: number[];
   specialColumnSizes: {
@@ -14,6 +17,7 @@ export interface Props {
     rightSideSize: number;
   };
   currentBodyWidth: number;
+  tableConfig: TableConfig;
 }
 </script>
 
@@ -167,8 +171,12 @@ defineExpose({
           :key="rowInd"
           #default="{ row }"
           :row-height="scrollConfig.itemSize"
+          :compact="scrollConfig.compact"
           :body-width="currentBodyWidth"
           :data-item="scrollData[rowInd - scrollConfig.numRowsAbove]"
+          :column-sizes="columnSizes"
+          :special-column-sizes="specialColumnSizes"
+          :table-config="tableConfig"
         >
           <slot name="row" :row-ind="rowInd" :row="row" />
         </VirtualRow>

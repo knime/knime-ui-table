@@ -720,6 +720,7 @@ export default {
         itemSize: scrollerItemSize,
         numRowsAbove,
         numRowsBelow,
+        compact: Boolean(dataConfig.rowConfig.compactMode),
       }"
       :current-row-height="currentRowHeight"
       @group-sub-menu-click="onGroupSubMenuClick"
