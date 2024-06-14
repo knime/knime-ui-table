@@ -19,7 +19,7 @@ export interface Props {
 
 <script setup lang="ts">
 import { computed, ref, toRef, type Ref, watch } from "vue";
-import "./main.css";
+import "../assets/main.css";
 
 import {
   useVirtualGrid,

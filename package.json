@@ -15,8 +15,8 @@
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint . --cache --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:css": "stylelint --cache '**/*.{css,vue}'",
-    "ci:lint-format": "run-p ci:lint:* format:check -c",
-    "ci:lint:js": "npm run lint:js && npm run lint:js -- -f json -o test-results/eslint.json",
+    "ci:lint-format": "run-p ci:lint:* format:check -c -l",
+    "ci:lint:js": "run-s lint:js 'lint:js -- -f json -o test-results/eslint.json' -c",
     "ci:lint:css": "npm run lint:css -- -f json -o test-results/stylelint.json",
     "audit": "npm audit --omit dev",
     "test:unit": "vitest",
@@ -32,7 +32,7 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@knime/eslint-config": "8.0.11",
+    "@knime/eslint-config": "8.1.0",
     "@storybook/addon-actions": "7.6.17",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addon-interactions": "7.6.17",

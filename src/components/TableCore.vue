@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
-import "./main.css";
+import "../assets/main.css";
 import useAvailableWidth from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import type TableConfig from "@/types/TableConfig";

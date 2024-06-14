@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import "./main.css";
+import "../assets/main.css";
 
 import Group from "./layout/Group.vue";
 

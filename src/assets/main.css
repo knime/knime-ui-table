@@ -1,0 +1,10 @@
+@import "./global-z-indices";
+@import "./animation.css";
+
+:root,
+:host {
+  /* TODO: this probably has to be replaced by a complete modern-normalize import */
+  & * {
+    box-sizing: border-box;
+  }
+}
