@@ -32,6 +32,12 @@ const emit = defineEmits<{
   scrollerUpdate: [startIndex: number, endIndex: number];
   groupSubMenuClick: [item: MenuItem, dataGroup: any[]];
   "update:available-width": [newAvailableWidth: number];
+  moveSelection: [
+    horizontalMove: number,
+    verticalMove: number,
+    expandSelection: boolean,
+  ];
+  clearSelection: [];
 }>();
 
 const tableCoreVirtual = ref<InstanceType<typeof TableCoreVirtual> | null>(
@@ -42,10 +48,11 @@ const tableCoreVirtual = ref<InstanceType<typeof TableCoreVirtual> | null>(
  * We expose some internals of the virtual scroller for enabling keeping the.
  */
 defineExpose({
-  virtualScrollToPosition: (scrollPosition: number) =>
-    tableCoreVirtual.value?.scrollToPosition(scrollPosition),
+  virtualScrollToPosition: (position: { top?: number; left?: number }) =>
+    tableCoreVirtual.value?.scrollToPosition(position),
   getVirtualScrollStart: () => tableCoreVirtual.value?.getScrollStart(),
   getVirtualBody: () => tableCoreVirtual.value?.getBody(),
+  getVirtualContainer: () => tableCoreVirtual.value?.getContainer(),
 });
 
 const collapserSize = computed(() =>
@@ -109,6 +116,10 @@ provideCommonScrollContainerProps(scrolledElement, {
     @scroller-update="
       (startIndex, endIndex) => emit('scrollerUpdate', startIndex, endIndex)
     "
+    @move-selection="
+      (...args: [number, number, boolean]) => emit('moveSelection', ...args)
+    "
+    @clear-selection="emit('clearSelection')"
   >
     <template #header="{ getDragHandleHeight }">
       <slot
@@ -135,6 +146,10 @@ provideCommonScrollContainerProps(scrolledElement, {
     @group-sub-menu-click="
       (item, dataGroup) => emit('groupSubMenuClick', item, dataGroup)
     "
+    @move-selection="
+      (...args: [number, number, boolean]) => emit('moveSelection', ...args)
+    "
+    @clear-selection="emit('clearSelection')"
   >
     <template #header="{ getDragHandleHeight }">
       <slot

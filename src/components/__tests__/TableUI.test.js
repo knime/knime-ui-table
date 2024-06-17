@@ -19,12 +19,13 @@ import { columnTypes } from "@/config/table.config";
 import useAvailableWidth, {
   useTotalWidth,
 } from "../composables/useAvailableWidth";
-import { ref, unref } from "vue";
+import { reactive, ref, unref } from "vue";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import useCellSelection from "../composables/useCellSelection";
 import TableCoreGroups from "../TableCoreGroups.vue";
 import TableCoreVirtual from "../TableCoreVirtual.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import TableBodyNavigable from "../TableBodyNavigable.vue";
 
 const bodyWidthResult = 123;
 const fitsInsideTotalWidthResult = true;
@@ -44,6 +45,7 @@ const cellSelectionMock = {
   clearCellSelection: vi.fn(),
   rectMinMax: ref(null),
   currentRectId: ref(null),
+  cellSelectionRectFocusCorner: reactive({ x: 0, y: 0 }),
 };
 
 vi.mock("../composables/useCellSelection", () => ({
@@ -54,6 +56,40 @@ let getMetaOrCtrlKeyMockReturnValue = "";
 vi.mock("webapps-common/util/navigator", () => ({
   getMetaOrCtrlKey: vi.fn(() => getMetaOrCtrlKeyMockReturnValue),
 }));
+
+const groupedData = {
+  data: [
+    [
+      { a: "aGroup1Row1", b: "bGroup1Row1" },
+      { a: "aGroup1Row2", b: "bGroup1Row2" },
+    ],
+    [
+      { a: "aGroup2Row1", b: "bGroup2Row1" },
+      { a: "aGroup2Row2", b: "bGroup2Row2" },
+    ],
+  ],
+  currentSelection: [
+    [false, false],
+    [false, false],
+  ],
+};
+
+const topAndBottomData = {
+  enableVirtualScrolling: true,
+  currentSelection: [[true, false, true]],
+  currentBottomSelection: [true, true],
+  data: [
+    [
+      { a: "aGroup1Row1", b: "bGroup1Row1" },
+      { a: "aGroup1Row2", b: "bGroup1Row2" },
+      { a: "aGroup1Row3", b: "bGroup1Row3" },
+    ],
+  ],
+  bottomData: [
+    { a: "aBottomRow1", b: "bBottomRow1" },
+    { a: "aBottomRow2", b: "bBottomRow2" },
+  ],
+};
 
 const getProps = ({
   includeSubHeaders = true,
@@ -67,6 +103,7 @@ const getProps = ({
   showBottomControls = true,
   showPopovers = false,
   enableVirtualScrolling = false,
+  enableCellSelection = false,
   rowHeight = null,
   actionButtonConfig = null,
   columnFilterInitiallyActive = null,
@@ -155,6 +192,7 @@ const getProps = ({
       currentTimeFilter: "",
     },
     enableVirtualScrolling,
+    enableCellSelection,
     subMenuItems: [],
     columnSelectionConfig: {
       possibleColumns: ["a", "b"],
@@ -180,8 +218,8 @@ describe("TableUI.vue", () => {
     Object.defineProperty(scroller.element, "clientHeight", {
       value: 1000,
     });
-    wrapper.vm.tableCore.virtualScrollToPosition(1);
-    wrapper.vm.tableCore.virtualScrollToPosition(0);
+    wrapper.vm.tableCore.virtualScrollToPosition({ top: 1 });
+    wrapper.vm.tableCore.virtualScrollToPosition({ top: 0 });
     await wrapper.vm.$nextTick();
   };
 
@@ -197,6 +235,7 @@ describe("TableUI.vue", () => {
       showColumnFilters = true,
       showBottomControls = true,
       enableVirtualScrolling = false,
+      enableCellSelection = false,
       rowHeight = null,
       actionButtonConfig = {},
       columnFilterInitiallyActive = false,
@@ -235,6 +274,7 @@ describe("TableUI.vue", () => {
       showColumnFilters,
       showBottomControls,
       enableVirtualScrolling,
+      enableCellSelection,
       rowHeight,
       actionButtonConfig,
       columnFilterInitiallyActive,
@@ -256,7 +296,13 @@ describe("TableUI.vue", () => {
       props,
       shallow,
       global: {
-        stubs: { TableCore, TableCoreGroups, TableCoreVirtual, ...stubs },
+        stubs: {
+          TableCore,
+          TableCoreGroups,
+          TableCoreVirtual,
+          TableBodyNavigable,
+          ...stubs,
+        },
       },
     });
 
@@ -680,9 +726,9 @@ describe("TableUI.vue", () => {
             vi.runAllTimers();
             expect(wrapper.vm.currentResizedScrollIndex).toBeNull();
             const offset = scrollIndex * oldSize - start;
-            expect(virtualScrollToPosition).toHaveBeenCalledWith(
-              scrollIndex * newSize - offset,
-            );
+            expect(virtualScrollToPosition).toHaveBeenCalledWith({
+              top: scrollIndex * newSize - offset,
+            });
             vi.useRealTimers();
           });
         });
@@ -983,7 +1029,7 @@ describe("TableUI.vue", () => {
         enableVirtualScrolling: true,
         shallow: false,
       });
-      wrapper.vm.tableCore.virtualScrollToPosition(1);
+      wrapper.vm.tableCore.virtualScrollToPosition({ top: 1 });
       expect(wrapper.vm.tableCore.getVirtualScrollStart()).toBe(1);
 
       wrapper.vm.refreshScroller();
@@ -1006,7 +1052,7 @@ describe("TableUI.vue", () => {
         startIndex: 0,
         endIndex: 13,
       });
-      wrapper.vm.tableCore.virtualScrollToPosition(1000);
+      wrapper.vm.tableCore.virtualScrollToPosition({ top: 1000 });
       await flushPromises();
       await flushPromises();
       expect(wrapper.emitted().lazyload[1][0]).toStrictEqual({
@@ -1077,23 +1123,10 @@ describe("TableUI.vue", () => {
       const numRowsBelow = 3;
 
       const { wrapper } = doMount({
-        enableVirtualScrolling: true,
         shallow: false,
         numRowsAbove,
         numRowsBelow,
-        currentSelection: [[true, false, true]],
-        currentBottomSelection: [true, true],
-        data: [
-          [
-            { a: "aGroup1Row1", b: "bGroup1Row1" },
-            { a: "aGroup1Row2", b: "bGroup1Row2" },
-            { a: "aGroup1Row3", b: "bGroup1Row3" },
-          ],
-        ],
-        bottomData: [
-          { a: "aBottomRow1", b: "bBottomRow1" },
-          { a: "aBottomRow2", b: "bBottomRow2" },
-        ],
+        ...topAndBottomData,
       });
 
       await fillVirtualScroller(wrapper);
@@ -1189,6 +1222,7 @@ describe("TableUI.vue", () => {
           rowResizeDelta: null,
           rowResizeIndex: null,
           tableConfig: wrapper.vm.tableConfig,
+          cellSelectionRectFocusCorner: { x: 0, y: 0 },
         });
       });
 
@@ -1210,6 +1244,7 @@ describe("TableUI.vue", () => {
           rowResizeDelta: null,
           rowResizeIndex: null,
           tableConfig: wrapper.vm.tableConfig,
+          cellSelectionRectFocusCorner: { x: 0, y: 0 },
         });
       });
 
@@ -1218,20 +1253,7 @@ describe("TableUI.vue", () => {
         cellSelectionMock.rectMinMax.value = rectMinMax;
         cellSelectionMock.currentRectId.value = 1;
         const { wrapper } = doMount({
-          data: [
-            [
-              { a: "aGroup1Row1", b: "bGroup1Row1" },
-              { a: "aGroup1Row2", b: "bGroup1Row2" },
-            ],
-            [
-              { a: "aGroup2Row1", b: "bGroup2Row1" },
-              { a: "aGroup2Row2", b: "bGroup2Row2" },
-            ],
-          ],
-          currentSelection: [
-            [false, false],
-            [false, false],
-          ],
+          ...groupedData,
         });
 
         let groups = wrapper.findAllComponents(Group);
@@ -1349,6 +1371,229 @@ describe("TableUI.vue", () => {
         expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
           { id, rect, withHeaders: true },
         ]);
+      });
+
+      describe("keyboard navigation", () => {
+        beforeEach(() => {
+          useCellSelection.mockClear();
+        });
+
+        it("positions the overlay in the first row on triggering keydown down on a header", async () => {
+          const { wrapper } = doMount(
+            {
+              enableVirtualScrolling: true,
+              shallow: false,
+              enableCellSelection: true,
+            },
+            stubs,
+          );
+          await wrapper
+            .findComponent(Header)
+            .findAll(".column-header-content")
+            .at(1)
+            .trigger("keydown", { key: "ArrowDown" });
+
+          expect(wrapper.vm.selectCell).toHaveBeenCalledWith(
+            { x: 1, y: 0 },
+            true,
+          );
+        });
+
+        it("clears the selection on tabbing on the body", () => {
+          let { wrapper } = doMount(
+            { enableVirtualScrolling: true, shallow: false },
+            stubs,
+          );
+          wrapper.findComponent(TableBodyNavigable).vm.$emit("clearSelection");
+          expect(wrapper.vm.clearCellSelection).toHaveBeenCalledOnce();
+
+          wrapper = doMount({ shallow: false }, stubs).wrapper;
+          wrapper.findComponent(TableBodyNavigable).vm.$emit("clearSelection");
+          expect(wrapper.vm.clearCellSelection).toHaveBeenCalledTimes(2);
+        });
+
+        it.each([
+          ["the first group", 0, false],
+          ["virtual scrolling", true, true],
+        ])(
+          "focusses the header of the column on ArrowUp in the first row of %s",
+          (_desc, rectId, enableVirtualScrolling) => {
+            cellSelectionMock.cellSelectionRectFocusCorner = { x: 1, y: 0 };
+            cellSelectionMock.currentRectId = rectId;
+            const { wrapper } = doMount(
+              { enableVirtualScrolling, shallow: false },
+              stubs,
+            );
+            const focusHeaderCellSpy = vi.spyOn(wrapper.vm, "focusHeaderCell");
+            wrapper.vm.onKeyboardMoveSelection(0, -1, true);
+            expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+            expect(focusHeaderCellSpy).toHaveBeenCalledWith(1);
+          },
+        );
+
+        it.each([
+          ["left", -1, 0],
+          ["right", 1, 1],
+        ])(
+          "does not navigate horizontally out of bounds to the %s",
+          (_, direction, currentFocusX) => {
+            cellSelectionMock.cellSelectionRectFocusCorner = {
+              x: currentFocusX,
+              y: 2,
+            };
+            cellSelectionMock.currentRectId.value = 0;
+            const { wrapper } = doMount({ shallow: false }, stubs);
+            wrapper.vm.onKeyboardMoveSelectionGroups = vi.fn();
+            wrapper.vm.onKeyboardMoveSelectionVirtual = vi.fn();
+
+            wrapper.vm.onKeyboardMoveSelection(direction, 0, true);
+            expect(cellSelectionMock.clearCellSelection).not.toHaveBeenCalled();
+            expect(
+              wrapper.vm.onKeyboardMoveSelectionGroups,
+            ).not.toHaveBeenCalled();
+            expect(
+              wrapper.vm.onKeyboardMoveSelectionVirtual,
+            ).not.toHaveBeenCalled();
+          },
+        );
+
+        const prepareOnKeyboardMoveSelectionForGroupsAndVirtual = (
+          useGroupedData,
+          focusCorner,
+          rectId,
+          rect,
+        ) => {
+          cellSelectionMock.cellSelectionRectFocusCorner = focusCorner;
+          cellSelectionMock.currentRectId.value = rectId;
+          cellSelectionMock.rectMinMax.value = rect;
+
+          const { wrapper } = doMount(
+            {
+              shallow: false,
+              ...(useGroupedData ? groupedData : topAndBottomData),
+            },
+            stubs,
+          );
+          wrapper.vm.getSelectionOverlayComponent = vi
+            .fn()
+            .mockReturnValue({ scrollFocusOverlayIntoView: vi.fn() });
+
+          wrapper.vm.onExpandCellSelect = vi.fn();
+          return wrapper;
+        };
+
+        describe("onKeyboardMoveSelectionGroups", () => {
+          it.each([
+            [1, 1, 0, [1, 0, 1]],
+            [-1, 0, 1, [1, 1, 0]],
+          ])(
+            "switches between groups in vertical direction (%s)",
+            (direction, focusY, rectId, result) => {
+              wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+                true,
+                { x: 1, y: focusY },
+                rectId,
+                {
+                  x: { min: 1, max: 1 },
+                  y: { min: focusY, max: focusY },
+                },
+              );
+
+              wrapper.vm.onKeyboardMoveSelection(0, direction, true);
+              expect(wrapper.vm.onExpandCellSelect).toHaveBeenCalledWith(
+                ...result,
+              );
+            },
+          );
+
+          it("does not navigate vertically downwards out of bounds for the last group", () => {
+            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+              true,
+              { x: 1, y: 1 },
+              1,
+              {
+                x: { min: 1, max: 1 },
+                y: { min: 1, max: 1 },
+              },
+            );
+
+            wrapper.vm.onKeyboardMoveSelection(0, 1, true);
+            expect(wrapper.vm.onExpandCellSelect).not.toHaveBeenCalled();
+          });
+
+          it("allows navigating horizontally", () => {
+            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+              true,
+              { x: 1, y: 1 },
+              1,
+              {
+                x: { min: 1, max: 1 },
+                y: { min: 1, max: 1 },
+              },
+            );
+
+            wrapper.vm.onKeyboardMoveSelection(-1, 0, true);
+            expect(wrapper.vm.onExpandCellSelect).toHaveBeenCalledWith(0, 1, 1);
+          });
+        });
+
+        describe("onKeyboardMoveSelectionVirtual", () => {
+          it("does not navigate vertically downwards out of bounds", () => {
+            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+              false,
+              { x: 1, y: 5 },
+              false,
+              {
+                x: { min: 1, max: 1 },
+                y: { min: 5, max: 5 },
+              },
+            );
+
+            expect(wrapper.vm.onExpandCellSelect).not.toHaveBeenCalled();
+          });
+
+          it.each([
+            [1, 2, true, [1, 4, null]],
+            [-1, 3, false, [1, 2, null]],
+          ])(
+            "can navigate between top and bottom data in vertical direction (%s)",
+            (direction, focusY, rectId, result) => {
+              wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+                false,
+                { x: 1, y: focusY },
+                rectId,
+                {
+                  x: { min: 1, max: 1 },
+                  y: { min: focusY, max: focusY },
+                },
+              );
+
+              wrapper.vm.onKeyboardMoveSelection(0, direction, true);
+              expect(wrapper.vm.onExpandCellSelect).toHaveBeenCalledWith(
+                ...result,
+              );
+            },
+          );
+
+          it("allows navigating horizontally", () => {
+            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+              false,
+              { x: 1, y: 1 },
+              true,
+              {
+                x: { min: 1, max: 1 },
+                y: { min: 1, max: 1 },
+              },
+            );
+
+            wrapper.vm.onKeyboardMoveSelection(-1, 0, true);
+            expect(wrapper.vm.onExpandCellSelect).toHaveBeenCalledWith(
+              0,
+              1,
+              null,
+            );
+          });
+        });
       });
     });
 

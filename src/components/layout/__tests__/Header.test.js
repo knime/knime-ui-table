@@ -39,6 +39,7 @@ describe("Header.vue", () => {
         showCollapser: false,
         showSelection: true,
         showColumnFilters: true,
+        enableCellSelection: false,
       },
       columnHeaders: [
         "Column 1",
@@ -438,5 +439,47 @@ describe("Header.vue", () => {
       "--data-cell-color: #ff0000;",
     );
     expect(columns.at(1).classes()).toContain("colored-header");
+  });
+
+  it("emits selectColumnCellInFirstRow on keydown ArrowDown on the column header content with enabled selection", async () => {
+    const columnIndexToTest = 2;
+    wrapper = shallowMount(Header, {
+      props: {
+        ...props,
+        tableConfig: { ...props.tableConfig, enableCellSelection: true },
+      },
+    });
+    const header = wrapper.findComponent(Header);
+    const columnHeaderContent = wrapper
+      .findAll(".column-header-content")
+      .at(columnIndexToTest);
+
+    expect(header.emitted().selectColumnCellInFirstRow).toBeFalsy();
+    await columnHeaderContent.trigger("keydown.down");
+    expect(header.emitted().selectColumnCellInFirstRow).toBeTruthy();
+    expect(wrapper.emitted().selectColumnCellInFirstRow[0][0]).toBe(
+      columnIndexToTest,
+    );
+  });
+
+  it("does not emit selectColumnCellInFirstRow on keydown ArrowDown with disabled selection", async () => {
+    wrapper = shallowMount(Header, { props });
+    const header = wrapper.findComponent(Header);
+    const columnHeaderContent = wrapper.findAll(".column-header-content").at(2);
+
+    expect(header.emitted().selectColumnCellInFirstRow).toBeFalsy();
+    await columnHeaderContent.trigger("keydown.down");
+    expect(header.emitted().selectColumnCellInFirstRow).toBeFalsy();
+  });
+
+  it("focusses a header cell with the given index", () => {
+    const columnIndexToTest = 2;
+    wrapper = shallowMount(Header, { props, attachTo: document.body });
+    const elementToFocus = wrapper
+      .findAll(".column-header-content")
+      .at(columnIndexToTest).element;
+    expect(document.activeElement).not.toBe(elementToFocus);
+    wrapper.vm.focusHeaderCell(columnIndexToTest);
+    expect(document.activeElement).toBe(elementToFocus);
   });
 });

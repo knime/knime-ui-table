@@ -7,6 +7,7 @@ import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+import TableBodyNavigable from "./TableBodyNavigable.vue";
 
 const props = defineProps<{
   scrollData: DataItem[][];
@@ -17,11 +18,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   groupSubMenuClick: [item: MenuItem, dataGroup: any[]];
+  moveSelection: [
+    horizontalMove: number,
+    verticalMove: number,
+    expandSelection: boolean,
+  ];
+  clearSelection: [];
 }>();
 const { closeExpandedSubMenu, containerRef, overflowStyles } =
   useCommonScrollContainerProps();
 const getGroupName = (ind: number) =>
   props.tableConfig.groupByConfig?.currentGroupValues?.[ind] ?? "";
+
+defineExpose({
+  getBody: () => containerRef.value?.querySelector("tbody"),
+});
 </script>
 
 <template>
@@ -35,30 +46,39 @@ const getGroupName = (ind: number) =>
       name="header"
       :get-drag-handle-height="() => containerRef?.offsetHeight"
     />
-    <Group
-      v-for="(dataGroup, groupInd) in scrollData"
-      :key="groupInd"
-      :style="{ width: `${currentBodyWidth}px` }"
-      :title="getGroupName(groupInd)"
-      :group-sub-menu-items="tableConfig.groupSubMenuItems"
-      :show="scrollData.length > 1 && dataGroup.length > 0"
-      @group-sub-menu-click="
-        (event: MenuItem) => emit('groupSubMenuClick', event, dataGroup)
+    <TableBodyNavigable
+      @move-selection="
+        (...args: [number, number, boolean]) => emit('moveSelection', ...args)
       "
+      @clear-selection="emit('clearSelection')"
     >
-      <slot
-        v-if="currentRectId === groupInd"
-        name="cell-selection-overlay"
-        :group-ind="groupInd"
-      />
-      <slot
-        v-for="(row, rowInd) in dataGroup"
-        name="row"
-        :row="(row as any).data"
-        :row-ind="rowInd"
-        :group-ind="groupInd"
-      />
-    </Group>
+      <template #bodyContent>
+        <Group
+          v-for="(dataGroup, groupInd) in scrollData"
+          :key="groupInd"
+          :style="{ width: `${currentBodyWidth}px` }"
+          :title="getGroupName(groupInd)"
+          :group-sub-menu-items="tableConfig.groupSubMenuItems"
+          :show="scrollData.length > 1 && dataGroup.length > 0"
+          @group-sub-menu-click="
+            (event: MenuItem) => emit('groupSubMenuClick', event, dataGroup)
+          "
+        >
+          <slot
+            v-if="currentRectId === groupInd"
+            name="cell-selection-overlay"
+            :group-ind="groupInd"
+          />
+          <slot
+            v-for="(row, rowInd) in dataGroup"
+            name="row"
+            :row="(row as any).data"
+            :row-ind="rowInd"
+            :group-ind="groupInd"
+          />
+        </Group>
+      </template>
+    </TableBodyNavigable>
   </div>
 </template>
 
