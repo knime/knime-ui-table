@@ -14,7 +14,8 @@ describe("useCellSelection", () => {
     rectMinMax: Ref<Rect | null>,
     clearCellSelection: () => void,
     currentRectId: Ref<RectId | null>,
-    enableCellSelection: Ref<boolean>;
+    enableCellSelection: Ref<boolean>,
+    cellSelectionRectFocusCorner: Ref<CellPosition | undefined>;
 
   const expectSelectedRect = (rect: Rect, id: RectId) => {
     expect(rectMinMax.value).toStrictEqual(rect);
@@ -37,12 +38,13 @@ describe("useCellSelection", () => {
 
   beforeEach(() => {
     enableCellSelection = ref(true);
-    const cellSelecton = useCellSelection(enableCellSelection);
-    selectCell = cellSelecton.selectCell;
-    expandCellSelection = cellSelecton.expandCellSelection;
-    clearCellSelection = cellSelecton.clearCellSelection;
-    rectMinMax = cellSelecton.rectMinMax;
-    currentRectId = cellSelecton.currentRectId;
+    const cellSelection = useCellSelection(enableCellSelection);
+    selectCell = cellSelection.selectCell;
+    expandCellSelection = cellSelection.expandCellSelection;
+    clearCellSelection = cellSelection.clearCellSelection;
+    rectMinMax = cellSelection.rectMinMax;
+    currentRectId = cellSelection.currentRectId;
+    cellSelectionRectFocusCorner = cellSelection.cellSelectionRectFocusCorner;
   });
 
   it("selects cell on selectCell", () => {
@@ -130,6 +132,8 @@ describe("useCellSelection", () => {
         expandCellSelection(corner, id);
 
         expectSelectedRect(expected, id);
+
+        expect(cellSelectionRectFocusCorner.value).toStrictEqual(corner);
       },
     );
 

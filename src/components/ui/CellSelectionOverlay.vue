@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import type CellSelectionOverlayProps from "./CellSelectionOverlayProps";
+
+const focusCellBorderOffset = 3;
 
 const props = defineProps<CellSelectionOverlayProps>();
 
@@ -64,8 +66,121 @@ const copied = ref(false);
 const triggerCopied = () => {
   copied.value = true;
 };
+
+const virtualFocusOverlay = ref<null | HTMLDivElement>(null);
+const virtualFocusOverlayCoordinates = computed(() => {
+  if (!props.cellSelectionRectFocusCorner) {
+    return null;
+  }
+  const { x: left, y: top } = props.cellSelectionRectFocusCorner;
+  const right = left + 1;
+  const bottom = top + 1;
+  return {
+    left: columnOffsets.value[left] + focusCellBorderOffset,
+    right: columnOffsets.value[right] - focusCellBorderOffset,
+    top:
+      top * props.rowHeight +
+      getRowResizeOffset.value(top) +
+      focusCellBorderOffset,
+    bottom:
+      bottom * props.rowHeight +
+      getRowResizeOffset.value(bottom) -
+      focusCellBorderOffset,
+  };
+});
+
+const virtualFocusOverlayHeight = computed(() => {
+  return (
+    virtualFocusOverlayCoordinates.value!.bottom -
+    virtualFocusOverlayCoordinates.value!.top
+  );
+});
+
+const virtualFocusOverlayWidth = computed(() => {
+  return (
+    virtualFocusOverlayCoordinates.value!.right -
+    virtualFocusOverlayCoordinates.value!.left
+  );
+});
+
+const isVirtualFocusOverlayInsideViewportOfBody = (
+  containerBCR: DOMRect,
+  focusOverlay: HTMLDivElement,
+  headerHeight: number,
+) => {
+  const virtualFocusOverlayBCR = focusOverlay.getBoundingClientRect();
+  const bodyTop = containerBCR.top + headerHeight;
+  const halfHeightVirtualFocusOverlay = virtualFocusOverlayBCR.height / 2;
+  const halfWidthVirtualFocusOverlay = virtualFocusOverlayBCR.width / 2;
+  const focusOverlayCenterVertical =
+    virtualFocusOverlayBCR.top + halfHeightVirtualFocusOverlay;
+  const focusOverlayCenterHorizontal =
+    virtualFocusOverlayBCR.left + halfWidthVirtualFocusOverlay;
+
+  return {
+    verticalInside:
+      bodyTop <= focusOverlayCenterVertical &&
+      focusOverlayCenterVertical <= containerBCR.bottom,
+    horizontalInside:
+      containerBCR.left <= focusOverlayCenterHorizontal &&
+      focusOverlayCenterHorizontal <= containerBCR.right,
+  };
+};
+
+const scrollFocusOverlayIntoView = async (
+  params: null | {
+    containerBCR: DOMRect | null;
+    headerHeight: number;
+    scrollTo: (scrollToValues: {
+      top?: number;
+      left?: number;
+    }) => void | undefined;
+  },
+) => {
+  // wait for focusOverlay to render at new position to calculate bounding client rect
+  await nextTick();
+  if (params) {
+    const { containerBCR, headerHeight, scrollTo } = params;
+    if (
+      containerBCR &&
+      virtualFocusOverlay.value &&
+      virtualFocusOverlayCoordinates.value
+    ) {
+      const { verticalInside, horizontalInside } =
+        isVirtualFocusOverlayInsideViewportOfBody(
+          containerBCR,
+          virtualFocusOverlay.value,
+          headerHeight,
+        );
+
+      if (!verticalInside) {
+        scrollTo({
+          top:
+            virtualFocusOverlayCoordinates.value.top -
+            containerBCR.height / 2 +
+            virtualFocusOverlayHeight.value,
+        });
+      } else if (!horizontalInside) {
+        scrollTo({
+          left:
+            virtualFocusOverlayCoordinates.value.left -
+            containerBCR.width / 2 +
+            virtualFocusOverlayWidth.value / 2,
+        });
+      }
+    }
+  } else {
+    virtualFocusOverlay.value?.scrollIntoView({
+      block: "center",
+      inline: "center",
+    });
+  }
+};
+
 defineExpose({
   triggerCopied,
+  focus,
+  scrollFocusOverlayIntoView,
 });
 </script>
 
@@ -79,6 +194,16 @@ defineExpose({
       height: `${height}px`,
     }"
     @animationend="copied = false"
+  />
+  <div
+    v-if="virtualFocusOverlayCoordinates"
+    ref="virtualFocusOverlay"
+    class="overlay virtual-focus"
+    :style="{
+      transform: `translateY(${virtualFocusOverlayCoordinates.top}px) translateX(${virtualFocusOverlayCoordinates.left}px)`,
+      width: `${virtualFocusOverlayWidth}px`,
+      height: `${virtualFocusOverlayHeight}px`,
+    }"
   />
 </template>
 
@@ -111,5 +236,11 @@ defineExpose({
   position: absolute;
   z-index: var(--z-index-cell-selection-overlay);
   pointer-events: none;
+
+  &.virtual-focus {
+    --focus-cell-border: 1px dashed rgb(44 88 135);
+
+    border: var(--focus-cell-border);
+  }
 }
 </style>

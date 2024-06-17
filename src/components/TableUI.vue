@@ -359,8 +359,14 @@ export default {
       }
       return this.data[0].length;
     },
+    totalTableLength() {
+      return this.scrollData[0].length + this.numRowsAbove;
+    },
     numPlaceholderRows() {
       return this.topDataLength ? 1 : 0;
+    },
+    placeholderRowRowIndex() {
+      return this.data[0].length + this.numRowsAbove;
     },
     scrollData() {
       if (this.data === null || this.data.length === 0) {
@@ -426,16 +432,19 @@ export default {
   methods: {
     // Utilities
     refreshScroller() {
-      this.tableCore?.virtualScrollToPosition(0);
+      this.tableCore?.virtualScrollToPosition({ top: 0 });
     },
     resetRowHeight() {
       this.resizedRowHeight = null;
+    },
+    isTop(index: number) {
+      return index < this.topDataLength + this.numRowsAbove;
     },
     resolveRowIndex(index: number) {
       if (index < this.numRowsAbove) {
         throw Error(`Accessing invalid row index: ${index}`);
       }
-      if (index < this.topDataLength + this.numRowsAbove) {
+      if (this.isTop(index)) {
         return {
           isTop: true,
           indexInInput: index - this.numRowsAbove,
@@ -536,9 +545,9 @@ export default {
       this.$emit("rowSelect", selected, indexInInput, groupInd, isTop);
     },
     onCellSelect(cellInd: number, rowInd: number, groupInd: null | number) {
-      const { isTop, indexInInput } = this.resolveRowIndex(rowInd);
+      const isTop = this.isTop(rowInd);
       this.selectCell(
-        { x: cellInd, y: indexInInput },
+        { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
       );
     },
@@ -547,10 +556,118 @@ export default {
       rowInd: number,
       groupInd: null | number,
     ) {
-      const { isTop, indexInInput } = this.resolveRowIndex(rowInd);
+      const isTop = this.isTop(rowInd);
       this.expandCellSelection(
-        { x: cellInd, y: indexInInput },
+        { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
+      );
+    },
+    selectColumnCellInFirstRow(columnIndex: number) {
+      this.onCellSelect(columnIndex, 0, this.showVirtualScroller ? null : 0);
+      const tableCoreRef = this.getTableCoreComponent();
+      tableCoreRef.getVirtualBody()?.focus({ preventScroll: true });
+      if (this.showVirtualScroller) {
+        tableCoreRef.virtualScrollToPosition({ top: 0 });
+      }
+    },
+    onKeyboardMoveSelectionVirtual(
+      columnInd: number,
+      rowInd: number,
+      verticalMove: number,
+      expandSelection: boolean,
+    ) {
+      let adaptedRowInd = rowInd;
+      if (verticalMove) {
+        const isTop = this.isTop(rowInd);
+        if (!isTop) {
+          if (rowInd === this.totalTableLength) {
+            return;
+          }
+          if (rowInd === this.placeholderRowRowIndex) {
+            adaptedRowInd += verticalMove;
+          }
+        }
+      }
+      this[expandSelection ? "onExpandCellSelect" : "onCellSelect"](
+        columnInd,
+        adaptedRowInd,
+        null,
+      );
+    },
+    onKeyboardMoveSelectionGroups(
+      columnInd: number,
+      rowInd: number,
+      verticalMove: number,
+      expandSelection: boolean,
+    ) {
+      if (typeof this.currentRectId !== "number") {
+        return;
+      }
+      let adaptedRowInd = rowInd;
+      let adaptedGroupInd = this.currentRectId;
+
+      if (verticalMove) {
+        if (rowInd === -1) {
+          adaptedRowInd = this.data[this.currentRectId - 1].length - 1;
+          adaptedGroupInd -= 1;
+        } else if (rowInd === this.data[this.currentRectId].length) {
+          if (this.data[this.currentRectId + 1]) {
+            adaptedRowInd = 0;
+            adaptedGroupInd += 1;
+          } else {
+            return;
+          }
+        }
+      }
+      this[expandSelection ? "onExpandCellSelect" : "onCellSelect"](
+        columnInd,
+        adaptedRowInd,
+        adaptedGroupInd,
+      );
+    },
+    async onKeyboardMoveSelection(
+      horizontalMove: number,
+      verticalMove: number,
+      expandSelection: boolean,
+    ) {
+      if (!this.cellSelectionRectFocusCorner) {
+        return;
+      }
+      const columnInd = this.cellSelectionRectFocusCorner.x + horizontalMove;
+      const rowInd = this.cellSelectionRectFocusCorner.y + verticalMove;
+      if (columnInd === -1 || columnInd === this.columnHeaders.length) {
+        return;
+      }
+      if (
+        (rowInd === -1 && this.showVirtualScroller) ||
+        (rowInd === -1 && !this.showVirtualScroller && this.currentRectId === 0)
+      ) {
+        this.focusHeaderCell(columnInd);
+        this.clearCellSelection();
+        return;
+      }
+
+      this[
+        this.showVirtualScroller
+          ? "onKeyboardMoveSelectionVirtual"
+          : "onKeyboardMoveSelectionGroups"
+      ](columnInd, rowInd, verticalMove, expandSelection);
+
+      const tableCoreRef = this.getTableCoreComponent();
+
+      const scrollToViewParams = this.showVirtualScroller
+        ? {
+            containerBCR:
+              tableCoreRef.getVirtualContainer()?.getBoundingClientRect() ||
+              null,
+            headerHeight: this.getHeaderComponent().$el.clientHeight,
+            scrollTo: (position: { left?: number; top?: number }) =>
+              tableCoreRef.virtualScrollToPosition(position),
+          }
+        : null;
+
+      await this.getSelectionOverlayComponent().scrollFocusOverlayIntoView(
+        scrollToViewParams,
       );
     },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
@@ -580,7 +697,7 @@ export default {
           // scroll was temporarily disabled to avoid sending scroll events during resize
           this.currentResizedScrollIndex = null;
         }, ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY);
-        this.tableCore?.virtualScrollToPosition(scrollPosition);
+        this.tableCore?.virtualScrollToPosition({ top: scrollPosition });
         resizeObserver.disconnect();
       });
       resizeObserver.observe(this.tableCore?.getVirtualBody()!);
@@ -651,7 +768,18 @@ export default {
       return `cellContent-${columnKeys[columnId]}`;
     },
     getHeaderComponent() {
-      return this.$refs.header;
+      return this.$refs.header as InstanceType<typeof Header>;
+    },
+    getTableCoreComponent() {
+      return this.$refs.tableCore as InstanceType<typeof TableCore>;
+    },
+    getSelectionOverlayComponent() {
+      return this.$refs.selectionOverlay as InstanceType<
+        typeof CellSelectionOverlay
+      >;
+    },
+    focusHeaderCell(cellInd: number) {
+      this.getHeaderComponent().focusHeaderCell(cellInd);
     },
     getRowComponents() {
       const rowComponents: any[] = [];
@@ -726,6 +854,8 @@ export default {
       @group-sub-menu-click="onGroupSubMenuClick"
       @scroller-update="onScroll"
       @update:available-width="$emit('update:available-width', $event)"
+      @move-selection="onKeyboardMoveSelection"
+      @clear-selection="clearCellSelection"
     >
       <template #row="{ row, groupInd = null, rowInd }">
         <Row
@@ -803,6 +933,7 @@ export default {
           @column-resize-start="onColumnResizeStart"
           @column-resize-end="onColumnResizeEnd"
           @sub-menu-item-selection="onHeaderSubMenuItemSelection"
+          @select-column-cell-in-first-row="selectColumnCellInFirstRow"
         />
         <ColumnFilters
           v-if="filterActive"
@@ -828,6 +959,7 @@ export default {
           :row-resize-index="currentResizedScrollIndex"
           :row-resize-delta="currentRowSizeDelta"
           :column-sizes="columnSizes"
+          :cell-selection-rect-focus-corner="cellSelectionRectFocusCorner"
         />
       </template>
     </TableCore>

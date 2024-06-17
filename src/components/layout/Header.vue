@@ -96,6 +96,7 @@ export default {
     columnResizeEnd: () => true,
     columnResizeStart: () => true,
     allColumnsResize: (newSize: number) => true,
+    selectColumnCellInFirstRow: (index: number) => true,
   },
   setup(props) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -263,6 +264,16 @@ export default {
         );
       });
     },
+    onKeydownDown(columnIndex: number) {
+      if (this.tableConfig.enableCellSelection) {
+        this.$emit("selectColumnCellInFirstRow", columnIndex);
+      }
+    },
+    focusHeaderCell(cellInd: number) {
+      (
+        this.$refs[`columnHeaderContent-${cellInd}`] as HTMLDivElement[]
+      )[0].focus();
+    },
   },
 };
 </script>
@@ -302,6 +313,7 @@ export default {
         ]"
       >
         <div
+          :ref="`columnHeaderContent-${ind}`"
           class="column-header-content"
           :class="[
             {
@@ -314,6 +326,7 @@ export default {
           tabindex="0"
           @click="onHeaderClick(ind, header)"
           @keydown.space="onHeaderClick(ind, header)"
+          @keydown.down.self.prevent="onKeydownDown(ind)"
         >
           <div class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />

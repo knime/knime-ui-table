@@ -37,10 +37,17 @@ import {
 import VirtualRow from "./VirtualRow.vue";
 import { provideForHorizontalVirtualScrolling } from "./composables/useHorizontalIndicesAndStyles";
 import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+import TableBodyNavigable from "./TableBodyNavigable.vue";
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
   scrollerUpdate: [startIndex: number, endIndex: number];
+  moveSelection: [
+    horizontalMove: number,
+    verticalMove: number,
+    expandSelection: boolean,
+  ];
+  clearSelection: [];
 }>();
 
 const withLeftSideSize = (sizeManager: SizeManager) =>
@@ -138,12 +145,18 @@ const {
  * We expose some internals of the virtual scroller for enabling keeping the.
  */
 defineExpose({
-  scrollToPosition: (scrollPosition: number) => {
-    containerProps.ref.value!.scrollTop = scrollPosition;
+  scrollToPosition: ({ top, left }: { top?: number; left?: number }) => {
+    if (typeof top !== "undefined") {
+      containerProps.ref.value!.scrollTop = top;
+    }
+    if (typeof left !== "undefined") {
+      containerProps.ref.value!.scrollLeft = left;
+    }
     containerProps.onScroll();
   },
   getScrollStart: () => containerProps.ref.value!.scrollTop,
   getBody,
+  getContainer: () => containerProps.ref.value,
 });
 </script>
 
@@ -163,25 +176,32 @@ defineExpose({
     <div ref="headerContainer" class="header-container">
       <slot name="header" :get-drag-handle-height="getDragHandleHeight" />
     </div>
-    <tbody>
-      <slot name="cell-selection-overlay" />
-      <div :style="verticalStyles">
-        <VirtualRow
-          v-for="rowInd in vertical.toArray()"
-          :key="rowInd"
-          #default="{ row }"
-          :row-height="scrollConfig.itemSize"
-          :compact="scrollConfig.compact"
-          :body-width="currentBodyWidth"
-          :data-item="scrollData[rowInd - scrollConfig.numRowsAbove]"
-          :column-sizes="columnSizes"
-          :special-column-sizes="specialColumnSizes"
-          :table-config="tableConfig"
-        >
-          <slot name="row" :row-ind="rowInd" :row="row" />
-        </VirtualRow>
-      </div>
-    </tbody>
+    <TableBodyNavigable
+      @move-selection="
+        (...args: [number, number, boolean]) => emit('moveSelection', ...args)
+      "
+      @clear-selection="emit('clearSelection')"
+    >
+      <template #bodyContent>
+        <slot name="cell-selection-overlay" />
+        <div :style="verticalStyles">
+          <VirtualRow
+            v-for="rowInd in vertical.toArray()"
+            :key="rowInd"
+            #default="{ row }"
+            :row-height="scrollConfig.itemSize"
+            :compact="scrollConfig.compact"
+            :body-width="currentBodyWidth"
+            :data-item="scrollData[rowInd - scrollConfig.numRowsAbove]"
+            :column-sizes="columnSizes"
+            :special-column-sizes="specialColumnSizes"
+            :table-config="tableConfig"
+          >
+            <slot name="row" :row-ind="rowInd" :row="row" />
+          </VirtualRow>
+        </div>
+      </template>
+    </TableBodyNavigable>
   </div>
 </template>
 

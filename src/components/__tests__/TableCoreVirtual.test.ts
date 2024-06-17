@@ -133,7 +133,7 @@ describe("TableCoreVirtual", () => {
       },
     });
 
-  let wrapper: VueWrapper;
+  let wrapper: VueWrapper<InstanceType<typeof TableCoreVirtual>>;
 
   const getContainerElement = () => wrapper.find(".container");
 
@@ -353,5 +353,17 @@ describe("TableCoreVirtual", () => {
       await flushPromises();
       expect(wrapper.emitted("scrollerUpdate")).toStrictEqual([[0, 1]]);
     });
+  });
+
+  it("adjusts the scroll properties of the container", () => {
+    const scrollTo = 42;
+    expect(wrapper.vm.getContainer()?.scrollTop).toBe(0);
+    expect(wrapper.vm.getContainer()?.scrollLeft).toBe(0);
+
+    wrapper.vm.scrollToPosition({ top: scrollTo });
+    expect(wrapper.vm.getContainer()?.scrollTop).toBe(42);
+
+    wrapper.vm.scrollToPosition({ left: scrollTo });
+    expect(wrapper.vm.getContainer()?.scrollLeft).toBe(42);
   });
 });
