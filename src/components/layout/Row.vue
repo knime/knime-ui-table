@@ -247,93 +247,88 @@ defineExpose({
 </script>
 
 <template>
-  <div
+  <tr
+    v-if="row.length > 0"
+    ref="rowElement"
+    :class="[
+      'row',
+      {
+        'no-sub-menu': !filteredSubMenuItems?.length,
+        'compact-mode': rowConfig.compactMode,
+      },
+    ]"
     :style="{
+      ...rowStyles,
+      ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
       ...rowHeightStyle,
       marginBottom: `${ROW_MARGIN_BOTTOM}px`,
     }"
   >
-    <tr
-      v-if="row.length > 0"
-      ref="rowElement"
-      :class="[
-        'row',
-        {
-          'no-sub-menu': !filteredSubMenuItems?.length,
-          'compact-mode': rowConfig.compactMode,
-        },
-      ]"
-      :style="{
-        ...rowStyles,
-        ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
-      }"
-    >
-      <CollapserToggle
-        v-if="tableConfig.showCollapser"
-        :expanded="showContent"
-        :compact-mode="rowConfig.compactMode"
-        class="collapser-cell"
-        @collapser-expand="onRowExpand"
+    <CollapserToggle
+      v-if="tableConfig.showCollapser"
+      :expanded="showContent"
+      :compact-mode="rowConfig.compactMode"
+      class="collapser-cell"
+      @collapser-expand="onRowExpand"
+    />
+    <td v-if="tableConfig.showSelection" class="select-cell">
+      <Checkbox
+        :model-value="isSelected"
+        :disabled="tableConfig.disableSelection"
+        @update:model-value="onSelect"
       />
-      <td v-if="tableConfig.showSelection" class="select-cell">
-        <Checkbox
-          :model-value="isSelected"
-          :disabled="tableConfig.disableSelection"
-          @update:model-value="onSelect"
+    </td>
+    <Cell
+      v-for="[cell, ind] of indexedRow"
+      :ref="
+        (el) => {
+          cells[ind] = el;
+        }
+      "
+      :key="ind"
+      :cell-data="cell"
+      :select-on-move="selectCellsOnMove"
+      :is-slotted="Boolean(slottedColumns[ind])"
+      :no-padding="noPadding[ind]"
+      :size="columnSizes[ind] ?? 100"
+      :class-generators="classGenerators[ind]"
+      :is-clickable-by-config="isClickableByConfig(ind)"
+      :formatter="formatters[ind]"
+      :default-top-bottom-padding="paddingTopBottom"
+      @click="onCellClick($event, ind, cell)"
+      @select="onCellSelect({ ...$event, ind })"
+      @input="onInput"
+    >
+      <template #default="{ width }">
+        <slot
+          :name="getCellContentSlotName(columnKeys, ind)"
+          :row="row"
+          :cell="unpackObjectRepresentation(cell)"
+          :height="rowHeight"
+          :width="width"
+          :ind="ind"
         />
-      </td>
-      <Cell
-        v-for="[cell, ind] of indexedRow"
-        :ref="
-          (el) => {
-            cells[ind] = el;
-          }
-        "
-        :key="ind"
-        :cell-data="cell"
-        :select-on-move="selectCellsOnMove"
-        :is-slotted="Boolean(slottedColumns[ind])"
-        :no-padding="noPadding[ind]"
-        :size="columnSizes[ind] ?? 100"
-        :class-generators="classGenerators[ind]"
-        :is-clickable-by-config="isClickableByConfig(ind)"
-        :formatter="formatters[ind]"
-        :default-top-bottom-padding="paddingTopBottom"
-        @click="onCellClick($event, ind, cell)"
-        @select="onCellSelect({ ...$event, ind })"
-        @input="onInput"
-      >
-        <template #default="{ width }">
-          <slot
-            :name="getCellContentSlotName(columnKeys, ind)"
-            :row="row"
-            :cell="unpackObjectRepresentation(cell)"
-            :height="rowHeight"
-            :width="width"
-            :ind="ind"
-          />
-        </template>
-      </Cell>
-      <td
-        v-if="filteredSubMenuItems?.length"
+      </template>
+    </Cell>
+    <td
+      v-if="filteredSubMenuItems?.length"
+      button-title="actions"
+      class="action"
+    >
+      <SubMenu
+        teleport-to-body
+        :items="filteredSubMenuItems"
         button-title="actions"
-        class="action"
+        @item-click="onSubMenuItemClick"
+        @toggle="onSubMenuToggle"
       >
-        <SubMenu
-          teleport-to-body
-          :items="filteredSubMenuItems"
-          button-title="actions"
-          @item-click="onSubMenuItemClick"
-          @toggle="onSubMenuToggle"
-        >
-          <OptionsIcon />
-        </SubMenu>
-      </td>
-    </tr>
-    <tr v-else class="row empty-row" :style="rowHeightStyle">
-      <td>-</td>
-    </tr>
-  </div>
+        <OptionsIcon />
+      </SubMenu>
+    </td>
+  </tr>
+  <tr v-else class="row empty-row" :style="rowHeightStyle">
+    <td>-</td>
+  </tr>
   <div
     v-if="showDragHandle && !selectCellsOnMove"
     class="row-drag-handle"
