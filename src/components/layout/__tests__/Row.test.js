@@ -488,7 +488,7 @@ describe("Row.vue", () => {
       it("watches for row height changes from outside", async () => {
         wrapper.setProps({ rowHeight: 999 });
         await wrapper.vm.$nextTick();
-        expect(wrapper.find("div").attributes("style")).contains(
+        expect(wrapper.find("tr").attributes("style")).contains(
           "height: 999px",
         );
       });
