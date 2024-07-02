@@ -7,7 +7,7 @@ import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
-import TableBodyNavigable from "./TableBodyNavigable.vue";
+import TableBodyNavigatable from "./TableBodyNavigatable.vue";
 
 const props = defineProps<{
   scrollData: DataItem[][];
@@ -46,7 +46,7 @@ defineExpose({
       name="header"
       :get-drag-handle-height="() => containerRef?.offsetHeight"
     />
-    <TableBodyNavigable
+    <TableBodyNavigatable
       @move-selection="
         (...args: [number, number, boolean]) => emit('moveSelection', ...args)
       "
@@ -78,7 +78,7 @@ defineExpose({
           />
         </Group>
       </template>
-    </TableBodyNavigable>
+    </TableBodyNavigatable>
   </div>
 </template>
 

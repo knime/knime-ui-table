@@ -1,13 +1,13 @@
 import { VueWrapper, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
-import TableBodyNavigable from "../TableBodyNavigable.vue";
+import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 
-describe("TableBodyNavigable", () => {
+describe("TableBodyNavigatable", () => {
   describe("keyboard events", () => {
     let wrapper: VueWrapper;
 
     beforeEach(() => {
-      wrapper = mount(TableBodyNavigable, { attachTo: document.body });
+      wrapper = mount(TableBodyNavigatable, { attachTo: document.body });
     });
 
     it.each([

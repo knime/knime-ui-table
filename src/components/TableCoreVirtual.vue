@@ -37,7 +37,7 @@ import {
 import VirtualRow from "./VirtualRow.vue";
 import { provideForHorizontalVirtualScrolling } from "./composables/useHorizontalIndicesAndStyles";
 import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
-import TableBodyNavigable from "./TableBodyNavigable.vue";
+import TableBodyNavigatable from "./TableBodyNavigatable.vue";
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -176,7 +176,7 @@ defineExpose({
     <div ref="headerContainer" class="header-container">
       <slot name="header" :get-drag-handle-height="getDragHandleHeight" />
     </div>
-    <TableBodyNavigable
+    <TableBodyNavigatable
       @move-selection="
         (...args: [number, number, boolean]) => emit('moveSelection', ...args)
       "
@@ -201,7 +201,7 @@ defineExpose({
           </VirtualRow>
         </div>
       </template>
-    </TableBodyNavigable>
+    </TableBodyNavigatable>
   </div>
 </template>
 

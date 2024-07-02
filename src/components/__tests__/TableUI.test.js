@@ -25,7 +25,7 @@ import useCellSelection from "../composables/useCellSelection";
 import TableCoreGroups from "../TableCoreGroups.vue";
 import TableCoreVirtual from "../TableCoreVirtual.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import TableBodyNavigable from "../TableBodyNavigable.vue";
+import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 
 const bodyWidthResult = 123;
 const fitsInsideTotalWidthResult = true;
@@ -300,7 +300,7 @@ describe("TableUI.vue", () => {
           TableCore,
           TableCoreGroups,
           TableCoreVirtual,
-          TableBodyNavigable,
+          TableBodyNavigatable,
           ...stubs,
         },
       },
@@ -1404,11 +1404,15 @@ describe("TableUI.vue", () => {
             { enableVirtualScrolling: true, shallow: false },
             stubs,
           );
-          wrapper.findComponent(TableBodyNavigable).vm.$emit("clearSelection");
+          wrapper
+            .findComponent(TableBodyNavigatable)
+            .vm.$emit("clearSelection");
           expect(wrapper.vm.clearCellSelection).toHaveBeenCalledOnce();
 
           wrapper = doMount({ shallow: false }, stubs).wrapper;
-          wrapper.findComponent(TableBodyNavigable).vm.$emit("clearSelection");
+          wrapper
+            .findComponent(TableBodyNavigatable)
+            .vm.$emit("clearSelection");
           expect(wrapper.vm.clearCellSelection).toHaveBeenCalledTimes(2);
         });
 
