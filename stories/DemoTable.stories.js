@@ -469,4 +469,5 @@ TableUIWithAutoSizeCalculation.args = {
   showSubHeaders: true,
   enableColumnResize: true,
   showSubMenus: true,
+  backgroundColor: "--knime-porcelain",
 };

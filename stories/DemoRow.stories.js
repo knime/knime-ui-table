@@ -1,10 +1,10 @@
-import RowComp from "../src/components/layout/Row.vue";
+import DemoRow from "./DemoRow.vue";
 import consola from "consola";
 
 // More on default export: https://storybook.js.org/docs/vue/writing-stories/introduction#default-export
 export default {
   title: "Row",
-  component: RowComp,
+  component: DemoRow,
   parameters: {
     layout: "fullscreen",
   },
@@ -14,11 +14,11 @@ export default {
 const Template = (args) => {
   window.global.consola = consola;
   return {
-    components: { RowComp },
+    components: { DemoRow },
     setup() {
       return { args };
     },
-    template: '<RowComp v-bind="args" />',
+    template: '<DemoRow v-bind="args" />',
   };
 };
 
