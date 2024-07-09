@@ -447,6 +447,14 @@ ReportTableView.args = {
   allSlottedColumns: ["lastRun"],
 };
 
+export const TableViewWide = Template.bind({});
+
+TableViewWide.args = {
+  ...TableView.args,
+  desiredNumCols: 200,
+  showAllColumns: true,
+};
+
 export const TableUIWithAutoSizeCalculation = Template.bind({});
 
 TableUIWithAutoSizeCalculation.args = {

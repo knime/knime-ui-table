@@ -24,6 +24,14 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  desiredNumCols: {
+    type: Number,
+    default: demoProps.allColumnKeys.length,
+  },
+  showAllColumns: {
+    type: Boolean,
+    default: false,
+  },
   bottomData: {
     type: Array,
     default: () => [],
@@ -134,14 +142,28 @@ const props = defineProps({
 });
 
 const {
+  allColumnHeadersGenerated,
+  allColumnKeysGenerated,
+  allColumnTypesGenerated,
+  allDataGenerated,
+} = generateAllData(props.allDataLength, props.desiredNumCols);
+const allColumnsDataGenerated = {
+  allColumnHeaders: allColumnHeadersGenerated,
+  allColumnKeys: allColumnKeysGenerated,
+  allColumnTypes: allColumnTypesGenerated,
+};
+
+const {
   onColumnUpdate,
   onColumnReorder,
   filterByColumn,
   allHeadersOrdered,
   currentColumns,
 } = useColumnSelection({
-  allColumnsData: demoProps,
-  initialColumns: demoProps.defaultColumns,
+  allColumnsData: allColumnsDataGenerated,
+  initialColumns: props.showAllColumns
+    ? allColumnKeysGenerated
+    : demoProps.defaultColumns,
 });
 
 const {
@@ -156,7 +178,10 @@ const {
 });
 
 const { domains, updateDomains, currentFormatters } = useFormatters({
-  allColumnsData: demoProps,
+  allColumnsData: {
+    ...allColumnsDataGenerated,
+    allFormatters: demoProps.allFormatters,
+  },
   currentColumnKeys: currentColumns.keys,
 });
 
@@ -177,7 +202,7 @@ const {
   defaultTimeFilter: props.defaultTimeFilter,
   formatterData: { domains, currentFormatters },
   currentColumns: currentColumns.keys,
-  allColumns: demoProps,
+  allColumns: allColumnsDataGenerated,
 });
 
 const {
@@ -188,7 +213,7 @@ const {
   groupTitles,
   onGroupUpdate,
 } = useGroups({
-  columnData: demoProps,
+  columnData: allColumnsDataGenerated,
 });
 
 const { sortData, sortHash, columnSort, columnSortDirection, onColumnSort } =
@@ -218,7 +243,7 @@ const { paginatedData, processedIndicies, paginatedIndicies, totalTableSize } =
     group: { groupData, groupHash },
     sort: { sortData, sortHash },
     paginate: { paginateData, pageHash, goToFirstPage },
-    allData: generateAllData(props.allDataLength),
+    allData: allDataGenerated,
     updateDomains,
   });
 
@@ -292,9 +317,9 @@ const dataConfig = computed(() => {
 
 const groupByConfig = props.withGroupBy
   ? computed(() => ({
-      possibleGroups: demoProps.allColumnHeaders.filter(
-        (header, colInd) =>
-          demoProps.allColumnTypes[demoProps.allColumnKeys[colInd]] ===
+      possibleGroups: allColumnHeadersGenerated.filter(
+        (_, colInd) =>
+          allColumnTypesGenerated[allColumnKeysGenerated[colInd]] ===
           columnTypes.Nominal,
       ),
       currentGroup: currentGroup.value,
