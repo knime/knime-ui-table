@@ -29,7 +29,7 @@ import { computed, ref, type Ref, type PropType } from "vue";
 import TableCore from "./TableCore.vue";
 import type TableConfig from "@/types/TableConfig";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 import type FilterConfig from "@/types/FilterConfig";
 
 export type DataItem =

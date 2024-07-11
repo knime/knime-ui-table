@@ -1,8 +1,8 @@
 <script>
 import { markRaw } from "vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import DeleteIcon from "webapps-common/ui/assets/img/icons/trash.svg";
-import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
+import { Checkbox } from "@knime/components";
+import DeleteIcon from "@knime/styles/img/icons/trash.svg";
+import LinkIcon from "@knime/styles/img/icons/link.svg";
 
 import Table from "@/components/Table.vue";
 import demoProps from "./props.json";
@@ -231,7 +231,7 @@ export default {
 </template>
 
 <style>
-@import url("webapps-common/ui/css");
+@import url("@knime/styles/css");
 
 :root {
   font-size: 16px;

@@ -1,15 +1,17 @@
 <script lang="ts">
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
-import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import {
+  Checkbox,
+  useClickOutside,
+  useDropdownNavigation,
+} from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import type { Ref, PropType } from "vue";
 import { ref, toRefs, computed, inject } from "vue";
 import { isMissingValue } from "@/util";
 import useDropdownFloating from "./composables/useDropdownFloating";
-import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
-import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
 import useIdGeneration from "./composables/useIdGeneration";
 import useScrollToElement from "./composables/useScrollToElement";
 import type PossibleValue from "@/types/PossibleValue";

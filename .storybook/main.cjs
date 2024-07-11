@@ -19,7 +19,6 @@ module.exports = {
       resolve: {
         alias: {
           "@": path.resolve(__dirname, "../src"),
-          "webapps-common": path.resolve(__dirname, "../webapps-common"),
         },
       },
     });

@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted, ref, type Ref } from "vue";
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import type CellSelectionOverlay from "../ui/CellSelectionOverlay.vue";
 
 export default ({
@@ -37,7 +37,7 @@ export default ({
     onCopySelection({ withHeaders: false });
   };
 
-  const primaryModifierKey = getMetaOrCtrlKey();
+  const primaryModifierKey = navigatorUtils.getMetaOrCtrlKey();
   const handleCopyOnKeydown = (e: KeyboardEvent) => {
     if (e[primaryModifierKey]) {
       onCopySelection({ withHeaders: true });

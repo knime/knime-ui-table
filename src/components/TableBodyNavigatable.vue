@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 
 const emit = defineEmits<{
   moveSelection: [
@@ -34,7 +34,10 @@ const onArrowKeyDown = (event: KeyboardEvent) => {
 };
 
 const onKeyDown = (event: KeyboardEvent) => {
-  if (!event[getMetaOrCtrlKey()] && event.key.includes("Arrow")) {
+  if (
+    !event[navigatorUtils.getMetaOrCtrlKey()] &&
+    event.key.includes("Arrow")
+  ) {
     onArrowKeyDown(event);
   } else if (event.key === "Tab") {
     emit("clearSelection");

@@ -1,5 +1,5 @@
 <script lang="ts">
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 import type { ActionButtonConfig } from "@/types/TableConfig";
 import type { PropType } from "vue";
 

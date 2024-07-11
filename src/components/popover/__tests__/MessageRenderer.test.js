@@ -3,8 +3,8 @@ import { shallowMount } from "@vue/test-utils";
 
 import MessageRenderer from "../MessageRenderer.vue";
 import PopoverPageControls from "../PopoverPageControls.vue";
-import ErrorIcon from "webapps-common/ui/assets/img/icons/sign-warning.svg";
-import WarnIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
+import ErrorIcon from "@knime/styles/img/icons/sign-warning.svg";
+import WarnIcon from "@knime/styles/img/icons/circle-info.svg";
 
 const testMessages = [
   {

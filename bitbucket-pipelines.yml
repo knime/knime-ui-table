@@ -15,7 +15,6 @@ definitions:
           - docker # used by sonar pipes
         size: 2x # more memory to accomodate docker container for sonarcloud
         script:
-          - git submodule update --init --recursive
           - npm ci
           - npm run ci:lint-format
           - npm run coverage

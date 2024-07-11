@@ -7,7 +7,7 @@ import StringRenderer from "../StringRenderer.vue";
 import ObjectRenderer from "../ObjectRenderer.vue";
 import ArrayRenderer from "../ArrayRenderer.vue";
 import MessageRenderer from "../MessageRenderer.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 
 vi.mock(
   "vue-clickaway2",

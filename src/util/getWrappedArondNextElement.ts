@@ -1,4 +1,4 @@
-import getWrappedAroundIndex from "webapps-common/ui/util/getWrappedAroundIndex";
+import { getWrappedAroundIndex } from "@knime/utils";
 
 export default (
   current: number | null,

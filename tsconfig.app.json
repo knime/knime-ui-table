@@ -2,18 +2,12 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": [
     "vite-env.d.ts",
-    "webapps-common/ui/globals.d.ts",
     "src/**/*",
     "src/**/*.vue",
-    "lib/main.ts",
-    "webapps-common/**/*",
-    "webapps-common/**/*.vue"
+    "node_modules/@knime/**/*.vue",
+    "lib/main.ts"
   ],
-  "exclude": [
-    "src/**/__tests__/*",
-    "webapps-common/**/__tests__/*",
-    "webapps-common/demo/*"
-  ],
+  "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",

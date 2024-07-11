@@ -33,9 +33,8 @@
  */
 
 import CollapserToggle from "../ui/CollapserToggle.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
+import { Checkbox, SubMenu, type MenuItem } from "@knime/components";
+import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import {
   DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_PADDING_TOP_BOTTOM,
@@ -48,7 +47,6 @@ import throttle from "raf-throttle";
 import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
 import { ref, computed, watch, type Ref, toRef } from "vue";
 import type TableConfig from "@/types/TableConfig";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
 

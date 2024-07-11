@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { PropType } from "vue";
 import PageControls from "./PageControls.vue";
-import Carousel from "webapps-common/ui/components/Carousel.vue";
+import { Carousel } from "@knime/components";
 import type { PageConfig } from "@/types/TableConfig";
 /**
  * Base table header component with table page controls on the left of the table row

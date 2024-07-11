@@ -4,10 +4,9 @@ import ControlDropdown from "./ControlDropdown.vue";
 import ControlMultiselect from "./ControlMultiselect.vue";
 import FilterInputField from "../filter/FilterInputField.vue";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SearchIcon from "webapps-common/ui/assets/img/icons/lens.svg";
-import SettingsIcon from "webapps-common/ui/assets/img/icons/settings.svg";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { FunctionButton, SubMenu } from "@knime/components";
+import SearchIcon from "@knime/styles/img/icons/lens.svg";
+import SettingsIcon from "@knime/styles/img/icons/settings.svg";
 
 import { tableTimeFilters } from "@/config/time.config";
 import isSinglePage from "@/util/isSinglePage";

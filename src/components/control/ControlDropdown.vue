@@ -1,12 +1,11 @@
 <script lang="ts">
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import { ref, computed, toRefs, inject } from "vue";
 import type { Ref, PropType } from "vue";
 import { isMissingValue } from "@/util";
 import useDropdownFloating from "./composables/useDropdownFloating";
-import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
-import useClickOutside from "webapps-common/ui/composables/useClickOutside";
+import { useDropdownNavigation, useClickOutside } from "@knime/components";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
 import type PossibleValue from "@/types/PossibleValue";
 import useIdGeneration from "./composables/useIdGeneration";

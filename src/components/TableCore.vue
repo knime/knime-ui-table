@@ -5,7 +5,7 @@ import useAvailableWidth from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 import TableCoreVirtual from "./TableCoreVirtual.vue";
 import TableCoreGroups from "./TableCoreGroups.vue";
 import { provideCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";

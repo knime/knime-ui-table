@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import throttle from "raf-throttle";
 import { computed, ref, type Ref } from "vue";
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import type { CellRendererProps } from "./CellRendererProps";
 
 const emit = defineEmits(["click", "input", "select"]);

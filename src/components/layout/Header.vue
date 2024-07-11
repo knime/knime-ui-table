@@ -1,11 +1,14 @@
 <!-- eslint-disable max-lines -->
 <script lang="ts">
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import ArrowDropdown from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
-import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import {
+  Checkbox,
+  FunctionButton,
+  SubMenu,
+  type MenuItem,
+} from "@knime/components";
+import ArrowDropdown from "@knime/styles/img/icons/arrow-dropdown.svg";
+import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
+import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import throttle from "raf-throttle";
 import {
   MIN_COLUMN_SIZE,
@@ -17,7 +20,6 @@ import { getHeaderPaddingLeft } from "@/util";
 
 import type TableConfig from "@/types/TableConfig";
 import { toRef, type PropType } from "vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 
 const BORDER_TOP = 1;

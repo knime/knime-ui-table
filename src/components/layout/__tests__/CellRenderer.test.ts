@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import CellRenderer from "../CellRenderer.vue";
 import type { CellRendererProps } from "../CellRendererProps";
 

@@ -5,7 +5,7 @@ import Group from "./layout/Group.vue";
 
 import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
 import TableBodyNavigatable from "./TableBodyNavigatable.vue";
 

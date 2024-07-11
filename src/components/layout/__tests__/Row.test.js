@@ -5,11 +5,9 @@ import { shallowMount, mount } from "@vue/test-utils";
 import Row from "../Row.vue";
 import Cell from "../Cell.vue";
 import CollapserToggle from "@/components/ui/CollapserToggle.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
+import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
 
 describe("Row.vue", () => {

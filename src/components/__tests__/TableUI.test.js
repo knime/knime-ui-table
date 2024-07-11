@@ -24,7 +24,7 @@ import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import useCellSelection from "../composables/useCellSelection";
 import TableCoreGroups from "../TableCoreGroups.vue";
 import TableCoreVirtual from "../TableCoreVirtual.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu } from "@knime/components";
 import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 
 const bodyWidthResult = 123;
@@ -53,9 +53,15 @@ vi.mock("../composables/useCellSelection", () => ({
 }));
 
 let getMetaOrCtrlKeyMockReturnValue = "";
-vi.mock("webapps-common/util/navigator", () => ({
-  getMetaOrCtrlKey: vi.fn(() => getMetaOrCtrlKeyMockReturnValue),
-}));
+vi.mock("@knime/utils", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    navigatorUtils: {
+      getMetaOrCtrlKey: vi.fn(() => getMetaOrCtrlKeyMockReturnValue),
+    },
+  };
+});
 
 const groupedData = {
   data: [

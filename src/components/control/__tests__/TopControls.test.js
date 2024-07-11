@@ -6,8 +6,7 @@ import BaseControls from "../BaseControls.vue";
 import ControlDropdown from "../ControlDropdown.vue";
 import ControlMultiselect from "../ControlMultiselect.vue";
 import FilterInputField from "@/components/filter/FilterInputField.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { FunctionButton, SubMenu } from "@knime/components";
 
 describe("TopControls.vue", () => {
   let props;

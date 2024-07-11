@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
 import Header from "../Header.vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import ArrowIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
-import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
+import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
+import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
+import FilterIcon from "@knime/styles/img/icons/filter.svg";
 
 const columnSubMenuItems = [
   { text: "Data renderer", separator: true, sectionHeadline: true },

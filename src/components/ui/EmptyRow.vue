@@ -6,7 +6,7 @@ import {
 import type TableConfig from "@/types/TableConfig";
 import { toRef } from "vue";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import { Checkbox } from "@knime/components";
 
 const props = defineProps<{
   width: number;

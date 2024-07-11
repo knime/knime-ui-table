@@ -4,10 +4,9 @@ import StringRenderer from "./StringRenderer.vue";
 import ObjectRenderer from "./ObjectRenderer.vue";
 import ArrayRenderer from "./ArrayRenderer.vue";
 import MessageRenderer from "./MessageRenderer.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import { FunctionButton, useClickOutside } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import { ref, type PropType } from "vue";
-import useClickOutside from "webapps-common/ui/composables/useClickOutside";
 
 const PARENT_RATIO = 0.5;
 const MAX_TOTAL_HEIGHT = 300;

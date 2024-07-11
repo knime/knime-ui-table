@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive } from "vue";
 import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import demoProps from "./props.json";
 import { columnTypes, tablePageSizes } from "@/config/table.config";
 
@@ -486,7 +486,7 @@ const htmlSlotContent = `
 </template>
 
 <style>
-@import url("webapps-common/ui/css");
+@import url("@knime/styles/css");
 
 :root {
   font-size: 16px;

@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import Group from "../Group.vue";
-import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
+import { SubMenu } from "@knime/components";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
 
 describe("Group.vue", () => {

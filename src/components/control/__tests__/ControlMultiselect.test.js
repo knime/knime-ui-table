@@ -3,16 +3,21 @@ import { mount } from "@vue/test-utils";
 import { ref, unref } from "vue";
 
 import ControlMultiselect from "../ControlMultiselect.vue";
-import CircleHelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 
 const dropdownNavigation = {
   currentIndex: ref(1),
   resetNavigation: vi.fn(),
   onKeydown: vi.fn(),
 };
-vi.mock("webapps-common/ui/composables/useDropdownNavigation", () => ({
-  default: vi.fn(() => dropdownNavigation),
-}));
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useDropdownNavigation: vi.fn(() => dropdownNavigation),
+    useClickOutside: vi.fn(),
+  };
+});
 
 const dropdownFloating = {
   update: vi.fn(),
@@ -24,14 +29,10 @@ const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
   default: vi.fn(() => scrollToElement),
 }));
-vi.mock("webapps-common/ui/composables/useClickOutside", () => ({
-  default: vi.fn(),
-}));
 
 import useDropdownFloating from "../composables/useDropdownFloating";
 import useScrollToElement from "../composables/useScrollToElement";
-import useClickOutside from "webapps-common/ui/composables/useClickOutside";
-import useDropdownNavigation from "webapps-common/ui/composables/useDropdownNavigation";
+import { useClickOutside, useDropdownNavigation } from "@knime/components";
 
 window.scrollTo = vi.fn();
 

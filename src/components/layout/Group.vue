@@ -1,8 +1,7 @@
 <script lang="ts">
 import type { PropType } from "vue";
-import OptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
+import { type MenuItem, SubMenu } from "@knime/components";
 import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
 
 /**

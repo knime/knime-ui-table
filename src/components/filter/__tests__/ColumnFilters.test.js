@@ -5,8 +5,8 @@ import ColumnFilters from "../ColumnFilters.vue";
 import ControlMultiselect from "../../control/ControlMultiselect.vue";
 import FilterInputField from "../FilterInputField.vue";
 import ControlDropdown from "../../control/ControlDropdown.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import { FunctionButton } from "@knime/components";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 describe("ColumnFilters.vue", () => {
   let props = {

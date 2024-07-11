@@ -1,4 +1,4 @@
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 export interface PageConfig {
   currentSize: number;

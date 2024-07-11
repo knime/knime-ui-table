@@ -1,7 +1,7 @@
 import type { ClassGenerator } from "@/components/layout/CellProps";
 import type { PopoverRenderer } from "@/components/popover/TablePopover.vue";
 import type FilterConfig from "./FilterConfig";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 import type { ColumnType } from "@/config/table.config";
 
 interface RowConfigBase {

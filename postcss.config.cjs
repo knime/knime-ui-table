@@ -1,7 +1,8 @@
-const { preset } = require("webapps-common/config/postcss.config.cjs");
+const { preset } = require("@knime/styles/config/postcss.config.cjs");
 
 module.exports = {
   plugins: {
+    "postcss-mixins": {},
     "postcss-preset-env": preset,
   },
 };
