@@ -26,9 +26,9 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@knime/components": "1.0.4",
+    "@knime/components": "1.0.5",
     "@knime/styles": "1.0.0",
-    "@knime/utils": "1.0.3",
+    "@knime/utils": "1.0.4",
     "@knime/vue-headless-virtual-scroller": "0.1.1",
     "lodash-es": "4.17.21",
     "raf-throttle": "2.0.6",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@knime/eslint-config": "8.1.0",
-    "@knime/licenses": "1.0.2",
+    "@knime/licenses": "1.0.3",
     "@storybook/addon-actions": "7.6.17",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addon-interactions": "7.6.17",
@@ -75,6 +75,9 @@
   },
   "peerDependencies": {
     "vue": "3.x"
+  },
+  "overrides": {
+    "semver@>=6.0.0 <6.3.1": ">=6.3.1"
   },
   "files": [
     "dist",
