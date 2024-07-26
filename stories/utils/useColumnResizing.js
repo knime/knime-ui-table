@@ -21,7 +21,7 @@ export default ({ currentColumnIndices, currentColumnKeys }) => {
     currentAvailableWidth.value = newAvailableWidth;
   };
 
-  const onAutoColumnSizesUpdate = (newAutoColumnSizesByKey) => {
+  const onAutoSizesUpdate = (newAutoColumnSizesByKey) => {
     currentAllColumnSizes.value = {};
     currentSetDefaultSize.value = null;
     currentColumnIndices.value.forEach(
@@ -80,6 +80,6 @@ export default ({ currentColumnIndices, currentColumnKeys }) => {
     onColumnResize,
     onAllColumnsResize,
     updateAvailableWidth,
-    onAutoColumnSizesUpdate,
+    onAutoSizesUpdate,
   };
 };

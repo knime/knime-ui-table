@@ -127,6 +127,7 @@ export default {
     },
     autoSizeColumnsToContent: Boolean,
     autoSizeColumnsToContentInclHeaders: Boolean,
+    autoSizeRowsToContent: Boolean,
     fixHeader: Boolean,
     /**
      * Additional configuration options.
@@ -476,6 +477,12 @@ export default {
         calculateForHeader: this.autoSizeColumnsToContentInclHeaders,
       };
     },
+    autoRowHeightOptions() {
+      return {
+        fixedHeights: {},
+        calculate: this.autoSizeRowsToContent,
+      };
+    },
     reserveSpaceForSubMenu() {
       const hasRowSubMenu = this.paginatedData?.some((groupData) =>
         groupData?.some((rowData) => rowData?.subMenuItemsForRow),
@@ -784,13 +791,13 @@ export default {
       if (proposedPage > 0 && isWithinRange) {
         this.currentPage = proposedPage;
       }
-      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
+      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoSizes();
     },
     onPageSizeUpdate(newPageSize) {
       consola.debug(`Table received: pageSizeUpdate ${newPageSize}`);
       this.currentPageSize = newPageSize;
       this.setCorrectPage();
-      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoColumnSizes();
+      this.$refs.tableUIWithAutoSizeCalc.triggerCalculationOfAutoSizes();
     },
     setCorrectPage() {
       let newPageNumber = getNextPage(
@@ -908,7 +915,7 @@ export default {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
       return `cellContent-${columnId}`;
     },
-    onAutoColumnSizesUpdate(newAutoColumnSizes) {
+    onAutoSizesUpdate(newAutoColumnSizes, _) {
       this.allColumnKeys.forEach((columnKey, columnIndex) => {
         this.currentAllColumnSizes[columnIndex] =
           newAutoColumnSizes[columnKey] || -1;
@@ -927,6 +934,7 @@ export default {
     :data-config="dataConfig"
     :table-config="tableConfig"
     :auto-column-sizes-options="autoColumnSizesOptions"
+    :auto-row-height-options="autoRowHeightOptions"
     @time-filter-update="onTimeFilterUpdate"
     @column-update="onColumnUpdate"
     @column-reorder="onColumnReorder"
@@ -945,7 +953,7 @@ export default {
     @all-columns-resize="onAllColumnsResize"
     @update:available-width="updateAvailableWidth"
     @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
-    @auto-column-sizes-update="onAutoColumnSizesUpdate"
+    @auto-sizes-update="onAutoSizesUpdate"
   >
     <!-- eslint-disable vue/valid-v-slot -->
     <template

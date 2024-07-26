@@ -186,8 +186,8 @@ describe("Cell.vue", () => {
     });
   });
 
-  it("calls getCellContentWidth in the CellRenderer", () => {
+  it("calls getCellContentDimensions in the CellRenderer", () => {
     const wrapper = mount(Cell, { props });
-    expect(wrapper.vm.getCellContentWidth()).toBe(10);
+    expect(wrapper.vm.getCellContentDimensions()).toBe(10);
   });
 });

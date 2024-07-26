@@ -171,7 +171,7 @@ const {
   onColumnResize,
   onAllColumnsResize,
   updateAvailableWidth: onAvailableWidthUpdate,
-  onAutoColumnSizesUpdate,
+  onAutoSizesUpdate,
 } = useColumnResizing({
   currentColumnIndices: currentColumns.indices,
   currentColumnKeys: currentColumns.keys,
@@ -464,7 +464,7 @@ const htmlSlotContent = `
       @column-resize="onColumnResize"
       @all-columns-resize="onAllColumnsResize"
       @update:available-width="onAvailableWidthUpdate"
-      @auto-column-sizes-update="onAutoColumnSizesUpdate"
+      @auto-column-sizes-update="onAutoSizesUpdate"
       @copy-selection="onCopySelection"
     >
       <template
@@ -504,7 +504,7 @@ const htmlSlotContent = `
     v-if="autoSizeColumnsToBody || autoSizeColumnsToHeader"
     class="trigger-auto-sizing"
     primary
-    @click="() => $refs.table.triggerCalculationOfAutoColumnSizes()"
+    @click="() => $refs.table.triggerCalculationOfAutoSizes()"
   >
     <span>Trigger auto size</span>
   </FunctionButton>

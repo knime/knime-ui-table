@@ -133,6 +133,6 @@ describe("Cell.vue", () => {
       .fn()
       .mockReturnValue({ width: null });
     const wrapper = shallowMount(CellRenderer, { props });
-    expect(wrapper.vm.getCellContentWidth()).toBe(10);
+    expect(wrapper.vm.getCellContentDimensions()).toBe(10);
   });
 });
