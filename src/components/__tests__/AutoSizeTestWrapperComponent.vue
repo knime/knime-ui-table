@@ -23,7 +23,7 @@ const increaseColumnSizes = () => {
   <TableUIWithAutoSizeCalculation
     v-bind="attrs"
     :data-config="dataConfig"
-    @auto-column-sizes-update="increaseColumnSizes"
+    @auto-sizes-update="increaseColumnSizes"
     @update:available-width="increaseColumnSizes"
   />
 </template>

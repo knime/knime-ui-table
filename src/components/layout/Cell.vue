@@ -70,10 +70,11 @@ const classes = computed(() => {
 });
 
 const cellRenderer: Ref<InstanceType<typeof CellRenderer> | null> = ref(null);
-const getCellContentWidth = () => cellRenderer.value?.getCellContentWidth();
+const getCellContentDimensions = () =>
+  cellRenderer.value?.getCellContentDimensions();
 
 defineExpose({
-  getCellContentWidth,
+  getCellContentDimensions,
 });
 </script>
 

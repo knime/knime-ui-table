@@ -16,16 +16,29 @@ const dataCellColorStyle = computed(() => {
       };
 });
 
+const hasPaddingTopBottom = computed(
+  () => !(props.isSlotted && Boolean(props.noPadding)) || props.isMissing,
+);
+
 const dataCell: Ref<HTMLElement | null> = ref(null);
-const getCellContentWidth = () => {
-  const widthDataCellFirstChild = Math.ceil(
-    dataCell.value?.firstElementChild?.getBoundingClientRect().width ?? 0,
-  );
-  return props.paddingLeft + widthDataCellFirstChild;
+const getCellContentDimensions = () => {
+  const bcr = dataCell.value?.firstElementChild?.getBoundingClientRect();
+  let widthDataCellFirstChild = 0;
+  let heightDataCellFirstChild = 0;
+  if (bcr) {
+    widthDataCellFirstChild = Math.ceil(bcr.width);
+    heightDataCellFirstChild = Math.ceil(bcr.height);
+  }
+  return {
+    width: props.paddingLeft + widthDataCellFirstChild,
+    height:
+      heightDataCellFirstChild +
+      (hasPaddingTopBottom.value ? props.defaultTopBottomPadding * 2 : 0),
+  };
 };
 
 defineExpose({
-  getCellContentWidth,
+  getCellContentDimensions,
 });
 
 const onPointerOver = throttle(() => {
@@ -33,10 +46,6 @@ const onPointerOver = throttle(() => {
     emit("select", { expandSelection: true });
   }
 });
-
-const hasPaddingTopBottom = computed(
-  () => !(props.isSlotted && Boolean(props.noPadding)) || props.isMissing,
-);
 </script>
 
 <template>

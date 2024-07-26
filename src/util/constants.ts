@@ -24,6 +24,12 @@ export const COMPACT_ROW_HEIGHT = 24;
 // the margin / border width of any given row
 export const ROW_MARGIN_BOTTOM = 1;
 
+// the minimum height of a row
+export const MIN_ROW_HEIGHT = COMPACT_ROW_HEIGHT;
+
+// the maximum height of a row
+export const MAX_ROW_HEIGHT = 120;
+
 // the height of the table header and group headers
 export const HEADER_HEIGHT = DEFAULT_ROW_HEIGHT;
 

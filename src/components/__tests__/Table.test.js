@@ -49,6 +49,7 @@ describe("Table.vue", () => {
     parentSelected: [0],
     autoSizeColumnsToContent: false,
     autoSizeColumnsToContentInclHeaders: false,
+    autoSizeRowToContent: false,
   };
 
   beforeEach(() => {
@@ -643,7 +644,7 @@ describe("Table.vue", () => {
       await wrapper.vm.$nextTick(); // await font 400 1em Roboto to be loaded
       await wrapper.vm.$nextTick(); // await font 700 1em Roboto to be loaded
     };
-    let onAutoColumnSizesUpdateSpy, triggerCalculationOfAutoColumnSizesSpy;
+    let onAutoSizesUpdateSpy, triggerCalculationOfAutoSizesSpy;
 
     beforeAll(() => {
       Object.defineProperty(document, "fonts", {
@@ -652,20 +653,17 @@ describe("Table.vue", () => {
     });
 
     beforeEach(() => {
-      onAutoColumnSizesUpdateSpy = vi.spyOn(
-        Table.methods,
-        "onAutoColumnSizesUpdate",
-      );
-      triggerCalculationOfAutoColumnSizesSpy = vi.spyOn(
+      onAutoSizesUpdateSpy = vi.spyOn(Table.methods, "onAutoSizesUpdate");
+      triggerCalculationOfAutoSizesSpy = vi.spyOn(
         TableUIWithAutoSizeCalculation.methods,
-        "triggerCalculationOfAutoColumnSizes",
+        "triggerCalculationOfAutoSizes",
       );
     });
 
     it("does not update column sizes from availableWidth when auto sizes active", () => {
       vi.spyOn(
         TableUIWithAutoSizeCalculation.methods,
-        "calculateAutoColumnSizes",
+        "calculateAutoSizes",
       ).mockImplementationOnce(() => ({}));
       const { wrapper } = doMount({
         customProps: { autoSizeColumnsToContent: true },
@@ -690,9 +688,9 @@ describe("Table.vue", () => {
 
     it('doesn"t calculate the column sizes on mounted when option autoSizeColumnsToContent is deactivated', async () => {
       const { wrapper } = doMount({ shallow: false });
-      expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalled();
+      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
       await wrapper.vm.$nextTick();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({});
+      expect(onAutoSizesUpdateSpy).toHaveBeenCalledWith({}, null);
     });
 
     it("triggers and updates the column sizes on mounted when option autoSizeColumnsToContent is activated", async () => {
@@ -701,8 +699,8 @@ describe("Table.vue", () => {
         shallow: false,
       });
       await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalled();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({ a: 50, b: 50 });
+      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
+      expect(onAutoSizesUpdateSpy).toHaveBeenCalledWith({ a: 50, b: 50 }, null);
     });
 
     it("triggers and updates column sizes when the option autoSizeColumnsToContent gets checked", async () => {
@@ -710,8 +708,8 @@ describe("Table.vue", () => {
       await wrapper.setProps({ autoSizeColumnsToContent: true });
       await wrapper.vm.$nextTick();
       await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalled();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalled();
+      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
+      expect(onAutoSizesUpdateSpy).toHaveBeenCalled();
     });
 
     it.each([
@@ -738,11 +736,11 @@ describe("Table.vue", () => {
           shallow: false,
         });
         await loadFonts(wrapper);
-        expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(1);
         await changeCallback(wrapper);
         await loadFonts(wrapper);
-        expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
-        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(2);
+        expect(onAutoSizesUpdateSpy).toHaveBeenCalledTimes(2);
       },
     );
 
@@ -756,8 +754,8 @@ describe("Table.vue", () => {
       await loadFonts(wrapper);
       wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A", "B"]);
       await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoColumnSizesSpy).toHaveBeenCalledTimes(3);
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(3);
+      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(3);
+      expect(onAutoSizesUpdateSpy).toHaveBeenCalledTimes(3);
     });
   });
 });
