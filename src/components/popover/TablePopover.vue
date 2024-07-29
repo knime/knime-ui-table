@@ -1,4 +1,4 @@
-<script lang="ts">
+<script setup lang="ts">
 import { columnTypes, type ColumnType } from "@/config/table.config";
 import StringRenderer from "./StringRenderer.vue";
 import ObjectRenderer from "./ObjectRenderer.vue";
@@ -6,258 +6,225 @@ import ArrayRenderer from "./ArrayRenderer.vue";
 import MessageRenderer from "./MessageRenderer.vue";
 import { FunctionButton, useClickOutside } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
-import { ref, type PropType } from "vue";
-
-const PARENT_RATIO = 0.5;
-const MAX_TOTAL_HEIGHT = 300;
-
-export type PopoverRenderer =
-  | ColumnType
-  | {
-      type: string;
-      process?: (data: any) => any;
-    };
+import { computed, type Ref, ref } from "vue";
+import {
+  useFloating,
+  shift,
+  arrow,
+  offset,
+  flip,
+  limitShift,
+  autoUpdate,
+  size,
+} from "@floating-ui/vue";
 
 /**
  * This component is a global popover which dynamically determines where it should
- * be displayed based on the DOM information of the trigger event. It uses the relative
- * position of the target and parent elements for starting coordinates and then determines
- * the correct direction to display its content based on the available space.
+ * be displayed using floatingUI.
  *
  * It has a slot to allow the use of dynamic rendering components and also dynamically
  * changes its rendering format based on the data provided.
  *
  * @emits close event when the popover is closed.
  */
-export default {
-  components: {
-    StringRenderer,
-    ObjectRenderer,
-    ArrayRenderer,
-    MessageRenderer,
-    FunctionButton,
-    CloseIcon,
+
+const MAX_HEIGHT_OR_WIDTH = 300;
+const CONTENT_PADDING = 23;
+
+const renderers = {
+  ObjectRenderer,
+  StringRenderer,
+  ArrayRenderer,
+  MessageRenderer,
+} as const;
+
+type RendererType = keyof typeof renderers;
+
+export type PopoverRenderer =
+  | ColumnType
+  | {
+      type: RendererType;
+      process?: (data: any) => any;
+    }
+  | undefined;
+
+const props = defineProps<{
+  data: unknown;
+  target: HTMLElement;
+  renderer: PopoverRenderer;
+}>();
+
+const emit = defineEmits(["close"]);
+const close = () => emit("close");
+
+const componentType = computed<RendererType>(() => {
+  if (typeof props.renderer === "object") {
+    return props.renderer.type;
+  }
+  switch (props.renderer) {
+    case columnTypes.Nominal:
+    case columnTypes.String:
+      return "StringRenderer";
+    case columnTypes.Array:
+      return "ArrayRenderer";
+    case columnTypes.DateTime:
+    case columnTypes.Number:
+    case columnTypes.Boolean:
+    default:
+      return "ObjectRenderer";
+  }
+});
+
+// For additional styling of the box around certain renderers
+const typeClass = computed(() =>
+  typeof props.renderer === "string"
+    ? props.renderer.toLowerCase()
+    : props.renderer?.type.toLowerCase(),
+);
+
+const processedData = computed(
+  () =>
+    (typeof props.renderer === "object" &&
+      props.renderer?.process?.(props.data)) ||
+    props.data,
+);
+
+const floating: Ref<null | HTMLElement> = ref(null);
+useClickOutside({ callback: close, targets: [floating] });
+const floatingArrow: Ref<null | HTMLElement> = ref(null);
+
+const maxHeight = ref(MAX_HEIGHT_OR_WIDTH);
+const maxWidth = ref(MAX_HEIGHT_OR_WIDTH);
+const contentStyles = computed(() => ({
+  maxHeight: `${maxHeight.value - 2 * CONTENT_PADDING}px`,
+  maxWidth: `${maxWidth.value - 2 * CONTENT_PADDING}px`,
+}));
+
+const { x, y, middlewareData, placement } = useFloating(
+  computed(() => props.target),
+  floating,
+  {
+    placement: "bottom",
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      /**
+       * Clip the floating popover to its referenceEl to stay visible horizontally
+       * as long as possible
+       */
+      shift({
+        limiter: limitShift({
+          crossAxis: false,
+          offset: ({ rects }) => rects.reference.width,
+        }),
+      }),
+      /**
+       * Enable positioning an arrow pointing to the referenceEl
+       */
+      arrow({ element: floatingArrow }),
+      /**
+       * Slightly move the popover away from the referenceEl
+       * to make space for the arrow while still overlapping the cell with it
+       */
+      offset({
+        mainAxis: 5,
+      }),
+      /**
+       * Flip to the top if the default placement is not possible with the full height
+       */
+      flip(),
+      /**
+       * Limits the height of the popover to stay visible vertically as long as possible
+       */
+      size({
+        padding: 10,
+        apply({ availableWidth, availableHeight }) {
+          maxWidth.value = Math.min(MAX_HEIGHT_OR_WIDTH, availableWidth);
+          maxHeight.value = Math.min(MAX_HEIGHT_OR_WIDTH, availableHeight);
+        },
+      }),
+    ],
   },
-  props: {
-    data: {
-      type: null,
-      default: null,
-      required: true,
-    },
-    target: {
-      type: null,
-      default: null,
-      required: true,
-    },
-    renderer: {
-      type: [Object, String] as PropType<PopoverRenderer>,
-      default: columnTypes.Object,
-    },
-    rowHeight: {
-      type: Number,
-      default: 40,
-    },
-  },
-  emits: ["close"],
-  setup(_props, { emit }) {
-    const close = () => emit("close");
-    const wrapper = ref<null | HTMLElement>(null);
-    useClickOutside({ callback: close, targets: [wrapper] });
-    return { close, wrapper };
-  },
-  data() {
-    // TODO: Followup ticket for making this work while using the virtual scroller. Currently offsetTop is always 0.
-    return {
-      type:
-        typeof this.renderer === "string" ? this.renderer : this.renderer.type,
-      offsetParentHeight: this.target.offsetParent.clientHeight,
-      offsetTop: this.target.offsetTop,
-      offsetParentOffsetTop: this.target.offsetParent.offsetTop,
-      offsetParentOffsetLeft: this.target.offsetParent.offsetLeft,
-      offsetLeft: this.target.offsetLeft,
-      offsetHeight: this.target.offsetHeight,
-      offsetWidth: this.target.offsetWidth,
-      rowOffset: this.rowHeight / 2 - 2,
-    };
-  },
-  computed: {
-    componentType() {
-      if (typeof this.renderer === "object") {
-        return this.renderer.type;
-      }
-      switch (this.renderer) {
-        case columnTypes.Nominal:
-        case columnTypes.String:
-          return "StringRenderer";
-        case columnTypes.Array:
-          return "ArrayRenderer";
-        case columnTypes.DateTime:
-        case columnTypes.Number:
-        case columnTypes.Boolean:
-        default:
-          return "ObjectRenderer";
-      }
-    },
-    processedData() {
-      return (
-        (typeof this.renderer === "object" &&
-          this.renderer?.process?.(this.data)) ||
-        this.data
-      );
-    },
-    displayTop() {
-      return this.offsetTop / this.offsetParentHeight >= PARENT_RATIO;
-    },
-    verticalUnits() {
-      return this.displayTop ? "bottom" : "top";
-    },
-    top() {
-      return (
-        this.offsetTop + this.offsetHeight / 2 + this.offsetParentOffsetTop
-      );
-    },
-    left() {
-      return (
-        this.offsetLeft + this.offsetWidth / 2 + this.offsetParentOffsetLeft
-      );
-    },
-    maxHeight() {
-      return Math.max(
-        this.displayTop ? this.top : this.offsetParentHeight - this.top,
-        MAX_TOTAL_HEIGHT,
-      );
-    },
-    style() {
-      return {
-        top: `${this.top}px`,
-        left: `${this.left}px`,
-      };
-    },
-    contentStyle() {
-      return {
-        [this.verticalUnits]: `${this.target.clientHeight - this.rowOffset}px`,
-        "max-height": `${this.maxHeight}px`,
-      };
-    },
-    childMaxHeight() {
-      return {
-        "max-height": `${this.maxHeight - this.rowHeight}px`,
-      };
-    },
-    show() {
-      return (
-        typeof this.processedData !== "undefined" && this.processedData !== null
-      );
-    },
-  },
-};
+);
+
+const isTop = computed(() => placement.value.startsWith("top"));
+const show = computed(
+  () =>
+    typeof processedData.value !== "undefined" && processedData.value !== null,
+);
 </script>
 
 <template>
-  <div ref="wrapper" :class="['popover', { top: displayTop }]" :style="style">
+  <div
+    v-show="show"
+    ref="floating"
+    :style="{ left: `${x}px`, top: `${y}px` }"
+    :class="['content', typeClass]"
+  >
     <div
-      v-show="show"
-      :style="contentStyle"
-      :class="['content', type.toLowerCase()]"
-    >
-      <div class="content-container">
-        <slot name="content" :style="childMaxHeight">
-          <component
-            :is="componentType"
-            :data="processedData"
-            :style="childMaxHeight"
-          />
-        </slot>
-      </div>
-      <FunctionButton class="closer" @click="close">
-        <CloseIcon />
-      </FunctionButton>
+      ref="floatingArrow"
+      class="arrow"
+      :style="{
+        left: `${middlewareData.arrow?.x ?? 0}px`,
+        [isTop ? 'bottom' : 'top']: '-16px',
+        ...(isTop ? { rotate: '180deg' } : {}),
+      }"
+    />
+    <div :style="{ padding: `${CONTENT_PADDING}px` }">
+      <slot name="content" :style="contentStyles">
+        <component
+          :is="renderers[componentType]"
+          :data="processedData"
+          :style="contentStyles"
+        />
+      </slot>
     </div>
+    <FunctionButton class="closer" @click="close">
+      <CloseIcon />
+    </FunctionButton>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.popover {
+& .content {
   position: absolute;
-  --popover-arrow-size: 15px;
+  z-index: var(--z-index-table-popover-content);
+  background: var(--knime-white);
+  width: fit-content;
+  height: fit-content;
+  font-size: 12px;
+  box-shadow: 0 0 8px rgb(0 0 0 / 25%);
 
-  &::before {
-    position: absolute;
-    top: calc(100% + 7px);
-    right: 20px;
-    content: "";
-    z-index: var(--z-index-table-popover-before);
-    width: 0;
-    height: 0;
-    border-left: var(--popover-arrow-size) solid transparent;
-    border-right: var(--popover-arrow-size) solid transparent;
-    border-bottom: var(--popover-arrow-size) solid var(--knime-white);
-  }
+  & .arrow {
+    --popover-arrow-size: 15px;
 
-  &::after {
     position: absolute;
-    top: calc(100% + 6px);
-    right: 19px;
-    content: "";
-    z-index: var(--z-index-table-popover-after);
-    width: 0;
-    height: 0;
+    width: var(--popover-arrow-size);
+    height: var(--popover-arrow-size);
     border-left: calc(var(--popover-arrow-size) + 1px) solid transparent;
     border-right: calc(var(--popover-arrow-size) + 1px) solid transparent;
     border-bottom: calc(var(--popover-arrow-size) + 1px) solid
       var(--knime-silver-sand-semi);
   }
 
-  &.top::before {
-    bottom: calc(100% + 7px);
-    top: unset;
-    border-bottom: none;
-    border-top: var(--popover-arrow-size) solid var(--knime-white);
+  &.array,
+  &.object {
+    width: 320px;
   }
+}
 
-  &.top::after {
-    bottom: calc(100% + 6px);
-    top: unset;
-    border-bottom: none;
-    border-top: calc(var(--popover-arrow-size) + 1px) solid
-      var(--knime-silver-sand-semi);
-  }
+& .closer {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  top: 2px;
+  right: 2px;
+  padding: 3px;
+  margin: 5px;
 
-  & .content {
-    max-width: 300px;
-    position: absolute;
-    z-index: var(--z-index-table-popover-content);
-    right: 0;
-    background: var(--knime-white);
-    width: fit-content;
-    font-size: 12px;
-    box-shadow: 0 0 8px rgb(0 0 0 / 25%);
-
-    & div.content-container {
-      padding: 23px;
-      max-height: inherit;
-    }
-
-    &.array,
-    &.object {
-      width: 320px;
-    }
-  }
-
-  & .closer {
-    position: absolute;
-    height: 20px;
-    width: 20px;
-    top: 2px;
-    right: 2px;
-    padding: 3px;
-    margin: 5px;
-
-    & svg {
-      height: 14px;
-      width: 14px;
-      stroke-width: calc(32px / 14);
-    }
+  & svg {
+    height: 14px;
+    width: 14px;
+    stroke-width: calc(32px / 14);
   }
 }
 </style>

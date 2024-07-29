@@ -979,7 +979,6 @@ export default {
         popoverRenderer && popoverTarget && typeof popoverData !== 'undefined'
       "
       ref="tablePopover"
-      :use-button="false"
       :data="popoverData"
       :target="popoverTarget"
       :renderer="popoverRenderer"
