@@ -644,7 +644,7 @@ describe("Table.vue", () => {
       await wrapper.vm.$nextTick(); // await font 400 1em Roboto to be loaded
       await wrapper.vm.$nextTick(); // await font 700 1em Roboto to be loaded
     };
-    let onAutoSizesUpdateSpy, triggerCalculationOfAutoSizesSpy;
+    let onAutoColumnSizesUpdateSpy, triggerCalculationOfAutoSizesSpy;
 
     beforeAll(() => {
       Object.defineProperty(document, "fonts", {
@@ -653,7 +653,10 @@ describe("Table.vue", () => {
     });
 
     beforeEach(() => {
-      onAutoSizesUpdateSpy = vi.spyOn(Table.methods, "onAutoSizesUpdate");
+      onAutoColumnSizesUpdateSpy = vi.spyOn(
+        Table.methods,
+        "onAutoColumnSizesUpdate",
+      );
       triggerCalculationOfAutoSizesSpy = vi.spyOn(
         TableUIWithAutoSizeCalculation.methods,
         "triggerCalculationOfAutoSizes",
@@ -690,7 +693,7 @@ describe("Table.vue", () => {
       const { wrapper } = doMount({ shallow: false });
       expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
       await wrapper.vm.$nextTick();
-      expect(onAutoSizesUpdateSpy).toHaveBeenCalledWith({}, null);
+      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({});
     });
 
     it("triggers and updates the column sizes on mounted when option autoSizeColumnsToContent is activated", async () => {
@@ -700,7 +703,7 @@ describe("Table.vue", () => {
       });
       await loadFonts(wrapper);
       expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
-      expect(onAutoSizesUpdateSpy).toHaveBeenCalledWith({ a: 50, b: 50 }, null);
+      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({ a: 50, b: 50 });
     });
 
     it("triggers and updates column sizes when the option autoSizeColumnsToContent gets checked", async () => {
@@ -709,7 +712,7 @@ describe("Table.vue", () => {
       await wrapper.vm.$nextTick();
       await loadFonts(wrapper);
       expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
-      expect(onAutoSizesUpdateSpy).toHaveBeenCalled();
+      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalled();
     });
 
     it.each([
@@ -740,7 +743,7 @@ describe("Table.vue", () => {
         await changeCallback(wrapper);
         await loadFonts(wrapper);
         expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(2);
-        expect(onAutoSizesUpdateSpy).toHaveBeenCalledTimes(2);
+        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
       },
     );
 
@@ -755,7 +758,7 @@ describe("Table.vue", () => {
       wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A", "B"]);
       await loadFonts(wrapper);
       expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(3);
-      expect(onAutoSizesUpdateSpy).toHaveBeenCalledTimes(3);
+      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(3);
     });
   });
 });

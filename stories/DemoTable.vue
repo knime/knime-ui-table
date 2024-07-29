@@ -171,7 +171,7 @@ const {
   onColumnResize,
   onAllColumnsResize,
   updateAvailableWidth: onAvailableWidthUpdate,
-  onAutoSizesUpdate,
+  onAutoColumnSizesUpdate,
 } = useColumnResizing({
   currentColumnIndices: currentColumns.indices,
   currentColumnKeys: currentColumns.keys,
@@ -464,7 +464,7 @@ const htmlSlotContent = `
       @column-resize="onColumnResize"
       @all-columns-resize="onAllColumnsResize"
       @update:available-width="onAvailableWidthUpdate"
-      @auto-column-sizes-update="onAutoSizesUpdate"
+      @auto-column-sizes-update="onAutoColumnSizesUpdate"
       @copy-selection="onCopySelection"
     >
       <template

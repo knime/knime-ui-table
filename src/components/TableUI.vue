@@ -265,7 +265,7 @@ export default {
     },
     initialRowHeight() {
       return this.dataConfig.rowConfig.compactMode
-        ? COMPACT_ROW_HEIGHT
+        ? this.dataConfig.rowConfig?.rowHeight || COMPACT_ROW_HEIGHT
         : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
     },
     minRowHeight() {
