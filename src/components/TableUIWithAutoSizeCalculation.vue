@@ -25,6 +25,8 @@ import type DataConfig from "@/types/DataConfig";
 import { type ColumnConfig } from "@/types/DataConfig";
 import type TableConfig from "@/types/TableConfig";
 
+type SizeByColumn = Record<string | symbol, number>;
+
 /**
  * In a lot of cases, the row ids are Row0, Row1, ....
  * With 11 rows taken into account, we respect "Row10".
@@ -58,24 +60,22 @@ export default {
       type: Object as PropType<{
         calculateForBody: boolean;
         calculateForHeader: boolean;
-        fixedSizes: Record<string | symbol, number>;
+        fixedSizes: SizeByColumn;
       }>,
       default: () => ({}),
     },
     autoRowHeightOptions: {
       type: Object as PropType<{
         calculate: boolean;
-        fixedHeights: Record<string | symbol, number>;
+        fixedHeights: SizeByColumn;
       }>,
       default: () => ({}),
     },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
-    autoSizesUpdate: (
-      sizes: Record<string | symbol, number>,
-      height: number | null,
-    ) => true,
+    autoColumnSizesUpdate: (sizes: SizeByColumn) => true,
+    autoRowHeightUpdate: (height: number) => true,
     ready: () => true,
     "update:available-width": (newAvailableWidth: number) => true,
   },
@@ -85,8 +85,8 @@ export default {
   },
   data() {
     return {
-      currentColumnSizes: {} as Record<string | symbol, number>,
-      currentHeightsByColumn: {} as Record<string | symbol, number>,
+      currentColumnSizes: {} as SizeByColumn,
+      currentHeightsByColumn: {} as SizeByColumn,
       calculateSizes: false,
     };
   },
@@ -147,6 +147,12 @@ export default {
     autoRowHeightSizingActive() {
       return this.autoRowHeightOptions.calculate;
     },
+    autoSizingOnBodyActive() {
+      return (
+        this.autoColumnSizesOptions.calculateForBody ||
+        this.autoRowHeightSizingActive
+      );
+    },
     autoSizingActive() {
       return this.autoColumnSizingActive || this.autoRowHeightSizingActive;
     },
@@ -164,9 +170,6 @@ export default {
       );
     },
     currentRowHeight() {
-      if (!this.autoRowHeightOptions.calculate) {
-        return null;
-      }
       const rowHeights = Reflect.ownKeys(this.currentHeightsByColumn).map(
         (columnId) => this.currentHeightsByColumn[columnId],
       );
@@ -198,11 +201,33 @@ export default {
         this.triggerCalculationOfAutoSizes();
       }
     },
+    "dataConfig.rowConfig.compactMode": {
+      handler() {
+        if (this.autoRowHeightOptions.calculate) {
+          this.triggerCalculationOfAutoSizes();
+        }
+      },
+    },
   },
   mounted() {
     this.triggerCalculationOfAutoSizes();
   },
   methods: {
+    emitNewAutoColumnSizes() {
+      this.$emit("autoColumnSizesUpdate", this.currentColumnSizes);
+    },
+    emitNewAutoRowHeight() {
+      this.$emit("autoRowHeightUpdate", this.currentRowHeight);
+    },
+    emitNewAutoSizes() {
+      if (this.autoColumnSizingActive) {
+        this.emitNewAutoColumnSizes();
+      }
+      if (this.autoRowHeightSizingActive) {
+        this.emitNewAutoRowHeight();
+      }
+      this.setAutoSizesInitialized();
+    },
     triggerCalculationOfAutoSizes() {
       if (!this.autoSizingActive) {
         this.currentColumnSizes = {};
@@ -215,11 +240,7 @@ export default {
             delete this.currentHeightsByColumn[columnId];
           }
         });
-        this.$emit(
-          "autoSizesUpdate",
-          this.currentColumnSizes,
-          this.currentRowHeight,
-        );
+        this.emitNewAutoSizes();
       } else {
         this.calculateSizes = true;
       }
@@ -230,97 +251,88 @@ export default {
         document.fonts.load("400 1em Roboto"),
         document.fonts.load("700 1em Roboto"),
       ]);
-      this.initializeCurrentColumnSizes();
-      this.initializeCurrentRowHeights();
-      const { calculateForBody, calculateForHeader } =
+
+      if (this.autoColumnSizingActive) {
+        this.currentColumnSizes =
+          this.initializeSizesWithMinSize(MIN_COLUMN_SIZE);
+      }
+      if (this.autoRowHeightSizingActive) {
+        this.currentHeightsByColumn =
+          this.initializeSizesWithMinSize(MIN_ROW_HEIGHT);
+      }
+
+      const { calculateForBody, calculateForHeader, fixedSizes } =
         this.autoColumnSizesOptions;
-      const { calculate } = this.autoRowHeightOptions;
-      if (calculateForBody || calculate) {
+
+      if (this.autoSizingOnBodyActive) {
         const { autoColumnSizes, autoRowHeights } =
           this.calculateAutoSizesBody();
         if (calculateForBody) {
-          this.calculateAutoColumnSizesBody(autoColumnSizes);
+          this.addFixedAndAutoSizes({
+            sizesToUpdate: this.currentColumnSizes,
+            autoSizesByRow: autoColumnSizes,
+            fixedSizes,
+            minSize: MIN_COLUMN_SIZE,
+            paddings: this.columnPaddingsLeft,
+          });
         }
-        if (calculate) {
-          this.calculateAutoRowHeights(autoRowHeights);
+        if (this.autoRowHeightSizingActive) {
+          this.addFixedAndAutoSizes({
+            sizesToUpdate: this.currentHeightsByColumn,
+            autoSizesByRow: autoRowHeights,
+            fixedSizes: this.autoRowHeightOptions.fixedHeights,
+            minSize: MIN_ROW_HEIGHT,
+          });
         }
       }
       if (calculateForHeader) {
         this.calculateAutoColumnSizesHeader();
       }
-      this.enforceMaxColSize();
+
+      if (calculateForBody || calculateForHeader) {
+        this.enforceMaxColSize();
+      }
       this.calculateSizes = false;
       this.emitNewAutoSizes();
     },
-    initializeCurrentColumnSizes() {
-      this.currentColumnSizes = this.dataConfigIds.reduce(
-        (columnSizes, columnId) => ({
-          ...columnSizes,
-          [columnId]: MIN_COLUMN_SIZE,
+    initializeSizesWithMinSize(minSize: number) {
+      return this.dataConfigIds.reduce(
+        (sizes, columnId) => ({
+          ...sizes,
+          [columnId]: minSize,
         }),
         {},
       );
     },
-    initializeCurrentRowHeights() {
-      this.currentHeightsByColumn = this.dataConfigIds.reduce(
-        (rowHeights, columnId) => ({
-          ...rowHeights,
-          [columnId]: MIN_ROW_HEIGHT,
-        }),
-        {},
-      );
-    },
-    calculateAutoColumnSizesBody(
-      autoColumnSizes: Record<string | symbol, number>[] = [],
-    ) {
-      const { fixedSizes } = this.autoColumnSizesOptions;
+    addFixedAndAutoSizes({
+      sizesToUpdate,
+      autoSizesByRow,
+      fixedSizes,
+      minSize,
+      paddings = null,
+    }: {
+      sizesToUpdate: SizeByColumn;
+      autoSizesByRow: SizeByColumn[];
+      fixedSizes: SizeByColumn;
+      minSize: number;
+      paddings?: SizeByColumn | null;
+    }) {
       Reflect.ownKeys(fixedSizes).forEach((columnId) => {
-        if (this.currentColumnSizes.hasOwnProperty(columnId)) {
-          this.currentColumnSizes[columnId] = Math.max(
-            MIN_COLUMN_SIZE,
-            fixedSizes[columnId] + this.columnPaddingsLeft[columnId],
+        if (sizesToUpdate.hasOwnProperty(columnId)) {
+          sizesToUpdate[columnId] = Math.max(
+            minSize,
+            fixedSizes[columnId] + (paddings?.[columnId] || 0),
           );
         }
       });
 
-      autoColumnSizes.forEach((autoSizesByColumn) => {
-        this.currentColumnSizes = Reflect.ownKeys(autoSizesByColumn).reduce(
-          (newSizes, columnId) => ({
-            ...newSizes,
-            [columnId]: Math.max(
-              this.currentColumnSizes[columnId],
-              autoSizesByColumn[columnId],
-            ),
-          }),
-          this.currentColumnSizes,
-        );
-      });
-    },
-    calculateAutoRowHeights(
-      autoRowHeights: Record<string | symbol, number>[] = [],
-    ) {
-      const { fixedHeights } = this.autoRowHeightOptions;
-      Reflect.ownKeys(fixedHeights).forEach((columnId) => {
-        if (this.currentHeightsByColumn.hasOwnProperty(columnId)) {
-          this.currentHeightsByColumn[columnId] = Math.max(
-            MIN_ROW_HEIGHT,
-            fixedHeights[columnId], // + TODO: margin top/bottom,
+      autoSizesByRow.forEach((autoSizes) => {
+        Reflect.ownKeys(autoSizes).forEach((columnId) => {
+          sizesToUpdate[columnId] = Math.max(
+            sizesToUpdate[columnId],
+            autoSizes[columnId],
           );
-        }
-      });
-      autoRowHeights.forEach((autoRowHeightsByColumn) => {
-        this.currentHeightsByColumn = Reflect.ownKeys(
-          autoRowHeightsByColumn,
-        ).reduce(
-          (newHeights, columnId) => ({
-            ...newHeights,
-            [columnId]: Math.max(
-              this.currentHeightsByColumn[columnId],
-              autoRowHeightsByColumn[columnId],
-            ),
-          }),
-          {},
-        );
+        });
       });
     },
 
@@ -331,12 +343,12 @@ export default {
 
       const { fixedSizes } = this.autoColumnSizesOptions;
 
-      const autoColumnSizes: Record<string | symbol, number>[] = [];
-      const autoRowHeights: Record<string | symbol, number>[] = [];
+      const autoColumnSizes: SizeByColumn[] = [];
+      const autoRowHeights: SizeByColumn[] = [];
 
       rowComponents.forEach((rowComponent: any) => {
-        const sizesByColumn: Record<string | symbol, number> = {};
-        const heightsByColumn: Record<string | symbol, number> = {};
+        const sizesByColumn: SizeByColumn = {};
+        const heightsByColumn: SizeByColumn = {};
         const cellComponents = rowComponent.getCellComponents();
         this.dataConfigIds.forEach((columnId, columnIndex) => {
           if (!fixedSizes.hasOwnProperty(columnId)) {
@@ -373,14 +385,6 @@ export default {
         }),
         {},
       );
-    },
-    emitNewAutoSizes() {
-      this.$emit(
-        "autoSizesUpdate",
-        this.currentColumnSizes,
-        this.currentRowHeight,
-      );
-      this.setAutoSizesInitialized();
     },
     onUpdateAvailableWidth(newAvailableWidth: number) {
       this.$emit("update:available-width", newAvailableWidth);

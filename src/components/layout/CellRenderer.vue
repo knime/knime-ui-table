@@ -124,5 +124,9 @@ const onPointerOver = throttle(() => {
       color: var(--knime-masala);
     }
   }
+
+  & span {
+    display: inline-block;
+  }
 }
 </style>

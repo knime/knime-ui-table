@@ -915,7 +915,7 @@ export default {
       // see https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-syntax-constraints
       return `cellContent-${columnId}`;
     },
-    onAutoSizesUpdate(newAutoColumnSizes, _) {
+    onAutoColumnSizesUpdate(newAutoColumnSizes) {
       this.allColumnKeys.forEach((columnKey, columnIndex) => {
         this.currentAllColumnSizes[columnIndex] =
           newAutoColumnSizes[columnKey] || -1;
