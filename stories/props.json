@@ -58,7 +58,9 @@
       "user": "example-user2",
       "configuration": {},
       "status": { "value": true, "color": "#88FF88" },
-      "nextScheduledExecution": "2021-08-19T00:40+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-19T00:40+02:00[Europe/Berlin]",
+      "2LineString": "Lorem<br>ipsum",
+      "4LineString": "<br>ipsum<br>dolor<br>sit"
     },
     {
       "id": "c1bbfc3b-3063-495f-af9f-aa7b04b7b20b",
@@ -127,7 +129,9 @@
       "user": "example-user2",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]",
+      "2LineString": "A<br>B",
+      "4LineString": "A<br>B<br><br>D"
     },
     {
       "id": "a1523244-9019-4076-9cf8-da98b200ab5f",
@@ -195,7 +199,9 @@
       "user": "example-user",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T18:00+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T18:00+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br><br><br>4"
     },
     {
       "id": "159b8b49-aa0f-416c-9b42-f19d6f64abf6",
@@ -255,7 +261,9 @@
       "user": "example-user",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T14:21+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T14:21+02:00[Europe/Berlin]",
+      "2LineString": "<br>ipsum",
+      "4LineString": "<br><br><br>sit"
     },
     {
       "id": "09be7e8a-138a-4586-8dcf-fdf5925fda43",
@@ -325,7 +333,9 @@
       "user": "example-user2",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T14:15+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T14:15+02:00[Europe/Berlin]",
+      "2LineString": "Lorem<br>",
+      "4LineString": "Lorem<br><br><br>"
     },
     {
       "id": "d7a3a54c-6167-464f-8bb1-5636fe40729e",
@@ -395,7 +405,9 @@
       "user": "example-user",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T14:16+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "id": "6dd33fbd-dc41-48fe-9149-580eef6ff1fa",
@@ -455,7 +467,9 @@
       "user": "example-user",
       "configuration": {},
       "status": { "value": false, "color": "#FF0000" },
-      "nextScheduledExecution": "2021-08-18T14:39+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-18T14:39+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "id": "f6b6de37-66ce-4e23-b17c-aa0b51012466",
@@ -533,7 +547,9 @@
         }
       },
       "status": { "value": true, "color": "#88FF88" },
-      "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-19T06:22+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "id": "ef3ea63d-314e-475d-a483-4b795075c10e",
@@ -616,7 +632,9 @@
       "user": "example-user",
       "configuration": {},
       "status": { "value": true, "color": "#88FF88" },
-      "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-22T12:05+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "id": "d79751d0-376b-4001-941c-1254045c0a87",
@@ -685,7 +703,9 @@
         }
       },
       "status": { "value": true, "color": "#88FF88" },
-      "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-23T00:00+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "id": "2652b64e-d262-438e-a08f-54a4e0c5d633",
@@ -762,7 +782,9 @@
         }
       },
       "status": { "value": true, "color": "#88FF88" },
-      "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]"
+      "nextScheduledExecution": "2021-08-19T00:35+02:00[Europe/Berlin]",
+      "2LineString": "1<br>2",
+      "4LineString": "1<br>2<br>3<br>4"
     },
     {
       "lastRun": {
@@ -839,7 +861,9 @@
     "Last job ID",
     "Configuration",
     "Status",
-    "Schedule ID"
+    "Schedule ID",
+    "2-Line String",
+    "4-Line String"
   ],
   "allColumnKeys": [
     "lastRun",
@@ -860,7 +884,9 @@
     "lastJob",
     "configuration",
     "status",
-    "id"
+    "id",
+    "2LineString",
+    "4LineString"
   ],
   "allColumnTypes": {
     "lastRun": "DateTime",
@@ -881,7 +907,9 @@
     "lastJob": "String",
     "configuration": "Object",
     "status": "Boolean",
-    "id": "String"
+    "id": "String",
+    "2LineString": "String",
+    "4LineString": "String"
   },
   "allFormatters": {},
   "allClassGenerators": {
@@ -923,6 +951,8 @@
     true,
     false,
     false,
+    true,
+    true,
     true,
     true,
     true,

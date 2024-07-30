@@ -9,6 +9,7 @@ import useSelection from "./useSelection";
 import useColumnResizing from "./useColumnResizing";
 import generateAllData from "./generateAllData";
 import useCheckboxItem from "./useCheckboxItem";
+import useRowHeight from "./useRowHeight";
 
 // Composables holding reactive state using the vue3 composition api
 export {
@@ -22,6 +23,7 @@ export {
   useDataProcessing,
   useSelection,
   useCheckboxItem,
+  useRowHeight,
 };
 
 // other utils

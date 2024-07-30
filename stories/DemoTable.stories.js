@@ -171,6 +171,18 @@ export default {
         category: "Row size",
       },
     },
+    autoSizeRowsToRowWithMaxHeight: {
+      name: "Size all rows according to the height of the highest row",
+      table: {
+        category: "Row size",
+      },
+    },
+    fixedRowHeights: {
+      name: "Fixed row heights per column",
+      table: {
+        category: "Row size",
+      },
+    },
     enableRowResize: {
       name: "Enable row resize",
       table: {
@@ -382,7 +394,7 @@ Hub.args = {
       },
     },
   ],
-  allSlottedColumns: ["lastRun", "status"],
+  allSlottedColumns: ["lastRun", "status", "2LineString", "4LineString"],
 };
 
 export const TableView = Template.bind({});
@@ -461,6 +473,8 @@ TableUIWithAutoSizeCalculation.args = {
   autoSizeColumnsToBody: true,
   autoSizeColumnsToHeader: false,
   fixedColumnSizes: { lastRun: 200, id: 100, status: 80 },
+  autoSizeRowsToRowWithMaxHeight: true,
+  fixedRowHeights: { schedule: 100 },
   withSorting: true,
   withPagination: false,
   withColumnFilters: true,
@@ -478,4 +492,13 @@ TableUIWithAutoSizeCalculation.args = {
   enableColumnResize: true,
   showSubMenus: true,
   backgroundColor: "--knime-porcelain",
+  allSlottedColumns: ["2LineString", "4LineString"],
+  defaultColumns: [
+    "lastRun",
+    "nextScheduledExecution",
+    "targetName",
+    "user",
+    "2LineString",
+    "4LineString",
+  ],
 };
