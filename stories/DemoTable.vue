@@ -17,6 +17,7 @@ import {
   useSelection,
   generateAllData,
   useCheckboxItem,
+  useRowHeight,
 } from "./utils";
 
 const props = defineProps({
@@ -139,6 +140,9 @@ const props = defineProps({
   autoSizeColumnsToBody: Boolean,
   autoSizeColumnsToHeader: Boolean,
   fixedColumnSizes: { type: Object, default: () => ({}) },
+  autoSizeRowsToRowWithMaxHeight: Boolean,
+  fixedRowHeights: { type: Object, default: () => ({}) },
+  defaultColumns: { type: Array, default: () => null },
 });
 
 const {
@@ -163,7 +167,7 @@ const {
   allColumnsData: allColumnsDataGenerated,
   initialColumns: props.showAllColumns
     ? allColumnKeysGenerated
-    : demoProps.defaultColumns,
+    : props.defaultColumns || demoProps.defaultColumns,
 });
 
 const {
@@ -275,13 +279,21 @@ const currentColumnHeaderColors = computed(() =>
   ),
 );
 
+const { currentRowHeight, autoRowHeightOptions, onAutoRowHeightUpdate } =
+  useRowHeight(
+    props.autoSizeRowsToRowWithMaxHeight,
+    props.fixedRowHeights,
+    props.dynamicRowHeight,
+    props.rowHeight,
+  );
+
 const dataConfig = computed(() => {
   let dataConfig = {
     columnConfigs: [],
     rowConfig: {
       compactMode: props.compactMode,
-      ...((props.rowHeight !== null || props.dynamicRowHeight) && {
-        rowHeight: props.dynamicRowHeight ? "dynamic" : props.rowHeight,
+      ...(currentRowHeight.value && {
+        rowHeight: currentRowHeight.value,
       }),
       enableResizing: props.enableRowResize,
     },
@@ -403,6 +415,7 @@ const tableProps = reactive({
   numRowsAbove: props.numRowsAbove,
   numRowsBelow: props.numRowsBelow,
   autoColumnSizesOptions,
+  autoRowHeightOptions,
 });
 
 const getCellContentSlotName = (columnId) => `cellContent-${columnId}`;
@@ -465,6 +478,7 @@ const htmlSlotContent = `
       @all-columns-resize="onAllColumnsResize"
       @update:available-width="onAvailableWidthUpdate"
       @auto-column-sizes-update="onAutoColumnSizesUpdate"
+      @auto-row-height-update="onAutoRowHeightUpdate"
       @copy-selection="onCopySelection"
     >
       <template
@@ -474,14 +488,19 @@ const htmlSlotContent = `
           data: { row, key, colInd, rowInd },
         } = { data: {} }"
       >
-        <img
-          :title="` Slot for: ${key}(index:${rowInd}) = ${JSON.stringify(
-            row[colInd],
-          )}`"
-          :style="{ maxHeight: `${20 + 20 * rowInd}px`, display: 'block' }"
-          src="https://forum-cdn.knime.com/uploads/default/original/3X/6/8/68ac3f3c3142b63b68b8ba7c58f97a2614bdf1d2.svg"
-        />
-        <span v-html="htmlSlotContent" />
+        <template v-if="col.endsWith('LineString')">
+          <span class="multi-line-rendering" v-html="row[colInd]" />
+        </template>
+        <template v-else>
+          <img
+            :title="` Slot for: ${key}(index:${rowInd}) = ${JSON.stringify(
+              row[colInd],
+            )}`"
+            :style="{ maxHeight: `${20 + 20 * rowInd}px`, display: 'block' }"
+            src="https://forum-cdn.knime.com/uploads/default/original/3X/6/8/68ac3f3c3142b63b68b8ba7c58f97a2614bdf1d2.svg"
+          />
+          <span v-html="htmlSlotContent" />
+        </template>
       </template>
       <template #collapserContent="availableData">
         <h6>Data available in this slot content:</h6>
@@ -525,5 +544,9 @@ const htmlSlotContent = `
   right: 5px;
   bottom: 5px;
   z-index: 10;
+}
+
+.multi-line-rendering {
+  display: inline-block;
 }
 </style>
