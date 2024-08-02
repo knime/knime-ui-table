@@ -222,6 +222,8 @@ export default {
       paginatedIndicies: [],
       processedSelection: [],
       paginatedSelection: [],
+      // row height
+      currentRowHeight: null,
     };
   },
   computed: {
@@ -236,6 +238,9 @@ export default {
         columnConfigs: [],
         rowConfig: {
           compactMode: this.compactMode,
+          ...(this.currentRowHeight
+            ? { rowHeight: this.currentRowHeight }
+            : {}),
         },
       };
       this.currentColumnKeys.forEach((key, ind) => {
@@ -921,6 +926,9 @@ export default {
           newAutoColumnSizes[columnKey] || -1;
       });
     },
+    onAutoRowHeightUpdate(newAutoRowHeight) {
+      this.currentRowHeight = newAutoRowHeight;
+    },
   },
 };
 </script>
@@ -953,7 +961,8 @@ export default {
     @all-columns-resize="onAllColumnsResize"
     @update:available-width="updateAvailableWidth"
     @header-sub-menu-item-selection="onHeaderSubMenuItemSelection"
-    @auto-sizes-update="onAutoSizesUpdate"
+    @auto-column-sizes-update="onAutoColumnSizesUpdate"
+    @auto-row-height-update="onAutoRowHeightUpdate"
   >
     <!-- eslint-disable vue/valid-v-slot -->
     <template

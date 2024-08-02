@@ -108,6 +108,9 @@ describe("Row.vue", () => {
       expect(wrapper.vm.cells).toHaveProperty(0, expect.any(Object));
       expect(wrapper.vm.cells).toHaveProperty(4, expect.any(Object));
       expect(wrapper.vm.paddingTopBottom).toBe(11);
+      expect(wrapper.vm.transition).toStrictEqual({
+        transition: "height 0.3s, box-shadow 0.15s",
+      });
     });
 
     it("renders table row in compact mode", () => {
@@ -145,6 +148,16 @@ describe("Row.vue", () => {
       expect(
         wrapper.findComponent(Checkbox).attributes().disabled,
       ).toBeTruthy();
+    });
+
+    it("disables the height transition via prop", () => {
+      props.disableRowHeightTransition = true;
+      wrapper = shallowMountRow();
+
+      expect(wrapper.findComponent(Row).exists()).toBeTruthy();
+      expect(wrapper.vm.transition).toStrictEqual({
+        transition: "box-shadow 0.15s",
+      });
     });
 
     it("hides the submenu if no items are provided", () => {

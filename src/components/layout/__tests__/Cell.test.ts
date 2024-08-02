@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
 import Cell from "../Cell.vue";
@@ -187,7 +187,13 @@ describe("Cell.vue", () => {
   });
 
   it("calls getCellContentDimensions in the CellRenderer", () => {
+    Element.prototype.getBoundingClientRect = vi
+      .fn()
+      .mockReturnValue({ width: 80, height: 30 });
     const wrapper = mount(Cell, { props });
-    expect(wrapper.vm.getCellContentDimensions()).toBe(10);
+    expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
+      width: 90,
+      height: 54,
+    });
   });
 });
