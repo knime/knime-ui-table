@@ -28,7 +28,7 @@ export const ROW_MARGIN_BOTTOM = 1;
 export const MIN_ROW_HEIGHT = COMPACT_ROW_HEIGHT;
 
 // the maximum height of a row
-export const MAX_ROW_HEIGHT = 120;
+export const MAX_AUTO_ROW_HEIGHT = 120;
 
 // the height of the table header and group headers
 export const HEADER_HEIGHT = DEFAULT_ROW_HEIGHT;

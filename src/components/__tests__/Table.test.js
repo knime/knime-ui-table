@@ -639,12 +639,12 @@ describe("Table.vue", () => {
     });
   });
 
-  describe("calculation of fit content column sizes", () => {
+  describe("calculation of auto column sizes and row height", () => {
     const loadFonts = async (wrapper) => {
       await wrapper.vm.$nextTick(); // await font 400 1em Roboto to be loaded
       await wrapper.vm.$nextTick(); // await font 700 1em Roboto to be loaded
     };
-    let onAutoColumnSizesUpdateSpy, triggerCalculationOfAutoSizesSpy;
+    let triggerCalculationOfAutoSizesSpy;
 
     beforeAll(() => {
       Object.defineProperty(document, "fonts", {
@@ -653,112 +653,159 @@ describe("Table.vue", () => {
     });
 
     beforeEach(() => {
-      onAutoColumnSizesUpdateSpy = vi.spyOn(
-        Table.methods,
-        "onAutoColumnSizesUpdate",
-      );
       triggerCalculationOfAutoSizesSpy = vi.spyOn(
         TableUIWithAutoSizeCalculation.methods,
         "triggerCalculationOfAutoSizes",
       );
     });
 
-    it("does not update column sizes from availableWidth when auto sizes active", () => {
-      vi.spyOn(
-        TableUIWithAutoSizeCalculation.methods,
-        "calculateAutoSizes",
-      ).mockImplementationOnce(() => ({}));
-      const { wrapper } = doMount({
-        customProps: { autoSizeColumnsToContent: true },
+    describe("calculation of auto column sizes", () => {
+      let onAutoColumnSizesUpdateSpy;
+
+      beforeEach(() => {
+        onAutoColumnSizesUpdateSpy = vi.spyOn(
+          Table.methods,
+          "onAutoColumnSizesUpdate",
+        );
       });
 
-      let availableWidth = 100;
-      wrapper.vm.updateAvailableWidth(availableWidth);
+      it("does not update column sizes from availableWidth when auto sizes active", () => {
+        vi.spyOn(
+          TableUIWithAutoSizeCalculation.methods,
+          "calculateAutoSizes",
+        ).mockImplementationOnce(() => ({}));
+        const { wrapper } = doMount({
+          customProps: { autoSizeColumnsToContent: true },
+        });
 
-      const allColumnsResizeSize = 123;
-      wrapper.vm.onAllColumnsResize(allColumnsResizeSize);
-      const firstColumnsResizeSize = 600;
-      wrapper.vm.onColumnResize(0, firstColumnsResizeSize);
+        let availableWidth = 100;
+        wrapper.vm.updateAvailableWidth(availableWidth);
 
-      availableWidth = 200;
-      wrapper.vm.updateAvailableWidth(availableWidth);
-      expect(wrapper.vm.currentAvailableWidth).toBe(availableWidth);
-      expect(wrapper.vm.currentColumnSizes).toStrictEqual([
-        firstColumnsResizeSize,
-        allColumnsResizeSize,
-      ]);
-    });
+        const allColumnsResizeSize = 123;
+        wrapper.vm.onAllColumnsResize(allColumnsResizeSize);
+        const firstColumnsResizeSize = 600;
+        wrapper.vm.onColumnResize(0, firstColumnsResizeSize);
 
-    it('doesn"t calculate the column sizes on mounted when option autoSizeColumnsToContent is deactivated', async () => {
-      const { wrapper } = doMount({ shallow: false });
-      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
-      await wrapper.vm.$nextTick();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({});
-    });
-
-    it("triggers and updates the column sizes on mounted when option autoSizeColumnsToContent is activated", async () => {
-      const { wrapper } = doMount({
-        customProps: { autoSizeColumnsToContent: true },
-        shallow: false,
+        availableWidth = 200;
+        wrapper.vm.updateAvailableWidth(availableWidth);
+        expect(wrapper.vm.currentAvailableWidth).toBe(availableWidth);
+        expect(wrapper.vm.currentColumnSizes).toStrictEqual([
+          firstColumnsResizeSize,
+          allColumnsResizeSize,
+        ]);
       });
-      await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({ a: 50, b: 50 });
-    });
 
-    it("triggers and updates column sizes when the option autoSizeColumnsToContent gets checked", async () => {
-      const { wrapper } = doMount({ shallow: false });
-      await wrapper.setProps({ autoSizeColumnsToContent: true });
-      await wrapper.vm.$nextTick();
-      await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalled();
-    });
+      it('doesn"t calculate the column sizes on mounted when option autoSizeColumnsToContent is deactivated', async () => {
+        const { wrapper } = doMount({ shallow: false });
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
+        await wrapper.vm.$nextTick();
+        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({});
+      });
 
-    it.each([
-      [
-        "page",
-        (wrapper) => wrapper.findComponent(TableUI).vm.$emit("pageChange", 1),
-      ],
-      [
-        "pageSize",
-        (wrapper) =>
-          wrapper.findComponent(TableUI).vm.$emit("pageSizeUpdate", 1),
-      ],
-      [
-        "option inclHeaders",
-        async (wrapper) => {
-          await wrapper.setProps({ autoSizeColumnsToContentInclHeaders: true });
-        },
-      ],
-    ])(
-      "triggers and updates the column sizes when changing %s",
-      async (settingsKey, changeCallback) => {
+      it("triggers and updates the column sizes on mounted when option autoSizeColumnsToContent is activated", async () => {
         const { wrapper } = doMount({
           customProps: { autoSizeColumnsToContent: true },
           shallow: false,
         });
         await loadFonts(wrapper);
-        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(1);
-        await changeCallback(wrapper);
-        await loadFonts(wrapper);
-        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(2);
-        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
-      },
-    );
-
-    it("triggers and updates the column sizes when adding new columns or removing columns", async () => {
-      const { wrapper } = doMount({
-        customProps: { autoSizeColumnsToContent: true },
-        shallow: false,
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
+        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledWith({
+          a: 50,
+          b: 50,
+        });
       });
-      await loadFonts(wrapper);
-      wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A"]);
-      await loadFonts(wrapper);
-      wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A", "B"]);
-      await loadFonts(wrapper);
-      expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(3);
-      expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(3);
+
+      it("triggers and updates column sizes when the option autoSizeColumnsToContent gets checked", async () => {
+        const { wrapper } = doMount({ shallow: false });
+        await wrapper.setProps({ autoSizeColumnsToContent: true });
+        await wrapper.vm.$nextTick();
+        await loadFonts(wrapper);
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalled();
+        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalled();
+      });
+
+      it.each([
+        [
+          "page",
+          (wrapper) => wrapper.findComponent(TableUI).vm.$emit("pageChange", 1),
+        ],
+        [
+          "pageSize",
+          (wrapper) =>
+            wrapper.findComponent(TableUI).vm.$emit("pageSizeUpdate", 1),
+        ],
+        [
+          "option inclHeaders",
+          async (wrapper) => {
+            await wrapper.setProps({
+              autoSizeColumnsToContentInclHeaders: true,
+            });
+          },
+        ],
+      ])(
+        "triggers and updates the column sizes when changing %s",
+        async (settingsKey, changeCallback) => {
+          const { wrapper } = doMount({
+            customProps: { autoSizeColumnsToContent: true },
+            shallow: false,
+          });
+          await loadFonts(wrapper);
+          expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(1);
+          await changeCallback(wrapper);
+          await loadFonts(wrapper);
+          expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(2);
+          expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(2);
+        },
+      );
+
+      it("triggers and updates the column sizes when adding new columns or removing columns", async () => {
+        const { wrapper } = doMount({
+          customProps: { autoSizeColumnsToContent: true },
+          shallow: false,
+        });
+        await loadFonts(wrapper);
+        wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A"]);
+        await loadFonts(wrapper);
+        wrapper.findComponent(TableUI).vm.$emit("columnUpdate", ["A", "B"]);
+        await loadFonts(wrapper);
+        expect(triggerCalculationOfAutoSizesSpy).toHaveBeenCalledTimes(3);
+        expect(onAutoColumnSizesUpdateSpy).toHaveBeenCalledTimes(3);
+      });
+    });
+
+    describe("calculation of auto row height", () => {
+      let onAutoRowHeightUpdateSpy;
+
+      beforeEach(() => {
+        onAutoRowHeightUpdateSpy = vi.spyOn(
+          Table.methods,
+          "onAutoRowHeightUpdate",
+        );
+      });
+
+      it.each([[true], [false]])(
+        "sets the autoRowHeightOptions when autoSizeRowsToContent: %s",
+        (autoSizeRowsToContent) => {
+          const { wrapper } = doMount({
+            shallow: false,
+            customProps: { autoSizeRowsToContent },
+          });
+          expect(wrapper.vm.autoRowHeightOptions).toStrictEqual({
+            fixedHeights: {},
+            calculate: autoSizeRowsToContent,
+          });
+        },
+      );
+
+      it("sets the rowHeight in the data config when an auto row height was set", async () => {
+        const { wrapper } = doMount({
+          shallow: false,
+          customProps: { autoSizeRowsToContent: true },
+        });
+        await loadFonts(wrapper);
+        expect(onAutoRowHeightUpdateSpy).toHaveBeenCalled();
+        expect(wrapper.vm.dataConfig.rowConfig.rowHeight).toBe(24);
+      });
     });
   });
 });

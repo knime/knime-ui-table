@@ -61,6 +61,7 @@ interface RowProps {
   minRowHeight?: number;
   showDragHandle?: boolean;
   selectCellsOnMove?: boolean;
+  disableRowHeightTransition?: boolean;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
@@ -72,6 +73,7 @@ const props = withDefaults(defineProps<RowProps>(), {
   isSelected: false,
   selectCellsOnMove: false,
   showDragHandle: false,
+  disableRowHeightTransition: false,
 });
 
 const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
@@ -235,6 +237,17 @@ const rowHeightStyle = computed(() =>
     : { height: `${currentRowHeight.value}px` },
 );
 
+const transitionInactiveDrag = computed(() => {
+  const rowHeightTransition = props.disableRowHeightTransition
+    ? ""
+    : "height 0.3s, ";
+  return { transition: `${rowHeightTransition}box-shadow 0.15s` };
+});
+
+const transition = computed(() =>
+  activeDrag.value ? {} : transitionInactiveDrag.value,
+);
+
 defineExpose({
   getCellComponents,
   /**
@@ -257,7 +270,7 @@ defineExpose({
     ]"
     :style="{
       ...rowStyles,
-      ...(activeDrag ? {} : { transition: 'height 0.3s, box-shadow 0.15s' }),
+      ...transition,
       ...rowHeightStyle,
       marginBottom: `${ROW_MARGIN_BOTTOM}px`,
     }"

@@ -128,11 +128,24 @@ describe("Cell.vue", () => {
     ]);
   });
 
-  it("returns the width of the padding as cell width when the width cannot be calculated", () => {
-    Element.prototype.getBoundingClientRect = vi
-      .fn()
-      .mockReturnValue({ width: null });
-    const wrapper = shallowMount(CellRenderer, { props });
-    expect(wrapper.vm.getCellContentDimensions()).toBe(10);
+  describe("cell content dimensions", () => {
+    it("returns the size of the padding as cell dimensions when the dimensions cannot be calculated", () => {
+      const wrapper = shallowMount(CellRenderer, { props });
+      expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
+        height: 24,
+        width: 10,
+      });
+    });
+
+    it("sums up paddings and dimensions when the dimensions can be calculated", () => {
+      Element.prototype.getBoundingClientRect = vi
+        .fn()
+        .mockReturnValueOnce({ width: 22.2, height: 33.3 });
+      const wrapper = shallowMount(CellRenderer, { props });
+      expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
+        width: 33,
+        height: 58,
+      });
+    });
   });
 });

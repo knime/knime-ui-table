@@ -158,6 +158,10 @@ export default {
         );
       },
     },
+    disableRowHeightTransition: {
+      type: Boolean,
+      default: false,
+    },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
@@ -881,6 +885,7 @@ export default {
           :min-row-height="minRowHeight"
           :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
           :select-cells-on-move="selectCellsOnMove.state"
+          :disable-row-height-transition="disableRowHeightTransition"
           @row-select="onRowSelect($event, rowInd, groupInd || 0)"
           @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
           @expand-cell-select="

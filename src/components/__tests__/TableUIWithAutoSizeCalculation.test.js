@@ -13,6 +13,11 @@ import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vu
 import AutoSizeTestWrapperComponent from "./AutoSizeTestWrapperComponent.vue";
 
 import TableUI from "../TableUI.vue";
+import {
+  MAX_AUTO_COLUMN_SIZE,
+  MAX_AUTO_ROW_HEIGHT,
+  MIN_ROW_HEIGHT,
+} from "@/util/constants";
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
   let props, tableUIStub, context, refreshScrollerMock, clearCellSelectionMock;
@@ -69,7 +74,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
         fixedSizes: {},
       },
       autoRowHeightOptions: {
-        calculate: false,
+        calculate: true,
         fixedHeights: {},
       },
     };
@@ -91,12 +96,12 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
               {
                 getCellContentDimensions: vi
                   .fn()
-                  .mockReturnValue({ width: 60 }),
+                  .mockReturnValue({ width: 60, height: 44 }),
               },
               {
                 getCellContentDimensions: vi
                   .fn()
-                  .mockReturnValue({ width: 60 }),
+                  .mockReturnValue({ width: 60, height: 44 }),
               },
             ]),
           },
@@ -126,6 +131,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
   it("renders when auto sizing is deactivated", () => {
     props.autoColumnSizesOptions.calculateForBody = false;
     props.autoColumnSizesOptions.calculateForHeader = false;
+    props.autoRowHeightOptions.calculate = false;
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
     expect(
       wrapper.findComponent(TableUIWithAutoSizeCalculation).exists(),
@@ -135,12 +141,18 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       "visibility: hidden;",
     );
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
-    expect(wrapper.emitted("autoColumnSizesUpdate")).toStrictEqual([[{}]]);
+    expect(wrapper.emitted("autoColumnSizesUpdate")[0][0]).toStrictEqual({});
+    expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
+    expect(wrapper.emitted("autoRowHeightUpdate")[0][0]).toBeNull();
     expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeFalsy();
     expect(wrapper.vm.$refs).toStrictEqual({ tableUI: expect.any(Object) });
   });
 
-  it("mounts the TableUI when calculateForBody/calculateForHeader are true and creates correct configs", async () => {
+  it.each([
+    [{ calculateForBody: true, calculateForHeader: false, calculate: false }],
+    [{ calculateForBody: false, calculateForHeader: true, calculate: false }],
+    [{ calculateForBody: false, calculateForHeader: false, calculate: true }],
+  ])("mounts the TableUI with %s and creates correct configs", async () => {
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
     expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
 
@@ -164,12 +176,14 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       ],
     );
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+    expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
     expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
   });
 
   it("is visible when the sizes were initially calculated and the available width was received", () => {
     props.autoColumnSizesOptions.calculateForBody = false;
     props.autoColumnSizesOptions.calculateForHeader = false;
+    props.autoRowHeightOptions.calculate = false;
     const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
 
     const newAvailableWidth = 200;
@@ -211,131 +225,330 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
     expect(wrapper.emitted()).toHaveProperty("ready");
   });
 
-  it("does not mount the TableUI for calculation when columns were only removed", async () => {
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({
-      [column1.id]: 60,
-      b: 60,
+  describe("triggers to compute new auto sizes", () => {
+    const createSpies = (wrapper) => ({
+      triggerCalculationSpy: vi.spyOn(
+        wrapper.vm,
+        "triggerCalculationOfAutoSizes",
+      ),
+      calculateAutoSizesSpy: vi.spyOn(wrapper.vm, "calculateAutoSizes"),
+      calculateAutoRowHeightsSpy: vi.spyOn(
+        wrapper.vm,
+        "calculateAutoRowHeights",
+      ),
+      calculateAutoColumnSizesSpy: vi.spyOn(
+        wrapper.vm,
+        "calculateAutoColumnSizes",
+      ),
     });
-    const calcAutoColSizesSpy = vi.spyOn(wrapper.vm, "calculateAutoSizes");
 
-    await wrapper.setProps({
-      dataConfig: { ...props.dataConfig, columnConfigs: [column1] },
-    });
-    expect(wrapper.vm.calculateSizes).toBeFalsy();
-
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({ [column1.id]: 60 });
-    expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
-    expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
-    expect(calcAutoColSizesSpy).not.toHaveBeenCalled();
-  });
-
-  it("mounts the TableUI for calculation when columns were added", async () => {
-    props.dataConfig.columnConfigs = [column1];
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({ [column1.id]: 60 });
-
-    await wrapper.setProps({
-      dataConfig: { ...props.dataConfig, columnConfigs: [column1, column2] },
-    });
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({
-      [column1.id]: 60,
-      b: 60,
-    });
-    expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
-    expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
-  });
-
-  it("adds the fixed sizes to the column sizes object when the column still exists", async () => {
-    props.autoColumnSizesOptions.fixedSizes = { [column1.id]: 80, c: 90 };
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({
-      [column1.id]: 90,
-      b: 60,
-    });
-    expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
-    expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
-  });
-
-  it("adds the padding of the column value of the first row to the fixed sizes", async () => {
-    props.data[0][0].a = { color: "red", value: "group0row0cellA" };
-    props.data[0][1].a = { color: "red", value: "group0row0cellB" };
-    props.autoColumnSizesOptions.fixedSizes = {
-      [column1.id]: 80,
-      [column2.id]: 80,
+    const expectUpdatedColumnSizesAndRowHeightsTwice = (wrapper) => {
+      expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+      expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(2);
+      expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
+      expect(wrapper.emitted().autoRowHeightUpdate).toHaveLength(2);
     };
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({
-      [column1.id]: 100,
-      [column2.id]: 90,
-    });
-  });
 
-  it("enforces a maximum column size", async () => {
-    tableUIStub.methods.getRowComponents = vi.fn().mockReturnValue([
-      {
-        getCellComponents: vi.fn().mockReturnValue([
-          {
-            getCellContentDimensions: vi.fn().mockReturnValue({ width: 60 }),
+    it("does not mount the TableUI for calculation when columns were only removed", async () => {
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const { calculateAutoSizesSpy } = createSpies(wrapper);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({
+        [column1.id]: 60,
+        b: 60,
+      });
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+        b: 44,
+      });
+
+      await wrapper.setProps({
+        dataConfig: { ...props.dataConfig, columnConfigs: [column1] },
+      });
+      expect(wrapper.vm.calculateSizes).toBeFalsy();
+
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({ [column1.id]: 60 });
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+      });
+      expectUpdatedColumnSizesAndRowHeightsTwice(wrapper);
+      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("mounts the TableUI for calculation when columns were added", async () => {
+      props.dataConfig.columnConfigs = [column1];
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const { calculateAutoColumnSizesSpy, calculateAutoRowHeightsSpy } =
+        createSpies(wrapper);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({ [column1.id]: 60 });
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+      });
+
+      await wrapper.setProps({
+        dataConfig: { ...props.dataConfig, columnConfigs: [column1, column2] },
+      });
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({
+        [column1.id]: 60,
+        b: 60,
+      });
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+        b: 44,
+      });
+      expect(calculateAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
+      expect(calculateAutoRowHeightsSpy).toHaveBeenCalledTimes(2);
+      expectUpdatedColumnSizesAndRowHeightsTwice(wrapper);
+    });
+
+    it(`triggers the calculation of row heights when the compactMode was changed and autoRowHeight is active without
+      triggering the calculation of column sizes`, async () => {
+      props.autoColumnSizesOptions.calculateForBody = false;
+      props.autoColumnSizesOptions.calculateForHeader = false;
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const {
+        triggerCalculationSpy,
+        calculateAutoColumnSizesSpy,
+        calculateAutoRowHeightsSpy,
+      } = createSpies(wrapper);
+      await loadFonts(wrapper);
+
+      expect(triggerCalculationSpy).not.toHaveBeenCalled();
+
+      await wrapper.setProps({
+        dataConfig: {
+          ...props.dataConfig,
+          rowConfig: {
+            ...props.dataConfig.rowConfig,
+            compactMode: true,
           },
-          {
-            getCellContentDimensions: vi.fn().mockReturnValue({ width: 1200 }),
+        },
+      });
+      expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoColumnSizesSpy).not.toHaveBeenCalled();
+      expect(calculateAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      { prop: "calculateForBody", newValue: false },
+      { prop: "calculateForHeader", newValue: false },
+      { prop: "fixedSizes", newValue: { a: 40, b: 60 } },
+    ])(
+      "triggers the calculation when $prop in the auto column size options is changed and uses the saved row heights",
+      async ({ prop, newValue }) => {
+        const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+        const {
+          triggerCalculationSpy,
+          calculateAutoColumnSizesSpy,
+          calculateAutoRowHeightsSpy,
+          calculateAutoSizesSpy,
+        } = createSpies(wrapper);
+        await loadFonts(wrapper);
+        await wrapper.setProps({
+          autoColumnSizesOptions: {
+            ...props.autoColumnSizesOptions,
+            [prop]: newValue,
           },
-        ]),
+        });
+        await loadFonts(wrapper);
+        expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+        expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(2);
+        expect(calculateAutoColumnSizesSpy).toHaveBeenCalledTimes(2);
+        expect(calculateAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
       },
-    ]);
-
-    tableUIStub.methods.getHeaderComponent = vi.fn().mockReturnValue({
-      getHeaderCellWidths: vi.fn().mockReturnValue([1200, 60]),
-    });
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    expect(wrapper.vm.currentColumnSizes).toStrictEqual({
-      [column1.id]: 960,
-      b: 960,
-    });
-    expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
-    expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
-  });
-
-  it("triggers the calculation when a property of the auto size options is changed", async () => {
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    await loadFonts(wrapper);
-    const triggerCalculationSpy = vi.spyOn(
-      wrapper.vm,
-      "triggerCalculationOfAutoSizes",
     );
-    expect(triggerCalculationSpy).toHaveBeenCalledTimes(0);
 
-    await wrapper.setProps({
-      autoColumnSizesOptions: {
-        ...props.autoColumnSizesOptions,
-        calculateForBody: false,
-      },
+    it("triggers the calculation when auto column sizes get disabled and uses the saved row heights", async () => {
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const {
+        triggerCalculationSpy,
+        calculateAutoColumnSizesSpy,
+        calculateAutoRowHeightsSpy,
+        calculateAutoSizesSpy,
+      } = createSpies(wrapper);
+      await loadFonts(wrapper);
+      await wrapper.setProps({
+        autoColumnSizesOptions: {
+          ...props.autoColumnSizesOptions,
+          calculateForBody: false,
+          calculateForHeader: false,
+        },
+      });
+      await loadFonts(wrapper);
+      expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
     });
-    expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
 
-    await wrapper.setProps({
-      autoColumnSizesOptions: {
-        ...props.autoColumnSizesOptions,
-        calculateForHeader: false,
+    it.each([
+      {
+        prop: "calculate",
+        newValue: false,
+        calcAutoSizesCalls: 1,
+        calcAutoRowHeightCalls: 1,
       },
-    });
-    expect(triggerCalculationSpy).toHaveBeenCalledTimes(2);
+      {
+        prop: "fixedHeights",
+        newValue: { a: 40, b: 60 },
+        calcAutoSizesCalls: 2,
+        calcAutoRowHeightCalls: 2,
+      },
+    ])(
+      "triggers the calculation when $prop in the auto row height options is changed and uses saved column sizes",
+      async ({
+        prop,
+        newValue,
+        calcAutoSizesCalls,
+        calcAutoRowHeightCalls,
+      }) => {
+        const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+        const {
+          triggerCalculationSpy,
+          calculateAutoColumnSizesSpy,
+          calculateAutoRowHeightsSpy,
+          calculateAutoSizesSpy,
+        } = createSpies(wrapper);
+        await loadFonts(wrapper);
+        await wrapper.setProps({
+          autoRowHeightOptions: {
+            ...props.autoRowHeightOptions,
+            [prop]: newValue,
+          },
+        });
+        await loadFonts(wrapper);
+        expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+        expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(calcAutoSizesCalls);
+        expect(calculateAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
+        expect(calculateAutoRowHeightsSpy).toHaveBeenCalledTimes(
+          calcAutoRowHeightCalls,
+        );
+      },
+    );
+  });
 
-    await wrapper.setProps({
-      autoColumnSizesOptions: {
-        ...props.autoColumnSizesOptions,
-        fixedSizes: { a: 40, b: 60 },
-      },
+  describe("auto column sizes", () => {
+    beforeAll(() => {
+      props.autoRowHeightOptions.calculate = false;
     });
-    expect(triggerCalculationSpy).toHaveBeenCalledTimes(3);
+
+    it("adds the fixed sizes to the column sizes object when the column still exists", async () => {
+      props.autoColumnSizesOptions.fixedSizes = { [column1.id]: 80, c: 90 };
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({
+        [column1.id]: 90,
+        b: 60,
+      });
+      expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+      expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+    });
+
+    it("adds the padding of the column value of the first row to the fixed sizes", async () => {
+      props.data[0][0].a = { color: "red", value: "group0row0cellA" };
+      props.data[0][1].a = { color: "red", value: "group0row0cellB" };
+      props.autoColumnSizesOptions.fixedSizes = {
+        [column1.id]: 80,
+        [column2.id]: 80,
+      };
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({
+        [column1.id]: 100,
+        [column2.id]: 90,
+      });
+    });
+
+    it("enforces a maximum column size", async () => {
+      tableUIStub.methods.getRowComponents = vi.fn().mockReturnValue([
+        {
+          getCellComponents: vi.fn().mockReturnValue([
+            {
+              getCellContentDimensions: vi.fn().mockReturnValue({ width: 60 }),
+            },
+            {
+              getCellContentDimensions: vi
+                .fn()
+                .mockReturnValue({ width: 1200 }),
+            },
+          ]),
+        },
+      ]);
+
+      tableUIStub.methods.getHeaderComponent = vi.fn().mockReturnValue({
+        getHeaderCellWidths: vi.fn().mockReturnValue([1200, 60]),
+      });
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({
+        [column1.id]: MAX_AUTO_COLUMN_SIZE,
+        b: MAX_AUTO_COLUMN_SIZE,
+      });
+      expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+      expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+    });
+  });
+
+  describe("auto row height", () => {
+    beforeAll(() => {
+      props.autoColumnSizesOptions.calculateForBody = false;
+      props.autoColumnSizesOptions.calculateForHeader = false;
+    });
+
+    it("adds the fixed heights to the row heights by column object when the column still exists", async () => {
+      props.autoRowHeightOptions.fixedHeights = { [column1.id]: 80, c: 90 };
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 80,
+        b: 44,
+      });
+      expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
+      expect(wrapper.emitted().autoRowHeightUpdate).toHaveLength(1);
+    });
+
+    it.each([
+      {
+        description: "minimum",
+        heights: [10, 5, MIN_ROW_HEIGHT, MIN_ROW_HEIGHT, MIN_ROW_HEIGHT],
+      },
+      {
+        description: "maximum",
+        heights: [60, 600, 60, 600, MAX_AUTO_ROW_HEIGHT],
+      },
+    ])("enforces a $description row height", async ({ heights }) => {
+      const [height1, height2, height1Result, height2Result, enforcedHeight] =
+        heights;
+      tableUIStub.methods.getRowComponents = vi.fn().mockReturnValue([
+        {
+          getCellComponents: vi.fn().mockReturnValue([
+            {
+              getCellContentDimensions: vi
+                .fn()
+                .mockReturnValue({ height: height1 }),
+            },
+            {
+              getCellContentDimensions: vi
+                .fn()
+                .mockReturnValue({ height: height2 }),
+            },
+          ]),
+        },
+      ]);
+
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: height1Result,
+        b: height2Result,
+      });
+      expect(wrapper.vm.currentRowHeight).toBe(enforcedHeight);
+      expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
+      expect(wrapper.emitted().autoRowHeightUpdate[0][0]).toBe(enforcedHeight);
+    });
   });
 
   it("emits update:available-width", () => {
