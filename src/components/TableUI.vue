@@ -264,18 +264,16 @@ export default {
     };
   },
   computed: {
-    currentRowHeight() {
-      return this.resizedRowHeight ?? this.initialRowHeight;
-    },
-    initialRowHeight() {
-      return this.dataConfig.rowConfig.compactMode
-        ? this.dataConfig.rowConfig?.rowHeight || COMPACT_ROW_HEIGHT
-        : this.dataConfig.rowConfig?.rowHeight || DEFAULT_ROW_HEIGHT;
-    },
     minRowHeight() {
       return this.dataConfig.rowConfig.compactMode
         ? COMPACT_ROW_HEIGHT
         : DEFAULT_ROW_HEIGHT;
+    },
+    initialRowHeight() {
+      return this.dataConfig.rowConfig?.rowHeight || this.minRowHeight;
+    },
+    currentRowHeight() {
+      return this.resizedRowHeight ?? this.initialRowHeight;
     },
     /*
      * Current table config. E.g. if 4/10 columns displayed, 'current' fields return values w/ length 4.

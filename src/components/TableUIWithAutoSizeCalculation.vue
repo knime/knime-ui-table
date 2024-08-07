@@ -166,6 +166,12 @@ export default {
     autoSizingActive() {
       return this.autoColumnSizingActive || this.autoRowHeightSizingActive;
     },
+    autoRowHeightCalculationRequired() {
+      return this.autoRowHeightSizingActive && !this.useSavedRowHeights;
+    },
+    autoColumnSizeCalculationRequired() {
+      return this.autoColumnSizingActive && !this.useSavedColumnSizes;
+    },
     columnPaddingsLeft() {
       const firstRowData: any =
         this.paginatedDataForAutoColumnSizesCalculation[0][0];
@@ -250,11 +256,7 @@ export default {
       this.setAutoSizesInitialized();
     },
     triggerCalculationOfAutoSizes() {
-      if (!this.autoSizingActive) {
-        this.currentColumnSizes = {};
-        this.currentHeightsByColumn = {};
-        this.emitNewAutoSizes();
-      } else if (this.columnsWereOnlyRemoved) {
+      if (this.autoSizingActive && this.columnsWereOnlyRemoved) {
         this.currentColumnsWithAutoSize.forEach((columnId) => {
           if (this.removedColumnIds.has(columnId)) {
             delete this.currentColumnSizes[columnId];
@@ -262,47 +264,35 @@ export default {
           }
         });
         this.emitNewAutoSizes();
+        return;
+      }
+
+      if (!this.autoColumnSizingActive) {
+        this.currentColumnSizes = {};
+      }
+      if (!this.autoRowHeightSizingActive) {
+        this.currentHeightsByColumn = {};
+      }
+
+      const autoSizingRequired =
+        this.autoRowHeightCalculationRequired ||
+        this.autoColumnSizeCalculationRequired;
+      if (autoSizingRequired) {
+        this.calculateSizes = true;
       } else {
-        if (!this.autoColumnSizingActive) {
-          this.currentColumnSizes = {};
-        }
-        if (!this.autoRowHeightSizingActive) {
-          this.currentHeightsByColumn = {};
-        }
-
-        if (
-          (this.useSavedColumnSizes && !this.autoRowHeightSizingActive) ||
-          (this.useSavedRowHeights && !this.autoColumnSizingActive)
-        ) {
-          this.emitNewAutoSizes();
-        } else {
-          this.calculateSizes = true;
-        }
+        this.emitNewAutoSizes();
       }
     },
-    calculateAutoColumnSizes(autoColumnSizes: SizeByColumn[] | undefined) {
-      this.currentColumnSizes =
-        this.initializeSizesWithMinSize(MIN_COLUMN_SIZE);
-      const { calculateForBody, calculateForHeader, fixedSizes } =
-        this.autoColumnSizesOptions;
-      if (calculateForBody) {
-        this.addFixedAndAutoSizes({
-          sizesToUpdate: this.currentColumnSizes,
-          autoSizesByRow: autoColumnSizes!,
-          fixedSizes,
-          minSize: MIN_COLUMN_SIZE,
-          paddings: this.columnPaddingsLeft,
-        });
-      }
-      if (calculateForHeader) {
-        this.calculateAutoColumnSizesHeader();
-      }
-      this.enforceMaxColSize();
+    setAutoColumnSizes(autoColumnSizes: SizeByColumn[]) {
+      this.addFixedAndAutoSizes({
+        sizesToUpdate: this.currentColumnSizes,
+        autoSizesByRow: autoColumnSizes,
+        fixedSizes: this.autoColumnSizesOptions.fixedSizes,
+        minSize: MIN_COLUMN_SIZE,
+        paddings: this.columnPaddingsLeft,
+      });
     },
-    calculateAutoRowHeights(autoRowHeights: SizeByColumn[]) {
-      this.currentHeightsByColumn =
-        this.initializeSizesWithMinSize(MIN_ROW_HEIGHT);
-
+    setAutoRowHeights(autoRowHeights: SizeByColumn[]) {
       this.addFixedAndAutoSizes({
         sizesToUpdate: this.currentHeightsByColumn,
         autoSizesByRow: autoRowHeights,
@@ -317,17 +307,42 @@ export default {
         document.fonts.load("700 1em Roboto"),
       ]);
 
-      let autoColumnSizes, autoRowHeights;
-      if (this.autoSizingOnBodyActive) {
-        ({ autoColumnSizes, autoRowHeights } = this.calculateAutoSizesBody());
+      const bodyComputesColumns =
+        this.autoColumnSizeCalculationRequired &&
+        this.autoColumnSizesOptions.calculateForBody;
+      const headerComputesColumns =
+        this.autoColumnSizeCalculationRequired &&
+        this.autoColumnSizesOptions.calculateForHeader;
+      const bodyComputesRows = this.autoRowHeightCalculationRequired;
+      const computeColumns = this.autoColumnSizeCalculationRequired;
+
+      if (computeColumns) {
+        this.currentColumnSizes =
+          this.initializeSizesWithMinSize(MIN_COLUMN_SIZE);
+      }
+      if (bodyComputesRows) {
+        this.currentHeightsByColumn =
+          this.initializeSizesWithMinSize(MIN_ROW_HEIGHT);
       }
 
-      if (this.autoColumnSizingActive && !this.useSavedColumnSizes) {
-        this.calculateAutoColumnSizes(autoColumnSizes);
+      if (bodyComputesColumns || bodyComputesRows) {
+        const { autoColumnSizes, autoRowHeights } =
+          this.calculateAutoSizesBody();
+
+        if (bodyComputesRows) {
+          this.setAutoRowHeights(autoRowHeights);
+        }
+
+        if (bodyComputesColumns) {
+          this.setAutoColumnSizes(autoColumnSizes);
+        }
       }
 
-      if (this.autoRowHeightSizingActive && !this.useSavedRowHeights) {
-        this.calculateAutoRowHeights(autoRowHeights!);
+      if (headerComputesColumns) {
+        this.calculateAndSetAutoColumnSizesHeader();
+      }
+      if (computeColumns) {
+        this.enforceMaxColSize();
       }
 
       this.calculateSizes = false;
@@ -373,7 +388,6 @@ export default {
         });
       });
     },
-
     calculateAutoSizesBody() {
       const rowComponents = (
         this.$refs.tableUIForAutoSize as any
@@ -401,7 +415,7 @@ export default {
       });
       return { autoColumnSizes, autoRowHeights };
     },
-    calculateAutoColumnSizesHeader() {
+    calculateAndSetAutoColumnSizesHeader() {
       const headerCellSizes = (this.$refs.tableUIForAutoSize as any)
         .getHeaderComponent()
         .getHeaderCellWidths();
