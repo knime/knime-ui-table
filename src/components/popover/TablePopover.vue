@@ -51,7 +51,7 @@ export type PopoverRenderer =
 const props = defineProps<{
   data: unknown;
   target: HTMLElement;
-  renderer: PopoverRenderer;
+  renderer?: PopoverRenderer;
 }>();
 
 const emit = defineEmits(["close"]);
