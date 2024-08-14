@@ -23,6 +23,7 @@ import {
   COMPACT_ROW_HEIGHT,
   ROW_MARGIN_BOTTOM,
   ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
+  SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
 import { getPropertiesFromColumns } from "@/util";
 import { computed, ref, type Ref, type PropType } from "vue";
@@ -255,6 +256,7 @@ export default {
       resizedRowHeight: null as null | number,
       currentResizedScrollIndex: null as null | number,
       currentRowSizeDelta: null as null | number,
+      SPECIAL_COLUMNS_SIZE,
     };
   },
   computed: {
@@ -836,6 +838,15 @@ export default {
       @search-update="onSearch"
       @time-filter-update="onTimeFilterUpdate"
     />
+    <colgroup :width="SPECIAL_COLUMNS_SIZE">
+      <col v-if="tableConfig.showCollapser" />
+      <col v-if="tableConfig.showSelection" />
+      <col
+        v-for="(columnSize, index) in columnSizes"
+        :key="index"
+        :width="columnSize"
+      />
+    </colgroup>
     <TableCore
       ref="tableCore"
       :scroll-data="scrollData"
