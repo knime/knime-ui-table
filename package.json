@@ -22,14 +22,13 @@
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
     "storybook": "sb dev",
-    "postinstall": "license-check -c",
-    "prepare": "husky"
+    "prepare": "husky && license-check -c"
   },
   "dependencies": {
     "@knime/components": "1.0.5",
     "@knime/styles": "1.0.0",
     "@knime/utils": "1.0.4",
-    "@knime/vue-headless-virtual-scroller": "0.1.1",
+    "@knime/vue-headless-virtual-scroller": "0.1.2",
     "lodash-es": "4.17.21",
     "raf-throttle": "2.0.6",
     "uuid": "9.0.1",
