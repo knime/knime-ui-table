@@ -391,10 +391,10 @@ describe("Header.vue", () => {
   it("computes the correct sizes such that the header size fits its content", () => {
     wrapper = shallowMount(Header, { props });
     expect(wrapper.vm.$refs).toHaveProperty("columnHeader-0");
-    expect(wrapper.vm.$refs).toHaveProperty("headerTextContainer-0");
+    expect(wrapper.vm.$refs).toHaveProperty("mainHeader-0");
     expect(wrapper.vm.$refs).toHaveProperty("headerText-0");
     expect(wrapper.vm.$refs).toHaveProperty("columnHeader-4");
-    expect(wrapper.vm.$refs).toHaveProperty("headerTextContainer-4");
+    expect(wrapper.vm.$refs).toHaveProperty("mainHeader-4");
     expect(wrapper.vm.$refs).toHaveProperty("headerText-4");
     Element.prototype.getBoundingClientRect = vi
       .fn()

@@ -149,31 +149,54 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
   });
 
   it.each([
-    [{ calculateForBody: true, calculateForHeader: false, calculate: false }],
-    [{ calculateForBody: false, calculateForHeader: true, calculate: false }],
-    [{ calculateForBody: false, calculateForHeader: false, calculate: true }],
-  ])("mounts the TableUI with %s and creates correct configs", async () => {
-    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
-    expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
+    [true, true, true, 960],
+    [true, true, false, 960],
+    [true, false, true, 960],
+    [true, false, false, 960],
+    [false, true, true, 960],
+    [false, true, false, 960],
+    [false, false, true, 50],
+  ])(
+    "mounts the TableUI with active autoSizing (colBody: %s, colHeader: %s, rowBody: %s) and creates correct configs",
+    async (calculateForBody, calculateForHeader, calculate, columnSize) => {
+      props.autoColumnSizesOptions.calculateForBody = calculateForBody;
+      props.autoColumnSizesOptions.calculateForHeader = calculateForHeader;
+      props.autoRowHeightOptions.calculate = calculate;
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
 
-    await loadFonts(wrapper);
-    expect(wrapper.vm.tableConfigForAutoSizesCalculation).toStrictEqual(
-      expect.objectContaining({ enableVirtualScrolling: false }),
-    );
-    expect(
-      wrapper.vm.dataConfigForAutoSizesCalculation.columnConfigs,
-    ).toStrictEqual([
-      expect.objectContaining({ size: 0 }),
-      expect.objectContaining({ size: 0 }),
-    ]);
-    expect(wrapper.vm.paginatedDataForAutoColumnSizesCalculation).toStrictEqual(
-      [
+      await loadFonts(wrapper);
+      expect(wrapper.vm.tableConfigForAutoSizesCalculation).toStrictEqual(
+        expect.objectContaining({ enableVirtualScrolling: false }),
+      );
+      expect(
+        wrapper.vm.dataConfigForAutoSizesCalculation.columnConfigs,
+      ).toStrictEqual([
+        expect.objectContaining({ size: columnSize }),
+        expect.objectContaining({ size: columnSize }),
+      ]);
+      expect(
+        wrapper.vm.paginatedDataForAutoColumnSizesCalculation,
+      ).toStrictEqual([
         [
           { a: "group0row0cellA", b: "group0row0cellB" },
           { a: "group0row1cellA", b: "group0row1cellB" },
           { a: "group1row0cellA", b: "group1row0cellB" },
         ],
-      ],
+      ]);
+      expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
+      expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
+      expect(wrapper.emitted().autoColumnSizesUpdate).toHaveLength(1);
+    },
+  );
+
+  it("can handle empty data", async () => {
+    props.data = [[]];
+    const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+    expect(wrapper.vm.mountTableUIForAutoSizeCalculation).toBeTruthy();
+    await loadFonts(wrapper);
+    expect(wrapper.vm.paginatedDataForAutoColumnSizesCalculation).toStrictEqual(
+      [[]],
     );
     expect(wrapper.emitted()).toHaveProperty("autoColumnSizesUpdate");
     expect(wrapper.emitted()).toHaveProperty("autoRowHeightUpdate");
@@ -243,7 +266,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       expect(wrapper.emitted().autoRowHeightUpdate).toHaveLength(2);
     };
 
-    it("does not mount the TableUI for calculation when columns were only removed", async () => {
+    it("does not mount the TableUI for calculation when columns were only removed and auto column sizing is active", async () => {
       const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
       const { calculateAutoSizesSpy } = createSpies(wrapper);
       await loadFonts(wrapper);
@@ -268,6 +291,33 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       });
       expectUpdatedColumnSizesAndRowHeightsTwice(wrapper);
       expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it(`does mount the TableUI for calculation when columns were only removed, auto column sizing is inactive and auto
+      row height sizing is active`, async () => {
+      props.autoColumnSizesOptions.calculateForBody = false;
+      props.autoColumnSizesOptions.calculateForHeader = false;
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const { calculateAutoSizesSpy } = createSpies(wrapper);
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({});
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+        b: 44,
+      });
+
+      await wrapper.setProps({
+        dataConfig: { ...props.dataConfig, columnConfigs: [column1] },
+      });
+      expect(wrapper.vm.calculateSizes).toBeTruthy();
+
+      await loadFonts(wrapper);
+      expect(wrapper.vm.currentColumnSizes).toStrictEqual({});
+      expect(wrapper.vm.currentHeightsByColumn).toStrictEqual({
+        [column1.id]: 44,
+      });
+      expectUpdatedColumnSizesAndRowHeightsTwice(wrapper);
+      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(2);
     });
 
     it("mounts the TableUI for calculation when columns were added", async () => {
@@ -339,7 +389,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
         setAutoColumnSizesCalls: 2,
       },
     ])(
-      "triggers the calculation when $prop in the auto column size options is changed and uses the saved row heights",
+      "triggers the calculation when $prop in the auto column size options is changed",
       async ({ prop, newValue, setAutoColumnSizesCalls }) => {
         const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
         const {
@@ -361,11 +411,11 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
         expect(setAutoColumnSizesSpy).toHaveBeenCalledTimes(
           setAutoColumnSizesCalls,
         );
-        expect(setAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
+        expect(setAutoRowHeightsSpy).toHaveBeenCalledTimes(2);
       },
     );
 
-    it("triggers the calculation when auto column sizes get disabled and uses the saved row heights", async () => {
+    it("triggers the calculation when auto column sizes get disabled", async () => {
       const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
       const {
         triggerCalculationSpy,
@@ -383,9 +433,9 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       });
       await loadFonts(wrapper);
       expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
-      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(2);
       expect(setAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
-      expect(setAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
+      expect(setAutoRowHeightsSpy).toHaveBeenCalledTimes(2);
     });
 
     it.each([

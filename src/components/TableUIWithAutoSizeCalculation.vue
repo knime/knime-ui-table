@@ -1,13 +1,16 @@
 <script lang="ts">
 /**
- * This component contains the ability to size the columns in the tableUI according to the width of its content by
+ * This component contains the ability to size the columns in the tableUI according to the width of their content by
  * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additional prop,
- * the options for the calculation.
+ * the options for the calculation. The automatic row height relies on the column sizes and by enforcing a maximum
+ * height of MAX_AUTO_ROW_HEIGHT.
  * To trigger the calculation of the auto sizes, the corresponding trigger method can be called from the parent. The
  * method is automatically called from within this component when:
  *  - the component is mounted
  *  - one property of the autoColumnSizesOptions changes
- *  - when columns were removed, added, or replaced
+ *  - one property of the autoRowHeightOptions changes
+ *  - columns were removed, added, or replaced
+ *  - the compact mode is toggled
  */
 
 import TableUI from "./TableUI.vue";
@@ -90,7 +93,6 @@ export default {
       currentHeightsByColumn: {} as SizeByColumn,
       calculateSizes: false,
       useSavedColumnSizes: false,
-      useSavedRowHeights: false,
       disableRowHeightTransition: true,
     };
   },
@@ -137,16 +139,21 @@ export default {
     tableConfigForAutoSizesCalculation() {
       return { ...this.tableConfig, enableVirtualScrolling: false };
     },
-    dataConfigForAutoSizesCalculation() {
+    dataConfigForCalculationWithAutoColumnSizes() {
       return {
         ...this.dataConfig,
         columnConfigs: this.dataConfig.columnConfigs.map(
           (columnConfig: ColumnConfig) => ({
             ...columnConfig,
-            size: 0,
+            size: MAX_AUTO_COLUMN_SIZE,
           }),
         ),
       };
+    },
+    dataConfigForAutoSizesCalculation() {
+      return this.autoColumnSizingActive
+        ? this.dataConfigForCalculationWithAutoColumnSizes
+        : this.dataConfig;
     },
     autoColumnSizingActive() {
       return (
@@ -157,33 +164,23 @@ export default {
     autoRowHeightSizingActive() {
       return this.autoRowHeightOptions.calculate;
     },
-    autoSizingOnBodyActive() {
-      return (
-        this.autoColumnSizesOptions.calculateForBody ||
-        this.autoRowHeightSizingActive
-      );
-    },
-    autoSizingActive() {
-      return this.autoColumnSizingActive || this.autoRowHeightSizingActive;
-    },
-    autoRowHeightCalculationRequired() {
-      return this.autoRowHeightSizingActive && !this.useSavedRowHeights;
-    },
     autoColumnSizeCalculationRequired() {
       return this.autoColumnSizingActive && !this.useSavedColumnSizes;
     },
     columnPaddingsLeft() {
       const firstRowData: any =
         this.paginatedDataForAutoColumnSizesCalculation[0][0];
-      return this.dataConfigKeys.reduce(
-        (columnPaddingsLeft, columnKey, columnIndex) => {
-          const columnId = this.dataConfigIds[columnIndex];
-          const columnValue = firstRowData[columnKey];
-          columnPaddingsLeft[columnId] = getCellPaddingLeft(columnValue);
-          return columnPaddingsLeft;
-        },
-        {} as Record<string | symbol | number, number>,
-      );
+      return firstRowData
+        ? this.dataConfigKeys.reduce(
+            (columnPaddingsLeft, columnKey, columnIndex) => {
+              const columnId = this.dataConfigIds[columnIndex];
+              const columnValue = firstRowData[columnKey];
+              columnPaddingsLeft[columnId] = getCellPaddingLeft(columnValue);
+              return columnPaddingsLeft;
+            },
+            {} as Record<string | symbol | number, number>,
+          )
+        : {};
     },
     currentRowHeight() {
       const rowHeights = Reflect.ownKeys(this.currentHeightsByColumn).map(
@@ -198,7 +195,6 @@ export default {
     autoColumnSizesOptions: {
       handler(newVal, oldVal) {
         if (!isEqual(newVal, oldVal)) {
-          this.useSavedRowHeights = true;
           this.triggerCalculationOfAutoSizes();
         }
       },
@@ -231,7 +227,6 @@ export default {
     },
   },
   mounted() {
-    this.triggerCalculationOfAutoSizes();
     if (this.autoRowHeightSizingActive) {
       const unwatchRowHeight = this.$watch(
         () => this.dataConfig.rowConfig.rowHeight,
@@ -246,17 +241,17 @@ export default {
     } else {
       this.disableRowHeightTransition = false;
     }
+    this.triggerCalculationOfAutoSizes();
   },
   methods: {
     emitNewAutoSizes() {
-      this.$emit("autoColumnSizesUpdate", this.currentColumnSizes);
+      this.$emit("autoColumnSizesUpdate", { ...this.currentColumnSizes });
       this.$emit("autoRowHeightUpdate", this.currentRowHeight);
       this.useSavedColumnSizes = false;
-      this.useSavedRowHeights = false;
       this.setAutoSizesInitialized();
     },
     triggerCalculationOfAutoSizes() {
-      if (this.autoSizingActive && this.columnsWereOnlyRemoved) {
+      if (this.autoColumnSizingActive && this.columnsWereOnlyRemoved) {
         this.currentColumnsWithAutoSize.forEach((columnId) => {
           if (this.removedColumnIds.has(columnId)) {
             delete this.currentColumnSizes[columnId];
@@ -275,7 +270,7 @@ export default {
       }
 
       const autoSizingRequired =
-        this.autoRowHeightCalculationRequired ||
+        this.autoRowHeightSizingActive ||
         this.autoColumnSizeCalculationRequired;
       if (autoSizingRequired) {
         this.calculateSizes = true;
@@ -313,7 +308,7 @@ export default {
       const headerComputesColumns =
         this.autoColumnSizeCalculationRequired &&
         this.autoColumnSizesOptions.calculateForHeader;
-      const bodyComputesRows = this.autoRowHeightCalculationRequired;
+      const bodyComputesRows = this.autoRowHeightSizingActive;
       const computeColumns = this.autoColumnSizeCalculationRequired;
 
       if (computeColumns) {

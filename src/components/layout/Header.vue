@@ -250,18 +250,18 @@ export default {
             this.$refs[`columnHeader-${columnIndex}`] as HTMLElement[]
           )[0].getBoundingClientRect().width,
         );
-        const widthHeaderTextContainer = (
-          this.$refs[`headerTextContainer-${columnIndex}`] as HTMLElement[]
-        )[0].getBoundingClientRect().width;
+        const widthMainHeader = Math.ceil(
+          (
+            this.$refs[`mainHeader-${columnIndex}`] as HTMLElement[]
+          )[0].getBoundingClientRect().width,
+        );
         const widthHeaderText = (
           this.$refs[`headerText-${columnIndex}`] as HTMLElement[]
         )[0].getBoundingClientRect().width;
-        const textContainerOverflow = Math.ceil(
-          widthHeaderText - widthHeaderTextContainer,
-        );
         return (
-          widthCompleteHeader +
-          textContainerOverflow +
+          widthCompleteHeader -
+          widthMainHeader +
+          widthHeaderText +
           this.currentResizeDragHandleWidth
         );
       });
@@ -330,13 +330,9 @@ export default {
           @keydown.space="onHeaderClick(ind, header)"
           @keydown.down.self.prevent="onKeydownDown(ind)"
         >
-          <div class="main-header">
+          <div :ref="`mainHeader-${ind}`" class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
-            <div
-              :ref="`headerTextContainer-${ind}`"
-              class="header-text-container"
-              :title="header"
-            >
+            <div class="header-text-container" :title="header">
               <span :ref="`headerText-${ind}`">{{ header }}</span>
             </div>
           </div>
