@@ -479,7 +479,10 @@ export default {
     @vue:mounted="calculateAutoSizes"
   >
     <template v-for="(_, slot) of $slots" #[slot]="scope">
-      <slot :name="slot" v-bind="scope" />
+      <slot
+        :name="slot"
+        v-bind="{ ...scope, usedForAutoSizeCalculation: true }"
+      />
     </template>
   </TableUI>
 </template>
