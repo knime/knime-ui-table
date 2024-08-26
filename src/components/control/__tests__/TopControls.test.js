@@ -290,5 +290,12 @@ describe("TopControls.vue", () => {
 
       expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
     });
+
+    it("shows TopControls when it has additional settings", () => {
+      props.tableConfig.settingsItems = [{ text: "Menu item", id: "1" }];
+      const wrapper = shallowMount(TopControls, { props });
+
+      expect(wrapper.findComponent(BaseControls).exists()).toBeTruthy();
+    });
   });
 });

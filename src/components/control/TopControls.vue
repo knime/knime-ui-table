@@ -103,7 +103,8 @@ export default {
         this.tableConfig.pageConfig?.showTableSize ||
         this.showSearch ||
         multiplePages ||
-        this.hasCarousel
+        this.hasCarousel ||
+        Boolean(this.tableConfig.settingsItems?.length)
       );
     },
   },
