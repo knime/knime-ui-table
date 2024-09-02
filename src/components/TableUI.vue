@@ -1014,6 +1014,7 @@ table {
   height: 100%;
   width: 100%;
   font-size: 13px;
+  line-height: 16px;
   font-weight: 400;
   table-layout: fixed;
   display: flex;

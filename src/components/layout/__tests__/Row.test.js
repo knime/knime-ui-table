@@ -107,7 +107,7 @@ describe("Row.vue", () => {
       expect(wrapper.findComponent(Cell).exists()).toBeTruthy();
       expect(wrapper.vm.cells).toHaveProperty(0, expect.any(Object));
       expect(wrapper.vm.cells).toHaveProperty(4, expect.any(Object));
-      expect(wrapper.vm.paddingTopBottom).toBe(11);
+      expect(wrapper.vm.paddingTopBottom).toBe(12);
       expect(wrapper.vm.transition).toStrictEqual({
         transition: "height 0.3s, box-shadow 0.15s",
       });
@@ -121,7 +121,7 @@ describe("Row.vue", () => {
           rowConfig: { compactMode: true },
         },
       });
-      expect(wrapper.vm.paddingTopBottom).toBe(5);
+      expect(wrapper.vm.paddingTopBottom).toBe(4);
     });
 
     it("shows the collapser toggle via prop", () => {

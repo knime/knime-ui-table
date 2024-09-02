@@ -30,6 +30,8 @@ describe("Cell.vue", () => {
     expect(wrapper.text()).toBe("Text");
     expect(wrapper.attributes("style")).toContain("width: calc(300px);");
     expect(wrapper.attributes("style")).toContain("padding-left: 10px;");
+    expect(wrapper.attributes("style")).toContain("padding-top: 12px;");
+    expect(wrapper.attributes("style")).toContain("padding-bottom: 12px;");
     expect(wrapper.attributes("style")).toContain(
       "--data-cell-color: #abcdef;",
     );
@@ -52,11 +54,22 @@ describe("Cell.vue", () => {
     expect(slottedWrapper.text()).toBe("This is a Slot!");
   });
 
+  it("does not set a top or bottom padding on slots", () => {
+    const slots = { default: "<h3>This is a Slot!</h3>" };
+    props.isSlotted = true;
+    props.noPadding = true;
+    const slottedWrapper = mount(CellRenderer, { props, slots });
+    expect(slottedWrapper.attributes("style")).not.toContain("padding-top");
+    expect(slottedWrapper.attributes("style")).not.toContain("padding-bottom");
+  });
+
   it("renders CircleHelpIcon if missing", () => {
     props.isMissing = true;
     const wrapper = mount(CellRenderer, { props });
     expect(wrapper.findComponent(CircleHelpIcon).exists()).toBeTruthy();
     expect(wrapper.text()).toBe("");
+    expect(wrapper.attributes("style")).toContain("padding-top: 13px;");
+    expect(wrapper.attributes("style")).toContain("padding-bottom: 13px;");
   });
 
   it("emits event on input", () => {

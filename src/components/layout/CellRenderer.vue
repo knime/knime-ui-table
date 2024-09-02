@@ -20,6 +20,23 @@ const hasPaddingTopBottom = computed(
   () => !(props.isSlotted && Boolean(props.noPadding)) || props.isMissing,
 );
 
+const paddingTopBottom = computed(() => {
+  if (!hasPaddingTopBottom.value) {
+    return {};
+  }
+
+  let paddingTopBottom = props.defaultTopBottomPadding;
+  if (props.isMissing) {
+    // height of text is 16px, height of missing value icon is 14px => padding needs to be increased by 1px
+    paddingTopBottom += 1;
+  }
+
+  return {
+    paddingTop: `${paddingTopBottom}px`,
+    paddingBottom: `${paddingTopBottom}px`,
+  };
+});
+
 const dataCell: Ref<HTMLElement | null> = ref(null);
 const getCellContentDimensions = () => {
   const bcr = dataCell.value?.firstElementChild?.getBoundingClientRect();
@@ -62,10 +79,7 @@ const onPointerOver = throttle(() => {
     :style="{
       width: `calc(${size}px)`,
       paddingLeft: `${paddingLeft}px`,
-      ...(hasPaddingTopBottom && {
-        paddingTop: `${defaultTopBottomPadding}px`,
-        paddingBottom: `${defaultTopBottomPadding}px`,
-      }),
+      ...paddingTopBottom,
       ...dataCellColorStyle,
     }"
     :title="title === null || (isSlotted && !isMissing) ? undefined : title"
@@ -97,7 +111,6 @@ const onPointerOver = throttle(() => {
   background-clip: border-box;
   user-select: none;
   white-space: nowrap;
-  line-height: initial;
 
   &.colored-cell {
     background-size: 4px;
