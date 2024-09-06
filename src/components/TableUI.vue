@@ -816,20 +816,9 @@ export default {
 </script>
 
 <template>
-  <table
-    ref="wrapper"
-    :tabindex="-1"
-    @pointerleave="selectCellsOnMove.setFalse"
-    @pointerdown.passive.stop="
-      $event.button === 0 && selectCellsOnMove.setTrue()
-    "
-    @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
-    @keydown.ctrl.shift.c.exact="handleCopyOnKeydown"
-    @keydown.meta.shift.c.exact="handleCopyOnKeydown"
-    @focusin="changeFocus(true)"
-    @focusout="changeFocus(false)"
-  >
+  <div class="wrapper">
     <TopControls
+      class="top-controls"
       :table-config="tableConfig"
       :column-headers="columnHeaders"
       @next-page="onPageChange(1)"
@@ -840,178 +829,193 @@ export default {
       @search-update="onSearch"
       @time-filter-update="onTimeFilterUpdate"
     />
-    <colgroup :width="SPECIAL_COLUMNS_SIZE">
-      <col v-if="tableConfig.showCollapser" />
-      <col v-if="tableConfig.showSelection" />
-      <col
-        v-for="(columnSize, index) in columnSizes"
-        :key="index"
-        :width="columnSize"
-      />
-    </colgroup>
-    <TableCore
-      ref="tableCore"
-      :scroll-data="scrollData"
-      :total-width="totalWidth"
-      :column-sizes="columnSizes"
-      :column-resize="{ active: columnResizeActive }"
-      :table-config="tableConfig"
-      :current-rect-id="currentRectId"
-      :scroll-config="{
-        itemSize: scrollerItemSize,
-        numRowsAbove,
-        numRowsBelow,
-        compact: Boolean(dataConfig.rowConfig.compactMode),
-      }"
-      :current-row-height="currentRowHeight"
-      @group-sub-menu-click="onGroupSubMenuClick"
-      @scroller-update="onScroll"
-      @update:available-width="$emit('update:available-width', $event)"
-      @move-selection="onKeyboardMoveSelection"
-      @clear-selection="clearCellSelection"
+    <table
+      ref="wrapper"
+      :tabindex="-1"
+      @pointerleave="selectCellsOnMove.setFalse"
+      @pointerdown.passive.stop="
+        $event.button === 0 && selectCellsOnMove.setTrue()
+      "
+      @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
+      @keydown.ctrl.shift.c.exact="handleCopyOnKeydown"
+      @keydown.meta.shift.c.exact="handleCopyOnKeydown"
+      @focusin="changeFocus(true)"
+      @focusout="changeFocus(false)"
     >
-      <template #row="{ row, groupInd = null, rowInd }">
-        <Row
-          :ref="getRowRefName(groupInd, rowInd)"
-          :row-data="row"
-          :row="getRowData(row)"
-          :table-config="tableConfig"
-          :show-drag-handle="enableRowResize"
-          :column-configs="dataConfig.columnConfigs"
-          :row-config="dataConfig.rowConfig"
-          :row-height="currentRowHeight"
-          :min-row-height="minRowHeight"
-          :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
-          :select-cells-on-move="selectCellsOnMove.state"
-          :disable-row-height-transition="disableRowHeightTransition"
-          @row-select="onRowSelect($event, rowInd, groupInd || 0)"
-          @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
-          @expand-cell-select="
-            (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
-          "
-          @row-input="(event) => onRowInput(event, rowInd, groupInd ?? 0, row)"
-          @row-sub-menu-click="onRowSubMenuClick($event, row)"
-          @resize-all-rows="
-            (currentSize, row) => onResizeAllRows(currentSize, row, rowInd)
-          "
-          @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, rowInd)"
-        >
-          <!-- Vue requires named slots on "custom" elements (i.e. template). -->
-          <!-- eslint-disable vue/valid-v-slot -->
-          <template
-            v-for="colInd in slottedColumns"
-            #[getCellContentSlotName(columnKeys,colInd)]="cellData"
-            :key="rowInd + '_' + colInd"
+      <TableCore
+        ref="tableCore"
+        :scroll-data="scrollData"
+        :total-width="totalWidth"
+        :column-sizes="columnSizes"
+        :column-resize="{ active: columnResizeActive }"
+        :table-config="tableConfig"
+        :current-rect-id="currentRectId"
+        :scroll-config="{
+          itemSize: scrollerItemSize,
+          numRowsAbove,
+          numRowsBelow,
+          compact: Boolean(dataConfig.rowConfig.compactMode),
+        }"
+        :current-row-height="currentRowHeight"
+        @group-sub-menu-click="onGroupSubMenuClick"
+        @scroller-update="onScroll"
+        @update:available-width="$emit('update:available-width', $event)"
+        @move-selection="onKeyboardMoveSelection"
+        @clear-selection="clearCellSelection"
+      >
+        <template #row="{ row, groupInd = null, rowInd }">
+          <Row
+            :ref="getRowRefName(groupInd, rowInd)"
+            :row-data="row"
+            :row="getRowData(row)"
+            :table-config="tableConfig"
+            :show-drag-handle="enableRowResize"
+            :column-configs="dataConfig.columnConfigs"
+            :row-config="dataConfig.rowConfig"
+            :row-height="currentRowHeight"
+            :min-row-height="minRowHeight"
+            :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
+            :select-cells-on-move="selectCellsOnMove.state"
+            :disable-row-height-transition="disableRowHeightTransition"
+            @row-select="onRowSelect($event, rowInd, groupInd || 0)"
+            @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
+            @expand-cell-select="
+              (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
+            "
+            @row-input="
+              (event) => onRowInput(event, rowInd, groupInd ?? 0, row)
+            "
+            @row-sub-menu-click="onRowSubMenuClick($event, row)"
+            @resize-all-rows="
+              (currentSize, row) => onResizeAllRows(currentSize, row, rowInd)
+            "
+            @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, rowInd)"
           >
-            <!-- 
+            <!-- Vue requires named slots on "custom" elements (i.e. template). -->
+            <!-- eslint-disable vue/valid-v-slot -->
+            <template
+              v-for="colInd in slottedColumns"
+              #[getCellContentSlotName(columnKeys,colInd)]="cellData"
+              :key="rowInd + '_' + colInd"
+            >
+              <!-- 
               TODO: UIEXT-1753:
               not yet working properly with empty and bottom rows, 
               since rowInd is the actual scroll index and not the input in the input data
               in this case
              -->
-            <slot
-              :name="`cellContent-${columnKeys[colInd].toString()}`"
-              :data="{
-                ...cellData,
-                key: columnKeys[colInd],
-                rowInd,
-                colInd,
-              }"
-            />
-          </template>
-          <template #rowCollapserContent>
-            <slot name="collapserContent" :row="row" />
-          </template>
-        </Row>
-      </template>
-      <template #header="{ getDragHandleHeight, width = null }">
-        <Header
-          ref="header"
-          :style="width === null ? {} : { width: `${width}px` }"
-          :table-config="tableConfig"
-          :column-headers="columnHeaders"
-          :column-sub-headers="columnSubHeaders"
-          :column-sizes="columnSizes"
-          :column-sub-menu-items="columnHeaderSubMenuItems"
-          :column-sort-configs="columnSortConfigs"
-          :column-header-colors="columnHeaderColors"
-          :is-selected="totalSelected > 0"
-          :filters-active="filterActive"
-          :get-drag-handle-height="getDragHandleHeight"
-          :class="tableHeaderClass"
-          @header-select="onSelectAll"
-          @column-sort="onColumnSort"
-          @toggle-filter="onToggleFilter"
-          @column-resize="onColumnResize"
-          @all-columns-resize="onAllColumnsResize"
-          @column-resize-start="onColumnResizeStart"
-          @column-resize-end="onColumnResizeEnd"
-          @sub-menu-item-selection="onHeaderSubMenuItemSelection"
-          @select-column-cell-in-first-row="selectColumnCellInFirstRow"
-        />
-        <ColumnFilters
-          v-if="filterActive"
-          class="column-filter"
-          :style="width === null ? {} : { width: `${width}px` }"
-          :filter-configs="columnFilterConfigs"
-          :column-headers="columnHeaders"
-          :column-sizes="columnSizes"
-          :types="columnTypes"
-          :show-collapser="tableConfig.showCollapser"
-          :show-selection="tableConfig.showSelection"
-          @column-filter="onColumnFilter"
-          @clear-filter="onClearFilter"
-        />
-      </template>
-      <template #cell-selection-overlay>
-        <CellSelectionOverlay
-          v-if="rectMinMax"
-          ref="selectionOverlay"
-          :rect="rectMinMax"
-          :row-height="scrollerItemSize"
-          :table-config="tableConfig"
-          :row-resize-index="currentResizedScrollIndex"
-          :row-resize-delta="currentRowSizeDelta"
-          :column-sizes="columnSizes"
-          :cell-selection-rect-focus-corner="cellSelectionRectFocusCorner"
-        />
-      </template>
-    </TableCore>
-    <BottomControls
-      v-if="tableConfig.showBottomControls"
-      :page-config="tableConfig.pageConfig"
-      @next-page="onPageChange(1)"
-      @prev-page="onPageChange(-1)"
-      @page-size-update="onPageSizeUpdate"
-    />
-    <ActionButton
-      v-else-if="tableConfig.actionButtonConfig"
-      :config="tableConfig.actionButtonConfig"
-    />
-    <TablePopover
-      v-if="
-        popoverRenderer && popoverTarget && typeof popoverData !== 'undefined'
-      "
-      ref="tablePopover"
-      :data="popoverData"
-      :target="popoverTarget"
-      :renderer="popoverRenderer"
-      @close="onPopoverClose"
-    >
-      <template #content>
-        <slot
-          name="popoverContent"
-          :data="popoverData"
-          :column="popoverColumn"
-        />
-      </template>
-    </TablePopover>
-  </table>
+              <slot
+                :name="`cellContent-${columnKeys[colInd].toString()}`"
+                :data="{
+                  ...cellData,
+                  key: columnKeys[colInd],
+                  rowInd,
+                  colInd,
+                }"
+              />
+            </template>
+            <template #rowCollapserContent>
+              <slot name="collapserContent" :row="row" />
+            </template>
+          </Row>
+        </template>
+        <template #header="{ getDragHandleHeight, width = null }">
+          <Header
+            ref="header"
+            :style="width === null ? {} : { width: `${width}px` }"
+            :table-config="tableConfig"
+            :column-headers="columnHeaders"
+            :column-sub-headers="columnSubHeaders"
+            :column-sizes="columnSizes"
+            :column-sub-menu-items="columnHeaderSubMenuItems"
+            :column-sort-configs="columnSortConfigs"
+            :column-header-colors="columnHeaderColors"
+            :is-selected="totalSelected > 0"
+            :filters-active="filterActive"
+            :get-drag-handle-height="getDragHandleHeight"
+            :class="tableHeaderClass"
+            @header-select="onSelectAll"
+            @column-sort="onColumnSort"
+            @toggle-filter="onToggleFilter"
+            @column-resize="onColumnResize"
+            @all-columns-resize="onAllColumnsResize"
+            @column-resize-start="onColumnResizeStart"
+            @column-resize-end="onColumnResizeEnd"
+            @sub-menu-item-selection="onHeaderSubMenuItemSelection"
+            @select-column-cell-in-first-row="selectColumnCellInFirstRow"
+          />
+          <ColumnFilters
+            v-if="filterActive"
+            class="column-filter"
+            :style="width === null ? {} : { width: `${width}px` }"
+            :filter-configs="columnFilterConfigs"
+            :column-headers="columnHeaders"
+            :column-sizes="columnSizes"
+            :types="columnTypes"
+            :show-collapser="tableConfig.showCollapser"
+            :show-selection="tableConfig.showSelection"
+            @column-filter="onColumnFilter"
+            @clear-filter="onClearFilter"
+          />
+        </template>
+        <template #cell-selection-overlay>
+          <CellSelectionOverlay
+            v-if="rectMinMax"
+            ref="selectionOverlay"
+            :rect="rectMinMax"
+            :row-height="scrollerItemSize"
+            :table-config="tableConfig"
+            :row-resize-index="currentResizedScrollIndex"
+            :row-resize-delta="currentRowSizeDelta"
+            :column-sizes="columnSizes"
+            :cell-selection-rect-focus-corner="cellSelectionRectFocusCorner"
+          />
+        </template>
+      </TableCore>
+      <BottomControls
+        v-if="tableConfig.showBottomControls"
+        :page-config="tableConfig.pageConfig"
+        @next-page="onPageChange(1)"
+        @prev-page="onPageChange(-1)"
+        @page-size-update="onPageSizeUpdate"
+      />
+      <ActionButton
+        v-else-if="tableConfig.actionButtonConfig"
+        :config="tableConfig.actionButtonConfig"
+      />
+      <TablePopover
+        v-if="
+          popoverRenderer && popoverTarget && typeof popoverData !== 'undefined'
+        "
+        ref="tablePopover"
+        :data="popoverData"
+        :target="popoverTarget"
+        :renderer="popoverRenderer"
+        @close="onPopoverClose"
+      >
+        <template #content>
+          <slot
+            name="popoverContent"
+            :data="popoverData"
+            :column="popoverColumn"
+          />
+        </template>
+      </TablePopover>
+    </table>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
-table {
+.wrapper {
+  width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+table {
+  flex-grow: 1;
+  min-height: 0;
   width: 100%;
   font-size: 13px;
   line-height: 16px;

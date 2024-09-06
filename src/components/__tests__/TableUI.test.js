@@ -975,20 +975,6 @@ describe("TableUI.vue", () => {
         wrapper.findComponent(TableCore).find("div").element,
       );
     });
-
-    /**
-     * This is necessary to support generating PDF with a caption and variably-sized columns
-     */
-    it("defines col elements of the given column widths", () => {
-      const { wrapper } = doMount();
-      expect(wrapper.find("colgroup").attributes().width).toBe("30");
-      expect(
-        wrapper
-          .find("colgroup")
-          .findAll("col")
-          .map((col) => col.attributes().width),
-      ).toStrictEqual([undefined, "50", "50"]);
-    });
   });
 
   describe("column specific sort config", () => {
