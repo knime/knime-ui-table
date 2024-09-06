@@ -228,6 +228,7 @@ export default {
 <style lang="postcss" scoped>
 .base-controls {
   line-height: 40px;
+  font-size: 13px;
   border-spacing: unset;
   border-collapse: unset;
   vertical-align: baseline;
