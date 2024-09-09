@@ -41,7 +41,7 @@ export default {
 </script>
 
 <template>
-  <div class="row">
+  <div class="controls-wrapper">
     <PageControls
       :total-items="pageConfig.tableSize"
       :show-page-controls="pageConfig.showPageControls"
@@ -69,7 +69,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.row {
+.controls-wrapper {
   display: flex;
   justify-content: space-between;
   padding: 0;

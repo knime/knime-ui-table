@@ -1008,7 +1008,12 @@ export default {
 <style lang="postcss" scoped>
 .wrapper {
   width: 100%;
-  height: 100%;
+
+  @media screen {
+    /* height 100% does not mix well with flex-box on print (https://issues.chromium.org/issues/365922171) */
+    height: 100%;
+  }
+
   display: flex;
   flex-direction: column;
 }
