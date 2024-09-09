@@ -351,7 +351,6 @@ tr {
 
 tr.row {
   background-color: var(--knime-white);
-  height: 100%;
 
   &.empty-row {
     padding-left: 20px;
