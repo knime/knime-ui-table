@@ -234,16 +234,7 @@ const onCellSelect = ({
 };
 
 const onDataValueView = (index: number) => {
-  const anchor: VirtualElementAnchor = {
-    x: 100,
-    y: 100,
-    top: 100,
-    left: 100,
-    bottom: 200,
-    right: 200,
-    width: 100,
-    height: 100,
-  };
+  const anchor = cells.value[index].$el.getBoundingClientRect();
   emit("dataValueView", index, anchor);
 };
 
