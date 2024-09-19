@@ -25,7 +25,7 @@ import { isEqual } from "lodash-es";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
 import type DataConfig from "@/types/DataConfig";
-import { type ColumnConfig } from "@/types/DataConfig";
+import type { ColumnConfig } from "@/types/DataConfig";
 import type TableConfig from "@/types/TableConfig";
 import { sleep } from "@knime/utils";
 

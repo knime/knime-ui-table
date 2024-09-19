@@ -9,7 +9,7 @@ import {
 } from "@/util";
 import CellRenderer from "./CellRenderer.vue";
 
-const emit = defineEmits(["click", "input", "select"]);
+const emit = defineEmits(["click", "input", "select", "dataValueView"]);
 const props = defineProps<CellProps>();
 
 const paddingLeft = computed(() => getCellPaddingLeft(props.cellData));
@@ -93,6 +93,7 @@ defineExpose({
     :default-top-bottom-padding="props.defaultTopBottomPadding"
     :size="props.size"
     @click="(value) => emit('click', value)"
+    @dblclick="() => emit('dataValueView')"
     @select="(value) => emit('select', value)"
     @input="(value) => emit('input', value)"
   >

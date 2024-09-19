@@ -4,7 +4,7 @@ import { computed, ref, type Ref } from "vue";
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import type { CellRendererProps } from "./CellRendererProps";
 
-const emit = defineEmits(["click", "input", "select"]);
+const emit = defineEmits(["click", "dblclick", "input", "select"]);
 const props = defineProps<CellRendererProps>();
 
 const dataCellColorStyle = computed(() => {
@@ -87,6 +87,13 @@ const onPointerOver = throttle(() => {
       (event: MouseEvent) => {
         if (isClickable) {
           emit('click', { event, cell: $el });
+        }
+      }
+    "
+    @dblclick="
+      (event: MouseEvent) => {
+        if (!isClickable) {
+          $emit('dblclick', { event, cell: $el });
         }
       }
     "

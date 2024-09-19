@@ -32,6 +32,10 @@ import type TableConfig from "@/types/TableConfig";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
 import type { MenuItem } from "@knime/components";
 import type FilterConfig from "@/types/FilterConfig";
+import {
+  DataValueViewConfig,
+  VirtualElementAnchor,
+} from "@/types/DataValueView";
 
 export type DataItem =
   | {
@@ -541,6 +545,18 @@ export default {
       );
       this.$emit("headerSubMenuItemSelection", item, colInd);
     },
+    onDataValueView(
+      cellInd: number,
+      rowInd: number,
+      anchor: VirtualElementAnchor,
+    ) {
+      const config: DataValueViewConfig = {
+        rowIndex: this.resolveRowIndex(rowInd).indexInInput,
+        colIndex: cellInd,
+        anchor,
+      };
+      this.$emit("dataValueView", config);
+    },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       consola.debug(
@@ -879,6 +895,9 @@ export default {
             :disable-row-height-transition="disableRowHeightTransition"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
+            @data-value-view="
+                (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
+            "
             @expand-cell-select="
               (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
             "
