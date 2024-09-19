@@ -49,6 +49,7 @@ import { ref, computed, watch, type Ref, toRef } from "vue";
 import type TableConfig from "@/types/TableConfig";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
+import { VirtualElementAnchor } from "@/types/DataValueView";
 
 interface RowProps {
   rowData?: { subMenuItemsForRow?: MenuItem[] };
@@ -88,6 +89,7 @@ const emit = defineEmits<{
   resizeRow: [size: number];
   cellSelect: [index: number];
   expandCellSelect: [index: number];
+  dataValueView: [index: number, anchor: VirtualElementAnchor];
 }>();
 
 const showContent = ref(false);
@@ -231,6 +233,20 @@ const onCellSelect = ({
   }
 };
 
+const onDataValueView = (index: number) => {
+  const anchor: VirtualElementAnchor = {
+    x: 100,
+    y: 100,
+    top: 100,
+    left: 100,
+    bottom: 200,
+    right: 200,
+    width: 100,
+    height: 100,
+  };
+  emit("dataValueView", index, anchor);
+};
+
 const rowHeightStyle = computed(() =>
   currentRowHeight.value === "dynamic"
     ? {}
@@ -308,6 +324,7 @@ defineExpose({
       :default-top-bottom-padding="paddingTopBottom"
       @click="onCellClick($event, ind, cell)"
       @select="onCellSelect({ ...$event, ind })"
+      @data-value-view="onDataValueView(ind)"
       @input="onInput"
     >
       <template #default="{ width }">

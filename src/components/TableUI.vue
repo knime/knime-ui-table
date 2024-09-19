@@ -32,6 +32,10 @@ import type TableConfig from "@/types/TableConfig";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
 import type { MenuItem } from "@knime/components";
 import type FilterConfig from "@/types/FilterConfig";
+import {
+  DataValueViewConfig,
+  VirtualElementAnchor,
+} from "@/types/DataValueView";
 
 export type DataItem =
   | {
@@ -201,6 +205,8 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    dataValueView: (config: DataValueViewConfig) => true,
+    scroll: () => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
@@ -474,6 +480,7 @@ export default {
       const direction: 1 | -1 = this.lastScrollIndex < endIndex ? 1 : -1;
       this.lastScrollIndex = endIndex;
       this.$emit("lazyload", { direction, startIndex, endIndex });
+      this.$emit("scroll");
     },
     onTimeFilterUpdate(newTimeFilter: any) {
       consola.debug(`TableUI emitting: timeFilterUpdate ${newTimeFilter}`);
@@ -540,6 +547,18 @@ export default {
         `TableUI emitting: headerSubMenuItemSelection ${item} ${colInd}`,
       );
       this.$emit("headerSubMenuItemSelection", item, colInd);
+    },
+    onDataValueView(
+      cellInd: number,
+      rowInd: number,
+      anchor: VirtualElementAnchor,
+    ) {
+      const config: DataValueViewConfig = {
+        rowIndex: this.resolveRowIndex(rowInd).indexInInput,
+        colIndex: cellInd,
+        anchor,
+      };
+      this.$emit("dataValueView", config);
     },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
@@ -886,6 +905,9 @@ export default {
           :disable-row-height-transition="disableRowHeightTransition"
           @row-select="onRowSelect($event, rowInd, groupInd || 0)"
           @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
+          @data-value-view="
+            (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
+          "
           @expand-cell-select="
             (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
           "
