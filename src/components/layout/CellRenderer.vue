@@ -2,6 +2,7 @@
 import throttle from "raf-throttle";
 import { computed, ref, type Ref } from "vue";
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import ExpandIcon from "./expand.svg";
 import type { CellRendererProps } from "./CellRendererProps";
 
 const emit = defineEmits(["click", "dblclick", "input", "select"]);
@@ -110,6 +111,10 @@ const onPointerOver = throttle(() => {
     <span v-else>
       {{ text }}
     </span>
+    <ExpandIcon
+      class="expand-icon"
+      @click="(event: MouseEvent) => $emit('dblclick', { event, cell: $el })"
+    />
   </td>
 </template>
 
@@ -118,6 +123,7 @@ const onPointerOver = throttle(() => {
   background-clip: border-box;
   user-select: none;
   white-space: nowrap;
+  position: relative;
 
   &.colored-cell {
     background-size: 4px;
@@ -147,6 +153,21 @@ const onPointerOver = throttle(() => {
 
   & span {
     display: inline-block;
+  }
+
+  & .expand-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 9px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover .expand-icon {
+    opacity: 1;
   }
 }
 </style>
