@@ -205,6 +205,8 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    dataValueView: (config: DataValueViewConfig) => true,
+    closeDataValueView: () => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
@@ -557,6 +559,10 @@ export default {
       };
       this.$emit("dataValueView", config);
     },
+    onCloseDataValueView() {
+      this.$emit("closeDataValueView");
+      window.alert("closeDataValueView");
+    },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       consola.debug(
@@ -896,8 +902,9 @@ export default {
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
             @data-value-view="
-                (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
+              (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
             "
+            @close-data-value-view="onCloseDataValueView"
             @expand-cell-select="
               (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
             "

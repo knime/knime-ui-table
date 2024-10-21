@@ -3,6 +3,7 @@ import { mount, shallowMount } from "@vue/test-utils";
 
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import CellRenderer from "../CellRenderer.vue";
+import ExpandIcon from "../expand.svg";
 import type { CellRendererProps } from "../CellRendererProps";
 
 describe("Cell.vue", () => {
@@ -158,6 +159,40 @@ describe("Cell.vue", () => {
       expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
         width: 33,
         height: 58,
+      });
+    });
+  });
+
+  describe("expand event", () => {
+    describe("on double click", () => {
+      it("emits expand event if expand is enabled", async () => {
+        props.enableExpand = true;
+        const wrapper = mount(CellRenderer, { props });
+        await wrapper.find("td").trigger("dblclick");
+        expect(wrapper.emitted("expand")).toBeTruthy();
+      });
+
+      it("does not emit expand if expand is not enabled", async () => {
+        const wrapper = mount(CellRenderer, { props });
+        await wrapper.find("td").trigger("dblclick");
+        expect(wrapper.emitted("expand")).toBeFalsy();
+      });
+    });
+
+    describe("per expand icon", () => {
+      it("shows expand icon if expand is enabled", async () => {
+        props.enableExpand = true;
+        const wrapper = mount(CellRenderer, { props });
+        const expandIcon = wrapper.findComponent(ExpandIcon);
+        expect(expandIcon.exists()).toBeTruthy();
+        await expandIcon.trigger("click");
+        expect(wrapper.emitted("expand")).toBeTruthy();
+      });
+
+      it("does not show expand icon if expand is not enabled", () => {
+        const wrapper = mount(CellRenderer, { props });
+        const expandIcon = wrapper.findComponent(ExpandIcon);
+        expect(expandIcon.exists()).toBeFalsy();
       });
     });
   });
