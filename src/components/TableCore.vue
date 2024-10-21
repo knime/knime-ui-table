@@ -9,6 +9,7 @@ import type { MenuItem } from "@knime/components";
 import TableCoreVirtual from "./TableCoreVirtual.vue";
 import TableCoreGroups from "./TableCoreGroups.vue";
 import { provideCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+import useCloseDataValueView from "./composables/useCloseDataValueView";
 
 const props = defineProps<{
   scrollData: DataItem[][];
@@ -38,6 +39,7 @@ const emit = defineEmits<{
     expandSelection: boolean,
   ];
   clearSelection: [];
+  closeDataValueView: [];
 }>();
 
 const tableCoreVirtual = ref<InstanceType<typeof TableCoreVirtual> | null>(
@@ -79,6 +81,13 @@ const { fitsInsideTotalWidth, innerWidthToBodyWidth } = useAvailableWidth({
   refs: { scrolledElement },
   totalWidth: toRef(props, "totalWidth"),
 });
+
+if (props.tableConfig.enableDataValueViews) {
+  useCloseDataValueView({
+    scrollContainer: scrolledElement,
+    closeDataValueView: () => emit("closeDataValueView"),
+  });
+}
 
 const currentBodyWidth = computed(() => {
   const widthContentColumns = props.columnSizes.reduce(

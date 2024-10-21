@@ -14,6 +14,7 @@ interface CellRendererProps {
    * padding top/bottom applied to cells, will not affect slotted columns
    */
   defaultTopBottomPadding: number;
+  enableExpand?: boolean;
 }
 
 export type { CellRendererProps };

@@ -26,6 +26,7 @@ import TableCoreGroups from "../TableCoreGroups.vue";
 import TableCoreVirtual from "../TableCoreVirtual.vue";
 import { SubMenu } from "@knime/components";
 import TableBodyNavigatable from "../TableBodyNavigatable.vue";
+import CellRenderer from "../layout/CellRenderer.vue";
 
 const bodyWidthResult = 123;
 const fitsInsideTotalWidthResult = true;
@@ -114,6 +115,7 @@ const getProps = ({
   actionButtonConfig = null,
   columnFilterInitiallyActive = null,
   enableIsSortable = false,
+  enableDataValueViews = false,
   data = [[{ a: "cellA", b: "cellB" }]],
   currentSelection = [[false]],
   currentBottomSelection = [],
@@ -198,6 +200,7 @@ const getProps = ({
       currentTimeFilter: "",
     },
     enableVirtualScrolling,
+    enableDataValueViews,
     enableCellSelection,
     subMenuItems: [],
     columnSelectionConfig: {
@@ -246,6 +249,7 @@ describe("TableUI.vue", () => {
       actionButtonConfig = {},
       columnFilterInitiallyActive = false,
       enableIsSortable = false,
+      enableDataValueViews = false,
       data = [[{ a: "cellA", b: "cellB" }]],
       currentSelection = [[false]],
       currentBottomSelection = [],
@@ -285,6 +289,7 @@ describe("TableUI.vue", () => {
       actionButtonConfig,
       columnFilterInitiallyActive,
       enableIsSortable,
+      enableDataValueViews,
       data,
       currentSelection,
       currentBottomSelection,
@@ -1690,6 +1695,46 @@ describe("TableUI.vue", () => {
           wrapper.findComponent(Header).props().getDragHandleHeight(),
         ).toBe(50);
       });
+    });
+  });
+
+  describe("data value views", () => {
+    let wrapper;
+
+    beforeEach(() => {
+      wrapper = doMount({ shallow: false, enableDataValueViews: true }).wrapper;
+    });
+
+    it("emits data value view event", async () => {
+      await wrapper.findComponent(CellRenderer).vm.$emit("expand");
+      expect(wrapper.emitted("dataValueView")).toStrictEqual([
+        [
+          {
+            anchor: {
+              bottom: 0,
+              height: 0,
+              left: 0,
+              right: 0,
+              top: 0,
+              width: 0,
+              x: 0,
+              y: 0,
+            },
+            colIndex: 0,
+            rowIndex: 0,
+          },
+        ],
+      ]);
+    });
+
+    it("closes data value view on scroll", async () => {
+      await wrapper.findComponent(".container").trigger("scroll");
+      expect(wrapper.emitted("closeDataValueView")).toBeTruthy();
+    });
+
+    it("closes data value view on resize", () => {
+      window.dispatchEvent(new Event("resize"));
+      expect(wrapper.emitted("closeDataValueView")).toBeTruthy();
     });
   });
 });

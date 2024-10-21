@@ -205,6 +205,8 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    dataValueView: (config: DataValueViewConfig) => true,
+    closeDataValueView: () => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
@@ -557,6 +559,9 @@ export default {
       };
       this.$emit("dataValueView", config);
     },
+    onCloseDataValueView() {
+      this.$emit("closeDataValueView");
+    },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       consola.debug(
@@ -878,6 +883,7 @@ export default {
         @update:available-width="$emit('update:available-width', $event)"
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
+        @close-data-value-view="onCloseDataValueView"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
@@ -896,7 +902,7 @@ export default {
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
             @data-value-view="
-                (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
+              (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
             "
             @expand-cell-select="
               (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)

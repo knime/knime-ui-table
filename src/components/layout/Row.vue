@@ -313,6 +313,7 @@ defineExpose({
       :is-clickable-by-config="isClickableByConfig(ind)"
       :formatter="formatters[ind]"
       :default-top-bottom-padding="paddingTopBottom"
+      :enable-data-value-views="tableConfig.enableDataValueViews"
       @click="onCellClick($event, ind, cell)"
       @select="onCellSelect({ ...$event, ind })"
       @data-value-view="onDataValueView(ind)"

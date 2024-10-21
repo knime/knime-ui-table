@@ -5,7 +5,7 @@ import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import ExpandIcon from "./expand.svg";
 import type { CellRendererProps } from "./CellRendererProps";
 
-const emit = defineEmits(["click", "dblclick", "input", "select"]);
+const emit = defineEmits(["click", "expand", "input", "select"]);
 const props = defineProps<CellRendererProps>();
 
 const dataCellColorStyle = computed(() => {
@@ -64,6 +64,8 @@ const onPointerOver = throttle(() => {
     emit("select", { expandSelection: true });
   }
 });
+
+const expand = () => emit("expand");
 </script>
 
 <template>
@@ -91,13 +93,7 @@ const onPointerOver = throttle(() => {
         }
       }
     "
-    @dblclick="
-      (event: MouseEvent) => {
-        if (!isClickable) {
-          $emit('dblclick', { event, cell: $el });
-        }
-      }
-    "
+    @dblclick="() => enableExpand && expand()"
     @pointerover="onPointerOver"
     @pointerdown="
       (event: MouseEvent) =>
@@ -111,10 +107,7 @@ const onPointerOver = throttle(() => {
     <span v-else>
       {{ text }}
     </span>
-    <ExpandIcon
-      class="expand-icon"
-      @click="(event: MouseEvent) => $emit('dblclick', { event, cell: $el })"
-    />
+    <ExpandIcon v-if="enableExpand" class="expand-icon" @click="expand" />
   </td>
 </template>
 
