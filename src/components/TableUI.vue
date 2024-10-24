@@ -561,7 +561,6 @@ export default {
     },
     onCloseDataValueView() {
       this.$emit("closeDataValueView");
-      window.alert("closeDataValueView");
     },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
@@ -884,6 +883,7 @@ export default {
         @update:available-width="$emit('update:available-width', $event)"
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
+        @close-data-value-view="onCloseDataValueView"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
@@ -904,7 +904,6 @@ export default {
             @data-value-view="
               (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
             "
-            @close-data-value-view="onCloseDataValueView"
             @expand-cell-select="
               (cellInd) => onExpandCellSelect(cellInd, rowInd, groupInd)
             "

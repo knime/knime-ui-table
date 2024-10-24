@@ -37,6 +37,7 @@ describe("Cell.vue", () => {
       size: 300,
       text: "cellValue",
       title: "cellValue",
+      enableExpand: false,
     });
   });
 
