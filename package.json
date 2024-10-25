@@ -1,7 +1,7 @@
 {
   "name": "@knime/knime-ui-table",
   "type": "module",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "Data Table for KNIME",
   "author": "KNIME AG, Zurich, Switzerland",
   "license": "See the file license.txt",
