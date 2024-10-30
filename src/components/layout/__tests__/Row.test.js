@@ -505,4 +505,28 @@ describe("Row.vue", () => {
       });
     });
   });
+
+  describe("data value views", () => {
+    it("does not enable data value views when globally disabled", () => {
+      props.tableConfig.enableDataValueViews = false;
+      props.columnConfigs[0].hasDataValueView = true;
+      wrapper = mountRow({ props });
+      expect(
+        wrapper.findComponent(Cell).props("enableDataValueView"),
+      ).toBeFalsy();
+    });
+
+    it("enables data value views depending on the column", () => {
+      props.tableConfig.enableDataValueViews = true;
+      props.columnConfigs[0].hasDataValueView = true;
+      props.columnConfigs[1].hasDataValueView = false;
+      wrapper = mountRow({ props });
+      expect(
+        wrapper.findAllComponents(Cell)[0].props("hasDataValueView"),
+      ).toBeTruthy();
+      expect(
+        wrapper.findAllComponents(Cell)[1].props("hasDataValueView"),
+      ).toBeFalsy();
+    });
+  });
 });

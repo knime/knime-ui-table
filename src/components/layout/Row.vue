@@ -125,6 +125,10 @@ const classGenerators = computed(() =>
 const slottedColumns = computed(() =>
   getPropertiesFromColumns(props.columnConfigs, "hasSlotContent"),
 );
+const hasDataValueView = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "hasDataValueView"),
+);
+
 const noPadding = computed(() =>
   getPropertiesFromColumns(props.columnConfigs, "noPadding"),
 );
@@ -307,13 +311,15 @@ defineExpose({
       :cell-data="cell"
       :select-on-move="selectCellsOnMove"
       :is-slotted="Boolean(slottedColumns[ind])"
+      :has-data-value-view="
+        tableConfig.enableDataValueViews && Boolean(hasDataValueView[ind])
+      "
       :no-padding="noPadding[ind]"
       :size="columnSizes[ind] ?? 100"
       :class-generators="classGenerators[ind]"
       :is-clickable-by-config="isClickableByConfig(ind)"
       :formatter="formatters[ind]"
       :default-top-bottom-padding="paddingTopBottom"
-      :enable-data-value-views="tableConfig.enableDataValueViews"
       @click="onCellClick($event, ind, cell)"
       @select="onCellSelect({ ...$event, ind })"
       @data-value-view="onDataValueView(ind)"

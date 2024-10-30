@@ -27,6 +27,7 @@ export interface ColumnConfig {
   key: string | number | symbol;
   id: string | symbol;
   hasSlotContent?: boolean;
+  hasDataValueView?: boolean;
   isSortable?: boolean;
   popoverRenderer?: PopoverRenderer | boolean;
   formatter: (value: any) => string;

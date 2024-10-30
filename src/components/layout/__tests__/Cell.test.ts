@@ -18,6 +18,7 @@ describe("Cell.vue", () => {
       isClickableByConfig: false,
       defaultTopBottomPadding: 12,
       formatter: (value: string) => value,
+      hasDataValueView: false,
     };
   });
 

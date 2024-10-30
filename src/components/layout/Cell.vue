@@ -92,7 +92,7 @@ defineExpose({
     :select-on-move="props.selectOnMove"
     :default-top-bottom-padding="props.defaultTopBottomPadding"
     :size="props.size"
-    :enable-expand="props.enableDataValueViews"
+    :enable-expand="props.hasDataValueView"
     @click="(value) => emit('click', value)"
     @expand="() => emit('dataValueView')"
     @select="(value) => emit('select', value)"

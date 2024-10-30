@@ -12,7 +12,7 @@ interface CellProps {
   isClickableByConfig: boolean;
   formatter: (value: any) => string;
   defaultTopBottomPadding: number;
-  enableDataValueViews?: boolean;
+  hasDataValueView?: boolean;
 }
 
 export type { CellProps };
