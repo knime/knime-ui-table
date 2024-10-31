@@ -79,6 +79,18 @@ describe("Cell.vue", () => {
       );
     });
 
+    it("does not enable data value views for missing values", async () => {
+      props.hasDataValueView = true;
+      const wrapper = shallowMount(Cell, { props });
+      expect(wrapper.findComponent(CellRenderer).props().enableExpand).toBe(
+        true,
+      );
+      await wrapper.setProps({ cellData: null });
+      expect(wrapper.findComponent(CellRenderer).props().enableExpand).toBe(
+        false,
+      );
+    });
+
     it("creates the correct title for clickable cells", () => {
       props.isClickableByConfig = true;
       const wrapper = shallowMount(Cell, { props });
