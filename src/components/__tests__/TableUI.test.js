@@ -27,6 +27,7 @@ import TableCoreVirtual from "../TableCoreVirtual.vue";
 import { SubMenu } from "@knime/components";
 import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 import CellRenderer from "../layout/CellRenderer.vue";
+import ExpandIcon from "../layout/expand.svg";
 
 const bodyWidthResult = 123;
 const fitsInsideTotalWidthResult = true;
@@ -46,7 +47,7 @@ const cellSelectionMock = {
   clearCellSelection: vi.fn(),
   rectMinMax: ref(null),
   currentRectId: ref(null),
-  cellSelectionRectFocusCorner: reactive({ x: 0, y: 0 }),
+  selectedCell: reactive({ x: 0, y: 0 }),
 };
 
 vi.mock("../composables/useCellSelection", () => ({
@@ -150,6 +151,7 @@ const getProps = ({
         ...(includeSubHeaders && { subHeader: "a" }),
         type: columnTypes.Number,
         size: 50,
+        hasDataValueView: true,
         filterConfig: {
           value: "",
           is: "FilterInputField",
@@ -170,6 +172,7 @@ const getProps = ({
         ...(includeSubHeaders && { subHeader: "b" }),
         type: columnTypes.Number,
         size: 50,
+        hasDataValueView: true,
         filterConfig: {
           value: "",
           is: "FilterInputField",
@@ -1193,6 +1196,7 @@ describe("TableUI.vue", () => {
           y: 0,
         },
         0,
+        false,
       );
     });
 
@@ -1407,6 +1411,7 @@ describe("TableUI.vue", () => {
           expect(wrapper.vm.selectCell).toHaveBeenCalledWith(
             { x: 1, y: 0 },
             true,
+            false,
           );
         });
 
@@ -1433,7 +1438,7 @@ describe("TableUI.vue", () => {
         ])(
           "focusses the header of the column on ArrowUp in the first row of %s",
           (_desc, rectId, enableVirtualScrolling) => {
-            cellSelectionMock.cellSelectionRectFocusCorner = { x: 1, y: 0 };
+            cellSelectionMock.selectedCell = { x: 1, y: 0 };
             cellSelectionMock.currentRectId = rectId;
             const { wrapper } = doMount(
               { enableVirtualScrolling, shallow: false },
@@ -1452,7 +1457,7 @@ describe("TableUI.vue", () => {
         ])(
           "does not navigate horizontally out of bounds to the %s",
           (_, direction, currentFocusX) => {
-            cellSelectionMock.cellSelectionRectFocusCorner = {
+            cellSelectionMock.selectedCell = {
               x: currentFocusX,
               y: 2,
             };
@@ -1478,7 +1483,7 @@ describe("TableUI.vue", () => {
           rectId,
           rect,
         ) => {
-          cellSelectionMock.cellSelectionRectFocusCorner = focusCorner;
+          cellSelectionMock.selectedCell = focusCorner;
           cellSelectionMock.currentRectId.value = rectId;
           cellSelectionMock.rectMinMax.value = rect;
 
@@ -1702,7 +1707,12 @@ describe("TableUI.vue", () => {
     let wrapper;
 
     beforeEach(() => {
-      wrapper = doMount({ shallow: false, enableDataValueViews: true }).wrapper;
+      cellSelectionMock.selectedCell = { x: 0, y: 0 };
+
+      wrapper = doMount({
+        shallow: false,
+        enableDataValueViews: true,
+      }).wrapper;
     });
 
     it("emits data value view event", async () => {
@@ -1725,6 +1735,14 @@ describe("TableUI.vue", () => {
           },
         ],
       ]);
+    });
+
+    it("shows expand icon when cell is selected", () => {
+      const row = wrapper.findComponent(Row);
+      const cellRenderer = row.findComponent(CellRenderer);
+      expect(cellRenderer.findComponent(ExpandIcon).classes()).toContain(
+        "cell-selected",
+      );
     });
   });
 });

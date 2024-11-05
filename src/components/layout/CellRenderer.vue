@@ -119,7 +119,7 @@ const expandAndSelect = (event: MouseEvent) => {
     </span>
     <ExpandIcon
       v-if="enableExpand"
-      class="expand-icon"
+      :class="['expand-icon', { 'cell-selected': isSelected }]"
       @click="expandAndSelect"
     />
   </td>
@@ -171,6 +171,10 @@ const expandAndSelect = (event: MouseEvent) => {
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.3s ease;
+
+    &.cell-selected {
+      opacity: 1;
+    }
   }
 
   &:hover .expand-icon {

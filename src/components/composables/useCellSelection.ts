@@ -48,7 +48,7 @@ export default (enableCellSelection: Ref<boolean>) => {
     };
   });
 
-  const cellSelectionRectFocusCorner = computed(() => cellRect.value?.opposite);
+  const selectedCell = computed(() => cellRect.value?.opposite);
 
   const isSingleSelectedCell = (cellPosition: CellPosition) => {
     return (
@@ -110,7 +110,7 @@ export default (enableCellSelection: Ref<boolean>) => {
     expandCellSelection: applyIfEnabled(expandCellSelection),
     clearCellSelection,
     rectMinMax,
-    cellSelectionRectFocusCorner,
+    selectedCell,
     currentRectId,
   };
 };

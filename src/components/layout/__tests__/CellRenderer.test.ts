@@ -22,6 +22,7 @@ describe("Cell.vue", () => {
       selectOnMove: false,
       size: 300,
       defaultTopBottomPadding: 12,
+      isSelected: false,
     };
   });
 

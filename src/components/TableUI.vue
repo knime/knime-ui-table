@@ -218,11 +218,17 @@ export default {
       Boolean(props.tableConfig.enableCellSelection),
     );
     // cell selection
-    const cellSelection = useCellSelection(enableCellSelection);
+    const {
+      selectCell,
+      expandCellSelection,
+      clearCellSelection,
+      currentRectId,
+      rectMinMax,
+      selectedCell,
+    } = useCellSelection(enableCellSelection);
     const selectCellsOnMove = useBoolean(false);
     // cell copying
     const emitCopySelection = ({ withHeaders }: { withHeaders: boolean }) => {
-      const { rectMinMax, currentRectId } = cellSelection;
       if (rectMinMax.value) {
         emit("copySelection", {
           rect: rectMinMax.value,
@@ -242,7 +248,12 @@ export default {
       tableCore,
       selectionOverlay,
       selectCellsOnMove,
-      ...cellSelection,
+      currentRectId,
+      rectMinMax,
+      selectedCell,
+      selectCell,
+      expandCellSelection,
+      clearCellSelection,
       changeFocus,
       handleCopyOnKeydown,
     };
@@ -414,6 +425,14 @@ export default {
       // The virtual scroller does not support margins, hence we need to set a different height for the rows
       // instead
       return this.currentRowHeight + ROW_MARGIN_BOTTOM;
+    },
+    getSelectedCellIndex() {
+      return (rowInd: number) => {
+        if (this.selectedCell && this.selectedCell.y === rowInd) {
+          return this.selectedCell.x;
+        }
+        return null;
+      };
     },
   },
   watch: {
@@ -661,11 +680,11 @@ export default {
       verticalMove: number,
       expandSelection: boolean,
     ) {
-      if (!this.cellSelectionRectFocusCorner) {
+      if (!this.selectedCell) {
         return;
       }
-      const columnInd = this.cellSelectionRectFocusCorner.x + horizontalMove;
-      const rowInd = this.cellSelectionRectFocusCorner.y + verticalMove;
+      const columnInd = this.selectedCell.x + horizontalMove;
+      const rowInd = this.selectedCell.y + verticalMove;
       if (columnInd === -1 || columnInd === this.columnHeaders.length) {
         return;
       }
@@ -904,6 +923,7 @@ export default {
             :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
             :select-cells-on-move="selectCellsOnMove.state"
             :disable-row-height-transition="disableRowHeightTransition"
+            :selected-cell-index="getSelectedCellIndex(rowInd)"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
               (cellInd, ignoreIfSelected) =>
@@ -1001,7 +1021,7 @@ export default {
             :row-resize-index="currentResizedScrollIndex"
             :row-resize-delta="currentRowSizeDelta"
             :column-sizes="columnSizes"
-            :cell-selection-rect-focus-corner="cellSelectionRectFocusCorner"
+            :cell-selection-rect-focus-corner="selectedCell"
           />
         </template>
       </TableCore>

@@ -19,6 +19,7 @@ describe("Cell.vue", () => {
       defaultTopBottomPadding: 12,
       formatter: (value: string) => value,
       hasDataValueView: false,
+      isSelected: false,
     };
   });
 
@@ -39,6 +40,7 @@ describe("Cell.vue", () => {
       text: "cellValue",
       title: "cellValue",
       enableExpand: false,
+      isSelected: false,
     });
   });
 

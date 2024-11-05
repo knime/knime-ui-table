@@ -7,6 +7,7 @@ interface CellProps {
   cellData: any;
   selectOnMove: boolean;
   isSlotted: boolean;
+  isSelected: boolean;
   size: number;
   classGenerators?: ClassGenerator[];
   isClickableByConfig: boolean;

@@ -48,7 +48,7 @@ describe("useCellSelection", () => {
     clearCellSelection = cellSelection.clearCellSelection;
     rectMinMax = cellSelection.rectMinMax;
     currentRectId = cellSelection.currentRectId;
-    cellSelectionRectFocusCorner = cellSelection.cellSelectionRectFocusCorner;
+    cellSelectionRectFocusCorner = cellSelection.selectedCell;
   });
 
   it("selects cell on selectCell", () => {

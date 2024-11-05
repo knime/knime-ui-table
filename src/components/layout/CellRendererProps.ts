@@ -2,6 +2,7 @@ interface CellRendererProps {
   isClickable: boolean;
   isMissing: boolean;
   isSlotted: boolean;
+  isSelected: boolean;
   noPadding?: boolean;
   text: string | undefined;
   title: string | null;

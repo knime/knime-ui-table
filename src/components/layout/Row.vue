@@ -63,6 +63,7 @@ interface RowProps {
   showDragHandle?: boolean;
   selectCellsOnMove?: boolean;
   disableRowHeightTransition?: boolean;
+  selectedCellIndex?: number | null;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
@@ -75,6 +76,7 @@ const props = withDefaults(defineProps<RowProps>(), {
   selectCellsOnMove: false,
   showDragHandle: false,
   disableRowHeightTransition: false,
+  selectedCellIndex: null,
 });
 
 const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
@@ -312,6 +314,7 @@ defineExpose({
       :key="ind"
       :cell-data="cell"
       :select-on-move="selectCellsOnMove"
+      :is-selected="selectedCellIndex === ind"
       :is-slotted="Boolean(slottedColumns[ind])"
       :has-data-value-view="
         tableConfig.enableDataValueViews && Boolean(hasDataValueView[ind])
