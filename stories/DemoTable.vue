@@ -78,6 +78,7 @@ const props = defineProps({
   withSelection: Boolean,
   disableSelection: Boolean,
   withCellSelection: Boolean,
+  withCellExpansion: Boolean,
   showActionButton: Boolean,
   allSlottedColumns: {
     type: Array,
@@ -317,6 +318,7 @@ const dataConfig = computed(() => {
       popoverRenderer: demoProps.allPopoverRenderers[key],
       hasSlotContent: currentSlottedColumns.value?.includes(key),
       headerSubMenuItems: props.withHeaderSubMenu ? props.headerSubMenu : null,
+      hasDataValueView: props.withCellExpansion,
       isSortable:
         !props.withSpecificSortConfigs ||
         currentColumnSpecificSortConfigs.value[ind],
@@ -377,6 +379,7 @@ const tableConfig = reactive({
   showSelection: props.withSelection,
   disableSelection: props.disableSelection,
   enableCellSelection: props.withCellSelection,
+  enableDataValueViews: props.withCellExpansion,
   showCollapser: props.showCollapser,
   showPopovers: props.showPopovers,
   showColumnFilters: props.withColumnFilters,
@@ -426,6 +429,8 @@ const alertEvent =
       `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`,
     );
 const onCopySelection = alertEvent("copySelection");
+const onDataValueView = alertEvent("data-value-view");
+const onCloseDataValueView = alertEvent("close-data-value-view");
 
 const htmlSlotContent = `
 <div style="
@@ -480,6 +485,8 @@ const htmlSlotContent = `
       @auto-column-sizes-update="onAutoColumnSizesUpdate"
       @auto-row-height-update="onAutoRowHeightUpdate"
       @copy-selection="onCopySelection"
+      @data-value-view="onDataValueView"
+      @close-data-value-view="onCloseDataValueView"
     >
       <template
         v-for="col in currentSlottedColumns"

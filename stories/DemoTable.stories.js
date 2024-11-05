@@ -141,6 +141,12 @@ export default {
         category: "Body",
       },
     },
+    withCellExpansion: {
+      name: "Expandable cells",
+      table: {
+        category: "Body",
+      },
+    },
     showActionButton: {
       name: "Action button",
       table: {
@@ -426,6 +432,7 @@ TableView.args = {
   showSubHeaders: true,
   withSelection: true,
   withCellSelection: true,
+  withCellExpansion: true,
   showActionButton: false,
   showPopovers: false,
   compactMode: false,

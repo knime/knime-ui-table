@@ -1726,15 +1726,5 @@ describe("TableUI.vue", () => {
         ],
       ]);
     });
-
-    it("closes data value view on scroll", async () => {
-      await wrapper.findComponent(".container").trigger("scroll");
-      expect(wrapper.emitted("closeDataValueView")).toBeTruthy();
-    });
-
-    it("closes data value view on resize", () => {
-      window.dispatchEvent(new Event("resize"));
-      expect(wrapper.emitted("closeDataValueView")).toBeTruthy();
-    });
   });
 });

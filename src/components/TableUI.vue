@@ -883,7 +883,6 @@ export default {
         @update:available-width="$emit('update:available-width', $event)"
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
-        @close-data-value-view="onCloseDataValueView"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
