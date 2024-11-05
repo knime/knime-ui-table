@@ -720,6 +720,15 @@ export default {
         scrollToViewParams,
       );
     },
+    async expandSelectedCell() {
+      if (this.selectedCell && this.tableConfig.enableDataValueViews) {
+        // scroll current selection into view
+        await this.onKeyboardMoveSelection(0, 0, true);
+        const anchor =
+          this.getSelectionOverlayComponent().getFocusOverlayBoundingClientRect();
+        this.onDataValueView(this.selectedCell.x, this.selectedCell.y, anchor!);
+      }
+    },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
       this.currentRowSizeDelta = rowSizeDelta;
       this.currentResizedScrollIndex = scrollIndex;
@@ -908,6 +917,7 @@ export default {
         @update:available-width="$emit('update:available-width', $event)"
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
+        @expand-selected-cell="expandSelectedCell"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row

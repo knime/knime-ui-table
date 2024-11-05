@@ -8,6 +8,7 @@ const emit = defineEmits<{
     expandSelection: boolean,
   ];
   clearSelection: [];
+  expandSelectedCell: [];
 }>();
 
 const onArrowKeyDown = (event: KeyboardEvent) => {
@@ -41,6 +42,9 @@ const onKeyDown = (event: KeyboardEvent) => {
     onArrowKeyDown(event);
   } else if (event.key === "Tab") {
     emit("clearSelection");
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    emit("expandSelectedCell");
   }
 };
 </script>

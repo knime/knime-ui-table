@@ -1709,6 +1709,12 @@ describe("TableUI.vue", () => {
     beforeEach(() => {
       cellSelectionMock.selectedCell = { x: 0, y: 0 };
 
+      cellSelectionMock.rectMinMax.value = {
+        x: { min: 0, max: 0 },
+        y: { min: 0, max: 0 },
+      };
+      cellSelectionMock.currentRectId.value = 0;
+
       wrapper = doMount({
         shallow: false,
         enableDataValueViews: true,
@@ -1744,5 +1750,27 @@ describe("TableUI.vue", () => {
         "cell-selected",
       );
     });
+
+    it.each([[" "], ["Enter"]])(
+      "opens data value view on '%s'",
+      async (key) => {
+        await flushPromises();
+        await wrapper.find("tbody").trigger("keydown", { key });
+        expect(wrapper.emitted("dataValueView")[0][0]).toStrictEqual({
+          anchor: {
+            bottom: 0,
+            height: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            width: 0,
+            x: 0,
+            y: 0,
+          },
+          colIndex: 0,
+          rowIndex: 0,
+        });
+      },
+    );
   });
 });

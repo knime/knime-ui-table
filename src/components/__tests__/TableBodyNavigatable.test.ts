@@ -36,6 +36,14 @@ describe("TableBodyNavigatable", () => {
       },
     );
 
+    it.each([["Enter"], [" "]])(
+      "emits expandSelectedCell on '%s'",
+      async (key) => {
+        await wrapper.find("tbody").trigger("keydown", { key });
+        expect(wrapper.emitted().expandSelectedCell).toBeTruthy();
+      },
+    );
+
     it("emits clearSelection when the Tab key is pressed", async () => {
       await wrapper.find("tbody").trigger("keydown", { key: "Tab" });
       expect(wrapper.emitted().clearSelection).toBeTruthy();

@@ -24,6 +24,7 @@ const emit = defineEmits<{
     expandSelection: boolean,
   ];
   clearSelection: [];
+  expandSelectedCell: [];
 }>();
 const { closeExpandedSubMenu, containerRef, overflowStyles } =
   useCommonScrollContainerProps();
@@ -51,6 +52,7 @@ defineExpose({
         (...args: [number, number, boolean]) => emit('moveSelection', ...args)
       "
       @clear-selection="emit('clearSelection')"
+      @expand-selected-cell="emit('expandSelectedCell')"
     >
       <template #bodyContent>
         <Group

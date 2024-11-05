@@ -170,17 +170,21 @@ const scrollFocusOverlayIntoView = async (
       }
     }
   } else {
-    virtualFocusOverlay.value?.scrollIntoView({
+    virtualFocusOverlay.value?.scrollIntoView?.({
       block: "center",
       inline: "center",
     });
   }
 };
 
+const getFocusOverlayBoundingClientRect = () =>
+  virtualFocusOverlay.value?.getBoundingClientRect();
+
 defineExpose({
   triggerCopied,
   focus,
   scrollFocusOverlayIntoView,
+  getFocusOverlayBoundingClientRect,
 });
 </script>
 
