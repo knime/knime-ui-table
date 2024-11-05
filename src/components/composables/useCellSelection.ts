@@ -72,8 +72,16 @@ export default (enableCellSelection: Ref<boolean>) => {
     },
   );
 
-  const selectCell = (cellPosition: CellPosition, rectId: RectId) => {
-    if (rectId === currentRectId.value && isSingleSelectedCell(cellPosition)) {
+  const selectCell = (
+    cellPosition: CellPosition,
+    rectId: RectId,
+    ignoreIfSelected: boolean = false,
+  ) => {
+    if (
+      rectId === currentRectId.value &&
+      isSingleSelectedCell(cellPosition) &&
+      !ignoreIfSelected
+    ) {
       clearCellSelection();
       return;
     }

@@ -65,7 +65,21 @@ const onPointerOver = throttle(() => {
   }
 });
 
+const onPointerDown = (event: MouseEvent) => {
+  if (event.button === 0) {
+    emit("select", { expandSelection: event.shiftKey });
+  }
+};
+
 const expand = () => emit("expand");
+const expandAndSelect = (event: MouseEvent) => {
+  expand();
+
+  emit("select", { expandSelection: event.shiftKey, ignoreIfSelected: true });
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+};
 </script>
 
 <template>
@@ -93,13 +107,9 @@ const expand = () => emit("expand");
         }
       }
     "
-    @dblclick="() => enableExpand && expand()"
+    @dblclick="(event: MouseEvent) => enableExpand && expandAndSelect(event)"
     @pointerover="onPointerOver"
-    @pointerdown="
-      (event: MouseEvent) =>
-        event.button === 0 &&
-        emit('select', { expandSelection: event.shiftKey })
-    "
+    @pointerdown="onPointerDown"
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >
     <CircleHelpIcon v-if="isMissing" class="missing-value-icon" />
@@ -107,7 +117,11 @@ const expand = () => emit("expand");
     <span v-else>
       {{ text }}
     </span>
-    <ExpandIcon v-if="enableExpand" class="expand-icon" @click="expand" />
+    <ExpandIcon
+      v-if="enableExpand"
+      class="expand-icon"
+      @click="expandAndSelect"
+    />
   </td>
 </template>
 

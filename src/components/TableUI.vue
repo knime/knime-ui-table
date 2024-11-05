@@ -569,11 +569,17 @@ export default {
       );
       this.$emit("rowSelect", selected, indexInInput, groupInd, isTop);
     },
-    onCellSelect(cellInd: number, rowInd: number, groupInd: null | number) {
+    onCellSelect(
+      cellInd: number,
+      rowInd: number,
+      groupInd: null | number,
+      ignoreIfSelected: boolean = false,
+    ) {
       const isTop = this.isTop(rowInd);
       this.selectCell(
         { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
+        ignoreIfSelected,
       );
     },
     onExpandCellSelect(
@@ -899,7 +905,10 @@ export default {
             :select-cells-on-move="selectCellsOnMove.state"
             :disable-row-height-transition="disableRowHeightTransition"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
-            @cell-select="(cellInd) => onCellSelect(cellInd, rowInd, groupInd)"
+            @cell-select="
+              (cellInd, ignoreIfSelected) =>
+                onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected)
+            "
             @data-value-view="
               (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
             "

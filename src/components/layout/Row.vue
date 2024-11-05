@@ -87,7 +87,7 @@ const emit = defineEmits<{
   rowSubMenuClick: [item: any];
   resizeAllRows: [size: number, rowElement: HTMLElement];
   resizeRow: [size: number];
-  cellSelect: [index: number];
+  cellSelect: [index: number, ignoreIfSelected: boolean];
   expandCellSelect: [index: number];
   dataValueView: [index: number, anchor: VirtualElementAnchor];
 }>();
@@ -226,14 +226,16 @@ const getCellComponents = () => {
 const onCellSelect = ({
   expandSelection,
   ind,
+  ignoreIfSelected = false,
 }: {
   expandSelection: boolean;
   ind: number;
+  ignoreIfSelected?: boolean;
 }) => {
   if (expandSelection) {
     emit("expandCellSelect", ind);
   } else {
-    emit("cellSelect", ind);
+    emit("cellSelect", ind, ignoreIfSelected);
   }
 };
 

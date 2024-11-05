@@ -9,6 +9,7 @@ import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
 import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
+import ExpandIcon from "../expand.svg";
 
 describe("Row.vue", () => {
   let wrapper;
@@ -403,7 +404,7 @@ describe("Row.vue", () => {
           .trigger("pointerdown", { button: 0 });
         expect(
           wrapper.findComponent(Row).emitted().cellSelect[0],
-        ).toStrictEqual([colInd]);
+        ).toStrictEqual([colInd, false]);
       });
 
       it("does not emits a cellSelect event when a cell is clicked with a non-left button", () => {
@@ -527,6 +528,34 @@ describe("Row.vue", () => {
       expect(
         wrapper.findAllComponents(Cell)[1].props("hasDataValueView"),
       ).toBeFalsy();
+    });
+
+    it("selects the cell on double click if data value views are enabled", () => {
+      props.tableConfig.enableDataValueViews = true;
+      const colInd = 2;
+      props.columnConfigs[colInd].hasDataValueView = true;
+
+      wrapper = mountRow({ props });
+
+      wrapper.findAll("td.data-cell").at(colInd).trigger("dblclick");
+
+      expect(wrapper.emitted().cellSelect[0]).toStrictEqual([colInd, true]);
+    });
+
+    it("selects the cell on expand button click if data value views are enabled", () => {
+      props.tableConfig.enableDataValueViews = true;
+      const colInd = 2;
+      props.columnConfigs[colInd].hasDataValueView = true;
+
+      wrapper = mountRow({ props });
+
+      wrapper
+        .findAll("td.data-cell")
+        .at(colInd)
+        .findComponent(ExpandIcon)
+        .trigger("click");
+
+      expect(wrapper.emitted().cellSelect[0]).toStrictEqual([colInd, true]);
     });
   });
 });

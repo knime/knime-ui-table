@@ -9,7 +9,11 @@ import { nextTick, ref, type Ref } from "vue";
 
 describe("useCellSelection", () => {
   const id = 1;
-  let selectCell: (cellPos: CellPosition, rectId: RectId) => void,
+  let selectCell: (
+      cellPos: CellPosition,
+      rectId: RectId,
+      ignoreIfSelected?: boolean,
+    ) => void,
     expandCellSelection: (cellPos: CellPosition, rectId: RectId) => void,
     rectMinMax: Ref<Rect | null>,
     clearCellSelection: () => void,
@@ -75,6 +79,15 @@ describe("useCellSelection", () => {
     selectCell(cellPos, id);
 
     expectEmptySelection();
+  });
+
+  it("does not deselect a cell if it is already selected if desired", () => {
+    const cellPos: CellPosition = { x: 3, y: 5 };
+
+    selectCell(cellPos, id);
+    selectCell(cellPos, id, true);
+
+    expectSingleSelectedCell(cellPos, id);
   });
 
   it("does not deselect cell if the position is the same but the id changes", () => {
