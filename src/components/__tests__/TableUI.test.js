@@ -117,6 +117,7 @@ const getProps = ({
   columnFilterInitiallyActive = null,
   enableIsSortable = false,
   enableDataValueViews = false,
+  dataValueViewIsShown = false,
   data = [[{ a: "cellA", b: "cellB" }]],
   currentSelection = [[false]],
   currentBottomSelection = [],
@@ -204,6 +205,7 @@ const getProps = ({
     },
     enableVirtualScrolling,
     enableDataValueViews,
+    dataValueViewIsShown,
     enableCellSelection,
     subMenuItems: [],
     columnSelectionConfig: {
@@ -253,6 +255,7 @@ describe("TableUI.vue", () => {
       columnFilterInitiallyActive = false,
       enableIsSortable = false,
       enableDataValueViews = false,
+      dataValueViewIsShown = false,
       data = [[{ a: "cellA", b: "cellB" }]],
       currentSelection = [[false]],
       currentBottomSelection = [],
@@ -293,6 +296,7 @@ describe("TableUI.vue", () => {
       columnFilterInitiallyActive,
       enableIsSortable,
       enableDataValueViews,
+      dataValueViewIsShown,
       data,
       currentSelection,
       currentBottomSelection,
@@ -1754,7 +1758,6 @@ describe("TableUI.vue", () => {
     it.each([[" "], ["Enter"]])(
       "opens data value view on '%s'",
       async (key) => {
-        await flushPromises();
         await wrapper.find("tbody").trigger("keydown", { key });
         expect(wrapper.emitted("dataValueView")[0][0]).toStrictEqual({
           anchor: {
@@ -1772,5 +1775,20 @@ describe("TableUI.vue", () => {
         });
       },
     );
+
+    it("closes the current data value view on 'Escape'", async () => {
+      wrapper = doMount({
+        shallow: false,
+        enableDataValueViews: true,
+        dataValueViewIsShown: true,
+      }).wrapper;
+      await wrapper.find("tbody").trigger("keydown", { key: "Escape" });
+      expect(wrapper.emitted("closeDataValueView")).toBeDefined();
+    });
+
+    it("does not close the current data value view on 'Escape' if none is shown", async () => {
+      await wrapper.find("tbody").trigger("keydown", { key: "Escape" });
+      expect(wrapper.emitted("closeDataValueView")).toBeUndefined();
+    });
   });
 });

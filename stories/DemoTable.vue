@@ -380,6 +380,7 @@ const tableConfig = reactive({
   disableSelection: props.disableSelection,
   enableCellSelection: props.withCellSelection,
   enableDataValueViews: props.withCellExpansion,
+  dataValueViewIsShown: false,
   showCollapser: props.showCollapser,
   showPopovers: props.showPopovers,
   showColumnFilters: props.withColumnFilters,
@@ -429,8 +430,14 @@ const alertEvent =
       `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`,
     );
 const onCopySelection = alertEvent("copySelection");
-const onDataValueView = alertEvent("data-value-view");
-const onCloseDataValueView = alertEvent("close-data-value-view");
+const onDataValueView = (...args) => {
+  alertEvent("data-value-view")(...args);
+  tableConfig.dataValueViewIsShown = true;
+};
+const onCloseDataValueView = (...args) => {
+  alertEvent("close-data-value-view")(...args);
+  tableConfig.dataValueViewIsShown = false;
+};
 
 const htmlSlotContent = `
 <div style="

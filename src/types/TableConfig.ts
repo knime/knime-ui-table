@@ -59,6 +59,7 @@ interface TableConfig {
   showPopovers?: boolean;
   enableCellSelection?: boolean;
   enableDataValueViews?: boolean;
+  dataValueViewIsShown?: boolean;
   columnFilterInitiallyActive?: boolean;
   enableVirtualScrolling?: boolean;
   showBottomControls?: boolean;

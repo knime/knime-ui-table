@@ -26,7 +26,7 @@ import {
   SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
 import { getPropertiesFromColumns } from "@/util";
-import { computed, ref, type Ref, type PropType } from "vue";
+import { computed, ref, type Ref, type PropType, toRef } from "vue";
 import TableCore from "./TableCore.vue";
 import type TableConfig from "@/types/TableConfig";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
@@ -36,6 +36,7 @@ import {
   DataValueViewConfig,
   VirtualElementAnchor,
 } from "@/types/DataValueView";
+import { provideDataValueViewsIsShown } from "./composables/useDataValueViewsIsShown";
 
 export type DataItem =
   | {
@@ -241,6 +242,8 @@ export default {
       selectionOverlay,
       onCopy: emitCopySelection,
     });
+
+    provideDataValueViewsIsShown(toRef(props, "tableConfig"));
 
     return {
       wrapper,
@@ -578,7 +581,7 @@ export default {
       };
       this.$emit("dataValueView", config);
     },
-    onCloseDataValueView() {
+    closeDataValueView() {
       this.$emit("closeDataValueView");
     },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
@@ -918,6 +921,7 @@ export default {
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
         @expand-selected-cell="expandSelectedCell"
+        @close-expanded-selected-cell="closeDataValueView"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
