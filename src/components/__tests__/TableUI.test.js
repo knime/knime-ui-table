@@ -1721,6 +1721,7 @@ describe("TableUI.vue", () => {
           },
         ],
       ]);
+      expect(wrapper.vm.toBeShownCell).toBeNull();
     });
 
     const selectCell = async (wrapper) => {
@@ -1774,6 +1775,7 @@ describe("TableUI.vue", () => {
     it("does not close the current data value view on 'Escape' if none is shown", async () => {
       await wrapper.find("tbody").trigger("keydown", { key: "Escape" });
       expect(wrapper.emitted("closeDataValueView")).toBeUndefined();
+      expect(wrapper.vm.toBeShownCell).toBeNull();
     });
 
     describe("opening and closing data value views on arrow keys", () => {

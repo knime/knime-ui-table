@@ -244,8 +244,14 @@ export default {
       onCopy: emitCopySelection,
     });
 
-    const closeDataValueView = () =>
-      props.tableConfig.dataValueViewIsShown && emit("closeDataValueView");
+    const toBeShownCell = ref<null | CellPosition>(null);
+
+    const closeDataValueView = () => {
+      if (props.tableConfig.dataValueViewIsShown) {
+        emit("closeDataValueView");
+      }
+      toBeShownCell.value = null;
+    };
 
     provideDataValueViewsIsShown(
       toRef(props, "tableConfig"),
@@ -269,6 +275,7 @@ export default {
       },
       changeFocus,
       handleCopyOnKeydown,
+      toBeShownCell,
     };
   },
   data() {
@@ -291,7 +298,6 @@ export default {
       currentResizedScrollIndex: null as null | number,
       currentRowSizeDelta: null as null | number,
       SPECIAL_COLUMNS_SIZE,
-      toBeShownCell: null as null | CellPosition,
     };
   },
   computed: {
@@ -582,6 +588,7 @@ export default {
         colIndex: cellInd,
         anchor,
       };
+      this.toBeShownCell = null;
       this.$emit("dataValueView", config);
     },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
