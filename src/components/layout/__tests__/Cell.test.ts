@@ -4,6 +4,8 @@ import { mount, shallowMount } from "@vue/test-utils";
 import Cell from "../Cell.vue";
 import type { CellProps } from "../CellProps";
 import CellRenderer from "../CellRenderer.vue";
+import { ref } from "vue";
+import { injectionKey as injectionKeyDataValueViews } from "@/components/composables/useDataValueViews";
 
 describe("Cell.vue", () => {
   let props: CellProps;
@@ -20,11 +22,35 @@ describe("Cell.vue", () => {
       formatter: (value: string) => value,
       hasDataValueView: false,
       isSelected: false,
+      isToBeExpanded: false,
     };
   });
 
+  const provide = {
+    [injectionKeyDataValueViews as symbol]: {
+      isShown: ref(false),
+      close: vi.fn(),
+    },
+  };
+
+  const mountCell = () =>
+    mount(Cell, {
+      props,
+      global: {
+        provide,
+      },
+    });
+
+  const shallowMountCell = () =>
+    shallowMount(Cell, {
+      props,
+      global: {
+        provide,
+      },
+    });
+
   it("renders", () => {
-    const wrapper = mount(Cell, { props });
+    const wrapper = mountCell();
     expect(wrapper.findComponent(CellRenderer).exists()).toBeTruthy();
     expect(wrapper.findComponent(CellRenderer).props()).toStrictEqual({
       color: null,
@@ -41,6 +67,7 @@ describe("Cell.vue", () => {
       title: "cellValue",
       enableExpand: false,
       isSelected: false,
+      isToBeExpanded: false,
     });
   });
 
@@ -49,7 +76,7 @@ describe("Cell.vue", () => {
     ["click", { event: {}, cell: {} }],
     ["select", { expandSelection: {} }],
   ])("emits %s to the parent component", (emitMethod, emitValue) => {
-    const wrapper = mount(Cell, { props });
+    const wrapper = mountCell();
     // @ts-ignore
     wrapper.findComponent(CellRenderer).vm.$emit(emitMethod, emitValue);
     // @ts-ignore
@@ -59,7 +86,7 @@ describe("Cell.vue", () => {
   describe("title", () => {
     it("creates the correct title for missing values without metadata", () => {
       props.cellData = null;
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().title).toBe(
         "Missing Value",
       );
@@ -67,7 +94,7 @@ describe("Cell.vue", () => {
 
     it("creates the correct title for missing values with null metadata", () => {
       props.cellData = { metadata: null };
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().title).toBe(
         "Missing Value",
       );
@@ -75,7 +102,7 @@ describe("Cell.vue", () => {
 
     it("creates the correct title for missing values with metadata", () => {
       props.cellData = { metadata: "Missing Value Message" };
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().title).toBe(
         "Missing Value (Missing Value Message)",
       );
@@ -83,7 +110,7 @@ describe("Cell.vue", () => {
 
     it("does not enable data value views for missing values", async () => {
       props.hasDataValueView = true;
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().enableExpand).toBe(
         true,
       );
@@ -95,13 +122,13 @@ describe("Cell.vue", () => {
 
     it("creates the correct title for clickable cells", () => {
       props.isClickableByConfig = true;
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().title).toBeNull();
     });
 
     it("creates the correct title for undefined cellData", () => {
       props.cellData = undefined;
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().title).toBeNull();
     });
   });
@@ -109,7 +136,7 @@ describe("Cell.vue", () => {
   describe("coloring", () => {
     it("does not pass a color, but the correct padding to the CellRenderer", () => {
       props.cellData = { value: "value", color: null };
-      const wrapper = mount(Cell, { props });
+      const wrapper = mountCell();
       expect(wrapper.classes()).not.toContain("colored-cell");
       expect(wrapper.attributes("style")).not.toContain("--data-cell-color");
       expect(wrapper.attributes("style")).toContain("padding-left: 10px");
@@ -117,7 +144,7 @@ describe("Cell.vue", () => {
 
     it("passes the background color and the correct padding to the CellRenderer", () => {
       props.cellData = { value: "value", color: "#abcdef" };
-      const wrapper = mount(Cell, { props });
+      const wrapper = mountCell();
       expect(wrapper.classes()).toContain("colored-cell");
       expect(wrapper.attributes("style")).toContain(
         "--data-cell-color: #abcdef",
@@ -137,7 +164,7 @@ describe("Cell.vue", () => {
       };
       props.cellData = "data3";
       props.classGenerators = [classMap];
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
       );
@@ -149,7 +176,7 @@ describe("Cell.vue", () => {
     it("applies function class generators to the data", () => {
       props.cellData = "data3";
       props.classGenerators = [classFunction];
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
       );
@@ -158,7 +185,7 @@ describe("Cell.vue", () => {
     it("handles class generators in combination with object representation", () => {
       props.cellData = { value: "data3", color: "#123456" };
       props.classGenerators = [classFunction];
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
       );
@@ -168,7 +195,7 @@ describe("Cell.vue", () => {
       props.cellData = { value: "data3", color: "#123456" };
       props.classGenerators = [classFunction];
       props.formatter = () => "foo";
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
       );
@@ -176,7 +203,7 @@ describe("Cell.vue", () => {
 
     it("uses custom classes", () => {
       props.classGenerators = ["width-3"];
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         ["width-3"],
       );
@@ -184,7 +211,7 @@ describe("Cell.vue", () => {
 
     it("does not use classes when class generators are undefined", () => {
       props.classGenerators = undefined;
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         [],
       );
@@ -195,7 +222,7 @@ describe("Cell.vue", () => {
         `width-${data?.slice(-1)}`;
       props.cellData = undefined;
       props.classGenerators = [classFunction];
-      const wrapper = shallowMount(Cell, { props });
+      const wrapper = shallowMountCell();
       expect(wrapper.findComponent(CellRenderer).props().classes).toStrictEqual(
         [],
       );
@@ -206,7 +233,7 @@ describe("Cell.vue", () => {
     Element.prototype.getBoundingClientRect = vi
       .fn()
       .mockReturnValue({ width: 80, height: 30 });
-    const wrapper = mount(Cell, { props });
+    const wrapper = mountCell();
     expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
       width: 90,
       height: 54,

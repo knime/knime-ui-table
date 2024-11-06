@@ -19,9 +19,8 @@ import { columnTypes } from "@/config/table.config";
 import useAvailableWidth, {
   useTotalWidth,
 } from "../composables/useAvailableWidth";
-import { reactive, ref, unref } from "vue";
+import { unref, nextTick } from "vue";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
-import useCellSelection from "../composables/useCellSelection";
 import TableCoreGroups from "../TableCoreGroups.vue";
 import TableCoreVirtual from "../TableCoreVirtual.vue";
 import { SubMenu } from "@knime/components";
@@ -39,19 +38,6 @@ const totalWidthMock = 150;
 vi.mock("../composables/useAvailableWidth", () => ({
   default: vi.fn(() => availableWidthMock),
   useTotalWidth: vi.fn(() => totalWidthMock),
-}));
-
-const cellSelectionMock = {
-  selectCell: vi.fn(),
-  expandCellSelection: vi.fn(),
-  clearCellSelection: vi.fn(),
-  rectMinMax: ref(null),
-  currentRectId: ref(null),
-  selectedCell: reactive({ x: 0, y: 0 }),
-};
-
-vi.mock("../composables/useCellSelection", () => ({
-  default: vi.fn(() => cellSelectionMock),
 }));
 
 let getMetaOrCtrlKeyMockReturnValue = "";
@@ -173,7 +159,7 @@ const getProps = ({
         ...(includeSubHeaders && { subHeader: "b" }),
         type: columnTypes.Number,
         size: 50,
-        hasDataValueView: true,
+        hasDataValueView: false,
         filterConfig: {
           value: "",
           is: "FilterInputField",
@@ -392,6 +378,10 @@ describe("TableUI.vue", () => {
   });
 
   describe("events", () => {
+    const getClearSpy = (wrapper) => {
+      return vi.spyOn(wrapper.vm, "clearCellSelection");
+    };
+
     describe("top controls", () => {
       it("does not show top controls text if there showTableSize is false", () => {
         const { wrapper } = doMount({
@@ -423,48 +413,53 @@ describe("TableUI.vue", () => {
 
       it("handles column update events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().columnUpdate).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("columnUpdate", ["A"]);
         expect(wrapper.emitted().columnUpdate).toStrictEqual([[["A"]]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles column reorder events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().columnReorder).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("columnReorder", 1, 0);
         expect(wrapper.emitted().columnReorder).toStrictEqual([[1, 0]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles group update events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().groupUpdate).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("groupUpdate", "New Group");
         expect(wrapper.emitted().groupUpdate).toStrictEqual([["New Group"]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles search events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().search).toBeFalsy();
         wrapper.findComponent(TopControls).vm.$emit("searchUpdate", "Query");
         expect(wrapper.emitted().search).toStrictEqual([["Query"]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles time filter update events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().timeFilterUpdate).toBeFalsy();
         wrapper
           .findComponent(TopControls)
           .vm.$emit("timeFilterUpdate", "Last year");
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
         expect(wrapper.emitted().timeFilterUpdate).toStrictEqual([
           ["Last year"],
         ]);
@@ -482,20 +477,22 @@ describe("TableUI.vue", () => {
 
       it("handles column sort events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().columnSort).toBeFalsy();
         wrapper.findComponent(Header).vm.$emit("columnSort", 0);
         expect(wrapper.emitted().columnSort).toStrictEqual([[0]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles toggle filter events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().toggleFilter).toBeFalsy();
         wrapper.findComponent(Header).vm.$emit("toggleFilter", true);
         expect(wrapper.emitted().toggleFilter).toStrictEqual([[true]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles header submenu events", () => {
@@ -519,24 +516,26 @@ describe("TableUI.vue", () => {
     describe("column filter", () => {
       it("handles column filter events", async () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         wrapper.findComponent(Header).vm.$emit("toggleFilter", true);
         await wrapper.vm.$nextTick();
         expect(wrapper.emitted().columnFilter).toBeFalsy();
         wrapper.findComponent(ColumnFilters).vm.$emit("columnFilter", 0, "0");
         expect(wrapper.emitted().columnFilter).toStrictEqual([[0, "0"]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles clear filter events", async () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         wrapper.findComponent(Header).vm.$emit("toggleFilter", true);
         await wrapper.vm.$nextTick();
         expect(wrapper.emitted().clearFilter).toBeFalsy();
         wrapper.findComponent(ColumnFilters).vm.$emit("clearFilter");
         expect(wrapper.emitted().clearFilter).toBeTruthy();
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
     });
 
@@ -756,29 +755,32 @@ describe("TableUI.vue", () => {
     describe("bottom controls", () => {
       it("handles next page events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().pageChange).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("nextPage");
         expect(wrapper.emitted().pageChange).toStrictEqual([[1]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("handles prev page events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().pageChange).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("prevPage");
         expect(wrapper.emitted().pageChange).toStrictEqual([[-1]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
 
       it("registers pageSizeUpdate events", () => {
         const { wrapper } = doMount();
+        const clearCellSelectionSpy = getClearSpy(wrapper);
 
         expect(wrapper.emitted().pageSizeUpdate).toBeFalsy();
         wrapper.findComponent(BottomControls).vm.$emit("pageSizeUpdate", 25);
         expect(wrapper.emitted().pageSizeUpdate).toStrictEqual([[25]]);
-        expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+        expect(clearCellSelectionSpy).toHaveBeenCalled();
       });
     });
 
@@ -1172,20 +1174,16 @@ describe("TableUI.vue", () => {
   });
 
   describe("cell selection", () => {
-    let wrapper;
+    let wrapper, selectCellSpy, expandCellSelectionSpy, clearCellSelectionSpy;
 
     beforeEach(() => {
-      useCellSelection.mockClear();
-      cellSelectionMock.selectCell = vi.fn();
-      cellSelectionMock.expandCellSelection = vi.fn();
-      cellSelectionMock.rectMinMax = ref(null);
-      cellSelectionMock.currentRectId = ref(null);
-      const comp = doMount();
+      const comp = doMount({
+        enableCellSelection: true,
+      });
       wrapper = comp.wrapper;
-    });
-
-    it("used cell selection composable", () => {
-      expect(useCellSelection).toHaveBeenCalled();
+      expandCellSelectionSpy = vi.spyOn(wrapper.vm, "expandCellSelection");
+      selectCellSpy = vi.spyOn(wrapper.vm, "selectCell");
+      clearCellSelectionSpy = vi.spyOn(wrapper.vm, "clearCellSelection");
     });
 
     it("selects cell on row event", () => {
@@ -1194,7 +1192,7 @@ describe("TableUI.vue", () => {
 
       row.vm.$emit("cell-select", colInd);
 
-      expect(cellSelectionMock.selectCell).toHaveBeenCalledWith(
+      expect(selectCellSpy).toHaveBeenCalledWith(
         {
           x: colInd,
           y: 0,
@@ -1210,7 +1208,7 @@ describe("TableUI.vue", () => {
 
       row.vm.$emit("expand-cell-select", colInd);
 
-      expect(cellSelectionMock.expandCellSelection).toHaveBeenCalledWith(
+      expect(expandCellSelectionSpy).toHaveBeenCalledWith(
         {
           x: colInd,
           y: 0,
@@ -1226,55 +1224,42 @@ describe("TableUI.vue", () => {
         ).toBeFalsy();
       });
 
-      it("displays overlay once something is selected", async () => {
-        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-        cellSelectionMock.rectMinMax.value = rectMinMax;
-        cellSelectionMock.currentRectId.value = 0;
-        await wrapper.vm.$nextTick();
+      it.each([true, false])(
+        "displays overlay once something is selected and enableVirtualScrolling is %s",
+        async (enableVirtualScrolling) => {
+          const { wrapper } = doMount({
+            enableVirtualScrolling,
+            enableCellSelection: true,
+            shallow: false,
+          });
 
-        const overlay = wrapper.findComponent(SelectedCellsOverlay);
-        expect(overlay.exists()).toBeTruthy();
-        expect(overlay.props()).toStrictEqual({
-          columnSizes: [50, 50],
-          rect: rectMinMax,
-          rowHeight: 41,
-          rowResizeDelta: null,
-          rowResizeIndex: null,
-          tableConfig: wrapper.vm.tableConfig,
-          cellSelectionRectFocusCorner: { x: 0, y: 0 },
-        });
-      });
+          const rectMinMax = { x: { min: 1, max: 1 }, y: { min: 2, max: 2 } };
+          const selectedCell = { x: 1, y: 2 };
+          wrapper.vm.selectCell(selectedCell, 0, false);
+          await nextTick();
 
-      it("displays overlay inside virtual scroller", () => {
-        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-        cellSelectionMock.rectMinMax.value = rectMinMax;
-        cellSelectionMock.currentRectId.value = 0;
-        const { wrapper } = doMount({
-          enableVirtualScrolling: true,
-          shallow: false,
-        });
-
-        const overlay = wrapper.findComponent(SelectedCellsOverlay);
-        expect(overlay.exists()).toBeTruthy();
-        expect(overlay.props()).toStrictEqual({
-          columnSizes: [50, 50],
-          rect: rectMinMax,
-          rowHeight: 41,
-          rowResizeDelta: null,
-          rowResizeIndex: null,
-          tableConfig: wrapper.vm.tableConfig,
-          cellSelectionRectFocusCorner: { x: 0, y: 0 },
-        });
-      });
+          const overlay = wrapper.findComponent(SelectedCellsOverlay);
+          expect(overlay.exists()).toBeTruthy();
+          expect(overlay.props()).toStrictEqual({
+            columnSizes: [50, 50],
+            rect: rectMinMax,
+            rowHeight: 41,
+            rowResizeDelta: null,
+            rowResizeIndex: null,
+            tableConfig: wrapper.vm.tableConfig,
+            cellSelectionRectFocusCorner: selectedCell,
+          });
+        },
+      );
 
       it("displays overlay for the correct group", async () => {
-        const rectMinMax = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-        cellSelectionMock.rectMinMax.value = rectMinMax;
-        cellSelectionMock.currentRectId.value = 1;
         const { wrapper } = doMount({
           ...groupedData,
+          enableCellSelection: true,
         });
 
+        wrapper.vm.selectCell({ x: 1, y: 2 }, 1, false);
+        await nextTick();
         let groups = wrapper.findAllComponents(Group);
         expect(groups).toHaveLength(2);
         expect(
@@ -1284,8 +1269,8 @@ describe("TableUI.vue", () => {
           groups.at(1).findComponent(SelectedCellsOverlay).exists(),
         ).toBeTruthy();
 
-        cellSelectionMock.currentRectId.value = 0;
-        await wrapper.vm.$nextTick();
+        wrapper.vm.selectCell({ x: 1, y: 2 }, 0, false);
+        await nextTick();
 
         expect(
           groups.at(0).findComponent(SelectedCellsOverlay).exists(),
@@ -1332,7 +1317,7 @@ describe("TableUI.vue", () => {
       expect(row.props().selectCellsOnMove).toBeFalsy();
     });
 
-    describe("emit copySelection event", () => {
+    describe("emits copySelection event", () => {
       let triggerCopied, stubs;
 
       beforeEach(() => {
@@ -1347,22 +1332,28 @@ describe("TableUI.vue", () => {
         };
       });
 
+      const initializeSelection = async (wrapper) => {
+        const id = 0;
+        wrapper.vm.selectCell({ x: 1, y: 2 }, id, false);
+        wrapper.vm.expandCellSelection({ x: 2, y: 2 }, id);
+        const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
+        await nextTick();
+        return { id, rect };
+      };
+
       it.each([false, true])(
         "when copy event is received and focus is within table with virtualScrolling = %s",
         async (enableVirtualScrolling) => {
-          const comp = doMount(
-            { enableVirtualScrolling, shallow: false },
+          const { wrapper } = doMount(
+            {
+              enableVirtualScrolling,
+              enableCellSelection: true,
+              shallow: false,
+            },
             stubs,
           );
-          wrapper = comp.wrapper;
-          const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-          cellSelectionMock.rectMinMax.value = rect;
-          const id = 0;
-          cellSelectionMock.currentRectId.value = id;
-          await wrapper.vm.$nextTick();
 
-          const overlay = wrapper.findComponent(SelectedCellsOverlay);
-          expect(overlay.exists()).toBeTruthy();
+          const { rect, id } = await initializeSelection(wrapper);
 
           wrapper.find("table").trigger("focusin");
           window.dispatchEvent(new Event("copy"));
@@ -1379,12 +1370,11 @@ describe("TableUI.vue", () => {
         ["ctrl.shift.c", "different os than mac", "ctrlKey"],
       ])("when pressing %s on %s", async (copyKeys, _, metaOrCtrlKey) => {
         getMetaOrCtrlKeyMockReturnValue = metaOrCtrlKey;
-        const { wrapper } = doMount({ shallow: false }, stubs);
-        const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-        cellSelectionMock.rectMinMax.value = rect;
-        const id = 0;
-        cellSelectionMock.currentRectId.value = id;
-        await wrapper.vm.$nextTick();
+        const { wrapper } = doMount(
+          { shallow: false, enableCellSelection: true },
+          stubs,
+        );
+        const { rect, id } = await initializeSelection(wrapper);
         await wrapper.find("table").trigger("focusin");
         await wrapper.find("table").trigger(`keydown.${copyKeys}.exact`);
         expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
@@ -1393,10 +1383,6 @@ describe("TableUI.vue", () => {
       });
 
       describe("keyboard navigation", () => {
-        beforeEach(() => {
-          useCellSelection.mockClear();
-        });
-
         it("positions the overlay in the first row on triggering keydown down on a header", async () => {
           const { wrapper } = doMount(
             {
@@ -1406,51 +1392,61 @@ describe("TableUI.vue", () => {
             },
             stubs,
           );
+          const selectCellSpy = vi.spyOn(wrapper.vm, "selectCell");
           await wrapper
             .findComponent(Header)
             .findAll(".column-header-content")
             .at(1)
             .trigger("keydown", { key: "ArrowDown" });
 
-          expect(wrapper.vm.selectCell).toHaveBeenCalledWith(
+          expect(selectCellSpy).toHaveBeenCalledWith(
             { x: 1, y: 0 },
             true,
             false,
           );
         });
 
-        it("clears the selection on tabbing on the body", () => {
-          let { wrapper } = doMount(
-            { enableVirtualScrolling: true, shallow: false },
-            stubs,
-          );
-          wrapper
-            .findComponent(TableBodyNavigatable)
-            .vm.$emit("clearSelection");
-          expect(wrapper.vm.clearCellSelection).toHaveBeenCalledOnce();
+        it.each([[true, false]])(
+          "clears the selection on tabbing on the body if enableVirtualScrolling is %s",
+          async (enableVirtualScrolling) => {
+            const { wrapper } = doMount(
+              {
+                enableVirtualScrolling,
+                enableCellSelection: true,
+                shallow: false,
+              },
+              stubs,
+            );
+            wrapper.vm.selectCell({ x: 1, y: 2 }, 0, false);
 
-          wrapper = doMount({ shallow: false }, stubs).wrapper;
-          wrapper
-            .findComponent(TableBodyNavigatable)
-            .vm.$emit("clearSelection");
-          expect(wrapper.vm.clearCellSelection).toHaveBeenCalledTimes(2);
-        });
+            wrapper.find("tbody").trigger("keydown", { key: "Tab" });
+            await nextTick();
+
+            expect(wrapper.vm.selectedCell).toBeFalsy();
+          },
+        );
 
         it.each([
           ["the first group", 0, false],
-          ["virtual scrolling", true, true],
+          ["virtual scrolling", 0, true],
         ])(
           "focusses the header of the column on ArrowUp in the first row of %s",
           (_desc, rectId, enableVirtualScrolling) => {
-            cellSelectionMock.selectedCell = { x: 1, y: 0 };
-            cellSelectionMock.currentRectId = rectId;
+            const selectedCell = { x: 1, y: 0 };
+
             const { wrapper } = doMount(
-              { enableVirtualScrolling, shallow: false },
+              {
+                enableVirtualScrolling,
+                enableCellSelection: true,
+                shallow: false,
+              },
               stubs,
             );
+            clearCellSelectionSpy = vi.spyOn(wrapper.vm, "clearCellSelection");
+            wrapper.vm.selectCell(selectedCell, rectId, false);
             const focusHeaderCellSpy = vi.spyOn(wrapper.vm, "focusHeaderCell");
             wrapper.vm.onKeyboardMoveSelection(0, -1, true);
-            expect(cellSelectionMock.clearCellSelection).toHaveBeenCalled();
+            expect(clearCellSelectionSpy).toHaveBeenCalled();
             expect(focusHeaderCellSpy).toHaveBeenCalledWith(1);
           },
         );
@@ -1460,18 +1456,19 @@ describe("TableUI.vue", () => {
           ["right", 1, 1],
         ])(
           "does not navigate horizontally out of bounds to the %s",
-          (_, direction, currentFocusX) => {
-            cellSelectionMock.selectedCell = {
+          async (_, direction, currentFocusX) => {
+            const selectedCell = {
               x: currentFocusX,
               y: 2,
             };
-            cellSelectionMock.currentRectId.value = 0;
             const { wrapper } = doMount({ shallow: false }, stubs);
+            wrapper.vm.selectCell(selectedCell, 0, false);
+            await nextTick();
             wrapper.vm.onKeyboardMoveSelectionGroups = vi.fn();
             wrapper.vm.onKeyboardMoveSelectionVirtual = vi.fn();
 
             wrapper.vm.onKeyboardMoveSelection(direction, 0, true);
-            expect(cellSelectionMock.clearCellSelection).not.toHaveBeenCalled();
+            expect(clearCellSelectionSpy).not.toHaveBeenCalled();
             expect(
               wrapper.vm.onKeyboardMoveSelectionGroups,
             ).not.toHaveBeenCalled();
@@ -1481,23 +1478,29 @@ describe("TableUI.vue", () => {
           },
         );
 
-        const prepareOnKeyboardMoveSelectionForGroupsAndVirtual = (
+        const prepareOnKeyboardMoveSelectionForGroupsAndVirtual = async (
           useGroupedData,
           focusCorner,
           rectId,
-          rect,
+          anchor = null,
         ) => {
-          cellSelectionMock.selectedCell = focusCorner;
-          cellSelectionMock.currentRectId.value = rectId;
-          cellSelectionMock.rectMinMax.value = rect;
-
           const { wrapper } = doMount(
             {
               shallow: false,
+              enableCellSelection: true,
               ...(useGroupedData ? groupedData : topAndBottomData),
             },
             stubs,
           );
+
+          if (anchor === null) {
+            wrapper.vm.selectCell(focusCorner, rectId, false);
+          } else {
+            wrapper.vm.selectCell(anchor, rectId, false);
+            wrapper.vm.expandCellSelection(focusCorner, rectId);
+          }
+          await nextTick();
+
           wrapper.vm.getSelectionOverlayComponent = vi
             .fn()
             .mockReturnValue({ scrollFocusOverlayIntoView: vi.fn() });
@@ -1512,14 +1515,14 @@ describe("TableUI.vue", () => {
             [-1, 0, 1, [1, 1, 0]],
           ])(
             "switches between groups in vertical direction (%s)",
-            (direction, focusY, rectId, result) => {
-              wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+            async (direction, focusY, rectId, result) => {
+              wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
                 true,
                 { x: 1, y: focusY },
                 rectId,
                 {
-                  x: { min: 1, max: 1 },
-                  y: { min: focusY, max: focusY },
+                  x: focusY,
+                  y: 1,
                 },
               );
 
@@ -1530,30 +1533,22 @@ describe("TableUI.vue", () => {
             },
           );
 
-          it("does not navigate vertically downwards out of bounds for the last group", () => {
-            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+          it("does not navigate vertically downwards out of bounds for the last group", async () => {
+            wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
               true,
               { x: 1, y: 1 },
               1,
-              {
-                x: { min: 1, max: 1 },
-                y: { min: 1, max: 1 },
-              },
             );
 
             wrapper.vm.onKeyboardMoveSelection(0, 1, true);
             expect(wrapper.vm.onExpandCellSelect).not.toHaveBeenCalled();
           });
 
-          it("allows navigating horizontally", () => {
-            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+          it("allows navigating horizontally", async () => {
+            wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
               true,
               { x: 1, y: 1 },
               1,
-              {
-                x: { min: 1, max: 1 },
-                y: { min: 1, max: 1 },
-              },
             );
 
             wrapper.vm.onKeyboardMoveSelection(-1, 0, true);
@@ -1562,15 +1557,11 @@ describe("TableUI.vue", () => {
         });
 
         describe("onKeyboardMoveSelectionVirtual", () => {
-          it("does not navigate vertically downwards out of bounds", () => {
-            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+          it("does not navigate vertically downwards out of bounds", async () => {
+            wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
               false,
               { x: 1, y: 5 },
               false,
-              {
-                x: { min: 1, max: 1 },
-                y: { min: 5, max: 5 },
-              },
             );
 
             expect(wrapper.vm.onExpandCellSelect).not.toHaveBeenCalled();
@@ -1581,15 +1572,12 @@ describe("TableUI.vue", () => {
             [-1, 3, false, [1, 2, null]],
           ])(
             "can navigate between top and bottom data in vertical direction (%s)",
-            (direction, focusY, rectId, result) => {
-              wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+            async (direction, focusY, rectId, result) => {
+              wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
                 false,
                 { x: 1, y: focusY },
                 rectId,
-                {
-                  x: { min: 1, max: 1 },
-                  y: { min: focusY, max: focusY },
-                },
+                { x: focusY, y: 1 },
               );
 
               wrapper.vm.onKeyboardMoveSelection(0, direction, true);
@@ -1599,15 +1587,11 @@ describe("TableUI.vue", () => {
             },
           );
 
-          it("allows navigating horizontally", () => {
-            wrapper = prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
+          it("allows navigating horizontally", async () => {
+            wrapper = await prepareOnKeyboardMoveSelectionForGroupsAndVirtual(
               false,
               { x: 1, y: 1 },
               true,
-              {
-                x: { min: 1, max: 1 },
-                y: { min: 1, max: 1 },
-              },
             );
 
             wrapper.vm.onKeyboardMoveSelection(-1, 0, true);
@@ -1622,11 +1606,8 @@ describe("TableUI.vue", () => {
     });
 
     it("does not emit copySelection event when copy event is received and focus is outside of table", async () => {
-      const rect = { x: { min: 1, max: 2 }, y: { min: 2, max: 2 } };
-      cellSelectionMock.rectMinMax.value = rect;
-      const id = 0;
-      cellSelectionMock.currentRectId.value = id;
-      await wrapper.vm.$nextTick();
+      wrapper.vm.selectCell({ x: 1, y: 2 }, 0, false);
+      await nextTick();
 
       wrapper.find("table").trigger("focusout");
       window.dispatchEvent(new Event("copy"));
@@ -1641,7 +1622,7 @@ describe("TableUI.vue", () => {
       "does not emit copySelection event when pressing %s on %s",
       async (copyKeys, _, metaOrCtrlKey) => {
         getMetaOrCtrlKeyMockReturnValue = metaOrCtrlKey;
-        await wrapper.vm.$nextTick();
+        await nextTick();
         await wrapper.find("table").trigger("focusin");
 
         wrapper.find("table").trigger(`keydown.${copyKeys}.exact`);
@@ -1710,18 +1691,13 @@ describe("TableUI.vue", () => {
   describe("data value views", () => {
     let wrapper;
 
+    const selectedCell = { x: 0, y: 0 };
+
     beforeEach(() => {
-      cellSelectionMock.selectedCell = { x: 0, y: 0 };
-
-      cellSelectionMock.rectMinMax.value = {
-        x: { min: 0, max: 0 },
-        y: { min: 0, max: 0 },
-      };
-      cellSelectionMock.currentRectId.value = 0;
-
       wrapper = doMount({
         shallow: false,
         enableDataValueViews: true,
+        enableCellSelection: true,
       }).wrapper;
     });
 
@@ -1747,7 +1723,14 @@ describe("TableUI.vue", () => {
       ]);
     });
 
-    it("shows expand icon when cell is selected", () => {
+    const selectCell = async (wrapper) => {
+      wrapper.vm.selectCell(selectedCell, 0, false);
+      await nextTick();
+    };
+
+    it("shows expand icon when cell is selected", async () => {
+      await selectCell(wrapper);
+
       const row = wrapper.findComponent(Row);
       const cellRenderer = row.findComponent(CellRenderer);
       expect(cellRenderer.findComponent(ExpandIcon).classes()).toContain(
@@ -1756,9 +1739,11 @@ describe("TableUI.vue", () => {
     });
 
     it.each([[" "], ["Enter"]])(
-      "opens data value view on '%s'",
+      "opens data value view for selected cell on '%s'",
       async (key) => {
+        await selectCell(wrapper);
         await wrapper.find("tbody").trigger("keydown", { key });
+        await flushPromises();
         expect(wrapper.emitted("dataValueView")[0][0]).toStrictEqual({
           anchor: {
             bottom: 0,
@@ -1789,6 +1774,55 @@ describe("TableUI.vue", () => {
     it("does not close the current data value view on 'Escape' if none is shown", async () => {
       await wrapper.find("tbody").trigger("keydown", { key: "Escape" });
       expect(wrapper.emitted("closeDataValueView")).toBeUndefined();
+    });
+
+    describe("opening and closing data value views on arrow keys", () => {
+      beforeEach(async () => {
+        wrapper = doMount({
+          shallow: false,
+          enableDataValueViews: true,
+          enableCellSelection: true,
+          dataValueViewIsShown: true,
+          data: [
+            [
+              { a: "cellA_1", b: "cellB_1" },
+              { a: "cellA_2", b: "cellB_2" },
+            ],
+          ],
+        }).wrapper;
+
+        await selectCell(wrapper); // x: 0, y: 0
+        expect(wrapper.emitted("dataValueView")).toBeUndefined();
+        expect(wrapper.emitted("closeDataValueView")).toBeUndefined();
+      });
+
+      it("opens the next data value view when navigating to another expandable cell", async () => {
+        // ArrowDown leads to an expandable cell, since column a has data value views
+        await wrapper.find("tbody").trigger("keydown", { key: "ArrowDown" });
+        await flushPromises();
+        expect(wrapper.emitted("dataValueView")[0][0]).toMatchObject({
+          colIndex: 0,
+          rowIndex: 1,
+        });
+      });
+
+      it("closes the current data value view when navigating to a non-expandable cell", async () => {
+        // ArrowRight leads to a non-expandable cell, since column b has no data value views
+        await wrapper.find("tbody").trigger("keydown", { key: "ArrowRight" });
+        await flushPromises();
+        expect(wrapper.emitted("closeDataValueView")).toBeDefined();
+      });
+
+      it("closes the data value view when selection is cleared", async () => {
+        wrapper.vm.clearCellSelection();
+        await flushPromises();
+        expect(wrapper.emitted("closeDataValueView")).toBeDefined();
+      });
+
+      it("closes the data value view when navigating to a header", () => {
+        wrapper.find("tbody").trigger("keydown", { key: "ArrowUp" });
+        expect(wrapper.emitted("closeDataValueView")).toBeDefined();
+      });
     });
   });
 });

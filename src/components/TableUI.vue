@@ -10,6 +10,7 @@ import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import { useTotalWidth } from "./composables/useAvailableWidth";
 import useCellSelection, {
+  CellPosition,
   type Rect,
   type RectId,
 } from "./composables/useCellSelection";
@@ -36,7 +37,7 @@ import {
   DataValueViewConfig,
   VirtualElementAnchor,
 } from "@/types/DataValueView";
-import { provideDataValueViewsIsShown } from "./composables/useDataValueViewsIsShown";
+import { provideDataValueViewsIsShown } from "./composables/useDataValueViews";
 
 export type DataItem =
   | {
@@ -243,7 +244,13 @@ export default {
       onCopy: emitCopySelection,
     });
 
-    provideDataValueViewsIsShown(toRef(props, "tableConfig"));
+    const closeDataValueView = () =>
+      props.tableConfig.dataValueViewIsShown && emit("closeDataValueView");
+
+    provideDataValueViewsIsShown(
+      toRef(props, "tableConfig"),
+      closeDataValueView,
+    );
 
     return {
       wrapper,
@@ -256,7 +263,10 @@ export default {
       selectedCell,
       selectCell,
       expandCellSelection,
-      clearCellSelection,
+      clearCellSelection: () => {
+        clearCellSelection();
+        closeDataValueView();
+      },
       changeFocus,
       handleCopyOnKeydown,
     };
@@ -281,6 +291,7 @@ export default {
       currentResizedScrollIndex: null as null | number,
       currentRowSizeDelta: null as null | number,
       SPECIAL_COLUMNS_SIZE,
+      toBeShownCell: null as null | CellPosition,
     };
   },
   computed: {
@@ -429,14 +440,6 @@ export default {
       // instead
       return this.currentRowHeight + ROW_MARGIN_BOTTOM;
     },
-    getSelectedCellIndex() {
-      return (rowInd: number) => {
-        if (this.selectedCell && this.selectedCell.y === rowInd) {
-          return this.selectedCell.x;
-        }
-        return null;
-      };
-    },
   },
   watch: {
     "tableConfig.showColumnFilters": {
@@ -581,9 +584,6 @@ export default {
       };
       this.$emit("dataValueView", config);
     },
-    closeDataValueView() {
-      this.$emit("closeDataValueView");
-    },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       consola.debug(
@@ -722,14 +722,15 @@ export default {
       await this.getSelectionOverlayComponent().scrollFocusOverlayIntoView(
         scrollToViewParams,
       );
+      this.toBeShownCell = this.tableConfig.dataValueViewIsShown
+        ? this.selectedCell
+        : null;
     },
     async expandSelectedCell() {
       if (this.selectedCell && this.tableConfig.enableDataValueViews) {
         // scroll current selection into view
         await this.onKeyboardMoveSelection(0, 0, true);
-        const anchor =
-          this.getSelectionOverlayComponent().getFocusOverlayBoundingClientRect();
-        this.onDataValueView(this.selectedCell.x, this.selectedCell.y, anchor!);
+        this.toBeShownCell = this.selectedCell;
       }
     },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
@@ -869,6 +870,12 @@ export default {
       }
       return `group-${groupInd}-row-${rowInd}`;
     },
+    getCellIndex(cell: CellPosition | null | undefined, rowInd: number) {
+      if (cell && cell.y === rowInd) {
+        return cell.x;
+      }
+      return null;
+    },
   },
 };
 </script>
@@ -921,7 +928,6 @@ export default {
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
         @expand-selected-cell="expandSelectedCell"
-        @close-expanded-selected-cell="closeDataValueView"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
@@ -937,7 +943,8 @@ export default {
             :is-selected="currentSelectionMap(rowInd, groupInd || 0)"
             :select-cells-on-move="selectCellsOnMove.state"
             :disable-row-height-transition="disableRowHeightTransition"
-            :selected-cell-index="getSelectedCellIndex(rowInd)"
+            :selected-cell-index="getCellIndex(selectedCell, rowInd)"
+            :to-be-expanded-cell-index="getCellIndex(toBeShownCell, rowInd)"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
               (cellInd, ignoreIfSelected) =>

@@ -3,6 +3,7 @@ interface CellRendererProps {
   isMissing: boolean;
   isSlotted: boolean;
   isSelected: boolean;
+  isToBeExpanded: boolean;
   noPadding?: boolean;
   text: string | undefined;
   title: string | null;

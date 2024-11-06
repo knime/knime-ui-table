@@ -15,6 +15,7 @@ import { h, ref } from "vue";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../composables/useCloseSubMenusOnScroll";
 import { injectionKey as useCommonScrollContainerPropsInjectionKey } from "../composables/useCommonScrollContainerProps";
 import { injectionKey as useOverflowStylesInjectionKey } from "../composables/useOverflowStyles";
+import { injectionKey as useDataValueViewsInjectionKey } from "../composables/useDataValueViews";
 import TestRow from "./testComponents/TestRow.vue";
 import VirtualRow from "../VirtualRow.vue";
 
@@ -124,6 +125,10 @@ describe("TableCoreVirtual", () => {
           [useOverflowStylesInjectionKey as symbol]: ref(overflowStyles),
           [useCommonScrollContainerPropsInjectionKey as symbol]:
             providedScrollContainerRef,
+          [useDataValueViewsInjectionKey as symbol]: {
+            isShown: ref(false),
+            close: () => {},
+          },
         },
       },
       slots: {

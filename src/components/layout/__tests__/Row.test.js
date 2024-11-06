@@ -9,7 +9,9 @@ import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
 import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
+import { injectionKey as useDataValueViewsInjectionKey } from "@/components/composables/useDataValueViews";
 import ExpandIcon from "../expand.svg";
+import { ref } from "vue";
 
 describe("Row.vue", () => {
   let wrapper;
@@ -75,6 +77,10 @@ describe("Row.vue", () => {
         provide: {
           [useCloseSubMenusOnScrollInjectionKey]: {
             registerExpandedSubMenu: () => {},
+          },
+          [useDataValueViewsInjectionKey]: {
+            isShown: ref(false),
+            close: () => {},
           },
         },
       },

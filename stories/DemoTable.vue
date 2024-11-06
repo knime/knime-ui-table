@@ -318,7 +318,7 @@ const dataConfig = computed(() => {
       popoverRenderer: demoProps.allPopoverRenderers[key],
       hasSlotContent: currentSlottedColumns.value?.includes(key),
       headerSubMenuItems: props.withHeaderSubMenu ? props.headerSubMenu : null,
-      hasDataValueView: props.withCellExpansion,
+      hasDataValueView: props.withCellExpansion && ind % 2 === 0,
       isSortable:
         !props.withSpecificSortConfigs ||
         currentColumnSpecificSortConfigs.value[ind],

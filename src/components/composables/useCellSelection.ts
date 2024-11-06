@@ -31,7 +31,7 @@ export type MinMax = { min: number; max: number };
 
 export type Rect = { x: MinMax; y: MinMax };
 
-export type RectId = number | boolean;
+export type RectId = number;
 
 export default (enableCellSelection: Ref<boolean>) => {
   const cellRect = ref<CellRect | null>(null);

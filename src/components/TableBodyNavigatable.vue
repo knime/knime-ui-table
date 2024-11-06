@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { navigatorUtils } from "@knime/utils";
-import useDataValueViewsIsShown from "./composables/useDataValueViewsIsShown";
+import useDataValueViews from "./composables/useDataValueViews";
 
 const emit = defineEmits<{
   moveSelection: [
@@ -10,7 +10,6 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
-  closeExpandedSelectedCell: [];
 }>();
 
 const onArrowKeyDown = (event: KeyboardEvent) => {
@@ -36,7 +35,8 @@ const onArrowKeyDown = (event: KeyboardEvent) => {
   }
 };
 
-const dataValueViewIsShown = useDataValueViewsIsShown();
+const { isShown: selectedCellIsExpanded, close: closeExpandedSelectedCell } =
+  useDataValueViews();
 
 const onKeyDown = (event: KeyboardEvent) => {
   if (
@@ -49,10 +49,10 @@ const onKeyDown = (event: KeyboardEvent) => {
   } else if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     emit("expandSelectedCell");
-  } else if (event.key === "Escape" && dataValueViewIsShown?.value) {
+  } else if (event.key === "Escape" && selectedCellIsExpanded.value) {
     event.preventDefault();
     event.stopPropagation();
-    emit("closeExpandedSelectedCell");
+    closeExpandedSelectedCell();
   }
 };
 </script>

@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mount, shallowMount } from "@vue/test-utils";
+import { flushPromises, mount, shallowMount } from "@vue/test-utils";
 
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import CellRenderer from "../CellRenderer.vue";
 import ExpandIcon from "../expand.svg";
 import type { CellRendererProps } from "../CellRendererProps";
+import useDataValueViews, {
+  injectionKey as injectionKeyDataValueViews,
+} from "@/components/composables/useDataValueViews";
+import { ref } from "vue";
 
-describe("Cell.vue", () => {
-  let props: CellRendererProps;
+describe("CellRenderer.vue", () => {
+  let props: CellRendererProps,
+    providedDataValueViewData: ReturnType<typeof useDataValueViews>;
 
   beforeEach(() => {
     props = {
@@ -23,11 +28,41 @@ describe("Cell.vue", () => {
       size: 300,
       defaultTopBottomPadding: 12,
       isSelected: false,
+      isToBeExpanded: false,
+    };
+
+    providedDataValueViewData = {
+      isShown: ref(false),
+      close: vi.fn(),
     };
   });
 
+  const mountCellRenderer = (
+    params: Partial<Parameters<typeof mount>[1]> = {},
+  ) =>
+    mount(CellRenderer, {
+      // @ts-ignore
+      props,
+      global: {
+        provide: {
+          [injectionKeyDataValueViews as symbol]: providedDataValueViewData,
+        },
+      },
+      ...params,
+    });
+
+  const shallowMountCellRenderer = () =>
+    shallowMount(CellRenderer, {
+      props,
+      global: {
+        provide: {
+          [injectionKeyDataValueViews as symbol]: providedDataValueViewData,
+        },
+      },
+    });
+
   it("renders with the given styles", () => {
-    const wrapper = mount(CellRenderer, { props });
+    const wrapper = mountCellRenderer();
     expect(wrapper.attributes("title")).toBe("Title");
     expect(wrapper.text()).toBe("Text");
     expect(wrapper.attributes("style")).toContain("width: calc(300px);");
@@ -41,7 +76,7 @@ describe("Cell.vue", () => {
 
   it("renders with the given styles without color", () => {
     props.color = null;
-    const wrapper = mount(CellRenderer, { props });
+    const wrapper = mountCellRenderer();
     expect(wrapper.attributes("style")).not.toContain(
       "--data-cell-color: #abcdef;",
     );
@@ -49,10 +84,10 @@ describe("Cell.vue", () => {
 
   it("renders slot if isSlotted is true", () => {
     const slots = { default: "<h3>This is a Slot!</h3>" };
-    const wrapper = mount(CellRenderer, { props, slots });
+    const wrapper = mountCellRenderer({ props, slots });
     expect(wrapper.text()).toBe("Text");
     props.isSlotted = true;
-    const slottedWrapper = mount(CellRenderer, { props, slots });
+    const slottedWrapper = mountCellRenderer({ props, slots });
     expect(slottedWrapper.text()).toBe("This is a Slot!");
   });
 
@@ -60,14 +95,14 @@ describe("Cell.vue", () => {
     const slots = { default: "<h3>This is a Slot!</h3>" };
     props.isSlotted = true;
     props.noPadding = true;
-    const slottedWrapper = mount(CellRenderer, { props, slots });
+    const slottedWrapper = mountCellRenderer({ slots });
     expect(slottedWrapper.attributes("style")).not.toContain("padding-top");
     expect(slottedWrapper.attributes("style")).not.toContain("padding-bottom");
   });
 
   it("renders CircleHelpIcon if missing", () => {
     props.isMissing = true;
-    const wrapper = mount(CellRenderer, { props });
+    const wrapper = mountCellRenderer();
     expect(wrapper.findComponent(CircleHelpIcon).exists()).toBeTruthy();
     expect(wrapper.text()).toBe("");
     expect(wrapper.attributes("style")).toContain("padding-top: 13px;");
@@ -75,7 +110,7 @@ describe("Cell.vue", () => {
   });
 
   it("emits event on input", () => {
-    const wrapper = mount(CellRenderer, { props });
+    const wrapper = mountCellRenderer();
 
     wrapper.find("td").trigger("input");
     // @ts-ignore
@@ -88,14 +123,14 @@ describe("Cell.vue", () => {
   describe("onClick", () => {
     it("does not emit click event if not clickable", () => {
       props.isClickable = false;
-      const wrapper = mount(CellRenderer, { props });
+      const wrapper = mountCellRenderer();
       wrapper.find("td").trigger("click");
       expect(wrapper.emitted().click).toBeUndefined();
     });
 
     it("emits click event if clickable", () => {
       props.isClickable = true;
-      const wrapper = mount(CellRenderer, { props });
+      const wrapper = mountCellRenderer();
       expect(wrapper.classes()).toContain("clickable");
 
       wrapper.find("td").trigger("click");
@@ -109,7 +144,7 @@ describe("Cell.vue", () => {
 
   describe("width computation", () => {
     it("sets the correct width", () => {
-      const wrapper = mount(CellRenderer, { props });
+      const wrapper = mountCellRenderer();
       expect(wrapper.attributes("style")).toContain(
         `width: calc(${props.size}px)`,
       );
@@ -118,9 +153,8 @@ describe("Cell.vue", () => {
     it("sets width property for slot", () => {
       props.isSlotted = true;
       props.size = 300;
-      const wrapper = mount(CellRenderer, {
-        props,
-        slots: { default: (props) => `${JSON.stringify(props)}` },
+      const wrapper = mountCellRenderer({
+        slots: { default: (props: unknown) => `${JSON.stringify(props)}` },
       });
       expect(wrapper.text()).toContain('"width":290');
     });
@@ -128,14 +162,14 @@ describe("Cell.vue", () => {
 
   it("applies the given classes to the data", () => {
     props.classes = ["width-3"];
-    const wrapper = shallowMount(CellRenderer, { props });
+    const wrapper = shallowMountCellRenderer();
     expect(wrapper.element.classList.contains("width-1")).toBeFalsy();
     expect(wrapper.element.classList.contains("width-3")).toBeTruthy();
   });
 
   it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
     props.selectOnMove = true;
-    const wrapper = shallowMount(CellRenderer, { props });
+    const wrapper = shallowMountCellRenderer();
     wrapper.find("td").trigger("pointerover");
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted().select).toStrictEqual([
@@ -145,7 +179,7 @@ describe("Cell.vue", () => {
 
   describe("cell content dimensions", () => {
     it("returns the size of the padding as cell dimensions when the dimensions cannot be calculated", () => {
-      const wrapper = shallowMount(CellRenderer, { props });
+      const wrapper = shallowMountCellRenderer();
       expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
         height: 24,
         width: 10,
@@ -156,7 +190,7 @@ describe("Cell.vue", () => {
       Element.prototype.getBoundingClientRect = vi
         .fn()
         .mockReturnValueOnce({ width: 22.2, height: 33.3 });
-      const wrapper = shallowMount(CellRenderer, { props });
+      const wrapper = shallowMountCellRenderer();
       expect(wrapper.vm.getCellContentDimensions()).toStrictEqual({
         width: 33,
         height: 58,
@@ -165,16 +199,50 @@ describe("Cell.vue", () => {
   });
 
   describe("expand event", () => {
+    describe("in case the cell is to be expanded", () => {
+      it("closes an existing expanded view on mounted if not expandable", async () => {
+        props.isToBeExpanded = true;
+        props.enableExpand = false;
+        mountCellRenderer();
+        await flushPromises();
+        expect(providedDataValueViewData.close).toHaveBeenCalled();
+      });
+
+      it("shows this cell's expanded view on mounted if expandable", async () => {
+        props.isToBeExpanded = true;
+        props.enableExpand = true;
+        const wrapper = mountCellRenderer();
+        await flushPromises();
+        expect(wrapper.emitted("expand")).toBeDefined();
+      });
+
+      it("closes the existing expanded view on prop change if not expandable", async () => {
+        props.isToBeExpanded = false;
+        props.enableExpand = false;
+        const wrapper = mountCellRenderer();
+        await wrapper.setProps({ isToBeExpanded: true });
+        expect(providedDataValueViewData.close).toHaveBeenCalled();
+      });
+
+      it("shows this cell's expanded view on prop change if expandable", async () => {
+        props.isToBeExpanded = false;
+        props.enableExpand = true;
+        const wrapper = mountCellRenderer();
+        await wrapper.setProps({ isToBeExpanded: true });
+        expect(wrapper.emitted("expand")).toBeDefined();
+      });
+    });
+
     describe("on double click", () => {
       it("emits expand event if expand is enabled", async () => {
         props.enableExpand = true;
-        const wrapper = mount(CellRenderer, { props });
+        const wrapper = mountCellRenderer();
         await wrapper.find("td").trigger("dblclick");
         expect(wrapper.emitted("expand")).toBeTruthy();
       });
 
       it("does not emit expand if expand is not enabled", async () => {
-        const wrapper = mount(CellRenderer, { props });
+        const wrapper = mountCellRenderer();
         await wrapper.find("td").trigger("dblclick");
         expect(wrapper.emitted("expand")).toBeFalsy();
       });
@@ -183,7 +251,7 @@ describe("Cell.vue", () => {
     describe("per expand icon", () => {
       it("shows expand icon if expand is enabled", async () => {
         props.enableExpand = true;
-        const wrapper = mount(CellRenderer, { props });
+        const wrapper = mountCellRenderer();
         const expandIcon = wrapper.findComponent(ExpandIcon);
         expect(expandIcon.exists()).toBeTruthy();
         await expandIcon.trigger("click");
@@ -191,7 +259,7 @@ describe("Cell.vue", () => {
       });
 
       it("does not show expand icon if expand is not enabled", () => {
-        const wrapper = mount(CellRenderer, { props });
+        const wrapper = mountCellRenderer();
         const expandIcon = wrapper.findComponent(ExpandIcon);
         expect(expandIcon.exists()).toBeFalsy();
       });

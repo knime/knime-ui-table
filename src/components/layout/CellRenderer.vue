@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import throttle from "raf-throttle";
-import { computed, ref, type Ref } from "vue";
+import { computed, onMounted, ref, watch, type Ref } from "vue";
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import ExpandIcon from "./expand.svg";
 import type { CellRendererProps } from "./CellRendererProps";
+import useDataValueViews from "../composables/useDataValueViews";
 
 const emit = defineEmits(["click", "expand", "input", "select"]);
 const props = defineProps<CellRendererProps>();
@@ -80,6 +81,21 @@ const expandAndSelect = (event: MouseEvent) => {
   event.stopPropagation();
   event.stopImmediatePropagation();
 };
+
+const { close: closeExpandedSelectedCell } = useDataValueViews();
+
+const changeExpandedCellViewIfNecessary = () => {
+  if (props.isToBeExpanded) {
+    if (props.enableExpand) {
+      expand();
+    } else {
+      closeExpandedSelectedCell();
+    }
+  }
+};
+
+watch(() => props.isToBeExpanded, changeExpandedCellViewIfNecessary);
+onMounted(changeExpandedCellViewIfNecessary);
 </script>
 
 <template>

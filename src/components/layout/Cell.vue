@@ -94,6 +94,7 @@ defineExpose({
     :size="props.size"
     :enable-expand="!isMissing && props.hasDataValueView"
     :is-selected="props.isSelected"
+    :is-to-be-expanded="props.isToBeExpanded"
     @click="(value) => emit('click', value)"
     @expand="() => emit('dataValueView')"
     @select="(value) => emit('select', value)"
