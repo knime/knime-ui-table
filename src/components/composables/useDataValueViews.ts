@@ -9,7 +9,7 @@ export const injectionKey: InjectionKey<{
   close: () => void;
 }> = Symbol("dataValueViewsIsShown");
 
-export default () => inject(injectionKey)!;
+export const useDataValueViews = () => inject(injectionKey)!;
 
 export const provideDataValueViewsIsShown = (
   tableConfig: Ref<TableConfig>,

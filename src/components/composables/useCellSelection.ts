@@ -33,7 +33,7 @@ export type Rect = { x: MinMax; y: MinMax };
 
 export type RectId = number;
 
-export default (enableCellSelection: Ref<boolean>) => {
+export const useCellSelection = (enableCellSelection: Ref<boolean>) => {
   const cellRect = ref<CellRect | null>(null);
   const currentRectId: Ref<RectId | null> = ref(null);
 

@@ -10,10 +10,10 @@ import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import type { Ref, PropType } from "vue";
 import { ref, toRefs, computed, inject } from "vue";
 import { isMissingValue } from "@/util";
-import useDropdownFloating from "./composables/useDropdownFloating";
+import { useDropdownFloating } from "./composables/useDropdownFloating";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
-import useIdGeneration from "./composables/useIdGeneration";
-import useScrollToElement from "./composables/useScrollToElement";
+import { useIdGeneration } from "./composables/useIdGeneration";
+import { useScrollToElement } from "./composables/useScrollToElement";
 import type PossibleValue from "@/types/PossibleValue";
 
 /**

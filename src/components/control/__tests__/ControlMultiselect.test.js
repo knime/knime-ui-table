@@ -23,15 +23,15 @@ const dropdownFloating = {
   update: vi.fn(),
 };
 vi.mock("../composables/useDropdownFloating", () => ({
-  default: vi.fn(() => dropdownFloating),
+  useDropdownFloating: vi.fn(() => dropdownFloating),
 }));
 const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
-  default: vi.fn(() => scrollToElement),
+  useScrollToElement: vi.fn(() => scrollToElement),
 }));
 
-import useDropdownFloating from "../composables/useDropdownFloating";
-import useScrollToElement from "../composables/useScrollToElement";
+import { useDropdownFloating } from "../composables/useDropdownFloating";
+import { useScrollToElement } from "../composables/useScrollToElement";
 import { useClickOutside, useDropdownNavigation } from "@knime/components";
 
 window.scrollTo = vi.fn();

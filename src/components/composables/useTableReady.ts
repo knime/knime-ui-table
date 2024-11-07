@@ -1,6 +1,6 @@
 import { computed, ref, nextTick, watchEffect } from "vue";
 
-export default ({ onReady }: { onReady: () => void }) => {
+export const useTableReady = ({ onReady }: { onReady: () => void }) => {
   const autoSizesInitialized = ref(false);
   const availableWidthInitialized = ref(false);
 

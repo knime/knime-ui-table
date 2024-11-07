@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
 import "../assets/main.css";
-import useAvailableWidth from "./composables/useAvailableWidth";
+import { useAvailableWidth } from "./composables/useAvailableWidth";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import type TableConfig from "@/types/TableConfig";
 import type { DataItem } from "./TableUI.vue";

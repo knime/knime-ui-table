@@ -2,7 +2,7 @@ import { onMounted, onUnmounted, ref, type Ref } from "vue";
 import { navigatorUtils } from "@knime/utils";
 import type CellSelectionOverlay from "../ui/CellSelectionOverlay.vue";
 
-export default ({
+export const useCellCopying = ({
   selectionOverlay,
   onCopy,
 }: {

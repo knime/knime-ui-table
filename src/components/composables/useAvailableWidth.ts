@@ -77,7 +77,7 @@ const useScrollbarWidth = (scrolledElement: Ref<null | HTMLElement>) => {
   return currentScrollBarWidth;
 };
 
-export default ({
+export const useAvailableWidth = ({
   emitAvailableWidth,
   specialColumnsSizeTotal,
   refs: { scrolledElement },

@@ -1,7 +1,7 @@
 import { computed, type Ref } from "vue";
 import { v4 as uuidv4 } from "uuid";
 
-export default (
+export const useIdGeneration = (
   ids: Ref<string[]>,
   selectedIndex: Ref<null | number>,
   nodeTitle: string,

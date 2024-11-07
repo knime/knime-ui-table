@@ -4,7 +4,7 @@ type UseFloatingParams = Parameters<typeof useFloating>;
 type ReferenceType = UseFloatingParams[0];
 type FloatingType = UseFloatingParams[1];
 
-export default (
+export const useDropdownFloating = (
   reference: ReferenceType,
   floating: FloatingType,
   openUp: boolean = false,

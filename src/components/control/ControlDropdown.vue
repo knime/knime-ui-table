@@ -4,12 +4,12 @@ import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import { ref, computed, toRefs, inject } from "vue";
 import type { Ref, PropType } from "vue";
 import { isMissingValue } from "@/util";
-import useDropdownFloating from "./composables/useDropdownFloating";
+import { useDropdownFloating } from "./composables/useDropdownFloating";
 import { useDropdownNavigation, useClickOutside } from "@knime/components";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
 import type PossibleValue from "@/types/PossibleValue";
-import useIdGeneration from "./composables/useIdGeneration";
-import useScrollToElement from "./composables/useScrollToElement";
+import { useIdGeneration } from "./composables/useIdGeneration";
+import { useScrollToElement } from "./composables/useScrollToElement";
 
 /**
  * A dropdown component specifically styled for the top and bottom control bars of the table

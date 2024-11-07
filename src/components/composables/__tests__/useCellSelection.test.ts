@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import useCellSelection, {
+import {
+  useCellSelection,
   type CellPosition,
   type Rect,
   type RectId,

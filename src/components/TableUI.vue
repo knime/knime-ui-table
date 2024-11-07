@@ -9,13 +9,14 @@ import ActionButton from "./ui/ActionButton.vue";
 import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import { useTotalWidth } from "./composables/useAvailableWidth";
-import useCellSelection, {
+import {
+  useCellSelection,
   CellPosition,
   type Rect,
   type RectId,
 } from "./composables/useCellSelection";
-import useCellCopying from "./composables/useCellCopying";
-import useBoolean from "./composables/useBoolean";
+import { useCellCopying } from "./composables/useCellCopying";
+import { useBoolean } from "./composables/useBoolean";
 
 import type DataConfig from "@/types/DataConfig";
 

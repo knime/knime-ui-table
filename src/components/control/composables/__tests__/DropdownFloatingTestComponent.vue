@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import useDropdownFloating from "../../composables/useDropdownFloating";
+import { useDropdownFloating } from "../../composables/useDropdownFloating";
 
 const props = defineProps({
   openUp: {

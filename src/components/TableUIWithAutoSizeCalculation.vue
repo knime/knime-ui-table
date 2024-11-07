@@ -20,7 +20,7 @@ import {
   MIN_ROW_HEIGHT,
   MAX_AUTO_ROW_HEIGHT,
 } from "../util/constants";
-import useTableReady from "./composables/useTableReady";
+import { useTableReady } from "./composables/useTableReady";
 import { isEqual } from "lodash-es";
 import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";

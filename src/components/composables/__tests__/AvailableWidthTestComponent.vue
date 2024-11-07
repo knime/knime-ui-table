@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toRef, type Ref } from "vue";
-import useAvailableWidth, { useTotalWidth } from "../useAvailableWidth";
+import { useAvailableWidth, useTotalWidth } from "../useAvailableWidth";
 
 const props = defineProps({
   specialColumnsSizeTotal: {

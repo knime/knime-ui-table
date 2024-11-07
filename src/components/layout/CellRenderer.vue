@@ -4,7 +4,7 @@ import { computed, onMounted, ref, watch, type Ref } from "vue";
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import ExpandIcon from "./expand.svg";
 import type { CellRendererProps } from "./CellRendererProps";
-import useDataValueViews from "../composables/useDataValueViews";
+import { useDataValueViews } from "../composables/useDataValueViews";
 
 const emit = defineEmits(["click", "expand", "input", "select"]);
 const props = defineProps<CellRendererProps>();

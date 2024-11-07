@@ -16,7 +16,8 @@ import Row from "@/components/layout/Row.vue";
 import ActionButton from "@/components/ui/ActionButton.vue";
 import TablePopover from "@/components/popover/TablePopover.vue";
 import { columnTypes } from "@/config/table.config";
-import useAvailableWidth, {
+import {
+  useAvailableWidth,
   useTotalWidth,
 } from "../composables/useAvailableWidth";
 import { unref, nextTick } from "vue";
@@ -36,7 +37,7 @@ const availableWidthMock = {
 };
 const totalWidthMock = 150;
 vi.mock("../composables/useAvailableWidth", () => ({
-  default: vi.fn(() => availableWidthMock),
+  useAvailableWidth: vi.fn(() => availableWidthMock),
   useTotalWidth: vi.fn(() => totalWidthMock),
 }));
 

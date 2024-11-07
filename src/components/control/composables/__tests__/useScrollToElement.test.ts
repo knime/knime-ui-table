@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, expect, vi } from "vitest";
 import { ref } from "vue";
-import useScrollToElement from "../useScrollToElement";
+import { useScrollToElement } from "../useScrollToElement";
 
 describe("useScrollToElement", () => {
   let toggleButton: HTMLElement,

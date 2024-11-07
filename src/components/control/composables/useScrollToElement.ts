@@ -13,7 +13,7 @@ const getPositionRelativeToRoot = (element: HTMLElement) => {
 
 // A composable for making an element which is inside a list of elemnts inside a
 // popover visible on the screen by scrolling the popover and the window if necessary.
-export default ({
+export const useScrollToElement = ({
   toggleButton,
 }: {
   toggleButton: Ref<HTMLElement | null>;

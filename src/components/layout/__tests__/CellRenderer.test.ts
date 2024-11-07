@@ -5,7 +5,8 @@ import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import CellRenderer from "../CellRenderer.vue";
 import ExpandIcon from "../expand.svg";
 import type { CellRendererProps } from "../CellRendererProps";
-import useDataValueViews, {
+import {
+  useDataValueViews,
   injectionKey as injectionKeyDataValueViews,
 } from "@/components/composables/useDataValueViews";
 import { ref } from "vue";

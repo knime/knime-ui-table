@@ -1,6 +1,6 @@
 import { reactive, ref } from "vue";
 
-export default (initialValue = false) => {
+export const useBoolean = (initialValue = false) => {
   const state = ref(initialValue);
   const setTrue = () => {
     state.value = true;
