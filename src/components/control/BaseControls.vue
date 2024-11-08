@@ -50,6 +50,7 @@ export default {
       :current-page="pageConfig.currentPage"
       :column-count="pageConfig.columnCount"
       :show-table-size="pageConfig.showTableSize"
+      :show-only-row-count="pageConfig.showOnlyRowCount"
       @next-page="onNextPage"
       @prev-page="onPrevPage"
     />

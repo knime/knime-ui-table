@@ -46,6 +46,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    showOnlyRowCount: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["nextPage", "prevPage"],
   computed: {
@@ -86,6 +90,7 @@ export default {
       :show-table-size="showTableSize"
       :page-range-start="pageRangeStart"
       :page-range-end="pageRangeEnd"
+      :show-only-row-count="showOnlyRowCount"
     />
     <FunctionButton
       v-if="showPageControls && (hasNextPage || hasPreviousPage)"
