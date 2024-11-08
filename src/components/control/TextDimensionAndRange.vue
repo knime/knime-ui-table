@@ -55,7 +55,7 @@ export default {
       );
     },
     showColumnCount() {
-      return this.columnCount !== null && !this.showOnlyRowCount;
+      return this.columnCount && !this.showOnlyRowCount;
     },
   },
 };

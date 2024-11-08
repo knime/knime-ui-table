@@ -82,4 +82,25 @@ describe("TextDimensionAndRange.vue", () => {
     await wrapper.setProps({ showTableSize: false });
     expect(wrapper.text()).toBe("");
   });
+
+  it("only shows 'Count: ...'", async () => {
+    wrapper = shallowMount(TextDimensionAndRange, {
+      props: {
+        totalItems: 16,
+        currentItems: 16,
+        pageSize: 25,
+        currentPage: 1,
+        columnCount: 4,
+        showTableSize: true,
+        pageRangeStart: 1,
+        pageRangeEnd: 25,
+        showOnlyRowCount: true,
+      },
+    });
+    expect(wrapper.text()).toContain("Count: 16");
+    await wrapper.setProps({ currentItems: 0 });
+    expect(wrapper.text()).toContain("No data (16 hidden)");
+    await wrapper.setProps({ showTableSize: false });
+    expect(wrapper.text()).toBe("");
+  });
 });
