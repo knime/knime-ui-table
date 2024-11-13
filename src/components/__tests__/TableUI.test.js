@@ -1707,18 +1707,19 @@ describe("TableUI.vue", () => {
       expect(wrapper.emitted("dataValueView")).toStrictEqual([
         [
           {
-            anchor: {
-              bottom: 0,
-              height: 0,
-              left: 0,
-              right: 0,
-              top: 0,
-              width: 0,
-              x: 0,
-              y: 0,
-            },
-            colIndex: 0,
-            rowIndex: 0,
+            indexInInput: 0,
+            isTop: true,
+          },
+          0,
+          {
+            bottom: 0,
+            height: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            width: 0,
+            x: 0,
+            y: 0,
           },
         ],
       ]);
@@ -1746,8 +1747,13 @@ describe("TableUI.vue", () => {
         await selectCell(wrapper);
         await wrapper.find("tbody").trigger("keydown", { key });
         await flushPromises();
-        expect(wrapper.emitted("dataValueView")[0][0]).toStrictEqual({
-          anchor: {
+        expect(wrapper.emitted("dataValueView")[0]).toStrictEqual([
+          {
+            indexInInput: 0,
+            isTop: true,
+          },
+          0,
+          {
             bottom: 0,
             height: 0,
             left: 0,
@@ -1757,9 +1763,7 @@ describe("TableUI.vue", () => {
             x: 0,
             y: 0,
           },
-          colIndex: 0,
-          rowIndex: 0,
-        });
+        ]);
       },
     );
 
@@ -1803,10 +1807,14 @@ describe("TableUI.vue", () => {
         // ArrowDown leads to an expandable cell, since column a has data value views
         await wrapper.find("tbody").trigger("keydown", { key: "ArrowDown" });
         await flushPromises();
-        expect(wrapper.emitted("dataValueView")[0][0]).toMatchObject({
-          colIndex: 0,
-          rowIndex: 1,
-        });
+        expect(wrapper.emitted("dataValueView")[0]).toStrictEqual([
+          {
+            indexInInput: 1,
+            isTop: true,
+          },
+          0,
+          expect.objectContaining({}),
+        ]);
       });
 
       it("closes the current data value view when navigating to a non-expandable cell", async () => {

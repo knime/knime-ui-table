@@ -34,10 +34,7 @@ import type TableConfig from "@/types/TableConfig";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
 import type { MenuItem } from "@knime/components";
 import type FilterConfig from "@/types/FilterConfig";
-import {
-  DataValueViewConfig,
-  VirtualElementAnchor,
-} from "@/types/DataValueView";
+import { VirtualElementAnchor } from "@/types/DataValueView";
 import { provideDataValueViewsIsShown } from "./composables/useDataValueViews";
 
 export type DataItem =
@@ -208,7 +205,11 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
-    dataValueView: (config: DataValueViewConfig) => true,
+    dataValueView: (
+      row: { indexInInput: number; isTop: boolean },
+      columnIndex: number,
+      rect: VirtualElementAnchor,
+    ) => true,
     closeDataValueView: () => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
@@ -584,13 +585,9 @@ export default {
       rowInd: number,
       anchor: VirtualElementAnchor,
     ) {
-      const config: DataValueViewConfig = {
-        rowIndex: this.resolveRowIndex(rowInd).indexInInput,
-        colIndex: cellInd,
-        anchor,
-      };
+      const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
       this.toBeShownCell = null;
-      this.$emit("dataValueView", config);
+      this.$emit("dataValueView", { indexInInput, isTop }, cellInd, anchor);
     },
     onRowSelect(selected: boolean, rowInd: number, groupInd: number) {
       const { indexInInput, isTop } = this.resolveRowIndex(rowInd);
