@@ -1,7 +1,7 @@
 {
   "name": "@knime/knime-ui-table",
   "type": "module",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "description": "Data Table for KNIME",
   "author": "KNIME AG, Zurich, Switzerland",
   "license": "See the file license.txt",
@@ -25,9 +25,9 @@
     "prepare": "husky && license-check -c"
   },
   "dependencies": {
-    "@knime/components": "1.0.5",
-    "@knime/styles": "1.0.0",
-    "@knime/utils": "1.0.4",
+    "@knime/components": "1.7.2",
+    "@knime/styles": "1.1.1",
+    "@knime/utils": "1.1.1",
     "@knime/vue-headless-virtual-scroller": "0.1.2",
     "lodash-es": "4.17.21",
     "raf-throttle": "2.0.6",
