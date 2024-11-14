@@ -316,6 +316,14 @@ describe("Table.vue", () => {
     });
   });
 
+  it("generates the correct data config with fixed column sizes", () => {
+    const { wrapper } = doMount({
+      customProps: { columnsWithFixedSizes: { a: 100 } },
+    });
+
+    expect(wrapper.vm.getCurrentAllColumnSizes()).toEqual([100, -1]);
+  });
+
   describe("component lifecycle", () => {
     it("creates internally required index reference lists on creation", () => {
       const { wrapper } = doMount();

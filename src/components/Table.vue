@@ -125,6 +125,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    enableColumnResizing: {
+      type: Boolean,
+      default: false,
+    },
     autoSizeColumnsToContent: Boolean,
     autoSizeColumnsToContentInclHeaders: Boolean,
     autoSizeRowsToContent: Boolean,
@@ -160,6 +164,14 @@ export default {
       type: Array,
       default: () => [],
     },
+    currentGroupName: {
+      type: String,
+      default: null,
+    },
+    columnsWithFixedSizes: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   emits: ["tableSelect", "tableInput", "headerSubMenuSelect"],
   data() {
@@ -180,7 +192,7 @@ export default {
       // Control State
       // column selection
       currentAllColumnOrder: this.allColumnKeys.map((item, colInd) => colInd),
-      currentAllColumnSizes: Array(this.allColumnKeys.length).fill(-1),
+      currentAllColumnSizes: this.getCurrentAllColumnSizes(),
       currentSetDefaultColumnSize: null,
       currentAvailableWidth: 0,
       currentColumns: this.defaultColumns
@@ -190,7 +202,7 @@ export default {
       // time filter
       currentTimeFilter: this.timeFilterKey ? defaultTimeFilter : null,
       // group-by
-      currentGroup: null,
+      currentGroup: this.currentGroupName,
       groupTitles: [],
       // search
       searchQuery: "",
@@ -287,7 +299,7 @@ export default {
         reserveSpaceForSubMenu: this.reserveSpaceForSubMenu,
         groupSubMenuItems: this.groupSubMenuItems,
         enableVirtualScrolling: this.enableVirtualScrolling,
-        enableColumnResizing: false,
+        enableColumnResizing: this.enableColumnResizing,
         pageConfig: {
           tableSize: this.totalTableSize,
           currentSize: this.currentTableSize,
@@ -316,7 +328,7 @@ export default {
       if (this.showGroupBy) {
         tableConfig.groupByConfig = {
           possibleGroups: this.allGroups,
-          currentGroup: this.currentGroup,
+          currentGroup: this.currentGroupName,
           currentGroupValues: this.groupTitles,
         };
       }
@@ -922,12 +934,32 @@ export default {
     },
     onAutoColumnSizesUpdate(newAutoColumnSizes) {
       this.allColumnKeys.forEach((columnKey, columnIndex) => {
-        this.currentAllColumnSizes[columnIndex] =
-          newAutoColumnSizes[columnKey] || -1;
+        if (this.columnsWithFixedSizes.hasOwnProperty(columnKey)) {
+          this.currentAllColumnSizes[columnIndex] =
+            this.columnsWithFixedSizes[columnKey];
+        } else {
+          this.currentAllColumnSizes[columnIndex] =
+            newAutoColumnSizes[columnKey] || -1;
+        }
       });
     },
     onAutoRowHeightUpdate(newAutoRowHeight) {
       this.currentRowHeight = newAutoRowHeight;
+    },
+    getCurrentAllColumnSizes() {
+      // Initialize currentAllColumnSizes with default values
+      let currentAllColumnSizes = Array(this.allColumnKeys.length).fill(-1);
+
+      // Set the sizes for specific columns
+      Object.entries(this.columnsWithFixedSizes).forEach(
+        ([columnId, columnSize]) => {
+          const columnIndex = this.allColumnKeys.indexOf(columnId);
+          if (columnIndex !== -1) {
+            currentAllColumnSizes[columnIndex] = columnSize;
+          }
+        },
+      );
+      return currentAllColumnSizes;
     },
   },
 };
