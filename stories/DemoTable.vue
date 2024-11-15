@@ -99,6 +99,10 @@ const props = defineProps({
   enableVirtualScrolling: Boolean,
   fixHeader: Boolean,
   showTableSize: Boolean,
+  rowLabel: {
+    type: String,
+    default: "",
+  },
   containerHeight: {
     type: String,
     default: "",
@@ -371,6 +375,7 @@ const pageConfig = reactive({
   pageSize: currentPageSize,
   possiblePageSizes: tablePageSizes,
   showTableSize: props.showTableSize,
+  rowLabel: props.rowLabel,
   currentPage,
   fixHeader: props.fixHeader,
 });

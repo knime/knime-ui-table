@@ -94,7 +94,7 @@ describe("TextDimensionAndRange.vue", () => {
         showTableSize: true,
         pageRangeStart: 1,
         pageRangeEnd: 25,
-        showOnlyRowCount: true,
+        rowLabel: "Count",
       },
     });
     expect(wrapper.text()).toContain("Count: 16");

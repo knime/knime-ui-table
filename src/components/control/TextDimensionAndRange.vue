@@ -38,9 +38,9 @@ export default {
       type: Number,
       default: 0,
     },
-    showOnlyRowCount: {
-      type: Boolean,
-      default: false,
+    rowLabel: {
+      type: String,
+      default: "Rows",
     },
   },
   computed: {
@@ -53,9 +53,6 @@ export default {
         this.totalItems > 0 &&
         this.currentItems > 0
       );
-    },
-    showColumnCount() {
-      return this.columnCount && !this.showOnlyRowCount;
     },
   },
 };
@@ -70,11 +67,10 @@ export default {
       No data {{ `${totalItems ? `(${totalItems} hidden)` : ""}` }}
     </span>
     <template v-else>
-      <span v-if="showOnlyRowCount"> Count: {{ currentItems }} </span>
-      <span v-else-if="!hasMultiplePages"> Rows: {{ currentItems }} </span>
+      <span v-if="!hasMultiplePages"> {{ rowLabel }}: {{ currentItems }} </span>
       <span v-else-if="shouldAppendTotalItems"> ({{ totalItems }} total) </span>
     </template>
-    <span v-if="showColumnCount">
+    <span v-if="columnCount">
       {{ `   |   Columns: ${columnCount}` }}
     </span>
   </template>

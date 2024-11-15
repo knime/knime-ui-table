@@ -9,7 +9,7 @@ export interface PageConfig {
   possiblePageSizes?: number[];
   showTableSize?: boolean;
   showPageControls?: boolean;
-  showOnlyRowCount?: boolean;
+  rowLabel?: string;
 }
 
 export interface SortConfig {

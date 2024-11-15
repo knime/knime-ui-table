@@ -123,6 +123,12 @@ export default {
         category: "Header",
       },
     },
+    rowLabel: {
+      name: "RowLabel",
+      table: {
+        category: "Header",
+      },
+    },
     withSelection: {
       name: "Row Selection",
       table: {
@@ -430,6 +436,7 @@ TableView.args = {
   checkboxSettings: ["I am a custom checkbox title", "I am another one"],
   showCollapser: false,
   showSubHeaders: true,
+  rowLabel: "Rows",
   withSelection: true,
   withCellSelection: true,
   withCellExpansion: true,
