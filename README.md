@@ -85,6 +85,10 @@ npm run build
 
 Results are saved to `/dist`.
 
+## Publishing
+
+Once a pull request was created and the BitBucket pipeline built successfully, make sure to hit the "Deploy" button responsible for "publish patch version to npm". This will increase the package's version counter and make the new version public and available via `npm install`.
+
 ## Using the KNIME-Table in a Vue application
 
 Install [@knime/knime-ui-table] npm package as dependency:
