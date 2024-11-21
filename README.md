@@ -87,7 +87,7 @@ Results are saved to `/dist`.
 
 ## Publishing
 
-Once a pull request was created and the BitBucket pipeline built successfully, make sure to hit the "Deploy" button responsible for "publish patch version to npm". This will increase the package's version counter and make the new version public and available via `npm install`.
+Once a pull request was created and the BitBucket pipeline built successfully, make sure to hit the "Deploy" button responsible for "publish patch version to npm". This will automatically create an extra version bump commit which must be included when finally merging the pull request to `master`.
 
 ## Using the KNIME-Table in a Vue application
 
