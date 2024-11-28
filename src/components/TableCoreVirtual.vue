@@ -100,6 +100,10 @@ watch(
     if (Number.isNaN(endIndex) || Number.isNaN(startIndex)) {
       return;
     }
+
+    // Debug
+    consola.info("scroller update event:", { startIndex, endIndex });
+
     emit("scrollerUpdate", startIndex, endIndex);
   },
   { immediate: true },
