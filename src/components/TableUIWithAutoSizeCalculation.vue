@@ -97,6 +97,16 @@ export default {
     };
   },
   computed: {
+    /**
+     * Needed for a combined watcher for changes in case we change both
+     * option parts at the same time.
+     */
+    combinedOptions() {
+      return {
+        columns: this.autoColumnSizesOptions,
+        rows: this.autoRowHeightOptions,
+      };
+    },
     mountTableUIForAutoSizeCalculation() {
       return this.data !== null && this.calculateSizes;
     },
@@ -192,18 +202,14 @@ export default {
     },
   },
   watch: {
-    autoColumnSizesOptions: {
+    combinedOptions: {
       handler(newVal, oldVal) {
-        if (!isEqual(newVal, oldVal)) {
-          this.triggerCalculationOfAutoSizes();
-        }
-      },
-      deep: true,
-    },
-    autoRowHeightOptions: {
-      handler(newVal, oldVal) {
-        if (!isEqual(newVal, oldVal)) {
+        const columnsIsEqual = isEqual(newVal.columns, oldVal.columns);
+        const rowsIsEqual = isEqual(newVal.rows, oldVal.rows);
+        if (!rowsIsEqual && columnsIsEqual) {
           this.useSavedColumnSizes = true;
+        }
+        if (!rowsIsEqual || !columnsIsEqual) {
           this.triggerCalculationOfAutoSizes();
         }
       },

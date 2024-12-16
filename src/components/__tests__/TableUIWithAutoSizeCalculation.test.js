@@ -477,6 +477,33 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
         );
       },
     );
+
+    it("does not use saved column sizes if row options are changed but also column options are changed at the same time", async () => {
+      const wrapper = shallowMount(TableUIWithAutoSizeCalculation, context);
+      const {
+        triggerCalculationSpy,
+        setAutoColumnSizesSpy,
+        setAutoRowHeightsSpy,
+        calculateAutoSizesSpy,
+      } = createSpies(wrapper);
+      await loadFonts(wrapper);
+
+      await wrapper.setProps({
+        autoColumnSizesOptions: {
+          ...props.autoColumnSizesOptions,
+          fixedSizes: { a: 40, b: 60 },
+        },
+        autoRowHeightOptions: {
+          ...props.autoRowHeightOptions,
+          fixedHeights: { a: 40, b: 60 },
+        },
+      });
+
+      expect(triggerCalculationSpy).toHaveBeenCalledTimes(1);
+      expect(calculateAutoSizesSpy).toHaveBeenCalledTimes(2);
+      expect(setAutoColumnSizesSpy).toHaveBeenCalledTimes(1);
+      expect(setAutoRowHeightsSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("auto column sizes", () => {
