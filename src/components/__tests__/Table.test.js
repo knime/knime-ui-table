@@ -800,6 +800,7 @@ describe("Table.vue", () => {
           expect(wrapper.vm.autoRowHeightOptions).toStrictEqual({
             fixedHeights: {},
             calculate: autoSizeRowsToContent,
+            maxHeight: 120,
           });
         },
       );
