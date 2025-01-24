@@ -498,6 +498,7 @@ export default {
       return {
         fixedHeights: {},
         calculate: this.autoSizeRowsToContent,
+        maxHeight: 120,
       };
     },
     reserveSpaceForSubMenu() {

@@ -13,11 +13,9 @@ import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vu
 import AutoSizeTestWrapperComponent from "./AutoSizeTestWrapperComponent.vue";
 
 import TableUI from "../TableUI.vue";
-import {
-  MAX_AUTO_COLUMN_SIZE,
-  MAX_AUTO_ROW_HEIGHT,
-  MIN_ROW_HEIGHT,
-} from "@/util/constants";
+import { MAX_AUTO_COLUMN_SIZE, MIN_ROW_HEIGHT } from "@/util/constants";
+
+const MAX_AUTO_ROW_HEIGHT = 120;
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
   let props, tableUIStub, context, refreshScrollerMock, clearCellSelectionMock;
@@ -76,6 +74,7 @@ describe("TableUIWithAutoSizeCalculation.vue", () => {
       autoRowHeightOptions: {
         calculate: true,
         fixedHeights: {},
+        maxHeight: MAX_AUTO_ROW_HEIGHT,
       },
     };
 

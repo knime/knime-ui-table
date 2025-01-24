@@ -2,8 +2,8 @@
 /**
  * This component contains the ability to size the columns in the tableUI according to the width of their content by
  * enforcing a maximum size of MAX_AUTO_COLUMN_SIZE. It takes the same props as the TableUI.vue and one additional prop,
- * the options for the calculation. The automatic row height relies on the column sizes and by enforcing a maximum
- * height of MAX_AUTO_ROW_HEIGHT.
+ * the options for the calculation. The automatic row height relies on the column sizes and enforces a maximum
+ * height given by the auto row height options.
  * To trigger the calculation of the auto sizes, the corresponding trigger method can be called from the parent. The
  * method is automatically called from within this component when:
  *  - the component is mounted
@@ -18,7 +18,6 @@ import {
   MIN_COLUMN_SIZE,
   MAX_AUTO_COLUMN_SIZE,
   MIN_ROW_HEIGHT,
-  MAX_AUTO_ROW_HEIGHT,
 } from "../util/constants";
 import { useTableReady } from "./composables/useTableReady";
 import { isEqual } from "lodash-es";
@@ -72,6 +71,7 @@ export default {
       type: Object as PropType<{
         calculate: boolean;
         fixedHeights: SizeByColumn;
+        maxHeight: number;
       }>,
       default: () => ({}),
     },
@@ -198,7 +198,10 @@ export default {
       );
       return rowHeights.length === 0
         ? null
-        : Math.min(Math.max(...rowHeights), MAX_AUTO_ROW_HEIGHT);
+        : Math.min(
+            Math.max(...rowHeights),
+            this.autoRowHeightOptions.maxHeight,
+          );
     },
   },
   watch: {
