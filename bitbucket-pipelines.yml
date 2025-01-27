@@ -13,7 +13,7 @@ definitions:
           - node
           - sonar
           - docker # used by sonar pipes
-        size: 2x # more memory to accomodate docker container for sonarcloud
+        size: 4x # more memory to accomodate docker container for sonarcloud
         script:
           - npm ci
           - npm run ci:lint-format
@@ -37,7 +37,7 @@ pipelines:
           name: "publish patch version to npm"
           trigger: manual
           deployment: production
-          size: 2x # TODO figure out how to reduce this back to 1, if possible, needed because of global docker memory assignment
+          size: 4x # TODO figure out how to reduce this back to 1, if possible, needed because of global docker memory assignment
           script:
             - npm version patch -m "Bump version to %s [skip ci]"
             - git push && git push --tags
