@@ -25,9 +25,9 @@
     "prepare": "husky && license-check -c"
   },
   "dependencies": {
-    "@knime/components": "1.7.2",
+    "@knime/components": "1.15.6",
     "@knime/styles": "1.1.1",
-    "@knime/utils": "1.1.1",
+    "@knime/utils": "1.2.4",
     "@knime/vue-headless-virtual-scroller": "0.1.2",
     "lodash-es": "4.17.21",
     "raf-throttle": "2.0.6",
