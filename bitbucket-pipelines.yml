@@ -1,4 +1,4 @@
-image: node:20.11.1
+image: node:22.11.0
 
 definitions:
   services:
