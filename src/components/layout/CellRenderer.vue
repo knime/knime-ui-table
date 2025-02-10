@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { type Ref, computed, onMounted, ref, watch } from "vue";
 import throttle from "raf-throttle";
-import { computed, onMounted, ref, watch, type Ref } from "vue";
+
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
-import ExpandIcon from "./expand.svg";
-import type { CellRendererProps } from "./CellRendererProps";
+
 import { useDataValueViews } from "../composables/useDataValueViews";
+
+import type { CellRendererProps } from "./CellRendererProps";
+import ExpandIcon from "./expand.svg";
 
 const emit = defineEmits(["click", "expand", "input", "select"]);
 const props = defineProps<CellRendererProps>();

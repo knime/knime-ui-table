@@ -1,9 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { mount, shallowMount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ref, unref } from "vue";
+import { mount, shallowMount } from "@vue/test-utils";
+
+import { useClickOutside, useDropdownNavigation } from "@knime/components";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 
 import ControlDropdown from "../ControlDropdown.vue";
-import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import { useDropdownFloating } from "../composables/useDropdownFloating";
+import { useScrollToElement } from "../composables/useScrollToElement";
 
 const dropdownNavigation = {
   currentIndex: ref(1),
@@ -25,10 +29,6 @@ const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
   useScrollToElement: vi.fn(() => scrollToElement),
 }));
-
-import { useDropdownFloating } from "../composables/useDropdownFloating";
-import { useScrollToElement } from "../composables/useScrollToElement";
-import { useClickOutside, useDropdownNavigation } from "@knime/components";
 
 describe("ControlDropdown.vue", () => {
   let props;

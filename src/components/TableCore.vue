@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
+
 import "../assets/main.css";
-import { useAvailableWidth } from "./composables/useAvailableWidth";
-import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
-import type TableConfig from "@/types/TableConfig";
-import type { DataItem } from "./TableUI.vue";
 import type { MenuItem } from "@knime/components";
-import TableCoreVirtual from "./TableCoreVirtual.vue";
+
+import type TableConfig from "@/types/TableConfig";
+import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
+
 import TableCoreGroups from "./TableCoreGroups.vue";
+import TableCoreVirtual from "./TableCoreVirtual.vue";
+import type { DataItem } from "./TableUI.vue";
+import { useAvailableWidth } from "./composables/useAvailableWidth";
 import { provideCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
 
 const props = defineProps<{

@@ -1,6 +1,6 @@
 <script>
-import DropdownIcon from "@knime/styles/img/icons/arrow-next.svg";
 import { BaseButton } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-next.svg";
 
 /**
  * Table data element wrapper for the animated collapser icon and it's animation.

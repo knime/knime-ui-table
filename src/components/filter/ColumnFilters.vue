@@ -1,13 +1,16 @@
 <script lang="ts">
-import ControlMultiselect from "../control/ControlMultiselect.vue";
-import FilterInputField from "./FilterInputField.vue";
-import ControlDropdown from "../control/ControlDropdown.vue";
-import type FilterConfig from "@/types/FilterConfig";
+import { type PropType, toRef } from "vue";
+
 import { FunctionButton } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
+
+import type FilterConfig from "@/types/FilterConfig";
 import { MIN_COLUMN_SIZE } from "@/util/constants";
-import { toRef, type PropType } from "vue";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+import ControlDropdown from "../control/ControlDropdown.vue";
+import ControlMultiselect from "../control/ControlMultiselect.vue";
+
+import FilterInputField from "./FilterInputField.vue";
 
 /**
  * A table header element which dynamically created table data elements containing

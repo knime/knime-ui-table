@@ -1,17 +1,18 @@
 /* eslint-disable max-lines */
-import { describe, it, expect, beforeEach } from "vitest";
-import { shallowMount, mount } from "@vue/test-utils";
-
-import Row from "../Row.vue";
-import Cell from "../Cell.vue";
-import CollapserToggle from "@/components/ui/CollapserToggle.vue";
-import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
-import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
-import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
-import { injectionKey as useDataValueViewsInjectionKey } from "@/components/composables/useDataValueViews";
-import ExpandIcon from "../expand.svg";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ref } from "vue";
+import { mount, shallowMount } from "@vue/test-utils";
+
+import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
+
+import { injectionKey as useDataValueViewsInjectionKey } from "@/components/composables/useDataValueViews";
+import CollapserToggle from "@/components/ui/CollapserToggle.vue";
+import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../../composables/useCloseSubMenusOnScroll";
+import Cell from "../Cell.vue";
+import Row from "../Row.vue";
+import ExpandIcon from "../expand.svg";
 
 describe("Row.vue", () => {
   let wrapper;

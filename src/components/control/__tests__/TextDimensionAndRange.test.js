@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import TextDimensionAndRange from "../TextDimensionAndRange.vue";
-
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+
+import TextDimensionAndRange from "../TextDimensionAndRange.vue";
 
 describe("TextDimensionAndRange.vue", () => {
   let wrapper;

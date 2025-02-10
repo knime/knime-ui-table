@@ -1,31 +1,32 @@
 /* eslint-disable vitest/max-nested-describe */
 /* eslint-disable max-lines */
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { nextTick, unref } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import TableUI from "../TableUI.vue";
-import TableCore from "../TableCore.vue";
-import TopControls from "@/components/control/TopControls.vue";
-import PageControls from "@/components/control/PageControls.vue";
+import { SubMenu } from "@knime/components";
+
 import BottomControls from "@/components/control/BottomControls.vue";
+import PageControls from "@/components/control/PageControls.vue";
+import TopControls from "@/components/control/TopControls.vue";
 import ColumnFilters from "@/components/filter/ColumnFilters.vue";
-import Header from "@/components/layout/Header.vue";
 import Group from "@/components/layout/Group.vue";
-import SelectedCellsOverlay from "@/components/ui/CellSelectionOverlay.vue";
+import Header from "@/components/layout/Header.vue";
 import Row from "@/components/layout/Row.vue";
-import ActionButton from "@/components/ui/ActionButton.vue";
 import TablePopover from "@/components/popover/TablePopover.vue";
+import ActionButton from "@/components/ui/ActionButton.vue";
+import SelectedCellsOverlay from "@/components/ui/CellSelectionOverlay.vue";
 import { columnTypes } from "@/config/table.config";
+import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
+import TableBodyNavigatable from "../TableBodyNavigatable.vue";
+import TableCore from "../TableCore.vue";
+import TableCoreGroups from "../TableCoreGroups.vue";
+import TableCoreVirtual from "../TableCoreVirtual.vue";
+import TableUI from "../TableUI.vue";
 import {
   useAvailableWidth,
   useTotalWidth,
 } from "../composables/useAvailableWidth";
-import { unref, nextTick } from "vue";
-import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
-import TableCoreGroups from "../TableCoreGroups.vue";
-import TableCoreVirtual from "../TableCoreVirtual.vue";
-import { SubMenu } from "@knime/components";
-import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 import CellRenderer from "../layout/CellRenderer.vue";
 import ExpandIcon from "../layout/expand.svg";
 

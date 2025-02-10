@@ -1,9 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ref, unref } from "vue";
+import { mount } from "@vue/test-utils";
+
+import { useClickOutside, useDropdownNavigation } from "@knime/components";
+import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 
 import ControlMultiselect from "../ControlMultiselect.vue";
-import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import { useDropdownFloating } from "../composables/useDropdownFloating";
+import { useScrollToElement } from "../composables/useScrollToElement";
 
 const dropdownNavigation = {
   currentIndex: ref(1),
@@ -29,10 +33,6 @@ const scrollToElement = { scrollTo: vi.fn() };
 vi.mock("../composables/useScrollToElement", () => ({
   useScrollToElement: vi.fn(() => scrollToElement),
 }));
-
-import { useDropdownFloating } from "../composables/useDropdownFloating";
-import { useScrollToElement } from "../composables/useScrollToElement";
-import { useClickOutside, useDropdownNavigation } from "@knime/components";
 
 window.scrollTo = vi.fn();
 

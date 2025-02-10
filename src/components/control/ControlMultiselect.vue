@@ -1,4 +1,7 @@
 <script lang="ts">
+import type { PropType, Ref } from "vue";
+import { computed, inject, ref, toRefs } from "vue";
+
 import {
   Checkbox,
   useClickOutside,
@@ -7,14 +10,14 @@ import {
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
-import type { Ref, PropType } from "vue";
-import { ref, toRefs, computed, inject } from "vue";
+
+import type PossibleValue from "@/types/PossibleValue";
 import { isMissingValue } from "@/util";
-import { useDropdownFloating } from "./composables/useDropdownFloating";
 import getWrappedAroundNextElement from "@/util/getWrappedArondNextElement";
+
+import { useDropdownFloating } from "./composables/useDropdownFloating";
 import { useIdGeneration } from "./composables/useIdGeneration";
 import { useScrollToElement } from "./composables/useScrollToElement";
-import type PossibleValue from "@/types/PossibleValue";
 
 /**
  * A multi component specifically styled for use in the table controls. This component allows

@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { searchCell } from "../search";
+import { describe, expect, it } from "vitest";
+
 import { columnTypes } from "@/config/table.config";
+import { searchCell } from "../search";
 
 describe("searchData", () => {
   let cb = (x) => x;

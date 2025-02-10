@@ -1,4 +1,4 @@
-import { isMissingValue, isEmpty, unpackObjectRepresentation } from "..";
+import { isEmpty, isMissingValue, unpackObjectRepresentation } from "..";
 
 const missingValueSymbol = Symbol("Missing");
 

@@ -1,12 +1,13 @@
 import {
-  computed,
-  inject,
-  provide,
   type CSSProperties,
   type InjectionKey,
   type MaybeRef,
   type Ref,
+  computed,
+  inject,
+  provide,
 } from "vue";
+
 import type { IndexStartEnd } from "@knime/vue-headless-virtual-scroller";
 
 export interface Payload {

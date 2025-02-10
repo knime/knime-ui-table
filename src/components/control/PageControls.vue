@@ -2,6 +2,7 @@
 import { FunctionButton } from "@knime/components";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 import ArrowPrevIcon from "@knime/styles/img/icons/arrow-prev.svg";
+
 import TextDimensionAndRange from "./TextDimensionAndRange.vue";
 
 /**

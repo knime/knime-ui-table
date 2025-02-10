@@ -1,8 +1,10 @@
-import DemoTable from "./DemoTable.vue";
-import consola from "consola";
 import { markRaw } from "vue";
-import DeleteIcon from "@knime/styles/img/icons/trash.svg";
+import consola from "consola";
+
 import LinkIcon from "@knime/styles/img/icons/link.svg";
+import DeleteIcon from "@knime/styles/img/icons/trash.svg";
+
+import DemoTable from "./DemoTable.vue";
 
 // More on default export: https://storybook.js.org/docs/vue/writing-stories/introduction#default-export
 export default {

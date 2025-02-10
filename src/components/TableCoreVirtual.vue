@@ -1,6 +1,23 @@
-<script lang="ts">
-import type { DataItem } from "./TableUI.vue";
+<script setup lang="ts">
+import { type Ref, computed, ref, toRef, watch } from "vue";
+import "../assets/main.css";
+
+import {
+  ArraySizeManager,
+  SameSizeManager,
+  type SizeManager,
+  WithSpaceAfter,
+  WithSpaceBefore,
+  useVirtualGrid,
+} from "@knime/vue-headless-virtual-scroller";
+
 import type TableConfig from "@/types/TableConfig";
+
+import TableBodyNavigatable from "./TableBodyNavigatable.vue";
+import type { DataItem } from "./TableUI.vue";
+import VirtualRow from "./VirtualRow.vue";
+import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+import { provideForHorizontalVirtualScrolling } from "./composables/useHorizontalIndicesAndStyles";
 
 export interface Props {
   scrollData: DataItem[];
@@ -19,25 +36,7 @@ export interface Props {
   currentBodyWidth: number;
   tableConfig: TableConfig;
 }
-</script>
 
-<script setup lang="ts">
-import { computed, ref, toRef, type Ref, watch } from "vue";
-import "../assets/main.css";
-
-import {
-  useVirtualGrid,
-  SameSizeManager,
-  ArraySizeManager,
-  WithSpaceBefore,
-  WithSpaceAfter,
-  type SizeManager,
-} from "@knime/vue-headless-virtual-scroller";
-
-import VirtualRow from "./VirtualRow.vue";
-import { provideForHorizontalVirtualScrolling } from "./composables/useHorizontalIndicesAndStyles";
-import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
-import TableBodyNavigatable from "./TableBodyNavigatable.vue";
 const props = defineProps<Props>();
 
 const emit = defineEmits<{

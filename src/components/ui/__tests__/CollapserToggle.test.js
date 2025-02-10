@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { shallowMount, mount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
+import { mount, shallowMount } from "@vue/test-utils";
+
+import DropdownIcon from "@knime/styles/img/icons/arrow-next.svg";
 
 import CollapserToggle from "../CollapserToggle.vue";
-import DropdownIcon from "@knime/styles/img/icons/arrow-next.svg";
 
 describe("CollapserToggle.vue", () => {
   let wrapper;

@@ -1,5 +1,6 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { mount } from "@vue/test-utils";
+
 import VirtualRow from "../VirtualRow.vue";
 import PlaceholderRow from "../ui/PlaceholderRow.vue";
 

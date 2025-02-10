@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import PageControls from "../PageControls.vue";
 import { FunctionButton } from "@knime/components";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 import ArrowPrevIcon from "@knime/styles/img/icons/arrow-prev.svg";
+
+import PageControls from "../PageControls.vue";
 import TextDimensionAndRange from "../TextDimensionAndRange.vue";
 
 describe("PageControls.vue", () => {

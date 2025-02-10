@@ -1,12 +1,12 @@
 //  a vue composable for the capability of the the TableUI to detect the available width for all columns.
 import {
+  type Ref,
   computed,
+  nextTick,
+  onBeforeUnmount,
   onMounted,
   ref,
   watch,
-  type Ref,
-  onBeforeUnmount,
-  nextTick,
 } from "vue";
 import throttle from "raf-throttle";
 

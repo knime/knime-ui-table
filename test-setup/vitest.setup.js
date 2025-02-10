@@ -1,6 +1,6 @@
-import consola from "consola";
-import { config } from "@vue/test-utils";
 import { vi } from "vitest";
+import { config } from "@vue/test-utils";
+import consola from "consola";
 
 window.consola = consola;
 

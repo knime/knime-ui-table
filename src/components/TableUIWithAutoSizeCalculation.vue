@@ -13,21 +13,24 @@
  *  - the compact mode is toggled
  */
 
-import TableUI from "./TableUI.vue";
-import {
-  MIN_COLUMN_SIZE,
-  MAX_AUTO_COLUMN_SIZE,
-  MIN_ROW_HEIGHT,
-  MAX_AUTO_ROW_HEIGHT,
-} from "../util/constants";
-import { useTableReady } from "./composables/useTableReady";
-import { isEqual } from "lodash-es";
-import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
 import type { PropType } from "vue";
+import { isEqual } from "lodash-es";
+
+import { sleep } from "@knime/utils";
+
 import type DataConfig from "@/types/DataConfig";
 import type { ColumnConfig } from "@/types/DataConfig";
 import type TableConfig from "@/types/TableConfig";
-import { sleep } from "@knime/utils";
+import { getCellPaddingLeft, getPropertiesFromColumns } from "@/util";
+import {
+  MAX_AUTO_COLUMN_SIZE,
+  MAX_AUTO_ROW_HEIGHT,
+  MIN_COLUMN_SIZE,
+  MIN_ROW_HEIGHT,
+} from "../util/constants";
+
+import TableUI from "./TableUI.vue";
+import { useTableReady } from "./composables/useTableReady";
 
 type SizeByColumn = Record<string | symbol, number>;
 

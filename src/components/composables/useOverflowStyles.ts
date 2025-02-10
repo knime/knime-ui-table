@@ -1,10 +1,10 @@
 import {
-  computed,
-  inject,
-  provide,
   type CSSProperties,
   type InjectionKey,
   type Ref,
+  computed,
+  inject,
+  provide,
 } from "vue";
 
 type Provided = Ref<CSSProperties>;

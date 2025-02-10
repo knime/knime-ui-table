@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
+
 import { Carousel } from "@knime/components";
 
 import BaseControls from "../BaseControls.vue";

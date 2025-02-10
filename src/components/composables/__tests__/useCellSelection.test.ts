@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { type Ref, nextTick, ref } from "vue";
+
 import {
-  useCellSelection,
   type CellPosition,
   type Rect,
   type RectId,
+  useCellSelection,
 } from "../useCellSelection";
-
-import { nextTick, ref, type Ref } from "vue";
 
 describe("useCellSelection", () => {
   const id = 1;

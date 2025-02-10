@@ -1,4 +1,4 @@
-import { inject, provide, ref, type InjectionKey } from "vue";
+import { type InjectionKey, inject, provide, ref } from "vue";
 
 const setup = () => {
   const currentCallback = ref<(() => void) | null>(null);

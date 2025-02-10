@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
-import BottomControls from "../BottomControls.vue";
-import BaseControls from "../BaseControls.vue";
-import ControlDropdown from "../ControlDropdown.vue";
 import { tablePageSizes } from "@/config/table.config";
+import BaseControls from "../BaseControls.vue";
+import BottomControls from "../BottomControls.vue";
+import ControlDropdown from "../ControlDropdown.vue";
 
 describe("BottomControls.vue", () => {
   let wrapper;

@@ -1,5 +1,5 @@
+import { InjectionKey, type Ref, computed, inject, provide } from "vue";
 import { TableConfig } from "lib/main";
-import { computed, inject, InjectionKey, provide, type Ref } from "vue";
 
 /**
  * Exported for testing purposes

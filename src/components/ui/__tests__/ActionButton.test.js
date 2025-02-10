@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import ActionButton from "../ActionButton.vue";
 import { Button } from "@knime/components";
+
+import ActionButton from "../ActionButton.vue";
 
 describe("ActionButton.vue", () => {
   let wrapper;

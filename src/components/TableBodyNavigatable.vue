@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { navigatorUtils } from "@knime/utils";
+
 import { useDataValueViews } from "./composables/useDataValueViews";
 
 const emit = defineEmits<{

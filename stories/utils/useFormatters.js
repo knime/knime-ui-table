@@ -1,6 +1,6 @@
-import { ref, computed } from "vue";
-import { typeFormatters } from "@/config/table.config";
+import { computed, ref } from "vue";
 
+import { typeFormatters } from "@/config/table.config";
 import getColumnDomains from "@/util/getColumnDomains";
 
 export default ({

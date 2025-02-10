@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import {
-  ROW_MARGIN_BOTTOM,
-  COMPACT_ROW_PADDING_TOP_BOTTOM,
-} from "@/util/constants";
-import type TableConfig from "@/types/TableConfig";
 import { toRef } from "vue";
-import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+
 import { Checkbox } from "@knime/components";
+
+import type TableConfig from "@/types/TableConfig";
+import {
+  COMPACT_ROW_PADDING_TOP_BOTTOM,
+  ROW_MARGIN_BOTTOM,
+} from "@/util/constants";
+import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 
 const props = defineProps<{
   width: number;

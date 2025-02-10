@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toRef } from "vue";
+
 import { useIndicesAndStylesFor } from "../../composables/useHorizontalIndicesAndStyles";
 
 const props = defineProps<{

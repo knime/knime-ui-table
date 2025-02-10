@@ -1,23 +1,25 @@
 <script setup>
 import { computed, reactive } from "vue";
-import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
+
 import { FunctionButton } from "@knime/components";
-import demoProps from "./props.json";
+
+import TableUIWithAutoSizeCalculation from "@/components/TableUIWithAutoSizeCalculation.vue";
 import { columnTypes, tablePageSizes } from "@/config/table.config";
 
+import demoProps from "./props.json";
 import {
-  useFilters,
-  useGroups,
-  usePages,
-  useSorting,
-  useDataProcessing,
-  useColumnSelection,
-  useFormatters,
-  useColumnResizing,
-  useSelection,
   generateAllData,
   useCheckboxItem,
+  useColumnResizing,
+  useColumnSelection,
+  useDataProcessing,
+  useFilters,
+  useFormatters,
+  useGroups,
+  usePages,
   useRowHeight,
+  useSelection,
+  useSorting,
 } from "./utils";
 
 const props = defineProps({
@@ -432,7 +434,7 @@ const alertEvent =
   (methodName) =>
   (...args) =>
     window.alert(
-      `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`,
+      `'${methodName}' event emitted:\n ${JSON.stringify(args, null, 4)}`, // eslint-disable-line no-magic-numbers
     );
 const onCopySelection = alertEvent("copySelection");
 const onDataValueView = (...args) => {
@@ -508,6 +510,7 @@ const htmlSlotContent = `
         } = { data: {} }"
       >
         <template v-if="col.endsWith('LineString')">
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <span class="multi-line-rendering" v-html="row[colInd]" />
         </template>
         <template v-else>
@@ -518,6 +521,7 @@ const htmlSlotContent = `
             :style="{ maxHeight: `${20 + 20 * rowInd}px`, display: 'block' }"
             src="https://forum-cdn.knime.com/uploads/default/original/3X/6/8/68ac3f3c3142b63b68b8ba7c58f97a2614bdf1d2.svg"
           />
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <span v-html="htmlSlotContent" />
         </template>
       </template>

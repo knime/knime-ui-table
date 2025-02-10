@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import getColumnDomains from "../getColumnDomains";
+import { describe, expect, it } from "vitest";
+
 import { columnTypes, typeFormatters } from "@/config/table.config";
+import getColumnDomains from "../getColumnDomains";
 
 describe("getColumnDomains", () => {
   let dataMock = [

@@ -1,10 +1,12 @@
 <script>
 import { markRaw } from "vue";
+
 import { Checkbox } from "@knime/components";
-import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 import LinkIcon from "@knime/styles/img/icons/link.svg";
+import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 
 import Table from "@/components/Table.vue";
+
 import demoProps from "./props.json";
 
 const numberOfColumns = 19;

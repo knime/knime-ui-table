@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, toRef, type Ref } from "vue";
+import { type Ref, ref, toRef } from "vue";
+
 import { useAvailableWidth, useTotalWidth } from "../useAvailableWidth";
 
 const props = defineProps({

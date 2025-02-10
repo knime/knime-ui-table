@@ -1,9 +1,9 @@
 <script>
-import PopoverPageControls from "./PopoverPageControls.vue";
-import ErrorIcon from "@knime/styles/img/icons/sign-warning.svg";
 import WarnIcon from "@knime/styles/img/icons/circle-info.svg";
-
+import ErrorIcon from "@knime/styles/img/icons/sign-warning.svg";
 import { capitalize } from "@knime/utils";
+
+import PopoverPageControls from "./PopoverPageControls.vue";
 
 /**
  * This popover rendering component is used to display message content when provided

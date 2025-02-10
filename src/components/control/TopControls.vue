@@ -1,17 +1,18 @@
 <script lang="ts">
-import BaseControls from "./BaseControls.vue";
-import ControlDropdown from "./ControlDropdown.vue";
-import ControlMultiselect from "./ControlMultiselect.vue";
-import FilterInputField from "../filter/FilterInputField.vue";
+import type { PropType } from "vue";
 
 import { FunctionButton, SubMenu } from "@knime/components";
 import SearchIcon from "@knime/styles/img/icons/lens.svg";
 import SettingsIcon from "@knime/styles/img/icons/settings.svg";
 
 import { tableTimeFilters } from "@/config/time.config";
-import isSinglePage from "@/util/isSinglePage";
 import type TableConfig from "@/types/TableConfig";
-import type { PropType } from "vue";
+import isSinglePage from "@/util/isSinglePage";
+import FilterInputField from "../filter/FilterInputField.vue";
+
+import BaseControls from "./BaseControls.vue";
+import ControlDropdown from "./ControlDropdown.vue";
+import ControlMultiselect from "./ControlMultiselect.vue";
 
 /**
  * Table controls for the top of the table optionally consisting of page controls,
@@ -238,7 +239,7 @@ export default {
 
   & .search-toggle {
     position: relative;
-    margin: none;
+    margin: 0;
     height: 28px;
     width: 28px;
     stroke-width: calc(32px / 20);

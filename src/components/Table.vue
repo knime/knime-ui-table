@@ -1,27 +1,27 @@
 <!-- eslint-disable max-lines -->
 <script>
-import TableUIWithAutoSizeCalculation from "./TableUIWithAutoSizeCalculation.vue";
-
 import {
   columnTypes,
-  typeFormatters,
-  tablePageSizes,
   defaultPageSize,
+  tablePageSizes,
+  typeFormatters,
 } from "@/config/table.config";
 import { defaultTimeFilter } from "@/config/time.config";
+import { MIN_COLUMN_SIZE } from "@/util/constants";
 import getColumnDomains from "@/util/getColumnDomains";
 import {
-  getFilterConfigs,
   getDefaultFilterValues,
+  getFilterConfigs,
   getInitialFilterValues,
 } from "@/util/getFilterConfigs";
 import { getNextPage } from "@/util/getNextPage";
 import { getProcessedRowInd } from "@/util/processSelection";
 import { filter } from "@/util/transform/filter";
 import { group } from "@/util/transform/group";
-import { sort } from "@/util/transform/sort";
 import { paginate } from "@/util/transform/paginate";
-import { MIN_COLUMN_SIZE } from "@/util/constants";
+import { sort } from "@/util/transform/sort";
+
+import TableUIWithAutoSizeCalculation from "./TableUIWithAutoSizeCalculation.vue";
 
 /**
  * @see README.md

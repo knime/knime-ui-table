@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { columnTypes, type ColumnType } from "@/config/table.config";
-import StringRenderer from "./StringRenderer.vue";
-import ObjectRenderer from "./ObjectRenderer.vue";
-import ArrayRenderer from "./ArrayRenderer.vue";
-import MessageRenderer from "./MessageRenderer.vue";
-import { FunctionButton, useClickOutside } from "@knime/components";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
-import { computed, type Ref, ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 import {
-  useFloating,
-  shift,
   arrow,
-  offset,
+  autoUpdate,
   flip,
   limitShift,
-  autoUpdate,
+  offset,
+  shift,
   size,
+  useFloating,
 } from "@floating-ui/vue";
+
+import { FunctionButton, useClickOutside } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+
+import { type ColumnType, columnTypes } from "@/config/table.config";
+
+import ArrayRenderer from "./ArrayRenderer.vue";
+import MessageRenderer from "./MessageRenderer.vue";
+import ObjectRenderer from "./ObjectRenderer.vue";
+import StringRenderer from "./StringRenderer.vue";
 
 /**
  * This component is a global popover which dynamically determines where it should

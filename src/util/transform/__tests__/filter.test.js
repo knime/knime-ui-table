@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { filter } from "../filter";
+import { describe, expect, it } from "vitest";
+
 import { columnTypes } from "@/config/table.config";
+import { filter } from "../filter";
 
 describe("filter", () => {
   let now = new Date().toString();

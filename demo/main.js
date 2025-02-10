@@ -1,6 +1,7 @@
 // Development app launcher. Not included in production build.
 import { createApp } from "vue";
 import consola from "consola";
+
 import Demo from "./Demo.vue";
 
 window.consola = consola.create({

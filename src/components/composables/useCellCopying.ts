@@ -1,5 +1,7 @@
-import { onMounted, onUnmounted, ref, type Ref } from "vue";
+import { type Ref, onMounted, onUnmounted, ref } from "vue";
+
 import { navigatorUtils } from "@knime/utils";
+
 import type CellSelectionOverlay from "../ui/CellSelectionOverlay.vue";
 
 export const useCellCopying = ({

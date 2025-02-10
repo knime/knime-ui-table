@@ -1,13 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
+import { FunctionButton, useClickOutside } from "@knime/components";
+
 import { columnTypes } from "@/config/table.config";
-import TablePopover from "../TablePopover.vue";
-import StringRenderer from "../StringRenderer.vue";
-import ObjectRenderer from "../ObjectRenderer.vue";
 import ArrayRenderer from "../ArrayRenderer.vue";
 import MessageRenderer from "../MessageRenderer.vue";
-import { FunctionButton, useClickOutside } from "@knime/components";
+import ObjectRenderer from "../ObjectRenderer.vue";
+import StringRenderer from "../StringRenderer.vue";
+import TablePopover from "../TablePopover.vue";
 
 vi.mock("@knime/components", () => ({
   useClickOutside: vi.fn(),

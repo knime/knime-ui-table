@@ -1,15 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { sort } from "@/util/transform/sort";
+
 import {
+  columnKeys,
+  currentColumnTypes,
+  groupedData,
+  groupedIndicies,
+  missingGroupedData,
   orderedData,
   reversedData,
   unorderedData,
-  groupedData,
-  missingGroupedData,
-  groupedIndicies,
-  columnKeys,
-  currentColumnTypes,
 } from "./mockData";
 
 describe("sort", () => {

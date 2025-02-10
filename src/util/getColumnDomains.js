@@ -1,4 +1,5 @@
 import { columnTypes } from "../config/table.config";
+
 import { unpackObjectRepresentation } from ".";
 
 export default ({ data, formatters, types }) => {

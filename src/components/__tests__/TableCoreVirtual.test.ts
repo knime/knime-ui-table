@@ -1,8 +1,7 @@
-import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import TableCoreVirtual, {
-  Props as TableCoreVirutalProps,
-} from "../TableCoreVirtual.vue";
+import { h, ref } from "vue";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+
 import {
   ArraySizeManager,
   IndexStartEnd,
@@ -11,13 +10,17 @@ import {
   WithSpaceBefore,
   useVirtualGrid,
 } from "@knime/vue-headless-virtual-scroller";
-import { h, ref } from "vue";
+
+import TableCoreVirtual, {
+  Props as TableCoreVirutalProps,
+} from "../TableCoreVirtual.vue";
+import VirtualRow from "../VirtualRow.vue";
 import { injectionKey as useCloseSubMenusOnScrollInjectionKey } from "../composables/useCloseSubMenusOnScroll";
 import { injectionKey as useCommonScrollContainerPropsInjectionKey } from "../composables/useCommonScrollContainerProps";
-import { injectionKey as useOverflowStylesInjectionKey } from "../composables/useOverflowStyles";
 import { injectionKey as useDataValueViewsInjectionKey } from "../composables/useDataValueViews";
+import { injectionKey as useOverflowStylesInjectionKey } from "../composables/useOverflowStyles";
+
 import TestRow from "./testComponents/TestRow.vue";
-import VirtualRow from "../VirtualRow.vue";
 
 let virtualGridResult: ReturnType<typeof useVirtualGrid>;
 

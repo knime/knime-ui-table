@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type TableConfig from "@/types/TableConfig";
+
 import type { DataItem } from "./TableUI.vue";
-import PlaceholderRow from "./ui/PlaceholderRow.vue";
 import EmptyRow from "./ui/EmptyRow.vue";
+import PlaceholderRow from "./ui/PlaceholderRow.vue";
 
 defineProps<{
   dataItem?: DataItem;

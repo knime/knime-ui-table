@@ -1,10 +1,11 @@
-import { ref, computed, unref } from "vue";
-import { filter } from "@/util/transform/filter";
+import { computed, ref, unref } from "vue";
+
 import {
-  getFilterConfigs,
   getDefaultFilterValues,
+  getFilterConfigs,
   getInitialFilterValues,
 } from "@/util/getFilterConfigs";
+import { filter } from "@/util/transform/filter";
 
 export default ({
   initialParameters: { initialFilterValues, withColumnFilters },

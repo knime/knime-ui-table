@@ -1,7 +1,9 @@
 <script lang="ts">
-import { Button } from "@knime/components";
-import type { ActionButtonConfig } from "@/types/TableConfig";
 import type { PropType } from "vue";
+
+import { Button } from "@knime/components";
+
+import type { ActionButtonConfig } from "@/types/TableConfig";
 
 /**
  * Button displayed at the bottom of the table instead of page size controls.

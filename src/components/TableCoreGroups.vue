@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import "../assets/main.css";
 
-import Group from "./layout/Group.vue";
+import type { MenuItem } from "@knime/components";
 
 import type TableConfig from "@/types/TableConfig";
-import type { DataItem } from "./TableUI.vue";
-import type { MenuItem } from "@knime/components";
-import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+
 import TableBodyNavigatable from "./TableBodyNavigatable.vue";
+import type { DataItem } from "./TableUI.vue";
+import { useCommonScrollContainerProps } from "./composables/useCommonScrollContainerProps";
+import Group from "./layout/Group.vue";
 
 const props = defineProps<{
   scrollData: DataItem[][];

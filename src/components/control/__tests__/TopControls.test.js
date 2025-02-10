@@ -1,12 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
-import TopControls from "../TopControls.vue";
+import { FunctionButton, SubMenu } from "@knime/components";
+
+import FilterInputField from "@/components/filter/FilterInputField.vue";
 import BaseControls from "../BaseControls.vue";
 import ControlDropdown from "../ControlDropdown.vue";
 import ControlMultiselect from "../ControlMultiselect.vue";
-import FilterInputField from "@/components/filter/FilterInputField.vue";
-import { FunctionButton, SubMenu } from "@knime/components";
+import TopControls from "../TopControls.vue";
 
 describe("TopControls.vue", () => {
   let props;

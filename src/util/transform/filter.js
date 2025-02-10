@@ -1,7 +1,8 @@
 import { columnTypes } from "@/config/table.config";
-import { tableTimeFilters, checkTimeFilter } from "@/config/time.config";
-import { searchRow, searchCell } from "./search";
+import { checkTimeFilter, tableTimeFilters } from "@/config/time.config";
 import { isEmpty, unpackObjectRepresentation } from "..";
+
+import { searchCell, searchRow } from "./search";
 
 /**
  * Utility function designed to consume an entire data set and output only the rows which match the provided

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, type Ref } from "vue";
-import type { CellProps } from "./CellProps";
+import { type Ref, computed, ref } from "vue";
+
 import {
   getCellPaddingLeft,
   getColor,
   isMissingValue,
   unpackObjectRepresentation,
 } from "@/util";
+
+import type { CellProps } from "./CellProps";
 import CellRenderer from "./CellRenderer.vue";
 
 const emit = defineEmits(["click", "input", "select", "dataValueView"]);

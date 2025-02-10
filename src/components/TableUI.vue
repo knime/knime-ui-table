@@ -1,41 +1,42 @@
 <script lang="ts">
 /* eslint-disable max-lines */
-import TopControls from "./control/TopControls.vue";
-import BottomControls from "./control/BottomControls.vue";
-import ColumnFilters from "./filter/ColumnFilters.vue";
-import Header from "./layout/Header.vue";
-import Row from "./layout/Row.vue";
-import ActionButton from "./ui/ActionButton.vue";
-import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
-import TablePopover from "./popover/TablePopover.vue";
-import { useTotalWidth } from "./composables/useAvailableWidth";
+import { type PropType, type Ref, computed, ref, toRef } from "vue";
+
+import type { MenuItem } from "@knime/components";
+
+import type DataConfig from "@/types/DataConfig";
+import { VirtualElementAnchor } from "@/types/DataValueView";
+import type FilterConfig from "@/types/FilterConfig";
+import type TableConfig from "@/types/TableConfig";
+import { getPropertiesFromColumns } from "@/util";
 import {
-  useCellSelection,
+  COMPACT_ROW_HEIGHT,
+  DEFAULT_ROW_HEIGHT,
+  ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
+  ROW_MARGIN_BOTTOM,
+  SPECIAL_COLUMNS_SIZE,
+} from "@/util/constants";
+
+import TableCore from "./TableCore.vue";
+import { useTotalWidth } from "./composables/useAvailableWidth";
+import { useBoolean } from "./composables/useBoolean";
+import { useCellCopying } from "./composables/useCellCopying";
+import {
   CellPosition,
   type Rect,
   type RectId,
+  useCellSelection,
 } from "./composables/useCellSelection";
-import { useCellCopying } from "./composables/useCellCopying";
-import { useBoolean } from "./composables/useBoolean";
-
-import type DataConfig from "@/types/DataConfig";
-
-import {
-  DEFAULT_ROW_HEIGHT,
-  COMPACT_ROW_HEIGHT,
-  ROW_MARGIN_BOTTOM,
-  ENABLE_SCROLL_AFTER_ROW_RESIZE_DELAY,
-  SPECIAL_COLUMNS_SIZE,
-} from "@/util/constants";
-import { getPropertiesFromColumns } from "@/util";
-import { computed, ref, type Ref, type PropType, toRef } from "vue";
-import TableCore from "./TableCore.vue";
-import type TableConfig from "@/types/TableConfig";
-import type { PopoverRenderer } from "./popover/TablePopover.vue";
-import type { MenuItem } from "@knime/components";
-import type FilterConfig from "@/types/FilterConfig";
-import { VirtualElementAnchor } from "@/types/DataValueView";
 import { provideDataValueViewsIsShown } from "./composables/useDataValueViews";
+import BottomControls from "./control/BottomControls.vue";
+import TopControls from "./control/TopControls.vue";
+import ColumnFilters from "./filter/ColumnFilters.vue";
+import Header from "./layout/Header.vue";
+import Row from "./layout/Row.vue";
+import TablePopover from "./popover/TablePopover.vue";
+import type { PopoverRenderer } from "./popover/TablePopover.vue";
+import ActionButton from "./ui/ActionButton.vue";
+import CellSelectionOverlay from "./ui/CellSelectionOverlay.vue";
 
 export type DataItem =
   | {

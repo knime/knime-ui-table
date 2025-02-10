@@ -1,5 +1,6 @@
-import { describe, it, beforeEach, expect, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
+
 import { useScrollToElement } from "../useScrollToElement";
 
 describe("useScrollToElement", () => {

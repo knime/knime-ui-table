@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ref } from "vue";
 import { flushPromises, mount, shallowMount } from "@vue/test-utils";
 
 import CircleHelpIcon from "@knime/styles/img/icons/circle-help.svg";
-import CellRenderer from "../CellRenderer.vue";
-import ExpandIcon from "../expand.svg";
-import type { CellRendererProps } from "../CellRendererProps";
+
 import {
-  useDataValueViews,
   injectionKey as injectionKeyDataValueViews,
+  useDataValueViews,
 } from "@/components/composables/useDataValueViews";
-import { ref } from "vue";
+import CellRenderer from "../CellRenderer.vue";
+import type { CellRendererProps } from "../CellRendererProps";
+import ExpandIcon from "../expand.svg";
 
 describe("CellRenderer.vue", () => {
   let props: CellRendererProps,

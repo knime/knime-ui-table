@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import PopoverPageControls from "../PopoverPageControls.vue";
 import { FunctionButton } from "@knime/components";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 import ArrowPrevIcon from "@knime/styles/img/icons/arrow-prev.svg";
+
+import PopoverPageControls from "../PopoverPageControls.vue";
 
 describe("PopoverPageControls.vue", () => {
   let wrapper;

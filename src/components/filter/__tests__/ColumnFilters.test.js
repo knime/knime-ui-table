@@ -1,12 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import ColumnFilters from "../ColumnFilters.vue";
-import ControlMultiselect from "../../control/ControlMultiselect.vue";
-import FilterInputField from "../FilterInputField.vue";
-import ControlDropdown from "../../control/ControlDropdown.vue";
 import { FunctionButton } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
+
+import ControlDropdown from "../../control/ControlDropdown.vue";
+import ControlMultiselect from "../../control/ControlMultiselect.vue";
+import ColumnFilters from "../ColumnFilters.vue";
+import FilterInputField from "../FilterInputField.vue";
 
 describe("ColumnFilters.vue", () => {
   let props = {

@@ -1,25 +1,26 @@
 <!-- eslint-disable max-lines -->
 <script lang="ts">
+import { type PropType, toRef } from "vue";
+import throttle from "raf-throttle";
+
 import {
   Checkbox,
   FunctionButton,
-  SubMenu,
   type MenuItem,
+  SubMenu,
 } from "@knime/components";
-import ArrowDropdown from "@knime/styles/img/icons/arrow-dropdown.svg";
 import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
+import ArrowDropdown from "@knime/styles/img/icons/arrow-dropdown.svg";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
-import throttle from "raf-throttle";
-import {
-  MIN_COLUMN_SIZE,
-  HEADER_HEIGHT,
-  MAX_SUB_MENU_WIDTH,
-  COLUMN_RESIZE_DRAG_HANDLE_WIDTH,
-} from "@/util/constants";
-import { getHeaderPaddingLeft } from "@/util";
 
 import type TableConfig from "@/types/TableConfig";
-import { toRef, type PropType } from "vue";
+import { getHeaderPaddingLeft } from "@/util";
+import {
+  COLUMN_RESIZE_DRAG_HANDLE_WIDTH,
+  HEADER_HEIGHT,
+  MAX_SUB_MENU_WIDTH,
+  MIN_COLUMN_SIZE,
+} from "@/util/constants";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 
 const BORDER_TOP = 1;

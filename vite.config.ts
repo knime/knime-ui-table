@@ -1,9 +1,11 @@
-import { fileURLToPath, URL } from "node:url";
-import { defineConfig } from "vitest/config";
+import { URL, fileURLToPath } from "node:url";
+
 import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vitest/config";
 import dts from "vite-plugin-dts";
-import svgLoader from "vite-svg-loader";
 import { libInjectCss } from "vite-plugin-lib-inject-css";
+import svgLoader from "vite-svg-loader";
+
 // @ts-ignore
 import { svgoConfig } from "@knime/styles/config/svgo.config";
 

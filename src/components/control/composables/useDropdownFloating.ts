@@ -1,4 +1,4 @@
-import { useFloating, size, autoUpdate } from "@floating-ui/vue";
+import { autoUpdate, size, useFloating } from "@floating-ui/vue";
 
 type UseFloatingParams = Parameters<typeof useFloating>;
 type ReferenceType = UseFloatingParams[0];

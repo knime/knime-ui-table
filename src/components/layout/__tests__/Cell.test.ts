@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ref } from "vue";
 import { mount, shallowMount } from "@vue/test-utils";
 
+import { injectionKey as injectionKeyDataValueViews } from "@/components/composables/useDataValueViews";
 import Cell from "../Cell.vue";
 import type { CellProps } from "../CellProps";
 import CellRenderer from "../CellRenderer.vue";
-import { ref } from "vue";
-import { injectionKey as injectionKeyDataValueViews } from "@/components/composables/useDataValueViews";
 
 describe("Cell.vue", () => {
   let props: CellProps;

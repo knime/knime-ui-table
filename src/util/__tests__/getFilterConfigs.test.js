@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { columnTypes } from "@/config/table.config";
 import {
+  getDefaultFilterValues,
   getFilterConfigs,
   getInitialFilterValues,
-  getDefaultFilterValues,
 } from "../getFilterConfigs";
 
 describe("getFilterConfigs", () => {

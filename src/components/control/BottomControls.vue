@@ -1,6 +1,8 @@
 <script lang="ts">
 import type { PropType } from "vue";
+
 import type { PageConfig } from "@/types/TableConfig";
+
 import BaseControls from "./BaseControls.vue";
 import ControlDropdown from "./ControlDropdown.vue";
 
@@ -73,7 +75,7 @@ export default {
 
   & :deep(.function-button) {
     position: relative;
-    margin: none;
+    margin: 0;
     height: 28px;
     width: 28px;
     stroke-width: calc(32px / 20);

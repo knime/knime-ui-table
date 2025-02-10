@@ -1,6 +1,8 @@
-import { months } from "./time.config";
 import { padStart } from "lodash-es";
+
 import type { FilterComponent } from "@/types/FilterConfig";
+
+import { months } from "./time.config";
 
 export const defaultPageSize = 10;
 

@@ -32,24 +32,27 @@
  * @emits rowSubMenuClick event when a row SubMenu action is triggered.
  */
 
-import CollapserToggle from "../ui/CollapserToggle.vue";
-import { Checkbox, SubMenu, type MenuItem } from "@knime/components";
+import { type Ref, computed, ref, toRef, watch } from "vue";
+import throttle from "raf-throttle";
+
+import { Checkbox, type MenuItem, SubMenu } from "@knime/components";
 import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
+
+import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
+import { VirtualElementAnchor } from "@/types/DataValueView";
+import type TableConfig from "@/types/TableConfig";
+import { getPropertiesFromColumns, unpackObjectRepresentation } from "@/util";
 import {
-  DEFAULT_ROW_HEIGHT,
   COMPACT_ROW_PADDING_TOP_BOTTOM,
+  DEFAULT_ROW_HEIGHT,
   DEFAULT_ROW_PADDING_TOP_BOTTOM,
   ROW_MARGIN_BOTTOM,
 } from "@/util/constants";
-import { getPropertiesFromColumns, unpackObjectRepresentation } from "@/util";
-import Cell from "./Cell.vue";
-import throttle from "raf-throttle";
-import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
-import { ref, computed, watch, type Ref, toRef } from "vue";
-import type TableConfig from "@/types/TableConfig";
-import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 import { injectRegisterExpandedSubMenu } from "../composables/useCloseSubMenusOnScroll";
-import { VirtualElementAnchor } from "@/types/DataValueView";
+import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+import CollapserToggle from "../ui/CollapserToggle.vue";
+
+import Cell from "./Cell.vue";
 
 interface RowProps {
   rowData?: { subMenuItemsForRow?: MenuItem[] };

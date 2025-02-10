@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import { computed, nextTick, ref } from "vue";
+
+import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
+
 import type CellSelectionOverlayProps from "./CellSelectionOverlayProps";
 
 const focusCellBorderOffset = 3;

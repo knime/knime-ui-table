@@ -1,23 +1,23 @@
 import {
-  describe,
-  it,
-  expect,
+  afterEach,
   beforeAll,
   beforeEach,
-  afterEach,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
 import { flushPromises, mount, shallowMount } from "@vue/test-utils";
 
-import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
-import AutoSizeTestWrapperComponent from "./AutoSizeTestWrapperComponent.vue";
-
-import TableUI from "../TableUI.vue";
 import {
   MAX_AUTO_COLUMN_SIZE,
   MAX_AUTO_ROW_HEIGHT,
   MIN_ROW_HEIGHT,
 } from "@/util/constants";
+import TableUI from "../TableUI.vue";
+import TableUIWithAutoSizeCalculation from "../TableUIWithAutoSizeCalculation.vue";
+
+import AutoSizeTestWrapperComponent from "./AutoSizeTestWrapperComponent.vue";
 
 describe("TableUIWithAutoSizeCalculation.vue", () => {
   let props, tableUIStub, context, refreshScrollerMock, clearCellSelectionMock;

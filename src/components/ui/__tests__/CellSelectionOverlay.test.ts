@@ -1,8 +1,9 @@
-import { VueWrapper, shallowMount } from "@vue/test-utils";
-import CellSelectionOverlay from "../CellSelectionOverlay.vue";
 import { Mock, beforeEach, describe, expect, it, vi } from "vitest";
-import type CellSelectionOverlayProps from "../CellSelectionOverlayProps";
 import { nextTick } from "vue";
+import { VueWrapper, shallowMount } from "@vue/test-utils";
+
+import CellSelectionOverlay from "../CellSelectionOverlay.vue";
+import type CellSelectionOverlayProps from "../CellSelectionOverlayProps";
 
 describe("CellSelectionOverlay.vue", () => {
   let props: CellSelectionOverlayProps,

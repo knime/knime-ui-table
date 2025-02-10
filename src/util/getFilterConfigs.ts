@@ -1,5 +1,5 @@
-import { columnFilterConfigs } from "../config/table.config";
 import type FilterConfig from "@/types/FilterConfig";
+import { columnFilterConfigs } from "../config/table.config";
 
 export const getDefaultFilterValues = (
   columns: string[],

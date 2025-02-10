@@ -1,7 +1,8 @@
-import { VueWrapper, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
-import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 import { ref } from "vue";
+import { VueWrapper, mount } from "@vue/test-utils";
+
+import TableBodyNavigatable from "../TableBodyNavigatable.vue";
 import { injectionKey as useDataValueViewsInjectionKey } from "../composables/useDataValueViews";
 
 describe("TableBodyNavigatable", () => {

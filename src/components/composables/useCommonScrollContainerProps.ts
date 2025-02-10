@@ -1,9 +1,10 @@
-import { provideOverflowStyles, useOverflowStyles } from "./useOverflowStyles";
+import { type InjectionKey, type Ref, inject, provide } from "vue";
+
 import {
   injectCloseExpandedSubMenu,
   provideForCloseSubMenusOnScroll,
 } from "./useCloseSubMenusOnScroll";
-import { inject, provide, type InjectionKey, type Ref } from "vue";
+import { provideOverflowStyles, useOverflowStyles } from "./useOverflowStyles";
 
 // Exported for tests
 export const injectionKey: InjectionKey<Ref<HTMLElement | null>> =

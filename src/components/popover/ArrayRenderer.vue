@@ -84,7 +84,7 @@ export default {
   & .content {
     overflow: auto;
     white-space: pre;
-    word-break: break-word;
+    overflow-wrap: anywhere;
     line-height: 20px;
   }
 

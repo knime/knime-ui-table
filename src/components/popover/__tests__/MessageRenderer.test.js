@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+
+import WarnIcon from "@knime/styles/img/icons/circle-info.svg";
+import ErrorIcon from "@knime/styles/img/icons/sign-warning.svg";
 
 import MessageRenderer from "../MessageRenderer.vue";
 import PopoverPageControls from "../PopoverPageControls.vue";
-import ErrorIcon from "@knime/styles/img/icons/sign-warning.svg";
-import WarnIcon from "@knime/styles/img/icons/circle-info.svg";
 
 const testMessages = [
   {

@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, shallowMount } from "@vue/test-utils";
 
-import Header from "../Header.vue";
 import { Checkbox, FunctionButton, SubMenu } from "@knime/components";
 import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
+
+import Header from "../Header.vue";
 
 const columnSubMenuItems = [
   { text: "Data renderer", separator: true, sectionHeadline: true },
