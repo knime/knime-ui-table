@@ -34,12 +34,16 @@ export const useTotalWidth = (root: Ref<null | HTMLElement>) => {
   return totalWidth;
 };
 
-const useScrollbarWidth = (scrolledElement: Ref<null | HTMLElement>) => {
-  const currentScrollBarWidth: Ref<null | number> = ref(null);
+const useScrollbarSizes = (scrolledElement: Ref<null | HTMLElement>) => {
+  const currentScrollBarWidth = ref<null | number>(null);
+  const currentScrollBarHeight = ref<null | number>(null);
 
   const scrollbarWidthCallback = throttle((entries) => {
     const totalWidth = entries[0].borderBoxSize[0].inlineSize;
     const innerWidth = entries[0].contentRect.width;
+    const totalHeight = entries[0].borderBoxSize[0].blockSize;
+    const innerHeight = entries[0].contentRect.height;
+    currentScrollBarHeight.value = Math.ceil(totalHeight - innerHeight);
     currentScrollBarWidth.value = Math.ceil(totalWidth - innerWidth);
   });
   const scrollbarWidthObserver = new ResizeObserver(scrollbarWidthCallback);
@@ -74,7 +78,7 @@ const useScrollbarWidth = (scrolledElement: Ref<null | HTMLElement>) => {
     }
   });
 
-  return currentScrollBarWidth;
+  return { currentScrollBarWidth, currentScrollBarHeight };
 };
 
 export const useAvailableWidth = ({
@@ -90,17 +94,23 @@ export const useAvailableWidth = ({
   };
   totalWidth: Ref<null | number>;
 }) => {
-  const currentScrollBarWidth = useScrollbarWidth(scrolledElement);
+  const { currentScrollBarWidth, currentScrollBarHeight } =
+    useScrollbarSizes(scrolledElement);
 
-  const currentDataWidth = computed(() => {
-    if (totalWidth.value === null || currentScrollBarWidth.value === null) {
+  const totalWidthWithoutSpecialColumns = computed(() => {
+    if (totalWidth.value === null) {
       return null;
     }
-    return (
-      totalWidth.value -
-      currentScrollBarWidth.value -
-      specialColumnsSizeTotal.value
-    );
+    return totalWidth.value - specialColumnsSizeTotal.value;
+  });
+  const currentDataWidth = computed(() => {
+    if (
+      totalWidthWithoutSpecialColumns.value === null ||
+      currentScrollBarWidth.value === null
+    ) {
+      return null;
+    }
+    return totalWidthWithoutSpecialColumns.value - currentScrollBarWidth.value;
   });
 
   const innerWidthToBodyWidth = (columnsWidth: number) => {
@@ -115,11 +125,54 @@ export const useAvailableWidth = ({
     return Math.floor(bodyWidth) <= width;
   };
 
+  const allSizes = computed(() => ({
+    currentDataWidth: currentDataWidth.value,
+    totalWidthWithoutSpecialColumns: totalWidthWithoutSpecialColumns.value,
+  }));
+
   watch(
-    () => currentDataWidth.value,
-    (currentDataWidth) => {
-      if (currentDataWidth !== null) {
-        emitAvailableWidth(currentDataWidth);
+    allSizes,
+    (
+      {
+        currentDataWidth: newCurrentDataWidth,
+        totalWidthWithoutSpecialColumns: newTotalWidthWithoutSpecialColumns,
+      },
+      {
+        currentDataWidth: oldCurrentDataWidth,
+        totalWidthWithoutSpecialColumns: oldTotalWidthWithoutSpecialColumns,
+      },
+    ) => {
+      if (newCurrentDataWidth !== null) {
+        const changeIsInducedByAppearingScrollbar =
+          oldTotalWidthWithoutSpecialColumns ===
+            newTotalWidthWithoutSpecialColumns &&
+          oldCurrentDataWidth !== null &&
+          oldCurrentDataWidth > newCurrentDataWidth;
+        const yScrollBarExistsBecauseOfXScrollBar =
+          currentScrollBarHeight.value &&
+          scrolledElement.value!.scrollHeight <=
+            scrolledElement.value!.clientHeight + currentScrollBarHeight.value;
+        if (
+          changeIsInducedByAppearingScrollbar &&
+          yScrollBarExistsBecauseOfXScrollBar
+        ) {
+          /**
+           * Updating the available width in this case can lead to an endless flicker loop:
+           * 1. An x-scrollbar appears, because the content is too wide
+           * 2. A y-scrollbar appears, because the x-scrollbar appeared
+           * 3. The available width is updated, because the y-scrollbar appeared
+           * 4. The content is scaled accordingly
+           * 5. The x-scrollbar disappears, because the content is now smaller
+           * 6. The y-scrollbar disappears, because the x-scrollbar disappeared
+           * 7. The available width is updated, because the y-scrollbar disappeared
+           * 8. The content is scaled accordingly
+           * 9. Go to 1.
+           *
+           * To prevent this, we do not update the available width, if the y-scrollbar only exists because of the x-scrollbar.
+           */
+          return;
+        }
+        emitAvailableWidth(newCurrentDataWidth);
       }
     },
   );

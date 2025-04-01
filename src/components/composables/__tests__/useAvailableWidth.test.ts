@@ -6,14 +6,26 @@ import AvailableWidthTestComponent from "./AvailableWidthTestComponent.vue";
 describe("useAvailableWidth", () => {
   type ResizeCallback = (
     entries: {
-      borderBoxSize?: { inlineSize: number }[];
-      contentRect: { width: number };
+      borderBoxSize?: { inlineSize: number; blockSize: number }[];
+      contentRect: { width: number; height: number };
     }[],
   ) => void;
 
   let unobserve: () => void,
-    rootCallback: (width: number) => void,
-    scrolledElementCallback: (scrollbarWidth: number) => void,
+    rootCallback: ({
+      width,
+      height,
+    }: {
+      width: number;
+      height?: number;
+    }) => void,
+    scrolledElementCallback: ({
+      scrollbarWidth,
+      scrollbarHeight,
+    }: {
+      scrollbarWidth: number;
+      scrollbarHeight?: number;
+    }) => void,
     isSecondScroller: boolean;
 
   beforeEach(() => {
@@ -24,18 +36,24 @@ describe("useAvailableWidth", () => {
       value: vi.fn().mockImplementation((callback: ResizeCallback) => ({
         observe: vi.fn((el: HTMLElement) => {
           if (el.id === "root") {
-            rootCallback = (width) =>
+            rootCallback = ({ width, height = 200 }) =>
               callback([
                 {
-                  contentRect: { width },
+                  contentRect: { width, height },
                 },
               ]);
           } else if (el.id === "scrolledElement") {
-            scrolledElementCallback = (scrollbarWidth) =>
+            scrolledElementCallback = ({
+              scrollbarWidth,
+              scrollbarHeight = 0,
+            }) =>
               callback([
                 {
-                  borderBoxSize: [{ inlineSize: 50 }],
-                  contentRect: { width: 50 - scrollbarWidth },
+                  borderBoxSize: [{ inlineSize: 50, blockSize: 50 }],
+                  contentRect: {
+                    width: 50 - scrollbarWidth,
+                    height: 50 - scrollbarHeight,
+                  },
                 },
               ]);
           } else if (el.id === "scrolledElement2") {
@@ -56,8 +74,8 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
-    rootCallback(availableWidth);
-    scrolledElementCallback(scrollbarWidth);
+    rootCallback({ width: availableWidth });
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
 
     expect(wrapper.emitted().availableWidthChanged[0]).toStrictEqual([
@@ -73,11 +91,11 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
-    rootCallback(availableWidth);
+    rootCallback({ width: availableWidth });
     await flushPromises();
     expect(wrapper.emitted()).not.toHaveProperty("availableWidthChanged");
 
-    scrolledElementCallback(scrollbarWidth);
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
     expect(wrapper.emitted()).toHaveProperty("availableWidthChanged");
   });
@@ -91,8 +109,8 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
-    rootCallback(availableWidth);
-    scrolledElementCallback(scrollbarWidth);
+    rootCallback({ width: availableWidth });
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
 
     expect(wrapper.emitted().availableWidthChanged[0]).toStrictEqual([
@@ -108,8 +126,8 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal: 0 },
     });
     await flushPromises();
-    rootCallback(availableWidth);
-    scrolledElementCallback(scrollbarWidth);
+    rootCallback({ width: availableWidth });
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
 
     expect(wrapper.emitted().availableWidthChanged[0]).toStrictEqual([
@@ -146,8 +164,8 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
-    rootCallback(availableWidth);
-    scrolledElementCallback(scrollbarWidth);
+    rootCallback({ width: availableWidth });
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
 
     const innerWidth = 123;
@@ -164,8 +182,8 @@ describe("useAvailableWidth", () => {
       props: { specialColumnsSizeTotal },
     });
     await flushPromises();
-    rootCallback(availableWidth);
-    scrolledElementCallback(scrollbarWidth);
+    rootCallback({ width: availableWidth });
+    scrolledElementCallback({ scrollbarWidth });
     await flushPromises();
 
     expect(
@@ -177,5 +195,30 @@ describe("useAvailableWidth", () => {
     expect(
       wrapper.vm.fitsInsideTotalWidth(availableWidth - scrollbarWidth + 1),
     ).toBeFalsy();
+  });
+
+  it("does not emit available width update by vertical scrollbar induced by horizontal scrollbar", async () => {
+    const wrapper = mount(AvailableWidthTestComponent, {
+      props: { specialColumnsSizeTotal: 0 },
+    });
+    await flushPromises();
+    rootCallback({ width: 200, height: 200 });
+
+    const setParams = ({
+      scrollbarWidth,
+      scrollbarHeight,
+    }: {
+      scrollbarWidth: number;
+      scrollbarHeight: number;
+    }) => {
+      scrolledElementCallback({ scrollbarWidth, scrollbarHeight });
+      return flushPromises();
+    };
+
+    await setParams({ scrollbarWidth: 0, scrollbarHeight: 0 });
+    expect(wrapper.emitted("availableWidthChanged")).toHaveLength(1);
+
+    await setParams({ scrollbarWidth: 17, scrollbarHeight: 17 });
+    expect(wrapper.emitted("availableWidthChanged")).toHaveLength(1);
   });
 });
