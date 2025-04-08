@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { useDataValueViews } from "./composables/useDataValueViews";
 
@@ -40,10 +40,7 @@ const { isShown: selectedCellIsExpanded, close: closeExpandedSelectedCell } =
   useDataValueViews();
 
 const onKeyDown = (event: KeyboardEvent) => {
-  if (
-    !event[navigatorUtils.getMetaOrCtrlKey()] &&
-    event.key.includes("Arrow")
-  ) {
+  if (!event[getMetaOrCtrlKey()] && event.key.includes("Arrow")) {
     onArrowKeyDown(event);
   } else if (event.key === "Tab") {
     emit("clearSelection");
