@@ -54,7 +54,7 @@ import CollapserToggle from "../ui/CollapserToggle.vue";
 
 import Cell from "./Cell.vue";
 
-interface RowProps {
+export interface RowProps {
   rowData?: { subMenuItemsForRow?: MenuItem[] };
   row?: any[];
   tableConfig: TableConfig;
