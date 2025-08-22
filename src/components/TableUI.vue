@@ -1023,7 +1023,11 @@ export default {
             @column-resize-end="onColumnResizeEnd"
             @sub-menu-item-selection="onHeaderSubMenuItemSelection"
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
-          />
+          >
+            <template #subHeader="slotProps">
+              <slot name="subHeader" v-bind="slotProps" />
+            </template>
+          </Header>
           <ColumnFilters
             v-if="filterActive"
             class="column-filter"

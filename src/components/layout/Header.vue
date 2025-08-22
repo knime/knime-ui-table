@@ -338,7 +338,12 @@ export default {
             </div>
           </div>
           <div v-if="columnSubHeaders[ind]" class="sub-header-text-container">
-            {{ columnSubHeaders[ind] }}
+            <slot
+              name="subHeader"
+              :sub-header="columnSubHeaders[ind]"
+              :column-index="ind"
+              >{{ columnSubHeaders[ind] }}</slot
+            >
           </div>
         </div>
         <div v-if="columnSubMenuItems[ind]" class="sub-menu-select-header">
