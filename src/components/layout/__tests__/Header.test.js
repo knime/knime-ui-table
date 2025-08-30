@@ -93,6 +93,39 @@ describe("Header.vue", () => {
     expect(columns.at(4).text()).toContain(props.columnSubHeaders[4]);
   });
 
+  it("renders slotted subHeader slot if given", () => {
+    props.columnSubHeaders = [
+      "SubHeader 1",
+      "SubHeader 2",
+      "SubHeader 3",
+      "SubHeader 4",
+      "SubHeader 5",
+    ];
+    wrapper = shallowMount(Header, {
+      props,
+      slots: {
+        subHeader: (slotData) =>
+          `Slotted Sub Header ${slotData.subHeader}: ${slotData.columnIndex}`,
+      },
+    });
+    let columns = wrapper.findAll(".sub-header-text-container");
+    expect(columns.at(0).text()).toBe(
+      `Slotted Sub Header ${props.columnSubHeaders[0]}: 0`,
+    );
+    expect(columns.at(1).text()).toBe(
+      `Slotted Sub Header ${props.columnSubHeaders[1]}: 1`,
+    );
+    expect(columns.at(2).text()).toBe(
+      `Slotted Sub Header ${props.columnSubHeaders[2]}: 2`,
+    );
+    expect(columns.at(3).text()).toBe(
+      `Slotted Sub Header ${props.columnSubHeaders[3]}: 3`,
+    );
+    expect(columns.at(4).text()).toBe(
+      `Slotted Sub Header ${props.columnSubHeaders[4]}: 4`,
+    );
+  });
+
   it("renders drag handles", () => {
     wrapper = shallowMount(Header, { props });
     let handles = wrapper.findAll(".drag-handle");
