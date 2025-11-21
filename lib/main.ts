@@ -21,6 +21,20 @@ export { Table, TableUI, TableUIWithAutoSizeCalculation, constants };
 export * from "../src/config/table.config";
 export * from "../src/config/time.config";
 
+export { default as getColumnDomains } from "../src/util/getColumnDomains";
+export {
+  getDefaultFilterValues,
+  getFilterConfigs,
+  getInitialFilterValues,
+} from "../src/util/getFilterConfigs";
+export { getNextPage } from "../src/util/getNextPage";
+export { getProcessedRowInd } from "../src/util/processSelection";
+export { filter } from "../src/util/transform/filter";
+export { group } from "../src/util/transform/group";
+export { paginate } from "../src/util/transform/paginate";
+export { sort } from "../src/util/transform/sort";
+export { MIN_COLUMN_SIZE } from "@/util/constants";
+
 export type { Rect } from "../src/components/composables/useCellSelection";
 export type { PossibleValue, FilterConfig };
 export type {
