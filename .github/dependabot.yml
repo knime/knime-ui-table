@@ -1,0 +1,42 @@
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+    cooldown:
+      default-days: 5
+      exclude:
+        - "@knime/*"
+    groups:
+      vueuse:
+        patterns:
+          - "*vueuse*"
+      vitest:
+        patterns:
+          - "*vitest*"
+      knimeKds:
+        patterns:
+          - "@knime/kds*"
+      storybook:
+        patterns:
+          - "@storybook/*"
+          - "storybook"
+      lint:
+        patterns:
+          - "eslint"
+          - "stylelint"
+          - "prettier"
+          - "@knime/eslint-config"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+    cooldown:
+      default-days: 5
