@@ -1,6 +1,6 @@
 <script lang="ts">
 /* eslint-disable max-lines */
-import { type PropType, type Ref, computed, ref, toRef } from "vue";
+import { type PropType, type Ref, computed, ref, toRef, watch } from "vue";
 
 import type { MenuItem } from "@knime/components";
 
@@ -206,6 +206,17 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    pasteSelection: (pasteSelectionParams: {
+      rect: Rect;
+      id: RectId | null;
+      updateSelection: (newRect: {
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+      }) => void;
+    }) => true,
+    cellSelectionChange: (cellPosition: CellPosition | null) => true,
     dataValueView: (
       row: { indexInInput: number; isTop: boolean },
       columnIndex: number,
@@ -231,6 +242,12 @@ export default {
       rectMinMax,
       selectedCell,
     } = useCellSelection(enableCellSelection);
+
+    // Emit cell selection changes
+    watch(selectedCell, (newCell) => {
+      emit("cellSelectionChange", newCell ?? null);
+    });
+
     const selectCellsOnMove = useBoolean(false);
     // cell copying
     const emitCopySelection = ({ withHeaders }: { withHeaders: boolean }) => {
@@ -242,9 +259,36 @@ export default {
         });
       }
     };
+    // cell pasting
+    const emitPasteSelection = () => {
+      if (rectMinMax.value) {
+        const updateSelection = (newRect: {
+          minX: number;
+          minY: number;
+          maxX: number;
+          maxY: number;
+        }) => {
+          // Update the cell selection to the new pasted area
+          const currentRectIdValue = currentRectId.value;
+          selectCell(
+            { x: newRect.maxX, y: newRect.maxY },
+            currentRectIdValue,
+            true,
+          );
+          expandCellSelection({ x: newRect.minX, y: newRect.minY }, currentRectIdValue);
+        };
+
+        emit("pasteSelection", {
+          rect: rectMinMax.value,
+          id: currentRectId.value,
+          updateSelection,
+        });
+      }
+    };
     const { changeFocus, handleCopyOnKeydown } = useCellCopying({
       selectionOverlay,
       onCopy: emitCopySelection,
+      onPaste: emitPasteSelection,
     });
 
     const toBeShownCell = ref<null | CellPosition>(null);

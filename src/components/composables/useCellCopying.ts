@@ -7,14 +7,15 @@ import type CellSelectionOverlay from "../ui/CellSelectionOverlay.vue";
 export const useCellCopying = ({
   selectionOverlay,
   onCopy,
+  onPaste,
 }: {
   selectionOverlay: Ref<
     null | typeof CellSelectionOverlay | (typeof CellSelectionOverlay)[]
   >;
   onCopy: ({ withHeaders }: { withHeaders: boolean }) => void;
+  onPaste?: () => void;
 }) => {
   const focusWithin = ref(false);
-
   const changeFocus = (newFocus: boolean) => {
     focusWithin.value = newFocus;
   };
@@ -35,8 +36,19 @@ export const useCellCopying = ({
     onCopy({ withHeaders });
   };
 
+  const onPasteSelection = () => {
+    if (!focusWithin.value || !onPaste) {
+      return;
+    }
+    onPaste();
+  };
+
   const handleDefaultCopyEvent = () => {
     onCopySelection({ withHeaders: false });
+  };
+
+  const handleDefaultPasteEvent = () => {
+    onPasteSelection();
   };
 
   const primaryModifierKey = getMetaOrCtrlKey();
@@ -48,10 +60,16 @@ export const useCellCopying = ({
 
   onMounted(() => {
     window.addEventListener("copy", handleDefaultCopyEvent);
+    if (onPaste) {
+      window.addEventListener("paste", handleDefaultPasteEvent);
+    }
   });
 
   onUnmounted(() => {
     window.removeEventListener("copy", handleDefaultCopyEvent);
+    if (onPaste) {
+      window.removeEventListener("paste", handleDefaultPasteEvent);
+    }
   });
 
   return { changeFocus, handleCopyOnKeydown };
