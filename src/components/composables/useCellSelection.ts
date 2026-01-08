@@ -39,7 +39,6 @@ export const useCellSelection = (enableCellSelection: Ref<boolean>) => {
 
   const rectMinMax = computed<Rect | null>(() => {
     const rectValue = cellRect.value;
-    console.log('Computing rectMinMax, cellRect:', rectValue?.anchor, rectValue?.opposite);
     if (rectValue === null) {
       return null;
     }

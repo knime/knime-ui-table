@@ -3,6 +3,7 @@
 import { type PropType, type Ref, computed, ref, toRef, watch } from "vue";
 
 import type { MenuItem } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 
 import type DataConfig from "@/types/DataConfig";
 import { VirtualElementAnchor } from "@/types/DataValueView";
@@ -28,6 +29,7 @@ import {
   useCellSelection,
 } from "./composables/useCellSelection";
 import { provideDataValueViewsIsShown } from "./composables/useDataValueViews";
+import { createEditingCellKeydownHandler } from "./composables/useEditCellKeydown";
 import BottomControls from "./control/BottomControls.vue";
 import TopControls from "./control/TopControls.vue";
 import ColumnFilters from "./filter/ColumnFilters.vue";
@@ -61,6 +63,7 @@ export default {
     TablePopover,
     CellSelectionOverlay,
     TableCore,
+    KdsButton,
   },
   props: {
     /**
@@ -275,7 +278,10 @@ export default {
             currentRectIdValue,
             true,
           );
-          expandCellSelection({ x: newRect.minX, y: newRect.minY }, currentRectIdValue);
+          expandCellSelection(
+            { x: newRect.minX, y: newRect.minY },
+            currentRectIdValue,
+          );
         };
 
         emit("pasteSelection", {
@@ -305,6 +311,17 @@ export default {
       closeDataValueView,
     );
 
+    const toBeEditedCell = ref<null | CellPosition>(null);
+    const editingCell = computed(() =>
+      selectCellsOnMove.state ? null : toBeEditedCell.value,
+    );
+    const isEditingCell = computed(() => editingCell.value !== null);
+
+    const showNewColumnAndRowButton = computed(() =>
+      Boolean(props.tableConfig.showNewColumnAndRowButton),
+    );
+    const newColumnButtonWidth = ref(0);
+
     return {
       wrapper,
       totalWidth,
@@ -323,6 +340,12 @@ export default {
       changeFocus,
       handleCopyOnKeydown,
       toBeShownCell,
+      toBeEditedCell,
+      editingCell,
+      isEditingCell,
+      createEditingCellKeydownHandler,
+      showNewColumnAndRowButton,
+      newColumnButtonWidth,
     };
   },
   data() {
@@ -345,6 +368,7 @@ export default {
       currentResizedScrollIndex: null as null | number,
       currentRowSizeDelta: null as null | number,
       SPECIAL_COLUMNS_SIZE,
+      editingCellInitialValue: null as null | string,
     };
   },
   computed: {
@@ -651,8 +675,26 @@ export default {
       this.selectCell(
         { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
-        ignoreIfSelected,
+        ignoreIfSelected || this.tableConfig.enableEditingCells,
       );
+      this.setToBeEditedCell(null);
+    },
+    onCellSelectRowEvent(
+      cellInd: number,
+      rowInd: number,
+      groupInd: null | number,
+      ignoreIfSelected: boolean = false,
+    ) {
+      if (
+        this.toBeEditedCell &&
+        this.toBeEditedCell.x === cellInd &&
+        this.toBeEditedCell.y === rowInd
+      ) {
+        // If the cell to be edited is clicked again, do not interrupt editing
+        return;
+      }
+      this.onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected);
+      this.onStartEditingCell();
     },
     onExpandCellSelect(
       cellInd: number,
@@ -664,6 +706,11 @@ export default {
         { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
       );
+      this.setToBeEditedCell(null);
+    },
+    focusBody() {
+      const tableCoreRef = this.getTableCoreComponent();
+      tableCoreRef.getVirtualBody()?.focus({ preventScroll: true });
     },
     selectColumnCellInFirstRow(columnIndex: number) {
       this.onCellSelect(columnIndex, 0, this.showVirtualScroller ? null : 0);
@@ -672,6 +719,9 @@ export default {
       if (this.showVirtualScroller) {
         tableCoreRef.virtualScrollToPosition({ top: 0 });
       }
+    },
+    onUpdateNewColumnButtonWidth(width: number) {
+      this.newColumnButtonWidth = width;
     },
     onKeyboardMoveSelectionVirtual(
       columnInd: number,
@@ -728,6 +778,18 @@ export default {
         adaptedGroupInd,
       );
     },
+    async onKeyboardMoveSelectionFromEditingCell(
+      horizontalMove: number,
+      verticalMove: number,
+      expandSelection: boolean,
+    ) {
+      await this.onKeyboardMoveSelection(
+        horizontalMove,
+        verticalMove,
+        expandSelection,
+      );
+      this.focusBody();
+    },
     async onKeyboardMoveSelection(
       horizontalMove: number,
       verticalMove: number,
@@ -769,7 +831,7 @@ export default {
           }
         : null;
 
-      await this.getSelectionOverlayComponent().scrollFocusOverlayIntoView(
+      await this.getSelectionOverlayComponent()?.scrollFocusOverlayIntoView(
         scrollToViewParams,
       );
       this.toBeShownCell = this.tableConfig.dataValueViewIsShown
@@ -781,6 +843,18 @@ export default {
         // scroll current selection into view
         await this.onKeyboardMoveSelection(0, 0, true);
         this.toBeShownCell = this.selectedCell;
+      }
+    },
+    setToBeEditedCell(
+      cellPosition: CellPosition | null,
+      initialValue?: string,
+    ) {
+      this.toBeEditedCell = cellPosition;
+      this.editingCellInitialValue = initialValue ?? null;
+    },
+    onStartEditingCell(initialValue?: string) {
+      if (this.selectedCell && this.tableConfig.enableEditingCells) {
+        this.setToBeEditedCell(this.selectedCell, initialValue);
       }
     },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
@@ -972,12 +1046,14 @@ export default {
           compact: Boolean(dataConfig.rowConfig.compactMode),
         }"
         :current-row-height="currentRowHeight"
+        :new-column-button-width
         @group-sub-menu-click="onGroupSubMenuClick"
         @scroller-update="onScroll"
         @update:available-width="$emit('update:available-width', $event)"
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
         @expand-selected-cell="expandSelectedCell"
+        @start-editing="onStartEditingCell"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
@@ -995,10 +1071,17 @@ export default {
             :disable-row-height-transition="disableRowHeightTransition"
             :selected-cell-index="getCellIndex(selectedCell, rowInd)"
             :to-be-expanded-cell-index="getCellIndex(toBeShownCell, rowInd)"
+            :to-be-edited-cell-index="getCellIndex(editingCell, rowInd)"
+            :new-column-button-width
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
               (cellInd, ignoreIfSelected) =>
-                onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected)
+                onCellSelectRowEvent(
+                  cellInd,
+                  rowInd,
+                  groupInd,
+                  ignoreIfSelected,
+                )
             "
             @data-value-view="
               (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
@@ -1038,6 +1121,21 @@ export default {
                 }"
               />
             </template>
+            <template #editable-cell="{ ind, cellElement }">
+              <slot
+                name="editable-cell"
+                :row-ind="rowInd"
+                :col-ind="ind"
+                :initial-value="editingCellInitialValue"
+                :cell-element="cellElement"
+                @keydown="
+                  (event: KeyboardEvent) =>
+                    createEditingCellKeydownHandler({
+                      moveSelection: onKeyboardMoveSelectionFromEditingCell,
+                    })(event)
+                "
+              />
+            </template>
             <template #rowCollapserContent>
               <slot name="collapserContent" :row="row" />
             </template>
@@ -1058,6 +1156,7 @@ export default {
             :filters-active="filterActive"
             :get-drag-handle-height="getDragHandleHeight"
             :class="tableHeaderClass"
+            :show-new-column-button="showNewColumnAndRowButton"
             @header-select="onSelectAll"
             @column-sort="onColumnSort"
             @toggle-filter="onToggleFilter"
@@ -1067,6 +1166,7 @@ export default {
             @column-resize-end="onColumnResizeEnd"
             @sub-menu-item-selection="onHeaderSubMenuItemSelection"
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
+            @update:new-column-button-width="onUpdateNewColumnButtonWidth"
           >
             <template #subHeader="slotProps">
               <slot name="subHeader" v-bind="slotProps" />
@@ -1082,13 +1182,14 @@ export default {
             :types="columnTypes"
             :show-collapser="tableConfig.showCollapser"
             :show-selection="tableConfig.showSelection"
+            :new-column-button-width
             @column-filter="onColumnFilter"
             @clear-filter="onClearFilter"
           />
         </template>
         <template #cell-selection-overlay>
           <CellSelectionOverlay
-            v-if="rectMinMax"
+            v-if="rectMinMax && !isEditingCell"
             ref="selectionOverlay"
             :rect="rectMinMax"
             :row-height="scrollerItemSize"
@@ -1097,6 +1198,15 @@ export default {
             :row-resize-delta="currentRowSizeDelta"
             :column-sizes="columnSizes"
             :cell-selection-rect-focus-corner="selectedCell"
+          />
+        </template>
+        <template #belowBody>
+          <KdsButton
+            v-if="showNewColumnAndRowButton"
+            label="New row"
+            leading-icon="plus"
+            size="small"
+            :style="{ margin: '4px' }"
           />
         </template>
       </TableCore>

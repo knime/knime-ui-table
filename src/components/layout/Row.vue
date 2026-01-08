@@ -68,6 +68,8 @@ export interface RowProps {
   disableRowHeightTransition?: boolean;
   selectedCellIndex?: number | null;
   toBeExpandedCellIndex?: number | null;
+  toBeEditedCellIndex?: number | null;
+  newColumnButtonWidth?: number;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
@@ -82,6 +84,8 @@ const props = withDefaults(defineProps<RowProps>(), {
   disableRowHeightTransition: false,
   selectedCellIndex: null,
   toBeExpandedCellIndex: null,
+  toBeEditedCellIndex: null,
+  newColumnButtonWidth: 0,
 });
 
 const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
@@ -325,6 +329,7 @@ defineExpose({
       :has-data-value-view="
         tableConfig.enableDataValueViews && Boolean(hasDataValueView[ind])
       "
+      :is-editing="toBeEditedCellIndex === ind"
       :no-padding="noPadding[ind]"
       :size="columnSizes[ind] ?? 100"
       :class-generators="classGenerators[ind]"
@@ -346,6 +351,9 @@ defineExpose({
           :ind="ind"
         />
       </template>
+      <template #editable-cell="{ cellElement }">
+        <slot name="editable-cell" :cell-element="cellElement" :ind="ind" />
+      </template>
     </Cell>
     <td
       v-if="filteredSubMenuItems?.length"
@@ -362,6 +370,10 @@ defineExpose({
         <OptionsIcon />
       </SubMenu>
     </td>
+    <td
+      v-if="newColumnButtonWidth"
+      :style="{ minWidth: `${newColumnButtonWidth}px` }"
+    />
   </tr>
   <tr v-else class="row empty-row" :style="rowHeightStyle">
     <td>-</td>

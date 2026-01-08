@@ -15,6 +15,7 @@ interface CellProps {
   formatter: (value: any) => string;
   defaultTopBottomPadding: number;
   hasDataValueView?: boolean;
+  isEditing?: boolean;
 }
 
 export type { CellProps };

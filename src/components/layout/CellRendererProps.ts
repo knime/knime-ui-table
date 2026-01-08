@@ -17,6 +17,7 @@ interface CellRendererProps {
    */
   defaultTopBottomPadding: number;
   enableExpand?: boolean;
+  isEditing?: boolean;
 }
 
 export type { CellRendererProps };

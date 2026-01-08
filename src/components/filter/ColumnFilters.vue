@@ -2,6 +2,7 @@
 import { type PropType, toRef } from "vue";
 
 import { FunctionButton } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import type FilterConfig from "@/types/FilterConfig";
@@ -27,6 +28,7 @@ export default {
     ControlDropdown,
     FunctionButton,
     TrashIcon,
+    KdsButton,
   },
   props: {
     filterConfigs: {
@@ -48,6 +50,10 @@ export default {
     showSelection: {
       type: Boolean,
       default: false,
+    },
+    newColumnButtonWidth: {
+      type: Number,
+      default: 0,
     },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
@@ -112,6 +118,11 @@ export default {
           <TrashIcon />
         </FunctionButton>
       </th>
+      <th
+        v-if="newColumnButtonWidth"
+        class="new-column-button-spacer"
+        :style="{ minWidth: `${newColumnButtonWidth}px` }"
+      />
     </tr>
   </thead>
 </template>
@@ -148,6 +159,10 @@ tr {
       display: flex;
       flex-direction: column-reverse;
       position: relative;
+    }
+
+    &.new-column-button-spacer {
+      background-color: var(--knime-white);
     }
   }
 

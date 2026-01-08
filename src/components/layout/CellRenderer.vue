@@ -21,9 +21,17 @@ const dataCellColorStyle = computed(() => {
       };
 });
 
-const hasPaddingTopBottom = computed(
-  () => !(props.isSlotted && Boolean(props.noPadding)) || props.isMissing,
-);
+const hasPaddingTopBottom = computed(() => {
+  if (props.isEditing) {
+    return false;
+  }
+  if (props.isMissing) {
+    return true;
+  }
+  return !(props.isSlotted && Boolean(props.noPadding));
+});
+
+const hasPaddingLeft = computed(() => !props.isEditing);
 
 const paddingTopBottom = computed(() => {
   if (!hasPaddingTopBottom.value) {
@@ -63,7 +71,7 @@ defineExpose({
   getCellContentDimensions,
 });
 
-const onPointerOver = throttle(() => {
+const onPointerMove = throttle(() => {
   if (props.selectOnMove) {
     emit("select", { expandSelection: true });
   }
@@ -114,7 +122,7 @@ onMounted(changeExpandedCellViewIfNecessary);
     ]"
     :style="{
       width: `calc(${size}px)`,
-      paddingLeft: `${paddingLeft}px`,
+      ...(hasPaddingLeft ? { paddingLeft: `${paddingLeft}px` } : {}),
       ...paddingTopBottom,
       ...dataCellColorStyle,
     }"
@@ -127,11 +135,12 @@ onMounted(changeExpandedCellViewIfNecessary);
       }
     "
     @dblclick="(event: MouseEvent) => enableExpand && expandAndSelect(event)"
-    @pointerover="onPointerOver"
+    @pointermove="onPointerMove"
     @pointerdown="onPointerDown"
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >
-    <CircleHelpIcon v-if="isMissing" class="missing-value-icon" />
+    <slot v-if="isEditing" name="editable-cell" :cell-element="$el" />
+    <CircleHelpIcon v-else-if="isMissing" class="missing-value-icon" />
     <slot v-else-if="isSlotted" :width="size - paddingLeft" />
     <span v-else>
       {{ text }}

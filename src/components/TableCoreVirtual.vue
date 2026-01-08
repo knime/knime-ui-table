@@ -48,6 +48,7 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  startEditing: [initialValue?: string];
 }>();
 
 const withLeftSideSize = (sizeManager: SizeManager) =>
@@ -182,6 +183,7 @@ defineExpose({
       "
       @clear-selection="emit('clearSelection')"
       @expand-selected-cell="emit('expandSelectedCell')"
+      @start-editing="(initialValue) => emit('startEditing', initialValue)"
     >
       <template #bodyContent>
         <slot name="cell-selection-overlay" />
@@ -202,6 +204,7 @@ defineExpose({
           </VirtualRow>
         </div>
       </template>
+      <template #belowBody><slot name="belowBody" /></template>
     </TableBodyNavigatable>
   </div>
 </template>

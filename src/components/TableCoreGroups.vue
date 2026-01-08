@@ -26,6 +26,7 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  startEditing: [initialValue?: string];
 }>();
 const { closeExpandedSubMenu, containerRef, overflowStyles } =
   useCommonScrollContainerProps();
@@ -54,6 +55,7 @@ defineExpose({
       "
       @clear-selection="emit('clearSelection')"
       @expand-selected-cell="emit('expandSelectedCell')"
+      @start-editing="(initialValue) => emit('startEditing', initialValue)"
     >
       <template #bodyContent>
         <Group
@@ -81,6 +83,7 @@ defineExpose({
           />
         </Group>
       </template>
+      <template #belowBody><slot name="belowBody" /></template>
     </TableBodyNavigatable>
   </div>
 </template>

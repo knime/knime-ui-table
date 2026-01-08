@@ -9,6 +9,7 @@ import {
   type MenuItem,
   SubMenu,
 } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
 import ArrowDropdown from "@knime/styles/img/icons/arrow-dropdown.svg";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
@@ -44,6 +45,7 @@ export default {
     ArrowIcon,
     ArrowDropdown,
     FilterIcon,
+    KdsButton,
   },
   props: {
     tableConfig: {
@@ -86,6 +88,10 @@ export default {
       type: Function,
       default: () => HEADER_HEIGHT,
     },
+    showNewColumnButton: {
+      type: Boolean,
+      default: false,
+    },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
@@ -100,6 +106,7 @@ export default {
     columnResizeStart: () => true,
     allColumnsResize: (newSize: number) => true,
     selectColumnCellInFirstRow: (index: number) => true,
+    "update:newColumnButtonWidth": (width: number) => true,
   },
   setup(props) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -156,6 +163,17 @@ export default {
     },
   },
   methods: {
+    emitNewColumnButtonWidth() {
+      new ResizeObserver(() => {
+        const newColumnButtonHead = this.$refs[
+          "new-column-button-head"
+        ] as HTMLElement;
+        this.$emit(
+          "update:newColumnButtonWidth",
+          newColumnButtonHead?.getBoundingClientRect().width ?? 0,
+        );
+      }).observe(this.$refs["new-column-button-head"] as HTMLElement);
+    },
     isColumnSortable(index: number) {
       return this.enableSorting && this.columnSortConfigs[index];
     },
@@ -389,6 +407,14 @@ export default {
           <FilterIcon />
         </FunctionButton>
       </th>
+      <th
+        v-if="showNewColumnButton"
+        ref="new-column-button-head"
+        class="new-column-head"
+        @vue:mounted="emitNewColumnButtonWidth"
+      >
+        <KdsButton label="New column" leading-icon="plus" size="small" />
+      </th>
     </tr>
     <tr v-else>
       <slot />
@@ -600,6 +626,13 @@ thead {
             opacity: 1;
           }
         }
+      }
+
+      &.new-column-head {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8px;
       }
     }
 

@@ -60,6 +60,8 @@ interface TableConfig {
   showPopovers?: boolean;
   enableCellSelection?: boolean;
   enableDataValueViews?: boolean;
+  enableEditingCells?: boolean;
+  showNewColumnAndRowButton?: boolean;
   dataValueViewIsShown?: boolean;
   columnFilterInitiallyActive?: boolean;
   enableVirtualScrolling?: boolean;

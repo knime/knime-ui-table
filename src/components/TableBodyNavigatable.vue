@@ -11,6 +11,7 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  startEditing: [initialValue?: string];
 }>();
 
 const onArrowKeyDown = (event: KeyboardEvent) => {
@@ -39,18 +40,55 @@ const onArrowKeyDown = (event: KeyboardEvent) => {
 const { isShown: selectedCellIsExpanded, close: closeExpandedSelectedCell } =
   useDataValueViews();
 
+const onEscape = (event: KeyboardEvent) => {
+  if (selectedCellIsExpanded.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeExpandedSelectedCell();
+  }
+};
+
+const onTab = (event: KeyboardEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const horizontalMove = event.shiftKey ? -1 : 1;
+  emit("moveSelection", horizontalMove, 0, false);
+};
+
+const onEnter = (event: KeyboardEvent) => {
+  if (!event.shiftKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    emit("expandSelectedCell");
+    emit("startEditing");
+  }
+};
+
+const onSpace = (event: KeyboardEvent) => {
+  event.preventDefault();
+  emit("expandSelectedCell");
+  emit("startEditing", " ");
+};
+
 const onKeyDown = (event: KeyboardEvent) => {
   if (!event[getMetaOrCtrlKey()] && event.key.includes("Arrow")) {
     onArrowKeyDown(event);
   } else if (event.key === "Tab") {
-    emit("clearSelection");
-  } else if (event.key === "Enter" || event.key === " ") {
+    onTab(event);
+  } else if (event.key === "Enter") {
+    onEnter(event);
+  } else if (event.key === " ") {
+    onSpace(event);
+  } else if (event.key === "Escape") {
+    onEscape(event);
+  } else if (
+    !event[getMetaOrCtrlKey()] &&
+    !event.altKey &&
+    event.key.length === 1
+  ) {
+    // Handle any printable character to start editing with that character
     event.preventDefault();
-    emit("expandSelectedCell");
-  } else if (event.key === "Escape" && selectedCellIsExpanded.value) {
-    event.preventDefault();
-    event.stopPropagation();
-    closeExpandedSelectedCell();
+    emit("startEditing", event.key);
   }
 };
 </script>
@@ -58,6 +96,7 @@ const onKeyDown = (event: KeyboardEvent) => {
 <template>
   <tbody tabindex="-1" @keydown.self="onKeyDown">
     <slot name="bodyContent" />
+    <slot name="belowBody" />
   </tbody>
 </template>
 
