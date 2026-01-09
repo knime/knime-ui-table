@@ -107,6 +107,7 @@ export default {
     allColumnsResize: (newSize: number) => true,
     selectColumnCellInFirstRow: (index: number) => true,
     "update:newColumnButtonWidth": (width: number) => true,
+    newColumnButtonClick: (event: MouseEvent) => true,
   },
   setup(props) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -232,6 +233,9 @@ export default {
       // @ts-expect-error
       this.unthrottledOnPointerMove(event);
     }),
+    onNewColumnButtonClick(event: MouseEvent) {
+      this.$emit("newColumnButtonClick", event);
+    },
     unthrottledOnPointerMove(event: PointerEvent) {
       if (this.dragIndex !== null) {
         consola.debug("Resize via drag ongoing: ", event);
@@ -413,7 +417,7 @@ export default {
         class="new-column-head"
         @vue:mounted="emitNewColumnButtonWidth"
       >
-        <KdsButton label="New column" leading-icon="plus" size="small" />
+        <KdsButton label="New column" leading-icon="plus" size="small" @click="onNewColumnButtonClick"/>
       </th>
     </tr>
     <tr v-else>

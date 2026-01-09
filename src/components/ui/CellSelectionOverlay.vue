@@ -118,7 +118,10 @@ const isVirtualFocusOverlayInsideViewportOfBody = (
     virtualFocusOverlayBCR.top + halfHeightVirtualFocusOverlay;
   const focusOverlayCenterHorizontal =
     virtualFocusOverlayBCR.left + halfWidthVirtualFocusOverlay;
-
+    console.log("focusOverlayCenterVertical", focusOverlayCenterVertical);
+    console.log("bodyTop", bodyTop);
+    console.log("containerBCR.bottom", containerBCR.bottom);
+    console.log("headerHeight", headerHeight); 
   return {
     verticalInside:
       bodyTop <= focusOverlayCenterVertical &&

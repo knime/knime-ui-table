@@ -92,5 +92,13 @@ defineExpose({
 .container {
   display: flex;
   flex-direction: column;
+
+  /**
+   * Needed to enable sticky elements inside the tbody
+   */
+  & > tbody {
+    width: fit-content;
+    position: relative;
+  }
 }
 </style>

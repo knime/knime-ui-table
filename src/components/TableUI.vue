@@ -3,7 +3,6 @@
 import { type PropType, type Ref, computed, ref, toRef, watch } from "vue";
 
 import type { MenuItem } from "@knime/components";
-import { KdsButton } from "@knime/kds-components";
 
 import type DataConfig from "@/types/DataConfig";
 import { VirtualElementAnchor } from "@/types/DataValueView";
@@ -34,6 +33,7 @@ import BottomControls from "./control/BottomControls.vue";
 import TopControls from "./control/TopControls.vue";
 import ColumnFilters from "./filter/ColumnFilters.vue";
 import Header from "./layout/Header.vue";
+import NewRowButton from "./layout/NewRowButton.vue";
 import Row from "./layout/Row.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
@@ -63,7 +63,7 @@ export default {
     TablePopover,
     CellSelectionOverlay,
     TableCore,
-    KdsButton,
+    NewRowButton,
   },
   props: {
     /**
@@ -226,12 +226,15 @@ export default {
       rect: VirtualElementAnchor,
     ) => true,
     closeDataValueView: () => true,
+    newColumnButtonClick: () => true,
+    newRowButtonClick: () => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
-  setup(props, { emit }) {
+  setup(props, { emit, expose }) {
     const wrapper: Ref<any> = ref(null);
     const tableCore: Ref<InstanceType<typeof TableCore> | null> = ref(null);
-    const selectionOverlay: Ref<any> = ref([]);
+    const header: Ref<InstanceType<typeof Header> | null> = ref(null);
+    const selectionOverlay: Ref<null | typeof CellSelectionOverlay | (typeof CellSelectionOverlay)[]> = ref([]);
     const totalWidth = useTotalWidth(wrapper);
     const enableCellSelection = computed(() =>
       Boolean(props.tableConfig.enableCellSelection),
@@ -262,32 +265,64 @@ export default {
         });
       }
     };
-    // cell pasting
+
+    const scrollToCellSelectionOverlay = async () => {
+      const tableCoreRef = tableCore.value;
+      if (tableCoreRef === null) {
+        return;
+      }
+      const scrollToViewParams = props.tableConfig.enableVirtualScrolling
+        ? {
+            containerBCR:
+              tableCoreRef.getVirtualContainer()?.getBoundingClientRect() ||
+              null,
+            headerHeight: header.value?.$el.clientHeight || 0,
+            scrollTo: (position: { left?: number; top?: number }) =>
+              tableCoreRef.virtualScrollToPosition(position),
+          }
+        : null;
+
+        if (Array.isArray(selectionOverlay.value)) {
+      await selectionOverlay.value[0]?.scrollFocusOverlayIntoView(
+        scrollToViewParams,
+      );
+    } else if (selectionOverlay.value) {
+      await selectionOverlay.value.scrollFocusOverlayIntoView(
+        scrollToViewParams,
+      );
+    }
+    }
+
+    const updateCellSelection = (newRect: {
+      minX: number;
+      minY: number;
+      maxX: number;
+      maxY: number;
+    },
+    newRectId: RectId | null = null 
+    ) => {
+      const rectId = newRectId ?? currentRectId.value ?? 0;
+      selectCell(
+        { x: newRect.maxX, y: newRect.maxY },
+        rectId,
+        true,
+      );
+      if (newRect.minX !== newRect.maxX || newRect.minY !== newRect.maxY) {
+      expandCellSelection(
+        { x: newRect.minX, y: newRect.minY },
+        rectId,
+      );
+      }
+      tableCore.value?.getVirtualBody()?.focus({ preventScroll: true });
+      scrollToCellSelectionOverlay();
+    };
+
     const emitPasteSelection = () => {
       if (rectMinMax.value) {
-        const updateSelection = (newRect: {
-          minX: number;
-          minY: number;
-          maxX: number;
-          maxY: number;
-        }) => {
-          // Update the cell selection to the new pasted area
-          const currentRectIdValue = currentRectId.value;
-          selectCell(
-            { x: newRect.maxX, y: newRect.maxY },
-            currentRectIdValue,
-            true,
-          );
-          expandCellSelection(
-            { x: newRect.minX, y: newRect.minY },
-            currentRectIdValue,
-          );
-        };
-
         emit("pasteSelection", {
           rect: rectMinMax.value,
           id: currentRectId.value,
-          updateSelection,
+          updateSelection: updateCellSelection,
         });
       }
     };
@@ -317,16 +352,20 @@ export default {
     );
     const isEditingCell = computed(() => editingCell.value !== null);
 
-    const showNewColumnAndRowButton = computed(() =>
-      Boolean(props.tableConfig.showNewColumnAndRowButton),
+    const showNewColumnAndRowButton = computed(
+      () => Boolean(props.tableConfig.showNewColumnAndRowButton) || true,
     );
     const newColumnButtonWidth = ref(0);
+
+    expose({updateCellSelection})
 
     return {
       wrapper,
       totalWidth,
       tableCore,
+      header,
       selectionOverlay,
+      scrollToCellSelectionOverlay,
       selectCellsOnMove,
       currentRectId,
       rectMinMax,
@@ -790,6 +829,7 @@ export default {
       );
       this.focusBody();
     },
+    
     async onKeyboardMoveSelection(
       horizontalMove: number,
       verticalMove: number,
@@ -818,22 +858,8 @@ export default {
           : "onKeyboardMoveSelectionGroups"
       ](columnInd, rowInd, verticalMove, expandSelection);
 
-      const tableCoreRef = this.getTableCoreComponent();
-
-      const scrollToViewParams = this.showVirtualScroller
-        ? {
-            containerBCR:
-              tableCoreRef.getVirtualContainer()?.getBoundingClientRect() ||
-              null,
-            headerHeight: this.getHeaderComponent().$el.clientHeight,
-            scrollTo: (position: { left?: number; top?: number }) =>
-              tableCoreRef.virtualScrollToPosition(position),
-          }
-        : null;
-
-      await this.getSelectionOverlayComponent()?.scrollFocusOverlayIntoView(
-        scrollToViewParams,
-      );
+      await this.scrollToCellSelectionOverlay();
+      
       this.toBeShownCell = this.tableConfig.dataValueViewIsShown
         ? this.selectedCell
         : null;
@@ -1000,7 +1026,15 @@ export default {
       }
       return null;
     },
-  },
+    onNewRowButtonClick(event: MouseEvent) {
+      event.stopPropagation();
+      this.$emit("newRowButtonClick");
+    },
+    onNewColumnButtonClick(event: MouseEvent) {
+      event.stopPropagation();
+      this.$emit("newColumnButtonClick");
+    }
+  }
 };
 </script>
 
@@ -1134,6 +1168,9 @@ export default {
                       moveSelection: onKeyboardMoveSelectionFromEditingCell,
                     })(event)
                 "
+                @click-away="
+                  onKeyboardMoveSelectionFromEditingCell(0, 0, false)
+                "
               />
             </template>
             <template #rowCollapserContent>
@@ -1167,6 +1204,7 @@ export default {
             @sub-menu-item-selection="onHeaderSubMenuItemSelection"
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
             @update:new-column-button-width="onUpdateNewColumnButtonWidth"
+            @new-column-button-click="onNewColumnButtonClick"
           >
             <template #subHeader="slotProps">
               <slot name="subHeader" v-bind="slotProps" />
@@ -1201,13 +1239,7 @@ export default {
           />
         </template>
         <template #belowBody>
-          <KdsButton
-            v-if="showNewColumnAndRowButton"
-            label="New row"
-            leading-icon="plus"
-            size="small"
-            :style="{ margin: '4px' }"
-          />
+          <NewRowButton v-if="showNewColumnAndRowButton" @click="onNewRowButtonClick" @pointerdown.stop />
         </template>
       </TableCore>
       <BottomControls
@@ -1272,6 +1304,16 @@ table {
 
   &:focus {
     outline: none;
+  }
+
+  & .new-row-footer {
+    width: 100%;
+    background-color: green;
+
+    :deep(> button) {
+      position: sticky;
+      background-color: red !important;
+    }
   }
 }
 
