@@ -1,6 +1,6 @@
 <script lang="ts">
 /* eslint-disable max-lines */
-import { type PropType, type Ref, computed, ref, toRef, watch } from "vue";
+import { type PropType, type Ref, computed, nextTick, ref, toRef, watch } from "vue";
 
 import type { MenuItem } from "@knime/components";
 
@@ -227,7 +227,10 @@ export default {
     ) => true,
     closeDataValueView: () => true,
     newColumnButtonClick: () => true,
-    newRowButtonClick: () => true,
+    newRowButtonClick: (lastPosition: {
+      columnInd: number;
+      rectId: number | null;
+    } | null) => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit, expose }) {
@@ -314,7 +317,7 @@ export default {
       );
       }
       tableCore.value?.getVirtualBody()?.focus({ preventScroll: true });
-      scrollToCellSelectionOverlay();
+      nextTick().then(scrollToCellSelectionOverlay)
     };
 
     const emitPasteSelection = () => {
@@ -376,6 +379,7 @@ export default {
         clearCellSelection();
         closeDataValueView();
       },
+      updateCellSelection,
       changeFocus,
       handleCopyOnKeydown,
       toBeShownCell,
@@ -408,6 +412,8 @@ export default {
       currentRowSizeDelta: null as null | number,
       SPECIAL_COLUMNS_SIZE,
       editingCellInitialValue: null as null | string,
+      lastRowAndRectIdBeforeMovingToNewColumnButton: null as null | {rowInd: number, rectId: RectId | null},
+      lastColumnAndRectIdBeforeMovingToNewRowButton: null as null | {columnInd: number, rectId: RectId | null},
     };
   },
   computed: {
@@ -769,16 +775,15 @@ export default {
       expandSelection: boolean,
     ) {
       let adaptedRowInd = rowInd;
-      if (verticalMove) {
-        const isTop = this.isTop(rowInd);
-        if (!isTop) {
-          if (rowInd === this.totalTableLength) {
-            return;
-          }
-          if (rowInd === this.placeholderRowRowIndex) {
-            adaptedRowInd += verticalMove;
-          }
-        }
+      if (rowInd === this.totalTableLength) {
+        this.onMoveSelectionOutOfBodyDown({
+          columnInd,
+          rectId: this.currentRectId,
+        })
+        return;
+      }
+      if (rowInd === this.placeholderRowRowIndex) {
+        adaptedRowInd += verticalMove;
       }
       this[expandSelection ? "onExpandCellSelect" : "onCellSelect"](
         columnInd,
@@ -807,6 +812,10 @@ export default {
             adaptedRowInd = 0;
             adaptedGroupInd += 1;
           } else {
+            this.onMoveSelectionOutOfBodyDown({
+              columnInd,
+              rectId: this.currentRectId,
+            })
             return;
           }
         }
@@ -827,9 +836,55 @@ export default {
         verticalMove,
         expandSelection,
       );
-      this.focusBody();
+      if (this.selectedCell) {
+        this.focusBody();
+      }
+      this.toBeEditedCell = null;
     },
-    
+    onMoveSelectionOutOfBodyUp({columnInd}: {columnInd: number}) {
+        this.focusHeaderCell(columnInd);
+        this.clearCellSelection();
+    },
+    onMoveSelectionOutOfBodyDown({columnInd, rectId}: {columnInd: number, rectId: RectId | null}) {
+      if (this.showNewColumnAndRowButton) {
+        (this.$refs["new-row-button"] as InstanceType<typeof NewRowButton>)?.focus();
+        this.clearCellSelection();
+        this.lastColumnAndRectIdBeforeMovingToNewRowButton = { columnInd, rectId } ;
+      }
+    },
+    onMoveSelectionOutOfBodyRight({rowInd, rectId}: {rowInd: number, rectId: RectId | null}) {
+      if (this.showNewColumnAndRowButton) {
+        this.getHeaderComponent().focusNewColumnButton();
+        this.clearCellSelection();
+        this.lastRowAndRectIdBeforeMovingToNewColumnButton = { rowInd, rectId } ;
+      }
+    },
+    onMoveIntoBodyFromRight() {
+      const lastColumnInd = this.columnHeaders.length - 1;
+      const lastRowAndRectId = this.lastRowAndRectIdBeforeMovingToNewColumnButton ?? { rowInd: 0, rectId: null};
+      this.updateCellSelection({
+        minX: lastColumnInd,
+        minY: lastRowAndRectId.rowInd,
+        maxX: lastColumnInd,
+        maxY: lastRowAndRectId.rowInd,
+      },
+      lastRowAndRectId.rectId);
+      this.focusBody();
+      this.lastRowAndRectIdBeforeMovingToNewColumnButton = null;
+    },
+    onMoveIntoBodyFromBottom() {
+      const lastRowInd = this.totalTableLength - 1;
+      const lastColumnAndRectId = this.lastColumnAndRectIdBeforeMovingToNewRowButton ?? { columnInd: 0, rectId: null};
+      this.updateCellSelection({
+        minX: lastColumnAndRectId.columnInd,
+        minY: lastRowInd,
+        maxX: lastColumnAndRectId.columnInd,
+        maxY: lastRowInd,
+      },
+      lastColumnAndRectId.rectId);
+      this.focusBody();
+      this.lastColumnAndRectIdBeforeMovingToNewRowButton = null;
+    },
     async onKeyboardMoveSelection(
       horizontalMove: number,
       verticalMove: number,
@@ -838,17 +893,20 @@ export default {
       if (!this.selectedCell) {
         return;
       }
-      const columnInd = this.selectedCell.x + horizontalMove;
+      let columnInd = this.selectedCell.x + horizontalMove;
       const rowInd = this.selectedCell.y + verticalMove;
-      if (columnInd === -1 || columnInd === this.columnHeaders.length) {
+      if (columnInd === -1) {
+        return;
+      }
+      if (columnInd === this.columnHeaders.length) {
+        this.onMoveSelectionOutOfBodyRight({rowInd, rectId: this.currentRectId});
         return;
       }
       if (
         (rowInd === -1 && this.showVirtualScroller) ||
         (rowInd === -1 && !this.showVirtualScroller && this.currentRectId === 0)
       ) {
-        this.focusHeaderCell(columnInd);
-        this.clearCellSelection();
+        this.onMoveSelectionOutOfBodyUp({columnInd});
         return;
       }
 
@@ -1028,7 +1086,7 @@ export default {
     },
     onNewRowButtonClick(event: MouseEvent) {
       event.stopPropagation();
-      this.$emit("newRowButtonClick");
+      this.$emit("newRowButtonClick", this.lastColumnAndRectIdBeforeMovingToNewRowButton);
     },
     onNewColumnButtonClick(event: MouseEvent) {
       event.stopPropagation();
@@ -1205,6 +1263,7 @@ export default {
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
             @update:new-column-button-width="onUpdateNewColumnButtonWidth"
             @new-column-button-click="onNewColumnButtonClick"
+            @new-column-button-keydown-left="onMoveIntoBodyFromRight()"
           >
             <template #subHeader="slotProps">
               <slot name="subHeader" v-bind="slotProps" />
@@ -1239,7 +1298,7 @@ export default {
           />
         </template>
         <template #belowBody>
-          <NewRowButton v-if="showNewColumnAndRowButton" @click="onNewRowButtonClick" @pointerdown.stop />
+          <NewRowButton v-if="showNewColumnAndRowButton" ref="new-row-button" @click="onNewRowButtonClick" @pointerdown.stop @keydown-up="onMoveIntoBodyFromBottom"/>
         </template>
       </TableCore>
       <BottomControls

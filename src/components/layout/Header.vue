@@ -108,6 +108,7 @@ export default {
     selectColumnCellInFirstRow: (index: number) => true,
     "update:newColumnButtonWidth": (width: number) => true,
     newColumnButtonClick: (event: MouseEvent) => true,
+    newColumnButtonKeydownLeft: (event: KeyboardEvent) => true,
   },
   setup(props) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -236,6 +237,9 @@ export default {
     onNewColumnButtonClick(event: MouseEvent) {
       this.$emit("newColumnButtonClick", event);
     },
+    onNewColumnButtonKeydownLeft(event: KeyboardEvent) {
+      this.$emit("newColumnButtonKeydownLeft", event);
+    },
     unthrottledOnPointerMove(event: PointerEvent) {
       if (this.dragIndex !== null) {
         consola.debug("Resize via drag ongoing: ", event);
@@ -299,6 +303,9 @@ export default {
         this.$refs[`columnHeaderContent-${cellInd}`] as HTMLDivElement[]
       )[0].focus();
     },
+    focusNewColumnButton() {
+      (this.$refs["new-column-button"] as InstanceType<typeof KdsButton>)?.$el.focus();
+    }
   },
 };
 </script>
@@ -417,7 +424,9 @@ export default {
         class="new-column-head"
         @vue:mounted="emitNewColumnButtonWidth"
       >
-        <KdsButton label="New column" leading-icon="plus" size="small" @click="onNewColumnButtonClick"/>
+        <KdsButton ref="new-column-button" label="New column" leading-icon="plus" size="small" @click="onNewColumnButtonClick"
+         @keydown.left.prevent.stop="onNewColumnButtonKeydownLeft"
+        />
       </th>
     </tr>
     <tr v-else>

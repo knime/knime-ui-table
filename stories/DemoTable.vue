@@ -554,6 +554,8 @@ const htmlSlotContent = `
 
 <style>
 @import url("@knime/styles/css");
+@import url("@knime/kds-styles/kds-variables.css");
+@import url("@knime/kds-styles/kds-legacy-theme.css");
 
 :root {
   font-size: 16px;

@@ -112,23 +112,18 @@ const isVirtualFocusOverlayInsideViewportOfBody = (
 ) => {
   const virtualFocusOverlayBCR = focusOverlay.getBoundingClientRect();
   const bodyTop = containerBCR.top + headerHeight;
-  const halfHeightVirtualFocusOverlay = virtualFocusOverlayBCR.height / 2;
-  const halfWidthVirtualFocusOverlay = virtualFocusOverlayBCR.width / 2;
-  const focusOverlayCenterVertical =
-    virtualFocusOverlayBCR.top + halfHeightVirtualFocusOverlay;
-  const focusOverlayCenterHorizontal =
-    virtualFocusOverlayBCR.left + halfWidthVirtualFocusOverlay;
-    console.log("focusOverlayCenterVertical", focusOverlayCenterVertical);
-    console.log("bodyTop", bodyTop);
-    console.log("containerBCR.bottom", containerBCR.bottom);
-    console.log("headerHeight", headerHeight); 
+  
+  console.log("containerBCR:", containerBCR);
+  console.log("virtualFocusOverlayBCR:", virtualFocusOverlayBCR);
+  console.log("bodyTop:", bodyTop);
+  console.log("headerHeight:", headerHeight);
   return {
     verticalInside:
-      bodyTop <= focusOverlayCenterVertical &&
-      focusOverlayCenterVertical <= containerBCR.bottom,
+      bodyTop <= virtualFocusOverlayBCR.top &&
+      virtualFocusOverlayBCR.bottom <= containerBCR.bottom,
     horizontalInside:
-      containerBCR.left <= focusOverlayCenterHorizontal &&
-      focusOverlayCenterHorizontal <= containerBCR.right,
+      containerBCR.left <= virtualFocusOverlayBCR.left &&
+      virtualFocusOverlayBCR.right <= containerBCR.right,
   };
 };
 
