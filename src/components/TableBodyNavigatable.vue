@@ -89,6 +89,7 @@ const onKeyDown = (event: KeyboardEvent) => {
     @focusout="emit('bodyFocusout')"
   >
     <slot name="bodyContent" />
+    <slot name="belowBody" />
   </tbody>
 </template>
 

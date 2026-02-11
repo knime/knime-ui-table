@@ -133,23 +133,14 @@ const mountEditableTable = ({
   return wrapper;
 };
 
-/**
- * Click on a single cell to enter editable state.
- * This triggers pointerdown (which selects) and then the cell-select event
- * flow that leads to editing for editable columns.
- */
 const clickCell = async (wrapper: VueWrapper, row: number, col: number) => {
   const tableUIVm = wrapper.vm as any;
-  // Simulate what happens on cell click:
-  // 1. Select the cell (with ignoreIfSelected=true for editable columns)
-  // 2. Start editing
   tableUIVm.onCellSelectRowEvent(col, row, 0, false);
   await nextTick();
 };
 
 /**
  * Drag across cells to select a range (without editing).
- * Simulates: pointerdown on fromCell, pointermove to toCell, pointerup.
  */
 const dragCells = async (
   wrapper: VueWrapper,
@@ -163,18 +154,12 @@ const dragCells = async (
   await nextTick();
 };
 
-/**
- * Get the currently editable cell position, or null if none.
- */
 const getEditableCell = (
   wrapper: VueWrapper,
 ): { x: number; y: number } | null => {
   return (wrapper.vm as any).editingCell ?? null;
 };
 
-/**
- * Get the selected cell rect (min/max bounds), or null if nothing selected.
- */
 const getSelectedCells = (
   wrapper: VueWrapper,
 ): {
@@ -184,9 +169,6 @@ const getSelectedCells = (
   return (wrapper.vm as any).rectMinMax ?? null;
 };
 
-/**
- * Get the single focused/selected cell position, or null.
- */
 const getSelectedCell = (
   wrapper: VueWrapper,
 ): { x: number; y: number } | null => {
@@ -382,7 +364,6 @@ describe("TableUI Cell Interaction", () => {
 
     beforeEach(async () => {
       wrapper = mountEditableTable();
-      // Select cell (1, 1) without editing
       await selectCell(wrapper, 1, 1);
       await focusBody(wrapper);
     });
@@ -479,11 +460,126 @@ describe("TableUI Cell Interaction", () => {
       expect(getEditableCell(wrapper)).toBeNull();
     });
 
-    it("backspace clears cell content and enters editable state", async () => {
+    it("backspace enters editable state with empty initial value", async () => {
       expect(getEditableCell(wrapper)).toBeNull();
       await pressKeyOnBody(wrapper, "Backspace");
       expect(getEditableCell(wrapper)).toStrictEqual({ x: 1, y: 1 });
       expect((wrapper.vm as any).editingCellInitialValue).toBe("");
+    });
+
+    describe("edge navigation", () => {
+      let wrapper: VueWrapper;
+
+      beforeEach(() => {
+        wrapper = mountEditableTable({ showNewColumnAndRowButton: true });
+      });
+
+      afterEach(() => {
+        wrapper.unmount();
+      });
+
+      it("tab beyond right edge clears selection and stores position", async () => {
+        // Select last column cell (col 2, row 1)
+        await selectCell(wrapper, 1, 2);
+        await focusBody(wrapper);
+        await pressKeyOnBody(wrapper, "Tab");
+        // Selection should be cleared
+        expect(getSelectedCells(wrapper)).toBeNull();
+        // Position should be stored for the add column button
+        expect(
+          (wrapper.vm as any).lastRowAndRectIdBeforeMovingToNewColumnButton,
+        ).toStrictEqual({ rowInd: 1, rectId: 0 });
+      });
+
+      it("arrow right beyond right edge clears selection and stores position", async () => {
+        await selectCell(wrapper, 1, 2);
+        await focusBody(wrapper);
+        await pressKeyOnBody(wrapper, "ArrowRight");
+        expect(getSelectedCells(wrapper)).toBeNull();
+        expect(
+          (wrapper.vm as any).lastRowAndRectIdBeforeMovingToNewColumnButton,
+        ).toStrictEqual({ rowInd: 1, rectId: 0 });
+      });
+
+      it("arrow down beyond bottom edge clears selection and stores position", async () => {
+        // Select last row cell (col 1, row 2)
+        await selectCell(wrapper, 2, 1);
+        await focusBody(wrapper);
+        await pressKeyOnBody(wrapper, "ArrowDown");
+        expect(getSelectedCells(wrapper)).toBeNull();
+        expect(
+          (wrapper.vm as any).lastColumnAndRectIdBeforeMovingToNewRowButton,
+        ).toStrictEqual({ columnInd: 1, rectId: 0 });
+      });
+
+      it("clicking add row button emits with stored position", async () => {
+        await selectCell(wrapper, 2, 1);
+        await focusBody(wrapper);
+        await pressKeyOnBody(wrapper, "ArrowDown");
+        // Simulate clicking the new row button
+        (wrapper.vm as any).onNewRowButtonClick(new MouseEvent("click"));
+        await nextTick();
+        expect(wrapper.emitted("newRowButtonClick")).toBeDefined();
+        expect(wrapper.emitted("newRowButtonClick")![0]).toStrictEqual([
+          { columnInd: 1, rectId: 0 },
+        ]);
+      });
+
+      it("moving back from add column button restores selection", async () => {
+        await selectCell(wrapper, 1, 2);
+        await focusBody(wrapper);
+        // Move out to the right
+        await pressKeyOnBody(wrapper, "Tab");
+        expect(getSelectedCells(wrapper)).toBeNull();
+        // Move back into body
+        (wrapper.vm as any).onMoveIntoBodyFromRight();
+        await nextTick();
+        // Should select the last column in the same row
+        expect(getSelectedCell(wrapper)).toStrictEqual({ x: 2, y: 1 });
+      });
+
+      it("moving back from add row button restores selection", async () => {
+        await selectCell(wrapper, 2, 1);
+        await focusBody(wrapper);
+        // Move out downward
+        await pressKeyOnBody(wrapper, "ArrowDown");
+        expect(getSelectedCells(wrapper)).toBeNull();
+        // Move back into body
+        (wrapper.vm as any).onMoveIntoBodyFromBottom();
+        await nextTick();
+        // Should select the last row in the same column
+        expect(getSelectedCell(wrapper)).toStrictEqual({ x: 1, y: 2 });
+      });
+
+      it("moving back from add row button to virtual selection column", async () => {
+        const vm = wrapper.vm as any;
+        const spy = vi
+          .spyOn(vm, "focusRowVirtualColumn")
+          .mockImplementation(() => {});
+        vm.lastColumnAndRectIdBeforeMovingToNewRowButton = {
+          virtualColumn: "selection",
+          rectId: 0,
+        };
+        vm.onMoveIntoBodyFromBottom();
+        await nextTick();
+        expect(spy).toHaveBeenCalledWith("selection", 2, 0);
+        expect(vm.lastColumnAndRectIdBeforeMovingToNewRowButton).toBeNull();
+      });
+
+      it("moving back from add row button to virtual delete column", async () => {
+        const vm = wrapper.vm as any;
+        const spy = vi
+          .spyOn(vm, "focusRowVirtualColumn")
+          .mockImplementation(() => {});
+        vm.lastColumnAndRectIdBeforeMovingToNewRowButton = {
+          virtualColumn: "delete",
+          rectId: null,
+        };
+        vm.onMoveIntoBodyFromBottom();
+        await nextTick();
+        expect(spy).toHaveBeenCalledWith("delete", 2, null);
+        expect(vm.lastColumnAndRectIdBeforeMovingToNewRowButton).toBeNull();
+      });
     });
   });
 });

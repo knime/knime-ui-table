@@ -210,6 +210,7 @@ defineExpose({
           </VirtualRow>
         </div>
       </template>
+      <template #belowBody><slot name="belowBody" /></template>
     </TableBodyNavigatable>
   </div>
 </template>
