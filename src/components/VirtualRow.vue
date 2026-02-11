@@ -14,6 +14,7 @@ defineProps<{
   specialColumnSizes: {
     collapserSize: number;
     selectionSize: number;
+    deletionSize: number;
     rightSideSize: number;
   };
   tableConfig: TableConfig;

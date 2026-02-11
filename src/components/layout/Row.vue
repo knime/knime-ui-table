@@ -36,6 +36,7 @@ import { type Ref, computed, ref, toRef, watch } from "vue";
 import throttle from "raf-throttle";
 
 import { Checkbox, type MenuItem, SubMenu } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import OptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 
 import type { ColumnConfig, RowConfig } from "@/types/DataConfig";
@@ -99,7 +100,11 @@ const emit = defineEmits<{
   cellSelect: [index: number, ignoreIfSelected: boolean];
   expandCellSelect: [index: number];
   dataValueView: [index: number, anchor: VirtualElementAnchor];
-  virtualColumnNav: [direction: "up" | "down" | "left" | "right"];
+  deleteRow: [];
+  virtualColumnNav: [
+    type: "delete" | "selection",
+    direction: "up" | "down" | "left" | "right",
+  ];
 }>();
 
 const showContent = ref(false);
@@ -164,6 +169,9 @@ const filteredSubMenuItems = computed(() => {
     ? props.rowData?.subMenuItemsForRow
     : props.tableConfig.subMenuItems;
 });
+const onDeleteRow = () => {
+  emit("deleteRow");
+};
 const onRowExpand = () => {
   showContent.value = !showContent.value;
 };
@@ -259,10 +267,16 @@ const onDataValueView = (index: number) => {
 };
 
 const selectionCheckbox = ref<InstanceType<typeof Checkbox> | null>(null);
+const deleteButton = ref<InstanceType<typeof KdsButton> | null>(null);
 const onVirtualColumnKeydown = (
+  type: "delete" | "selection",
   direction: "up" | "down" | "left" | "right",
 ) => {
-  emit("virtualColumnNav", direction);
+  emit("virtualColumnNav", type, direction);
+};
+
+const focusDeleteButton = () => {
+  deleteButton.value?.$el?.focus();
 };
 const focusSelectionCheckbox = () => {
   (selectionCheckbox.value as any)?.$el?.querySelector("input")?.focus();
@@ -287,6 +301,7 @@ const transition = computed(() =>
 
 defineExpose({
   getCellComponents,
+  focusDeleteButton,
   focusSelectionCheckbox,
   /**
    * For TableUI test purposes only
@@ -297,7 +312,11 @@ defineExpose({
 
 <template>
   <tr
-    v-if="row.length > 0 || tableConfig.showSelection"
+    v-if="
+      row.length > 0 ||
+      tableConfig.enableRowDeletion ||
+      tableConfig.showSelection
+    "
     ref="rowElement"
     :class="[
       'row',
@@ -320,6 +339,21 @@ defineExpose({
       class="collapser-cell"
       @collapser-expand="onRowExpand"
     />
+    <td v-if="tableConfig.enableRowDeletion" class="deletion-cell">
+      <KdsButton
+        ref="deleteButton"
+        variant="transparent"
+        leading-icon="trash"
+        size="small"
+        destructive
+        aria-label="Delete row"
+        @click.stop="onDeleteRow"
+        @keydown.left.prevent.stop
+        @keydown.up.prevent.stop="onVirtualColumnKeydown('delete', 'up')"
+        @keydown.down.prevent.stop="onVirtualColumnKeydown('delete', 'down')"
+        @keydown.right.prevent.stop="onVirtualColumnKeydown('delete', 'right')"
+      />
+    </td>
     <td
       v-if="tableConfig.showSelection"
       class="select-cell"
@@ -447,6 +481,19 @@ tr.row {
       }
     }
 
+    &.deletion-cell {
+      min-width: 30px;
+      width: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+
+      &:focus-within {
+        opacity: 1;
+      }
+    }
+
     &.action {
       align-items: center;
       display: flex;
@@ -497,6 +544,10 @@ tr.row {
   &:hover {
     outline: none;
     box-shadow: 1px 1px 4px 0 var(--knime-gray-dark-semi);
+
+    & .deletion-cell {
+      opacity: 1;
+    }
   }
 
   & a {

@@ -18,6 +18,7 @@ const props = defineProps<{
   specialColumnSizes: {
     collapserSize: number;
     selectionSize: number;
+    deletionSize: number;
     rightSideSize: number;
   };
   tableConfig: TableConfig;
@@ -38,6 +39,7 @@ const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
       marginBottom: `${ROW_MARGIN_BOTTOM}px`,
     }"
   >
+    <td v-if="tableConfig.enableRowDeletion" class="deletion-cell-spacer" />
     <td v-if="tableConfig.showSelection" class="select-cell">
       <Checkbox :disabled="true" />
     </td>
@@ -64,6 +66,11 @@ tr {
   display: flex;
 
   & td {
+    &.deletion-cell-spacer {
+      min-width: 30px;
+      width: 30px;
+    }
+
     &.select-cell {
       min-width: 30px;
       width: 30px;

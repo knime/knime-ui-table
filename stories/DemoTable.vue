@@ -150,8 +150,10 @@ const props = defineProps({
   autoSizeRowsToRowWithMaxHeight: Boolean,
   fixedRowHeights: { type: Object, default: () => ({}) },
   defaultColumns: { type: Array, default: () => null },
+  enableRowDeletion: Boolean,
   enableHeaderCellSelection: Boolean,
   editableColumns: Boolean,
+  deletableColumns: Boolean,
 });
 
 const {
@@ -334,6 +336,7 @@ const dataConfig = computed(() => {
       editable: props.editableColumns,
       noPadding: props.editableColumns,
       noPaddingLeft: props.editableColumns,
+      deletable: props.deletableColumns,
     };
     dataConfig.columnConfigs.push(columnConfig);
   });
@@ -406,6 +409,7 @@ const tableConfig = reactive({
   groupSubMenuItems: props.showGroupSubMenus ? props.groupSubMenuItems : [],
   enableVirtualScrolling: props.enableVirtualScrolling,
   enableColumnResizing: props.enableColumnResize,
+  enableRowDeletion: props.enableRowDeletion,
   groupByConfig,
   timeFilterConfig,
   settingsItems: props.checkboxSettings.map(useCheckboxItem),
@@ -451,6 +455,9 @@ const onCloseDataValueView = (...args) => {
   alertEvent("close-data-value-view")(...args);
   tableConfig.dataValueViewIsShown = false;
 };
+
+const onDeleteColumn = alertEvent("delete-column");
+const onDeleteRow = alertEvent("delete-row");
 
 const htmlSlotContent = `
 <div style="
@@ -507,6 +514,8 @@ const htmlSlotContent = `
       @copy-selection="onCopySelection"
       @data-value-view="onDataValueView"
       @close-data-value-view="onCloseDataValueView"
+      @delete-column="onDeleteColumn"
+      @delete-row="onDeleteRow"
     >
       <template
         v-for="col in currentSlottedColumns"

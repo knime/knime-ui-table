@@ -38,6 +38,7 @@ export interface ColumnConfig {
   noPadding?: boolean;
   noPaddingLeft?: boolean;
   editable?: boolean;
+  deletable?: boolean;
 }
 
 interface DataConfig {

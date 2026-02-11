@@ -54,7 +54,7 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/dist/**"],
     environment: "jsdom",
     reporters: ["default", "junit"],
-    deps: { inline: ["consola"] }, // needed? already defined in vitest.setup.js
+    deps: { inline: ["consola", "@knime/kds-components"] },
     setupFiles: [
       fileURLToPath(new URL("test-setup/vitest.setup.js", import.meta.url)),
     ],

@@ -49,6 +49,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    enableRowDeletion: {
+      type: Boolean,
+      default: false,
+    },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
@@ -88,6 +92,7 @@ export default {
   <thead>
     <tr :style="{ ...headerStyle }">
       <th v-if="showCollapser" class="collapser-cell-spacer" />
+      <th v-if="enableRowDeletion" class="deletion-cell-spacer" />
       <th v-if="showSelection" class="select-cell-spacer" />
       <th
         v-for="[header, ind] in indexedColumnHeaders"
@@ -148,6 +153,11 @@ tr {
       display: flex;
       flex-direction: column-reverse;
       position: relative;
+    }
+
+    &.deletion-cell-spacer {
+      min-width: 30px;
+      padding: 0;
     }
   }
 

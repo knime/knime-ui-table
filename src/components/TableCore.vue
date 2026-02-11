@@ -66,6 +66,9 @@ const collapserSize = computed(() =>
 const selectionSize = computed(() =>
   props.tableConfig.showSelection ? SPECIAL_COLUMNS_SIZE : 0,
 );
+const deletionSize = computed(() =>
+  props.tableConfig.enableRowDeletion ? SPECIAL_COLUMNS_SIZE : 0,
+);
 
 const rightSideSize = computed(() => {
   return props.tableConfig.showColumnFilters ||
@@ -79,7 +82,11 @@ const scrolledElement = ref<HTMLElement | null>(null);
 const { fitsInsideTotalWidth, innerWidthToBodyWidth } = useAvailableWidth({
   emitAvailableWidth: (newWidth) => emit("update:available-width", newWidth),
   specialColumnsSizeTotal: computed(
-    () => collapserSize.value + selectionSize.value + rightSideSize.value,
+    () =>
+      collapserSize.value +
+      selectionSize.value +
+      deletionSize.value +
+      rightSideSize.value,
   ),
   refs: { scrolledElement },
   totalWidth: toRef(props, "totalWidth"),
@@ -114,6 +121,7 @@ provideCommonScrollContainerProps(scrolledElement, {
     :special-column-sizes="{
       collapserSize,
       selectionSize,
+      deletionSize,
       rightSideSize,
     }"
     :current-body-width="currentBodyWidth"

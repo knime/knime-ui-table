@@ -9,6 +9,7 @@ import {
   type MenuItem,
   SubMenu,
 } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import ArrowIcon from "@knime/styles/img/icons/arrow-down.svg";
 import ArrowDropdown from "@knime/styles/img/icons/arrow-dropdown.svg";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
@@ -20,6 +21,7 @@ import {
   HEADER_HEIGHT,
   MAX_SUB_MENU_WIDTH,
   MIN_COLUMN_SIZE,
+  SPECIAL_COLUMNS_SIZE,
 } from "@/util/constants";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
 import { useStartEditingKeydown } from "../composables/useStartEditingKeydown";
@@ -45,6 +47,7 @@ export default {
     ArrowIcon,
     ArrowDropdown,
     FilterIcon,
+    KdsButton,
   },
   props: {
     tableConfig: {
@@ -73,6 +76,10 @@ export default {
     },
     columnHeaderColors: {
       type: Array as PropType<Array<string | null>>,
+      default: () => [],
+    },
+    columnDeletables: {
+      type: Array as PropType<Array<boolean | undefined>>,
       default: () => [],
     },
     isSelected: {
@@ -109,6 +116,7 @@ export default {
     selectionKeydownDown: () => true,
     headerCellDeselect: () => true,
     headerCellStartEditing: (index: number, initialValue?: string) => true,
+    deleteColumn: (index: number) => true,
   },
   setup(props, { emit }) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -298,6 +306,9 @@ export default {
     dragHandleHeight(isDragging: boolean) {
       return isDragging ? this.currentDragHandlerHeight : HEADER_HEIGHT;
     },
+    onDeleteColumn(ind: number) {
+      this.$emit("deleteColumn", ind);
+    },
     onSubMenuItemSelection(item: any, ind: number) {
       this.$emit("subMenuItemSelection", item, ind);
     },
@@ -370,6 +381,10 @@ export default {
         :class="['collapser-cell-spacer', { 'with-subheaders': hasSubHeaders }]"
       />
       <th
+        v-if="tableConfig.enableRowDeletion"
+        :class="['deletion-cell-spacer', { 'with-subheaders': hasSubHeaders }]"
+      />
+      <th
         v-if="tableConfig.showSelection"
         :class="['select-cell', { 'with-subheaders': hasSubHeaders }]"
         @keydown.down.prevent.stop="$emit('selectionKeydownDown')"
@@ -405,7 +420,8 @@ export default {
               sortable: isColumnSortable(ind),
               inverted: sortDirection === -1,
               'with-subheaders': hasSubHeaders,
-              'with-button-in-header': columnSubMenuItems[ind],
+              'with-button-in-header':
+                columnSubMenuItems[ind] || columnDeletables[ind],
             },
           ]"
           tabindex="0"
@@ -433,6 +449,15 @@ export default {
               >{{ columnSubHeaders[ind] }}</slot
             >
           </div>
+        </div>
+        <div v-if="columnDeletables[ind]" class="delete-column-button">
+          <KdsButton
+            variant="transparent"
+            leading-icon="trash"
+            size="small"
+            aria-label="Delete column"
+            @click.stop="onDeleteColumn(ind)"
+          />
         </div>
         <div v-if="columnSubMenuItems[ind]" class="sub-menu-select-header">
           <SubMenu
@@ -516,6 +541,10 @@ thead {
       }
 
       &.collapser-cell-spacer {
+        min-width: 30px;
+      }
+
+      &.deletion-cell-spacer {
         min-width: 30px;
       }
 
@@ -661,6 +690,12 @@ thead {
               }
             }
           }
+        }
+
+        & .delete-column-button {
+          width: 22px;
+          display: flex;
+          align-items: center;
         }
 
         & .sub-menu-select-header {
