@@ -36,6 +36,8 @@ export interface ColumnConfig {
   classGenerator?: ClassGenerator[];
   headerColor?: string;
   noPadding?: boolean;
+  noPaddingLeft?: boolean;
+  editable?: boolean;
 }
 
 interface DataConfig {

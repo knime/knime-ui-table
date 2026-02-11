@@ -68,6 +68,7 @@ export interface RowProps {
   disableRowHeightTransition?: boolean;
   selectedCellIndex?: number | null;
   toBeExpandedCellIndex?: number | null;
+  toBeEditedCellIndex?: number | null;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
@@ -82,6 +83,7 @@ const props = withDefaults(defineProps<RowProps>(), {
   disableRowHeightTransition: false,
   selectedCellIndex: null,
   toBeExpandedCellIndex: null,
+  toBeEditedCellIndex: null,
 });
 
 const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
@@ -139,6 +141,10 @@ const hasDataValueView = computed(() =>
 
 const noPadding = computed(() =>
   getPropertiesFromColumns(props.columnConfigs, "noPadding"),
+);
+
+const noPaddingLeft = computed(() =>
+  getPropertiesFromColumns(props.columnConfigs, "noPaddingLeft"),
 );
 
 const clickableColumns = computed(() =>
@@ -345,7 +351,9 @@ defineExpose({
       :has-data-value-view="
         tableConfig.enableDataValueViews && Boolean(hasDataValueView[ind])
       "
+      :is-editing="toBeEditedCellIndex === ind"
       :no-padding="noPadding[ind]"
+      :no-padding-left="noPaddingLeft[ind]"
       :size="columnSizes[ind] ?? 100"
       :class-generators="classGenerators[ind]"
       :is-clickable-by-config="isClickableByConfig(ind)"
@@ -365,6 +373,9 @@ defineExpose({
           :width="width"
           :ind="ind"
         />
+      </template>
+      <template #editable-cell="{ cellElement }">
+        <slot name="editable-cell" :cell-element="cellElement" :ind="ind" />
       </template>
     </Cell>
     <td

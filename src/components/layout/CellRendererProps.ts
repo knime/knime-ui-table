@@ -5,6 +5,10 @@ interface CellRendererProps {
   isSelected: boolean;
   isToBeExpanded: boolean;
   noPadding?: boolean;
+  /**
+   * Only to be used if no color indicator is shown in a cell
+   */
+  noPaddingLeft?: boolean;
   text: string | undefined;
   title: string | null;
   color: string | null;
@@ -17,6 +21,7 @@ interface CellRendererProps {
    */
   defaultTopBottomPadding: number;
   enableExpand?: boolean;
+  isEditing?: boolean;
 }
 
 export type { CellRendererProps };

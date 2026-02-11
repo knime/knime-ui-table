@@ -48,6 +48,7 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  startEditing: [initialValue?: string];
   bodyFocusin: [];
   bodyFocusout: [];
 }>();
@@ -184,6 +185,7 @@ defineExpose({
       "
       @clear-selection="emit('clearSelection')"
       @expand-selected-cell="emit('expandSelectedCell')"
+      @start-editing="(initialValue) => emit('startEditing', initialValue)"
       @body-focusin="emit('bodyFocusin')"
       @body-focusout="emit('bodyFocusout')"
     >

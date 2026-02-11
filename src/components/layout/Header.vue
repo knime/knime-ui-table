@@ -22,6 +22,7 @@ import {
   MIN_COLUMN_SIZE,
 } from "@/util/constants";
 import { useIndicesAndStylesFor } from "../composables/useHorizontalIndicesAndStyles";
+import { useStartEditingKeydown } from "../composables/useStartEditingKeydown";
 
 const BORDER_TOP = 1;
 
@@ -107,11 +108,27 @@ export default {
     headerCellSelect: (index: number) => true,
     selectionKeydownDown: () => true,
     headerCellDeselect: () => true,
+    headerCellStartEditing: (index: number, initialValue?: string) => true,
   },
-  setup(props) {
+  setup(props, { emit }) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
       useIndicesAndStylesFor(toRef(props, "columnHeaders"));
-    return { indexedColumnHeaders, headerStyles };
+
+    let currentColumnIndex = 0;
+    const onStartEditing = (initialValue?: string) => {
+      emit("headerCellStartEditing", currentColumnIndex, initialValue);
+    };
+    const { onKeydown: startEditingKeydown } = useStartEditingKeydown({
+      onExpandAndStartEditing: onStartEditing,
+      onStartEditing,
+    });
+
+    const onHeaderCellKeydown = (event: KeyboardEvent, columnIndex: number) => {
+      currentColumnIndex = columnIndex;
+      startEditingKeydown(event);
+    };
+
+    return { indexedColumnHeaders, headerStyles, onHeaderCellKeydown };
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   data() {
@@ -205,6 +222,7 @@ export default {
       if (this.isColumnSortable(ind)) {
         this.$emit("columnSort", ind, header);
       }
+      this.$emit("headerCellStartEditing", ind);
     },
     onToggleFilter() {
       this.$emit("toggleFilter");
@@ -399,6 +417,7 @@ export default {
           @keydown.left.prevent="onKeydownLeft(ind)"
           @keydown.right.prevent="onKeydownRight(ind)"
           @keydown.down.self.prevent="onKeydownDown(ind)"
+          @keydown="onHeaderCellKeydown($event, ind)"
         >
           <div :ref="`mainHeader-${ind}`" class="main-header">
             <ArrowIcon :class="['icon', { active: sortColumn === ind }]" />
