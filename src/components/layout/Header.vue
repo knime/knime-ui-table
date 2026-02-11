@@ -86,6 +86,10 @@ export default {
       type: Function,
       default: () => HEADER_HEIGHT,
     },
+    selectedHeaderIndex: {
+      type: Number as PropType<number | null>,
+      default: null,
+    },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
@@ -100,6 +104,9 @@ export default {
     columnResizeStart: () => true,
     allColumnsResize: (newSize: number) => true,
     selectColumnCellInFirstRow: (index: number) => true,
+    headerCellSelect: (index: number) => true,
+    selectionKeydownDown: () => true,
+    headerCellDeselect: () => true,
   },
   setup(props) {
     const { indexedData: indexedColumnHeaders, style: headerStyles } =
@@ -118,6 +125,7 @@ export default {
       maximumSubMenuWidth: MAX_SUB_MENU_WIDTH,
       currentDragHandlerHeight: 0,
       borderTop: BORDER_TOP,
+      focusedHeaderIndex: null as null | number, // the index of the currently focused header cell
     };
   },
   computed: {
@@ -154,8 +162,39 @@ export default {
         getHeaderPaddingLeft(columnHeaderColor),
       );
     },
+    headerSelectionOverlayStyle(): Record<string, string> | null {
+      const columnIndex = this.selectedHeaderIndex;
+      if (columnIndex === null || !this.tableConfig.enableHeaderCellSelection) {
+        return null;
+      }
+      let left = 0;
+      if (this.tableConfig.showSelection) {
+        left += SPECIAL_COLUMNS_SIZE;
+      }
+      if (this.tableConfig.showCollapser) {
+        left += SPECIAL_COLUMNS_SIZE;
+      }
+      if (this.tableConfig.enableRowDeletion) {
+        left += SPECIAL_COLUMNS_SIZE;
+      }
+      for (let i = 0; i < columnIndex; i++) {
+        left += this.columnSizes[i];
+      }
+      const width = this.columnSizes[columnIndex];
+      return {
+        left: `${left}px`,
+        width: `${width}px`,
+      };
+    },
   },
   methods: {
+    onHeaderCellFocus(columnIndex: number) {
+      this.focusedHeaderIndex = columnIndex;
+      this.$emit("headerCellSelect", columnIndex);
+    },
+    onHeaderCellBlur() {
+      this.focusedHeaderIndex = null;
+    },
     isColumnSortable(index: number) {
       return this.enableSorting && this.columnSortConfigs[index];
     },
@@ -267,6 +306,24 @@ export default {
         );
       });
     },
+    /**
+     * We deliberately only react on Tab and not on blur since we do
+     * want to keep the header in a selected yet unfocused state when
+     * the user clicks outside the table.
+     */
+    onKeydownTab() {
+      this.$emit("headerCellDeselect");
+    },
+    onKeydownLeft(columnIndex: number) {
+      if (columnIndex > 0) {
+        this.focusHeaderCell(columnIndex - 1);
+      }
+    },
+    onKeydownRight(columnIndex: number) {
+      if (columnIndex < this.columnHeaders.length - 1) {
+        this.focusHeaderCell(columnIndex + 1);
+      }
+    },
     onKeydownDown(columnIndex: number) {
       if (this.tableConfig.enableCellSelection) {
         this.$emit("selectColumnCellInFirstRow", columnIndex);
@@ -276,6 +333,11 @@ export default {
       (
         this.$refs[`columnHeaderContent-${cellInd}`] as HTMLDivElement[]
       )[0].focus();
+    },
+    focusSelectionCheckbox() {
+      (this.$refs["selection-checkbox"] as any)?.$el
+        ?.querySelector("input")
+        ?.focus();
     },
   },
 };
@@ -292,8 +354,10 @@ export default {
       <th
         v-if="tableConfig.showSelection"
         :class="['select-cell', { 'with-subheaders': hasSubHeaders }]"
+        @keydown.down.prevent.stop="$emit('selectionKeydownDown')"
       >
         <Checkbox
+          ref="selection-checkbox"
           :model-value="isSelected"
           :disabled="tableConfig.disableSelection"
           @update:model-value="onSelect"
@@ -323,12 +387,17 @@ export default {
               sortable: isColumnSortable(ind),
               inverted: sortDirection === -1,
               'with-subheaders': hasSubHeaders,
-              'with-sub-menu': columnSubMenuItems[ind],
+              'with-button-in-header': columnSubMenuItems[ind],
             },
           ]"
           tabindex="0"
+          @focus="onHeaderCellFocus(ind)"
+          @blur="onHeaderCellBlur"
           @click="onHeaderClick(ind, header)"
           @keydown.space="onHeaderClick(ind, header)"
+          @keydown.tab="onKeydownTab"
+          @keydown.left.prevent="onKeydownLeft(ind)"
+          @keydown.right.prevent="onKeydownRight(ind)"
           @keydown.down.self.prevent="onKeydownDown(ind)"
         >
           <div :ref="`mainHeader-${ind}`" class="main-header">
@@ -393,6 +462,12 @@ export default {
     <tr v-else>
       <slot />
     </tr>
+    <div
+      v-if="headerSelectionOverlayStyle"
+      class="header-selection-overlay"
+      :class="{ 'header-focused': focusedHeaderIndex !== null }"
+      :style="headerSelectionOverlayStyle"
+    />
   </thead>
 </template>
 
@@ -496,10 +571,14 @@ thead {
           flex-direction: column;
           width: 100%;
 
-          &.with-sub-menu {
+          &:focus {
+            outline: none;
+          }
+
+          &.with-button-in-header {
             width: calc(
               100% - 22px
-            ); /* due to .sub-menu-select-header: width */
+            ); /* due to .sub-menu-select-header / .delete-column-button: width */
           }
 
           &:not(.inverted) .icon.active {
@@ -610,6 +689,28 @@ thead {
 
   &.sub-menu-active tr {
     padding-right: 30px;
+  }
+}
+
+.header-selection-overlay {
+  --selected-cells-background-color: rgb(30 109 168 / 9%);
+  --selected-cells-border: 1px solid rgb(55 109 168);
+
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: var(--selected-cells-background-color);
+  border: var(--selected-cells-border);
+  pointer-events: none;
+  z-index: 1;
+
+  &.header-focused::after {
+    --focus-cell-border: 1px dashed rgb(44 88 135);
+
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border: var(--focus-cell-border);
   }
 }
 </style>

@@ -59,6 +59,7 @@ interface TableConfig {
   reserveSpaceForSubMenu?: "always" | "auto";
   showPopovers?: boolean;
   enableCellSelection?: boolean;
+  enableHeaderCellSelection?: boolean;
   enableDataValueViews?: boolean;
   dataValueViewIsShown?: boolean;
   columnFilterInitiallyActive?: boolean;

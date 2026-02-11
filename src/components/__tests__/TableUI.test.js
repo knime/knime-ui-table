@@ -15,7 +15,7 @@ import Header from "@/components/layout/Header.vue";
 import Row from "@/components/layout/Row.vue";
 import TablePopover from "@/components/popover/TablePopover.vue";
 import ActionButton from "@/components/ui/ActionButton.vue";
-import SelectedCellsOverlay from "@/components/ui/CellSelectionOverlay.vue";
+import CellSelectionOverlay from "@/components/ui/CellSelectionOverlay.vue";
 import { columnTypes } from "@/config/table.config";
 import { SPECIAL_COLUMNS_SIZE } from "@/util/constants";
 import TableBodyNavigatable from "../TableBodyNavigatable.vue";
@@ -1220,7 +1220,7 @@ describe("TableUI.vue", () => {
     describe("overlay", () => {
       it("displays no overlay if nothing is selected", () => {
         expect(
-          wrapper.findComponent(SelectedCellsOverlay).exists(),
+          wrapper.findComponent(CellSelectionOverlay).exists(),
         ).toBeFalsy();
       });
 
@@ -1238,7 +1238,7 @@ describe("TableUI.vue", () => {
           wrapper.vm.selectCell(selectedCell, 0, false);
           await nextTick();
 
-          const overlay = wrapper.findComponent(SelectedCellsOverlay);
+          const overlay = wrapper.findComponent(CellSelectionOverlay);
           expect(overlay.exists()).toBeTruthy();
           expect(overlay.props()).toStrictEqual({
             columnSizes: [50, 50],
@@ -1247,8 +1247,12 @@ describe("TableUI.vue", () => {
             rowResizeDelta: null,
             rowResizeIndex: null,
             tableConfig: wrapper.vm.tableConfig,
-            cellSelectionRectFocusCorner: selectedCell,
+            cellSelectionRectFocusCorner: undefined,
           });
+          await wrapper.find("tbody").trigger("focusin");
+          expect(overlay.props().cellSelectionRectFocusCorner).toStrictEqual(
+            selectedCell,
+          );
         },
       );
 
@@ -1263,20 +1267,20 @@ describe("TableUI.vue", () => {
         let groups = wrapper.findAllComponents(Group);
         expect(groups).toHaveLength(2);
         expect(
-          groups.at(0).findComponent(SelectedCellsOverlay).exists(),
+          groups.at(0).findComponent(CellSelectionOverlay).exists(),
         ).toBeFalsy();
         expect(
-          groups.at(1).findComponent(SelectedCellsOverlay).exists(),
+          groups.at(1).findComponent(CellSelectionOverlay).exists(),
         ).toBeTruthy();
 
         wrapper.vm.selectCell({ x: 1, y: 2 }, 0, false);
         await nextTick();
 
         expect(
-          groups.at(0).findComponent(SelectedCellsOverlay).exists(),
+          groups.at(0).findComponent(CellSelectionOverlay).exists(),
         ).toBeTruthy();
         expect(
-          groups.at(1).findComponent(SelectedCellsOverlay).exists(),
+          groups.at(1).findComponent(CellSelectionOverlay).exists(),
         ).toBeFalsy();
       });
     });
@@ -1327,6 +1331,7 @@ describe("TableUI.vue", () => {
             template: "<div/>",
             methods: {
               triggerCopied,
+              scrollFocusOverlayIntoView: vi.fn(),
             },
           },
         };
@@ -1355,7 +1360,7 @@ describe("TableUI.vue", () => {
 
           const { rect, id } = await initializeSelection(wrapper);
 
-          wrapper.find("table").trigger("focusin");
+          wrapper.find("tbody").trigger("focusin");
           window.dispatchEvent(new Event("copy"));
 
           expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
@@ -1375,7 +1380,7 @@ describe("TableUI.vue", () => {
           stubs,
         );
         const { rect, id } = await initializeSelection(wrapper);
-        await wrapper.find("table").trigger("focusin");
+        await wrapper.find("tbody").trigger("focusin");
         await wrapper.find("table").trigger(`keydown.${copyKeys}.exact`);
         expect(wrapper.emitted("copySelection")[0]).toStrictEqual([
           { id, rect, withHeaders: true },
@@ -1406,26 +1411,6 @@ describe("TableUI.vue", () => {
           );
         });
 
-        it.each([[true, false]])(
-          "clears the selection on tabbing on the body if enableVirtualScrolling is %s",
-          async (enableVirtualScrolling) => {
-            const { wrapper } = doMount(
-              {
-                enableVirtualScrolling,
-                enableCellSelection: true,
-                shallow: false,
-              },
-              stubs,
-            );
-            wrapper.vm.selectCell({ x: 1, y: 2 }, 0, false);
-
-            wrapper.find("tbody").trigger("keydown", { key: "Tab" });
-            await nextTick();
-
-            expect(wrapper.vm.selectedCell).toBeFalsy();
-          },
-        );
-
         it.each([
           ["the first group", 0, false],
           ["virtual scrolling", 0, true],
@@ -1446,8 +1431,10 @@ describe("TableUI.vue", () => {
             wrapper.vm.selectCell(selectedCell, rectId, false);
             const focusHeaderCellSpy = vi.spyOn(wrapper.vm, "focusHeaderCell");
             wrapper.vm.onKeyboardMoveSelection(0, -1, true);
-            expect(clearCellSelectionSpy).toHaveBeenCalled();
             expect(focusHeaderCellSpy).toHaveBeenCalledWith(1);
+            expect(
+              wrapper.findComponent(CellSelectionOverlay).exists(),
+            ).toBeFalsy();
           },
         );
 
@@ -1500,11 +1487,6 @@ describe("TableUI.vue", () => {
             wrapper.vm.expandCellSelection(focusCorner, rectId);
           }
           await nextTick();
-
-          wrapper.vm.getSelectionOverlayComponent = vi
-            .fn()
-            .mockReturnValue({ scrollFocusOverlayIntoView: vi.fn() });
-
           wrapper.vm.onExpandCellSelect = vi.fn();
           return wrapper;
         };

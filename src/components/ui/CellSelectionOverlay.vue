@@ -37,6 +37,9 @@ const columnOffsets = computed(() => {
   if (props.tableConfig.showCollapser) {
     currentOffset += SPECIAL_COLUMNS_SIZE;
   }
+  if (props.tableConfig.enableRowDeletion) {
+    currentOffset += SPECIAL_COLUMNS_SIZE;
+  }
   const offsets: number[] = [];
   props.columnSizes.forEach((size) => {
     offsets.push(currentOffset);
@@ -112,20 +115,14 @@ const isVirtualFocusOverlayInsideViewportOfBody = (
 ) => {
   const virtualFocusOverlayBCR = focusOverlay.getBoundingClientRect();
   const bodyTop = containerBCR.top + headerHeight;
-  const halfHeightVirtualFocusOverlay = virtualFocusOverlayBCR.height / 2;
-  const halfWidthVirtualFocusOverlay = virtualFocusOverlayBCR.width / 2;
-  const focusOverlayCenterVertical =
-    virtualFocusOverlayBCR.top + halfHeightVirtualFocusOverlay;
-  const focusOverlayCenterHorizontal =
-    virtualFocusOverlayBCR.left + halfWidthVirtualFocusOverlay;
 
   return {
     verticalInside:
-      bodyTop <= focusOverlayCenterVertical &&
-      focusOverlayCenterVertical <= containerBCR.bottom,
+      bodyTop <= virtualFocusOverlayBCR.top &&
+      virtualFocusOverlayBCR.bottom <= containerBCR.bottom,
     horizontalInside:
-      containerBCR.left <= focusOverlayCenterHorizontal &&
-      focusOverlayCenterHorizontal <= containerBCR.right,
+      containerBCR.left <= virtualFocusOverlayBCR.left &&
+      virtualFocusOverlayBCR.right <= containerBCR.right,
   };
 };
 

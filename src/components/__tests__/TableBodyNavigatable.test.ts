@@ -57,9 +57,18 @@ describe("TableBodyNavigatable", () => {
       },
     );
 
-    it("emits clearSelection when the Tab key is pressed", async () => {
+    it("moves to the right when the Tab key is pressed", async () => {
       await wrapper.find("tbody").trigger("keydown", { key: "Tab" });
-      expect(wrapper.emitted().clearSelection).toBeTruthy();
+      expect(wrapper.emitted().moveSelection).toBeTruthy();
+      expect(wrapper.emitted().moveSelection[0]).toStrictEqual([1, 0, false]);
+    });
+
+    it("moves to the left if Shift Tab is pressed", async () => {
+      await wrapper
+        .find("tbody")
+        .trigger("keydown", { key: "Tab", shiftKey: true });
+      expect(wrapper.emitted().moveSelection).toBeTruthy();
+      expect(wrapper.emitted().moveSelection[0]).toStrictEqual([-1, 0, false]);
     });
   });
 });

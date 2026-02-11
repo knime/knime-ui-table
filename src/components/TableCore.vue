@@ -41,6 +41,8 @@ const emit = defineEmits<{
     expandSelection: boolean,
   ];
   clearSelection: [];
+  bodyFocusin: [];
+  bodyFocusout: [];
 }>();
 
 const tableCoreVirtual = ref<InstanceType<typeof TableCoreVirtual> | null>(
@@ -123,6 +125,8 @@ provideCommonScrollContainerProps(scrolledElement, {
       (...args: [number, number, boolean]) => emit('moveSelection', ...args)
     "
     @clear-selection="emit('clearSelection')"
+    @body-focusin="emit('bodyFocusin')"
+    @body-focusout="emit('bodyFocusout')"
   >
     <template #header="{ getDragHandleHeight }">
       <slot
@@ -153,6 +157,8 @@ provideCommonScrollContainerProps(scrolledElement, {
       (...args: [number, number, boolean]) => emit('moveSelection', ...args)
     "
     @clear-selection="emit('clearSelection')"
+    @body-focusin="emit('bodyFocusin')"
+    @body-focusout="emit('bodyFocusout')"
   >
     <template #header="{ getDragHandleHeight }">
       <slot
