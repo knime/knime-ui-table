@@ -28,7 +28,7 @@ import {
 import TableCore from "./TableCore.vue";
 import { useTotalWidth } from "./composables/useAvailableWidth";
 import { useBoolean } from "./composables/useBoolean";
-import { useCellCopying } from "./composables/useCellCopying";
+import { useCellCopyPaste } from "./composables/useCellCopyPaste";
 import {
   CellPosition,
   type Rect,
@@ -217,6 +217,22 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    pasteSelection: (pasteSelectionParams: {
+      rect: Rect;
+      id: RectId | null;
+      updateSelection: (newRect: {
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+      }) => void;
+    }) => true,
+    cutSelection: (cutSelectionParams: { rect: Rect; id: RectId | null }) =>
+      true,
+    deleteSelection: (deleteSelectionParams: {
+      rect: Rect;
+      id: RectId | null;
+    }) => true,
     cellSelectionChange: (cellPosition: CellPosition | null) => true,
     dataValueView: (
       row: { indexInInput: number; isTop: boolean },
@@ -273,10 +289,7 @@ export default {
         });
       }
     };
-    const { changeFocus, handleCopyOnKeydown } = useCellCopying({
-      selectionOverlay,
-      onCopy: emitCopySelection,
-    });
+
     const scrollToCellSelectionOverlay = async () => {
       const tableCoreRef = tableCore.value;
       if (tableCoreRef === null) {
@@ -322,7 +335,37 @@ export default {
       nextTick().then(scrollToCellSelectionOverlay);
     };
 
+    const emitPasteSelection = () => {
+      if (rectMinMax.value) {
+        emit("pasteSelection", {
+          rect: rectMinMax.value,
+          id: currentRectId.value,
+          updateSelection: updateCellSelection,
+        });
+      }
+    };
+    const emitCutSelection = () => {
+      if (rectMinMax.value) {
+        emit("cutSelection", {
+          rect: rectMinMax.value,
+          id: currentRectId.value,
+        });
+      }
+    };
+    const emitDeleteSelection = () => {
+      if (rectMinMax.value) {
+        emit("deleteSelection", {
+          rect: rectMinMax.value,
+          id: currentRectId.value,
+        });
+      }
+    };
+
     const focusWithin = ref(false);
+    const changeFocus = (newFocus: boolean) => {
+      focusWithin.value = newFocus;
+    };
+
     const toBeEditedCell = ref<null | CellPosition>(null);
     const editingCellInitialValue = ref<null | string>(null);
     const editingCell = computed(() =>
@@ -337,6 +380,23 @@ export default {
       toBeEditedCell.value = cellPosition;
       editingCellInitialValue.value = initialValue ?? null;
     };
+    const isEditingEnabled = computed(() =>
+      getPropertiesFromColumns(props.dataConfig.columnConfigs, "editable").some(
+        (editable) => editable,
+      ),
+    );
+    const { handleCopyOnKeydown, handleDeleteSelection } = useCellCopyPaste({
+      focusWithin,
+      isEditingCell,
+      selectionOverlay,
+      selectedCell,
+      isEditingEnabled,
+      onCopy: emitCopySelection,
+      onPaste: emitPasteSelection,
+      onCut: emitCutSelection,
+      onDelete: emitDeleteSelection,
+    });
+
     const stopEditingCell = (rowInd?: number, colInd?: number) => {
       const toBeEditedCellValue = toBeEditedCell.value;
       if (
@@ -400,6 +460,7 @@ export default {
       changeFocus,
       focusWithin,
       handleCopyOnKeydown,
+      handleDeleteSelection,
       toBeShownCell,
       toBeEditedCell,
       editingCell,
@@ -1376,7 +1437,8 @@ export default {
       @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
       @keydown.ctrl.shift.c.exact="handleCopyOnKeydown"
       @keydown.meta.shift.c.exact="handleCopyOnKeydown"
-      @keydown.escape.exact="clearCellSelectionAndStopPropagation($event)"
+      @keydown.delete.exact="handleDeleteSelection"
+      @keydown.escape.exact="clearCellSelectionAndStopPropagation"
     >
       <TableCore
         ref="tableCore"

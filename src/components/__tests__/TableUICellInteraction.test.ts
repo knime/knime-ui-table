@@ -425,7 +425,7 @@ describe("TableUI Cell Interaction", () => {
     it("cut cuts the selected cells", async () => {
       window.dispatchEvent(new Event("cut"));
       await nextTick();
-      expect(wrapper.emitted("copySelection")).toBeDefined();
+      expect(wrapper.emitted("cutSelection")).toBeDefined();
     });
 
     it("paste pastes into the selected cells", async () => {
