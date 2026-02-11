@@ -53,6 +53,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    newColumnButtonWidth: {
+      type: Number,
+      default: 0,
+    },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   emits: {
@@ -117,6 +121,11 @@ export default {
           <TrashIcon />
         </FunctionButton>
       </th>
+      <th
+        v-if="newColumnButtonWidth"
+        class="new-column-button-spacer"
+        :style="{ minWidth: `${newColumnButtonWidth}px` }"
+      />
     </tr>
   </thead>
 </template>
@@ -158,6 +167,10 @@ tr {
     &.deletion-cell-spacer {
       min-width: 30px;
       padding: 0;
+    }
+
+    &.new-column-button-spacer {
+      background-color: var(--knime-white);
     }
   }
 

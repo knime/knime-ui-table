@@ -29,6 +29,7 @@ const props = defineProps<{
     active: boolean;
   };
   currentRectId: any;
+  newColumnButtonWidth: number;
 }>();
 
 const emit = defineEmits<{
@@ -71,11 +72,13 @@ const deletionSize = computed(() =>
 );
 
 const rightSideSize = computed(() => {
-  return props.tableConfig.showColumnFilters ||
+  const filterOrRowSubMenuSpace =
+    props.tableConfig.showColumnFilters ||
     (props.tableConfig.subMenuItems ?? []).length > 0 ||
     props.tableConfig.reserveSpaceForSubMenu === "always"
-    ? SPECIAL_COLUMNS_SIZE
-    : 0;
+      ? SPECIAL_COLUMNS_SIZE
+      : 0;
+  return filterOrRowSubMenuSpace + props.newColumnButtonWidth;
 });
 
 const scrolledElement = ref<HTMLElement | null>(null);
@@ -149,6 +152,7 @@ provideCommonScrollContainerProps(scrolledElement, {
     <template #cell-selection-overlay>
       <slot name="cell-selection-overlay" />
     </template>
+    <template #belowBody><slot name="belowBody" /></template>
   </TableCoreVirtual>
 
   <TableCoreGroups
@@ -181,6 +185,7 @@ provideCommonScrollContainerProps(scrolledElement, {
     <template #row="{ row, rowInd, groupInd }">
       <slot name="row" :row="row" :row-ind="rowInd" :group-ind="groupInd" />
     </template>
+    <template #belowBody><slot name="belowBody" /></template>
   </TableCoreGroups>
 </template>
 

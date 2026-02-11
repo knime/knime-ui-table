@@ -41,6 +41,7 @@ import BottomControls from "./control/BottomControls.vue";
 import TopControls from "./control/TopControls.vue";
 import ColumnFilters from "./filter/ColumnFilters.vue";
 import Header from "./layout/Header.vue";
+import NewRowButton from "./layout/NewRowButton.vue";
 import Row from "./layout/Row.vue";
 import TablePopover from "./popover/TablePopover.vue";
 import type { PopoverRenderer } from "./popover/TablePopover.vue";
@@ -70,6 +71,7 @@ export default {
     TablePopover,
     CellSelectionOverlay,
     TableCore,
+    NewRowButton,
   },
   props: {
     /**
@@ -222,6 +224,13 @@ export default {
       rect: VirtualElementAnchor,
     ) => true,
     closeDataValueView: () => true,
+    newColumnButtonClick: () => true,
+    newRowButtonClick: (
+      lastPosition: {
+        columnInd: number;
+        rectId: number | null;
+      } | null,
+    ) => true,
     headerCellStartEditing: (columnIndex: number, initialValue?: string) =>
       true,
     deleteColumn: (colInd: number) => true,
@@ -355,6 +364,11 @@ export default {
       closeDataValueView,
     );
 
+    const showNewColumnAndRowButton = computed(() =>
+      Boolean(props.tableConfig.showNewColumnAndRowButton),
+    );
+    const newColumnButtonWidth = ref(0);
+
     return {
       wrapper,
       totalWidth,
@@ -391,6 +405,8 @@ export default {
       editingCell,
       isEditingCell,
       createEditingCellKeydownHandler,
+      showNewColumnAndRowButton,
+      newColumnButtonWidth,
     };
   },
   data() {
@@ -413,6 +429,20 @@ export default {
       currentResizedScrollIndex: null as null | number,
       currentRowSizeDelta: null as null | number,
       SPECIAL_COLUMNS_SIZE,
+      lastRowAndRectIdBeforeMovingToNewColumnButton: null as null | {
+        rowInd: number;
+        rectId: RectId | null;
+      },
+      lastColumnAndRectIdBeforeMovingToNewRowButton: null as
+        | null
+        | {
+            columnInd: number;
+            rectId: RectId | null;
+          }
+        | {
+            virtualColumn: "delete" | "selection";
+            rectId: RectId | null;
+          },
     };
   },
   computed: {
@@ -789,12 +819,17 @@ export default {
     onHeaderCellSelect(columnIndex: number) {
       this.stopEditingCell();
       this.selectCell({ x: columnIndex, y: -1 }, 0, true);
+      this.lastRowAndRectIdBeforeMovingToNewColumnButton = null;
     },
     onHeaderCellDeselect() {
       this.clearCellSelection();
     },
-    selectColumnCellInFirstRow(columnIndex: number) {
-      if (this.tableConfig.pageConfig?.tableSize === 0) {
+    onMoveDownFromHeaderCell(columnIndex: number) {
+      if (this.totalTableLength === 0) {
+        if (this.showNewColumnAndRowButton) {
+          this.clearCellSelection();
+          this.focusNewRowButton();
+        }
         return;
       }
       this.onCellSelect(columnIndex, 0, this.showVirtualScroller ? null : 0);
@@ -803,6 +838,9 @@ export default {
       if (this.showVirtualScroller) {
         tableCoreRef.virtualScrollToPosition({ top: 0 });
       }
+    },
+    onUpdateNewColumnButtonWidth(width: number) {
+      this.newColumnButtonWidth = width;
     },
     onKeyboardMoveSelectionVirtual(
       columnInd: number,
@@ -881,11 +919,93 @@ export default {
       this.clearCellSelection();
       this.focusHeaderCell(columnInd);
     },
-    onMoveSelectionOutOfBodyDown() {
-      // Do nothing
+    focusNewRowButton() {
+      (
+        this.$refs["new-row-button"] as InstanceType<typeof NewRowButton>
+      )?.focus();
     },
-    onMoveSelectionOutOfBodyRight() {
-      // Do nothing
+    onMoveSelectionOutOfBodyDown({
+      columnInd,
+      rectId,
+    }: {
+      columnInd: number;
+      rectId: RectId | null;
+    }) {
+      if (this.showNewColumnAndRowButton) {
+        this.focusNewRowButton();
+        this.clearCellSelection();
+        this.lastColumnAndRectIdBeforeMovingToNewRowButton = {
+          columnInd,
+          rectId,
+        };
+      }
+    },
+    onMoveSelectionOutOfBodyRight({
+      rowInd,
+      rectId,
+    }: {
+      rowInd: number;
+      rectId: RectId | null;
+    }) {
+      if (this.showNewColumnAndRowButton) {
+        this.getHeaderComponent().focusNewColumnButton();
+        this.clearCellSelection();
+        this.lastRowAndRectIdBeforeMovingToNewColumnButton = { rowInd, rectId };
+      }
+    },
+    onMoveIntoBodyFromRight() {
+      const lastColumnInd = this.columnHeaders.length - 1;
+      const lastRowAndRectId = this
+        .lastRowAndRectIdBeforeMovingToNewColumnButton ?? {
+        rowInd: -1,
+        rectId: null,
+      };
+      if (lastRowAndRectId.rowInd === -1) {
+        this.focusHeaderCell(lastColumnInd);
+      } else {
+        this.updateCellSelection(
+          {
+            minX: lastColumnInd,
+            minY: lastRowAndRectId.rowInd,
+            maxX: lastColumnInd,
+            maxY: lastRowAndRectId.rowInd,
+          },
+          lastRowAndRectId.rectId,
+        );
+        this.focusBody();
+      }
+      this.lastRowAndRectIdBeforeMovingToNewColumnButton = null;
+    },
+    onMoveIntoBodyFromBottom() {
+      const lastRowInd = this.totalTableLength - 1;
+      const lastColumnAndRectId = this
+        .lastColumnAndRectIdBeforeMovingToNewRowButton ?? {
+        columnInd: 0,
+        rectId: null,
+      };
+      if ("virtualColumn" in lastColumnAndRectId) {
+        this.focusRowVirtualColumn(
+          lastColumnAndRectId.virtualColumn,
+          lastRowInd,
+          lastColumnAndRectId.rectId,
+        );
+      } else {
+        if (this.totalTableLength === 0) {
+          this.focusHeaderCell(0);
+          return;
+        }
+        this.updateCellSelection(
+          {
+            minX: lastColumnAndRectId.columnInd,
+            minY: lastRowInd,
+            maxX: lastColumnAndRectId.columnInd,
+            maxY: lastRowInd,
+          },
+          lastColumnAndRectId.rectId,
+        );
+        this.focusBody();
+      }
+      this.lastColumnAndRectIdBeforeMovingToNewRowButton = null;
     },
     onMoveSelectionOutOfBodyLeft({
       rowInd,
@@ -973,6 +1093,12 @@ export default {
         if (this.showVirtualScroller) {
           if (rowInd < this.totalTableLength - 1) {
             this.focusRowVirtualColumn(type, rowInd + 1, rectId);
+          } else if (this.showNewColumnAndRowButton) {
+            this.focusNewRowButton();
+            this.lastColumnAndRectIdBeforeMovingToNewRowButton = {
+              virtualColumn: type,
+              rectId,
+            };
           }
         } else {
           const currentGroupInd = rectId ?? 0;
@@ -981,6 +1107,12 @@ export default {
             this.focusRowVirtualColumn(type, rowInd + 1, currentGroupInd);
           } else if (this.data[currentGroupInd + 1]) {
             this.focusRowVirtualColumn(type, 0, currentGroupInd + 1);
+          } else if (this.showNewColumnAndRowButton) {
+            this.focusNewRowButton();
+            this.lastColumnAndRectIdBeforeMovingToNewRowButton = {
+              virtualColumn: type,
+              rectId: currentGroupInd,
+            };
           }
         }
       }
@@ -1199,6 +1331,23 @@ export default {
       }
       return null;
     },
+    onNewRowButtonClick(event: MouseEvent) {
+      event.stopPropagation();
+      const lastCellOrLastVirtualCell =
+        this.lastColumnAndRectIdBeforeMovingToNewRowButton;
+      const lastCellWasVirtualColumn =
+        lastCellOrLastVirtualCell &&
+        "virtualColumn" in lastCellOrLastVirtualCell;
+      const lastCell = lastCellWasVirtualColumn
+        ? null
+        : lastCellOrLastVirtualCell;
+
+      this.$emit("newRowButtonClick", lastCell);
+    },
+    onNewColumnButtonClick(event: MouseEvent) {
+      event.stopPropagation();
+      this.$emit("newColumnButtonClick");
+    },
   },
 };
 </script>
@@ -1244,6 +1393,7 @@ export default {
           compact: Boolean(dataConfig.rowConfig.compactMode),
         }"
         :current-row-height="currentRowHeight"
+        :new-column-button-width
         @group-sub-menu-click="onGroupSubMenuClick"
         @scroller-update="onScroll"
         @update:available-width="$emit('update:available-width', $event)"
@@ -1271,6 +1421,7 @@ export default {
             :selected-cell-index="getCellIndex(selectedCell, rowInd)"
             :to-be-expanded-cell-index="getCellIndex(toBeShownCell, rowInd)"
             :to-be-edited-cell-index="getCellIndex(editingCell, rowInd)"
+            :new-column-button-width
             @delete-row="() => onDeleteRow(rowInd)"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
@@ -1361,6 +1512,7 @@ export default {
             :filters-active="filterActive"
             :get-drag-handle-height="getDragHandleHeight"
             :class="tableHeaderClass"
+            :show-new-column-button="showNewColumnAndRowButton"
             :selected-header-index="selectedHeaderIndex"
             @header-select="onSelectAll"
             @delete-column="onDeleteColumn"
@@ -1371,14 +1523,17 @@ export default {
             @column-resize-start="onColumnResizeStart"
             @column-resize-end="onColumnResizeEnd"
             @sub-menu-item-selection="onHeaderSubMenuItemSelection"
-            @select-column-cell-in-first-row="selectColumnCellInFirstRow"
+            @move-down-from-header-cell="onMoveDownFromHeaderCell"
             @header-cell-select="onHeaderCellSelect"
             @header-cell-deselect="onHeaderCellDeselect"
             @header-cell-start-editing="
               (columnIndex: number, initialValue?: string) =>
                 $emit('headerCellStartEditing', columnIndex, initialValue)
             "
+            @update:new-column-button-width="onUpdateNewColumnButtonWidth"
+            @new-column-button-click="onNewColumnButtonClick"
             @selection-keydown-down="onHeaderSelectionKeydownDown()"
+            @new-column-button-keydown-left="onMoveIntoBodyFromRight()"
           >
             <template #subHeader="slotProps">
               <slot name="subHeader" v-bind="slotProps" />
@@ -1395,6 +1550,7 @@ export default {
             :show-collapser="tableConfig.showCollapser"
             :enable-row-deletion="tableConfig.enableRowDeletion"
             :show-selection="tableConfig.showSelection"
+            :new-column-button-width
             @column-filter="onColumnFilter"
             @clear-filter="onClearFilter"
           />
@@ -1412,6 +1568,15 @@ export default {
             :cell-selection-rect-focus-corner="
               focusWithin ? selectedCell : undefined
             "
+          />
+        </template>
+        <template #belowBody>
+          <NewRowButton
+            v-if="showNewColumnAndRowButton"
+            ref="new-row-button"
+            @click="onNewRowButtonClick"
+            @pointerdown.stop
+            @keydown-up="onMoveIntoBodyFromBottom"
           />
         </template>
       </TableCore>
@@ -1477,6 +1642,10 @@ table {
 
   &:focus {
     outline: none;
+  }
+
+  & .new-row-footer {
+    width: 100%;
   }
 }
 

@@ -87,6 +87,7 @@ defineExpose({
           />
         </Group>
       </template>
+      <template #belowBody><slot name="belowBody" /></template>
     </TableBodyNavigatable>
   </div>
 </template>
@@ -95,5 +96,13 @@ defineExpose({
 .container {
   display: flex;
   flex-direction: column;
+
+  /**
+   * Needed to enable sticky elements inside the tbody
+   */
+  & > tbody {
+    width: fit-content;
+    position: relative;
+  }
 }
 </style>

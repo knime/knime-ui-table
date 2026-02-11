@@ -33,3 +33,7 @@ Applies regardless of whether additional cells are also selected.
 | Character          | Cell becomes editable and the existing value is replaced with the new character |
 | Delete             | Cell content is deleted. Cell remains selected.                                 |
 | Backspace          | Cell content is cleared to empty string and cell becomes editable.              |
+
+## Edge Navigation
+
+When navigating (via Tab, Enter, or arrow keys) beyond the right or bottom edge of the table, focus moves to the add column/row button instead. When that button is clicked, the cell that would have been selected (had the new row/column already existed) becomes selected.

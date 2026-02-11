@@ -62,6 +62,7 @@ interface TableConfig {
   enableCellSelection?: boolean;
   enableHeaderCellSelection?: boolean;
   enableDataValueViews?: boolean;
+  showNewColumnAndRowButton?: boolean;
   dataValueViewIsShown?: boolean;
   columnFilterInitiallyActive?: boolean;
   enableVirtualScrolling?: boolean;

@@ -337,6 +337,12 @@ export default {
         category: "Table Creator",
       },
     },
+    showNewColumnAndRowButton: {
+      name: "New column/row buttons",
+      table: {
+        category: "Table Creator",
+      },
+    },
     enableHeaderCellSelection: {
       name: "Header cell selection",
       table: {
@@ -567,6 +573,7 @@ TableCreator.args = {
   enableRowResize: false,
   enableColumnResize: false,
   enableRowDeletion: true,
+  showNewColumnAndRowButton: true,
   editableColumns: true,
   deletableColumns: true,
   enableVirtualScrolling: true,

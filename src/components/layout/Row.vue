@@ -70,6 +70,7 @@ export interface RowProps {
   selectedCellIndex?: number | null;
   toBeExpandedCellIndex?: number | null;
   toBeEditedCellIndex?: number | null;
+  newColumnButtonWidth?: number;
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
@@ -85,6 +86,7 @@ const props = withDefaults(defineProps<RowProps>(), {
   selectedCellIndex: null,
   toBeExpandedCellIndex: null,
   toBeEditedCellIndex: null,
+  newColumnButtonWidth: 0,
 });
 
 const { indexedData: indexedRow, style: rowStyles } = useIndicesAndStylesFor(
@@ -427,6 +429,10 @@ defineExpose({
         <OptionsIcon />
       </SubMenu>
     </td>
+    <td
+      v-if="newColumnButtonWidth"
+      :style="{ minWidth: `${newColumnButtonWidth}px` }"
+    />
   </tr>
   <tr v-else class="row empty-row" :style="rowHeightStyle">
     <td>-</td>

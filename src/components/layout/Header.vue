@@ -94,6 +94,10 @@ export default {
       type: Function,
       default: () => HEADER_HEIGHT,
     },
+    showNewColumnButton: {
+      type: Boolean,
+      default: false,
+    },
     selectedHeaderIndex: {
       type: Number as PropType<number | null>,
       default: null,
@@ -111,8 +115,11 @@ export default {
     columnResizeEnd: () => true,
     columnResizeStart: () => true,
     allColumnsResize: (newSize: number) => true,
-    selectColumnCellInFirstRow: (index: number) => true,
+    moveDownFromHeaderCell: (index: number) => true,
     headerCellSelect: (index: number) => true,
+    "update:newColumnButtonWidth": (width: number) => true,
+    newColumnButtonClick: (event: MouseEvent) => true,
+    newColumnButtonKeydownLeft: (event: KeyboardEvent) => true,
     selectionKeydownDown: () => true,
     headerCellDeselect: () => true,
     headerCellStartEditing: (index: number, initialValue?: string) => true,
@@ -220,6 +227,15 @@ export default {
     onHeaderCellBlur() {
       this.focusedHeaderIndex = null;
     },
+    emitNewColumnButtonWidth() {
+      const newColumnButtonHead = this.$refs[
+        "new-column-button-head"
+      ] as HTMLElement;
+      this.$emit(
+        "update:newColumnButtonWidth",
+        newColumnButtonHead.getBoundingClientRect().width ?? 0,
+      );
+    },
     isColumnSortable(index: number) {
       return this.enableSorting && this.columnSortConfigs[index];
     },
@@ -279,6 +295,12 @@ export default {
       // @ts-expect-error
       this.unthrottledOnPointerMove(event);
     }),
+    onNewColumnButtonClick(event: MouseEvent) {
+      this.$emit("newColumnButtonClick", event);
+    },
+    onNewColumnButtonKeydownLeft(event: KeyboardEvent) {
+      this.$emit("newColumnButtonKeydownLeft", event);
+    },
     unthrottledOnPointerMove(event: PointerEvent) {
       if (this.dragIndex !== null) {
         consola.debug("Resize via drag ongoing: ", event);
@@ -351,17 +373,27 @@ export default {
     onKeydownRight(columnIndex: number) {
       if (columnIndex < this.columnHeaders.length - 1) {
         this.focusHeaderCell(columnIndex + 1);
+      } else if (this.showNewColumnButton) {
+        if (this.tableConfig.enableHeaderCellSelection) {
+          this.$emit("headerCellDeselect");
+        }
+        this.focusNewColumnButton();
       }
     },
     onKeydownDown(columnIndex: number) {
       if (this.tableConfig.enableCellSelection) {
-        this.$emit("selectColumnCellInFirstRow", columnIndex);
+        this.$emit("moveDownFromHeaderCell", columnIndex);
       }
     },
     focusHeaderCell(cellInd: number) {
       (
         this.$refs[`columnHeaderContent-${cellInd}`] as HTMLDivElement[]
       )[0].focus();
+    },
+    focusNewColumnButton() {
+      (
+        this.$refs["new-column-button"] as InstanceType<typeof KdsButton>
+      )?.$el.focus();
     },
     focusSelectionCheckbox() {
       (this.$refs["selection-checkbox"] as any)?.$el
@@ -374,7 +406,7 @@ export default {
 
 <template>
   <thead :style="{ '--border-top': `${borderTop}px` }">
-    <tr v-if="columnHeaders.length" :style="{ ...headerStyles }">
+    <tr :style="{ ...headerStyles }">
       <th
         v-if="tableConfig.showCollapser"
         :cell-type="'th'"
@@ -502,9 +534,21 @@ export default {
           <FilterIcon />
         </FunctionButton>
       </th>
-    </tr>
-    <tr v-else>
-      <slot />
+      <th
+        v-if="showNewColumnButton"
+        ref="new-column-button-head"
+        class="new-column-head"
+        @vue:mounted="emitNewColumnButtonWidth"
+      >
+        <KdsButton
+          ref="new-column-button"
+          label="Add column"
+          leading-icon="plus"
+          size="small"
+          @click="onNewColumnButtonClick"
+          @keydown.left.prevent.stop="onNewColumnButtonKeydownLeft"
+        />
+      </th>
     </tr>
     <div
       v-if="headerSelectionOverlayStyle"
@@ -733,6 +777,13 @@ thead {
             opacity: 1;
           }
         }
+      }
+
+      &.new-column-head {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8px;
       }
     }
 
