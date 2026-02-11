@@ -224,6 +224,8 @@ export default {
     closeDataValueView: () => true,
     headerCellStartEditing: (columnIndex: number, initialValue?: string) =>
       true,
+    deleteColumn: (colInd: number) => true,
+    deleteRow: (rowInd: number) => true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
@@ -473,6 +475,12 @@ export default {
         "headerColor",
       ).map((color) => color ?? null);
     },
+    columnDeletables() {
+      return getPropertiesFromColumns(
+        this.dataConfig.columnConfigs,
+        "deletable",
+      );
+    },
     slottedColumns() {
       return getPropertiesFromColumns(
         this.dataConfig.columnConfigs,
@@ -662,6 +670,19 @@ export default {
       consola.debug(`TableUI emitting: pageSizeUpdate ${newPageSize}`);
       this.clearCellSelection();
       this.$emit("pageSizeUpdate", newPageSize);
+    },
+    clearAllCellInteractions() {
+      this.clearCellSelection();
+      this.stopEditingCell();
+    },
+    onDeleteColumn(colInd: number) {
+      this.clearAllCellInteractions();
+      this.$emit("deleteColumn", colInd);
+    },
+    onDeleteRow(rowInd: number) {
+      this.clearAllCellInteractions();
+      const { indexInInput } = this.resolveRowIndex(rowInd);
+      this.$emit("deleteRow", indexInInput);
     },
     onColumnSort(colInd: number) {
       consola.debug(`TableUI emitting: columnSort ${colInd}`);
@@ -876,6 +897,9 @@ export default {
       if (this.tableConfig.showSelection) {
         this.focusRowVirtualColumn("selection", rowInd, rectId);
         this.clearCellSelection();
+      } else if (this.tableConfig.enableRowDeletion) {
+        this.focusRowVirtualColumn("delete", rowInd, rectId);
+        this.clearCellSelection();
       }
     },
     onMoveIntoBodyFromLeft(rowInd: number, groupInd: RectId | null) {
@@ -890,23 +914,38 @@ export default {
       );
       this.focusBody();
     },
-    focusRowVirtualColumn(rowInd: number, groupInd: RectId | null) {
+    focusRowVirtualColumn(
+      type: "delete" | "selection",
+      rowInd: number,
+      groupInd: RectId | null,
+    ) {
       const refName = this.getRowRefName(
         this.showVirtualScroller ? null : groupInd,
         rowInd,
       );
       const rowComponent = this.$refs[refName] as InstanceType<typeof Row>;
-      rowComponent?.focusSelectionCheckbox();
+      if (type === "delete") {
+        rowComponent?.focusDeleteButton();
+      } else {
+        rowComponent?.focusSelectionCheckbox();
+      }
     },
     onVirtualColumnNav(
+      type: "delete" | "selection",
       direction: "up" | "down" | "left" | "right",
       rowInd: number,
       groupInd: null | number,
     ) {
       const rectId = groupInd ?? (this.showVirtualScroller ? null : 0);
       if (direction === "right") {
-        if (this.columnHeaders.length > 0) {
+        if (type === "delete" && this.tableConfig.showSelection) {
+          this.focusRowVirtualColumn("selection", rowInd, rectId);
+        } else if (this.columnHeaders.length > 0) {
           this.onMoveIntoBodyFromLeft(rowInd, rectId);
+        }
+      } else if (direction === "left") {
+        if (type === "selection" && this.tableConfig.enableRowDeletion) {
+          this.focusRowVirtualColumn("delete", rowInd, rectId);
         }
       } else if (direction === "up") {
         if (this.showVirtualScroller) {
@@ -1232,6 +1271,7 @@ export default {
             :selected-cell-index="getCellIndex(selectedCell, rowInd)"
             :to-be-expanded-cell-index="getCellIndex(toBeShownCell, rowInd)"
             :to-be-edited-cell-index="getCellIndex(editingCell, rowInd)"
+            @delete-row="() => onDeleteRow(rowInd)"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
               (cellInd, ignoreIfSelected) =>
@@ -1316,12 +1356,14 @@ export default {
             :column-sub-menu-items="columnHeaderSubMenuItems"
             :column-sort-configs="columnSortConfigs"
             :column-header-colors="columnHeaderColors"
+            :column-deletables="columnDeletables"
             :is-selected="totalSelected > 0"
             :filters-active="filterActive"
             :get-drag-handle-height="getDragHandleHeight"
             :class="tableHeaderClass"
             :selected-header-index="selectedHeaderIndex"
             @header-select="onSelectAll"
+            @delete-column="onDeleteColumn"
             @column-sort="onColumnSort"
             @toggle-filter="onToggleFilter"
             @column-resize="onColumnResize"
@@ -1351,6 +1393,7 @@ export default {
             :column-sizes="columnSizes"
             :types="columnTypes"
             :show-collapser="tableConfig.showCollapser"
+            :enable-row-deletion="tableConfig.enableRowDeletion"
             :show-selection="tableConfig.showSelection"
             @column-filter="onColumnFilter"
             @clear-filter="onClearFilter"

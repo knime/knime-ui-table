@@ -52,6 +52,7 @@ interface TableConfig {
   enableColumnResizing?: boolean;
   showCollapser?: boolean;
   showSelection?: boolean;
+  enableRowDeletion?: boolean;
   disableSelection?: boolean;
   showColumnFilters?: boolean;
   subMenuItems?: MenuItem[];

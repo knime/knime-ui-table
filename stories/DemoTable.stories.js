@@ -331,6 +331,12 @@ export default {
         category: "Auto column sizing",
       },
     },
+    enableRowDeletion: {
+      name: "Row deletion",
+      table: {
+        category: "Table Creator",
+      },
+    },
     enableHeaderCellSelection: {
       name: "Header cell selection",
       table: {
@@ -339,6 +345,12 @@ export default {
     },
     editableColumns: {
       name: "Editable columns",
+      table: {
+        category: "Table Creator",
+      },
+    },
+    deletableColumns: {
+      name: "Deletable columns",
       table: {
         category: "Table Creator",
       },
@@ -554,7 +566,9 @@ TableCreator.args = {
   compactMode: false,
   enableRowResize: false,
   enableColumnResize: false,
+  enableRowDeletion: true,
   editableColumns: true,
+  deletableColumns: true,
   enableVirtualScrolling: true,
   containerHeight: "100%",
   backgroundColor: "--knime-porcelain",

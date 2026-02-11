@@ -14,6 +14,7 @@ describe("VirtualRow.vue", () => {
       collapserSize: 1,
       selectionSize: 10,
       rightSideSize: 100,
+      deletionSize: 1000,
     },
     tableConfig: {
       showSelection: false,

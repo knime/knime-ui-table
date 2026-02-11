@@ -31,6 +31,7 @@ export interface Props {
   specialColumnSizes: {
     collapserSize: number;
     selectionSize: number;
+    deletionSize: number;
     rightSideSize: number;
   };
   currentBodyWidth: number;
@@ -59,7 +60,8 @@ const withLeftSideSize = (sizeManager: SizeManager) =>
       spaceBefore: computed(
         () =>
           props.specialColumnSizes.collapserSize +
-          props.specialColumnSizes.selectionSize,
+          props.specialColumnSizes.selectionSize +
+          props.specialColumnSizes.deletionSize,
       ),
       spaceBeforeIsOffset: false,
     },

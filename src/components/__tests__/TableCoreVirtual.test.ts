@@ -93,6 +93,7 @@ describe("TableCoreVirtual", () => {
         collapserSize: 1,
         selectionSize: 10,
         rightSideSize: 100,
+        deletionSize: 1000,
       },
       columnSizes: [1, 10, 100],
       tableConfig: {
@@ -202,7 +203,8 @@ describe("TableCoreVirtual", () => {
         const param = constructorMocks.WithSpaceBefore.mock.calls[0][0];
         expect(param.spaceBefore.value).toBe(
           props.specialColumnSizes.collapserSize +
-            props.specialColumnSizes.selectionSize,
+            props.specialColumnSizes.selectionSize +
+            props.specialColumnSizes.deletionSize,
         );
         expect(param.spaceBeforeIsOffset).toBeFalsy();
       });
