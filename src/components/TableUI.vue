@@ -206,6 +206,7 @@ export default {
       id: RectId | null;
       withHeaders: boolean;
     }) => true,
+    cellSelectionChange: (cellPosition: CellPosition | null) => true,
     dataValueView: (
       row: { indexInInput: number; isTop: boolean },
       columnIndex: number,
@@ -217,7 +218,10 @@ export default {
   setup(props, { emit }) {
     const wrapper: Ref<any> = ref(null);
     const tableCore: Ref<InstanceType<typeof TableCore> | null> = ref(null);
-    const selectionOverlay: Ref<any> = ref([]);
+    const header: Ref<InstanceType<typeof Header> | null> = ref(null);
+    const selectionOverlay: Ref<
+      null | typeof CellSelectionOverlay | (typeof CellSelectionOverlay)[]
+    > = ref([]);
     const totalWidth = useTotalWidth(wrapper);
     const enableCellSelection = computed(() =>
       Boolean(props.tableConfig.enableCellSelection),
@@ -231,6 +235,11 @@ export default {
       rectMinMax,
       selectedCell,
     } = useCellSelection(enableCellSelection);
+
+    watch(selectedCell, (newCell) =>
+      emit("cellSelectionChange", newCell ?? null),
+    );
+
     const selectCellsOnMove = useBoolean(false);
     // cell copying
     const emitCopySelection = ({ withHeaders }: { withHeaders: boolean }) => {
@@ -246,6 +255,52 @@ export default {
       selectionOverlay,
       onCopy: emitCopySelection,
     });
+    const scrollToCellSelectionOverlay = async () => {
+      const tableCoreRef = tableCore.value;
+      if (tableCoreRef === null) {
+        return;
+      }
+      const scrollToViewParams = props.tableConfig.enableVirtualScrolling
+        ? {
+            containerBCR:
+              tableCoreRef.getVirtualContainer()?.getBoundingClientRect() ||
+              null,
+            headerHeight: header.value?.$el.clientHeight || 0,
+            scrollTo: (position: { left?: number; top?: number }) =>
+              tableCoreRef.virtualScrollToPosition(position),
+          }
+        : null;
+
+      if (Array.isArray(selectionOverlay.value)) {
+        await selectionOverlay.value[0]?.scrollFocusOverlayIntoView(
+          scrollToViewParams,
+        );
+      } else if (selectionOverlay.value) {
+        await selectionOverlay.value.scrollFocusOverlayIntoView(
+          scrollToViewParams,
+        );
+      }
+    };
+
+    const updateCellSelection = (
+      newRect: {
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+      },
+      newRectId: RectId | null = null,
+    ) => {
+      const rectId = newRectId ?? currentRectId.value ?? 0;
+      selectCell({ x: newRect.maxX, y: newRect.maxY }, rectId, true);
+      if (newRect.minX !== newRect.maxX || newRect.minY !== newRect.maxY) {
+        expandCellSelection({ x: newRect.minX, y: newRect.minY }, rectId);
+      }
+      tableCore.value?.getVirtualBody()?.focus({ preventScroll: true });
+      nextTick().then(scrollToCellSelectionOverlay);
+    };
+
+    const focusWithin = ref(false);
 
     const toBeShownCell = ref<null | CellPosition>(null);
 
@@ -265,7 +320,9 @@ export default {
       wrapper,
       totalWidth,
       tableCore,
+      header,
       selectionOverlay,
+      scrollToCellSelectionOverlay,
       selectCellsOnMove,
       currentRectId,
       rectMinMax,
@@ -276,7 +333,16 @@ export default {
         clearCellSelection();
         closeDataValueView();
       },
+      clearCellSelectionAndStopPropagation: (event: Event) => {
+        if (rectMinMax.value === null) {
+          return;
+        }
+        event.stopPropagation();
+        clearCellSelection();
+      },
+      updateCellSelection,
       changeFocus,
+      focusWithin,
       handleCopyOnKeydown,
       toBeShownCell,
     };
@@ -338,6 +404,9 @@ export default {
     },
     columnTypes() {
       return getPropertiesFromColumns(this.dataConfig.columnConfigs, "type");
+    },
+    selectedHeaderIndex(): number | null {
+      return this.selectedCell?.y === -1 ? this.selectedCell.x : null;
     },
     columnFilterConfigs() {
       return getPropertiesFromColumns(
@@ -621,7 +690,27 @@ export default {
         groupInd === null ? isTop : groupInd,
       );
     },
+    focusBody() {
+      const tableCoreRef = this.getTableCoreComponent();
+      tableCoreRef.getVirtualBody()?.focus({ preventScroll: true });
+      this.focusWithin = true;
+    },
+    onTableBodyFocusOut() {
+      this.changeFocus(false);
+      if (this.selectedCell) {
+        this.selectCell(this.selectedCell, this.currentRectId ?? 0, true);
+      }
+    },
+    onHeaderCellSelect(columnIndex: number) {
+      this.selectCell({ x: columnIndex, y: -1 }, 0, true);
+    },
+    onHeaderCellDeselect() {
+      this.clearCellSelection();
+    },
     selectColumnCellInFirstRow(columnIndex: number) {
+      if (this.tableConfig.pageConfig?.tableSize === 0) {
+        return;
+      }
       this.onCellSelect(columnIndex, 0, this.showVirtualScroller ? null : 0);
       const tableCoreRef = this.getTableCoreComponent();
       tableCoreRef.getVirtualBody()?.focus({ preventScroll: true });
@@ -636,16 +725,15 @@ export default {
       expandSelection: boolean,
     ) {
       let adaptedRowInd = rowInd;
-      if (verticalMove) {
-        const isTop = this.isTop(rowInd);
-        if (!isTop) {
-          if (rowInd === this.totalTableLength) {
-            return;
-          }
-          if (rowInd === this.placeholderRowRowIndex) {
-            adaptedRowInd += verticalMove;
-          }
-        }
+      if (rowInd === this.totalTableLength) {
+        this.onMoveSelectionOutOfBodyDown({
+          columnInd,
+          rectId: this.currentRectId,
+        });
+        return;
+      }
+      if (rowInd === this.placeholderRowRowIndex) {
+        adaptedRowInd += verticalMove;
       }
       this[expandSelection ? "onExpandCellSelect" : "onCellSelect"](
         columnInd,
@@ -674,6 +762,10 @@ export default {
             adaptedRowInd = 0;
             adaptedGroupInd += 1;
           } else {
+            this.onMoveSelectionOutOfBodyDown({
+              columnInd,
+              rectId: this.currentRectId,
+            });
             return;
           }
         }
@@ -683,6 +775,100 @@ export default {
         adaptedRowInd,
         adaptedGroupInd,
       );
+    },
+    onMoveSelectionOutOfBodyUp({ columnInd }: { columnInd: number }) {
+      this.clearCellSelection();
+      this.focusHeaderCell(columnInd);
+    },
+    onMoveSelectionOutOfBodyDown() {
+      // Do nothing
+    },
+    onMoveSelectionOutOfBodyRight() {
+      // Do nothing
+    },
+    onMoveSelectionOutOfBodyLeft({
+      rowInd,
+      rectId,
+    }: {
+      rowInd: number;
+      rectId: RectId | null;
+    }) {
+      if (this.tableConfig.showSelection) {
+        this.focusRowVirtualColumn("selection", rowInd, rectId);
+        this.clearCellSelection();
+      }
+    },
+    onMoveIntoBodyFromLeft(rowInd: number, groupInd: RectId | null) {
+      this.updateCellSelection(
+        {
+          minX: 0,
+          minY: rowInd,
+          maxX: 0,
+          maxY: rowInd,
+        },
+        groupInd,
+      );
+      this.focusBody();
+    },
+    focusRowVirtualColumn(rowInd: number, groupInd: RectId | null) {
+      const refName = this.getRowRefName(
+        this.showVirtualScroller ? null : groupInd,
+        rowInd,
+      );
+      const rowComponent = this.$refs[refName] as InstanceType<typeof Row>;
+      rowComponent?.focusSelectionCheckbox();
+    },
+    onVirtualColumnNav(
+      direction: "up" | "down" | "left" | "right",
+      rowInd: number,
+      groupInd: null | number,
+    ) {
+      const rectId = groupInd ?? (this.showVirtualScroller ? null : 0);
+      if (direction === "right") {
+        if (this.columnHeaders.length > 0) {
+          this.onMoveIntoBodyFromLeft(rowInd, rectId);
+        }
+      } else if (direction === "up") {
+        if (this.showVirtualScroller) {
+          if (rowInd > 0) {
+            this.focusRowVirtualColumn(type, rowInd - 1, rectId);
+          } else if (type === "selection") {
+            this.getHeaderComponent().focusSelectionCheckbox();
+          }
+        } else {
+          const currentGroupInd = rectId ?? 0;
+          if (rowInd > 0) {
+            this.focusRowVirtualColumn(type, rowInd - 1, currentGroupInd);
+          } else if (currentGroupInd > 0) {
+            const prevGroupLength = this.data[currentGroupInd - 1].length;
+            this.focusRowVirtualColumn(
+              type,
+              prevGroupLength - 1,
+              currentGroupInd - 1,
+            );
+          } else if (type === "selection") {
+            this.getHeaderComponent().focusSelectionCheckbox();
+          }
+        }
+      } else if (direction === "down") {
+        if (this.showVirtualScroller) {
+          if (rowInd < this.totalTableLength - 1) {
+            this.focusRowVirtualColumn(type, rowInd + 1, rectId);
+          }
+        } else {
+          const currentGroupInd = rectId ?? 0;
+          const currentGroupLength = this.data[currentGroupInd]?.length ?? 0;
+          if (rowInd < currentGroupLength - 1) {
+            this.focusRowVirtualColumn(type, rowInd + 1, currentGroupInd);
+          } else if (this.data[currentGroupInd + 1]) {
+            this.focusRowVirtualColumn(type, 0, currentGroupInd + 1);
+          }
+        }
+      }
+    },
+    onHeaderSelectionKeydownDown() {
+      const firstGroupInd = this.showVirtualScroller ? null : 0;
+      this.focusRowVirtualColumn("selection", 0, firstGroupInd);
     },
     async onKeyboardMoveSelection(
       horizontalMove: number,
@@ -694,15 +880,25 @@ export default {
       }
       const columnInd = this.selectedCell.x + horizontalMove;
       const rowInd = this.selectedCell.y + verticalMove;
-      if (columnInd === -1 || columnInd === this.columnHeaders.length) {
+      if (columnInd === -1) {
+        this.onMoveSelectionOutOfBodyLeft({
+          rowInd: this.selectedCell!.y,
+          rectId: this.currentRectId,
+        });
+        return;
+      }
+      if (columnInd === this.columnHeaders.length) {
+        this.onMoveSelectionOutOfBodyRight({
+          rowInd,
+          rectId: this.currentRectId,
+        });
         return;
       }
       if (
         (rowInd === -1 && this.showVirtualScroller) ||
         (rowInd === -1 && !this.showVirtualScroller && this.currentRectId === 0)
       ) {
-        this.focusHeaderCell(columnInd);
-        this.clearCellSelection();
+        this.onMoveSelectionOutOfBodyUp({ columnInd });
         return;
       }
 
@@ -712,22 +908,8 @@ export default {
           : "onKeyboardMoveSelectionGroups"
       ](columnInd, rowInd, verticalMove, expandSelection);
 
-      const tableCoreRef = this.getTableCoreComponent();
+      await this.scrollToCellSelectionOverlay();
 
-      const scrollToViewParams = this.showVirtualScroller
-        ? {
-            containerBCR:
-              tableCoreRef.getVirtualContainer()?.getBoundingClientRect() ||
-              null,
-            headerHeight: this.getHeaderComponent().$el.clientHeight,
-            scrollTo: (position: { left?: number; top?: number }) =>
-              tableCoreRef.virtualScrollToPosition(position),
-          }
-        : null;
-
-      await this.getSelectionOverlayComponent().scrollFocusOverlayIntoView(
-        scrollToViewParams,
-      );
       this.toBeShownCell = this.tableConfig.dataValueViewIsShown
         ? this.selectedCell
         : null;
@@ -850,6 +1032,13 @@ export default {
     focusHeaderCell(cellInd: number) {
       this.getHeaderComponent().focusHeaderCell(cellInd);
     },
+    refocusSelection() {
+      if (this.selectedHeaderIndex === null) {
+        this.focusBody();
+      } else {
+        this.focusHeaderCell(this.selectedHeaderIndex);
+      }
+    },
     getRowComponents() {
       const rowComponents: any[] = [];
       this.data.forEach((group: any, groupIndex) => {
@@ -910,8 +1099,7 @@ export default {
       @pointerup.passive="$event.button === 0 && selectCellsOnMove.setFalse()"
       @keydown.ctrl.shift.c.exact="handleCopyOnKeydown"
       @keydown.meta.shift.c.exact="handleCopyOnKeydown"
-      @focusin="changeFocus(true)"
-      @focusout="changeFocus(false)"
+      @keydown.escape.exact="clearCellSelectionAndStopPropagation($event)"
     >
       <TableCore
         ref="tableCore"
@@ -934,6 +1122,8 @@ export default {
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
         @expand-selected-cell="expandSelectedCell"
+        @body-focusin="changeFocus(true)"
+        @body-focusout="onTableBodyFocusOut()"
       >
         <template #row="{ row, groupInd = null, rowInd }">
           <Row
@@ -970,6 +1160,10 @@ export default {
               (currentSize, row) => onResizeAllRows(currentSize, row, rowInd)
             "
             @resize-row="(rowSizeDelta) => onResizeRow(rowSizeDelta, rowInd)"
+            @virtual-column-nav="
+              (type, direction) =>
+                onVirtualColumnNav(type, direction, rowInd, groupInd)
+            "
           >
             <!-- Vue requires named slots on "custom" elements (i.e. template). -->
             <!-- eslint-disable vue/valid-v-slot -->
@@ -1014,6 +1208,7 @@ export default {
             :filters-active="filterActive"
             :get-drag-handle-height="getDragHandleHeight"
             :class="tableHeaderClass"
+            :selected-header-index="selectedHeaderIndex"
             @header-select="onSelectAll"
             @column-sort="onColumnSort"
             @toggle-filter="onToggleFilter"
@@ -1023,6 +1218,9 @@ export default {
             @column-resize-end="onColumnResizeEnd"
             @sub-menu-item-selection="onHeaderSubMenuItemSelection"
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
+            @header-cell-select="onHeaderCellSelect"
+            @header-cell-deselect="onHeaderCellDeselect"
+            @selection-keydown-down="onHeaderSelectionKeydownDown()"
           >
             <template #subHeader="slotProps">
               <slot name="subHeader" v-bind="slotProps" />
@@ -1044,7 +1242,7 @@ export default {
         </template>
         <template #cell-selection-overlay>
           <CellSelectionOverlay
-            v-if="rectMinMax"
+            v-if="rectMinMax && selectedHeaderIndex === null"
             ref="selectionOverlay"
             :rect="rectMinMax"
             :row-height="scrollerItemSize"
@@ -1052,7 +1250,9 @@ export default {
             :row-resize-index="currentResizedScrollIndex"
             :row-resize-delta="currentRowSizeDelta"
             :column-sizes="columnSizes"
-            :cell-selection-rect-focus-corner="selectedCell"
+            :cell-selection-rect-focus-corner="
+              focusWithin ? selectedCell : undefined
+            "
           />
         </template>
       </TableCore>

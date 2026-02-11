@@ -97,6 +97,7 @@ const emit = defineEmits<{
   cellSelect: [index: number, ignoreIfSelected: boolean];
   expandCellSelect: [index: number];
   dataValueView: [index: number, anchor: VirtualElementAnchor];
+  virtualColumnNav: [direction: "up" | "down" | "left" | "right"];
 }>();
 
 const showContent = ref(false);
@@ -251,6 +252,16 @@ const onDataValueView = (index: number) => {
   emit("dataValueView", index, anchor);
 };
 
+const selectionCheckbox = ref<InstanceType<typeof Checkbox> | null>(null);
+const onVirtualColumnKeydown = (
+  direction: "up" | "down" | "left" | "right",
+) => {
+  emit("virtualColumnNav", direction);
+};
+const focusSelectionCheckbox = () => {
+  (selectionCheckbox.value as any)?.$el?.querySelector("input")?.focus();
+};
+
 const rowHeightStyle = computed(() =>
   currentRowHeight.value === "dynamic"
     ? {}
@@ -270,6 +281,7 @@ const transition = computed(() =>
 
 defineExpose({
   getCellComponents,
+  focusSelectionCheckbox,
   /**
    * For TableUI test purposes only
    */
@@ -279,7 +291,7 @@ defineExpose({
 
 <template>
   <tr
-    v-if="row.length > 0"
+    v-if="row.length > 0 || tableConfig.showSelection"
     ref="rowElement"
     :class="[
       'row',
@@ -302,8 +314,16 @@ defineExpose({
       class="collapser-cell"
       @collapser-expand="onRowExpand"
     />
-    <td v-if="tableConfig.showSelection" class="select-cell">
+    <td
+      v-if="tableConfig.showSelection"
+      class="select-cell"
+      @keydown.up.prevent.stop="onVirtualColumnKeydown('selection', 'up')"
+      @keydown.down.prevent.stop="onVirtualColumnKeydown('selection', 'down')"
+      @keydown.left.prevent.stop="onVirtualColumnKeydown('selection', 'left')"
+      @keydown.right.prevent.stop="onVirtualColumnKeydown('selection', 'right')"
+    >
       <Checkbox
+        ref="selectionCheckbox"
         :model-value="isSelected"
         :disabled="tableConfig.disableSelection"
         @update:model-value="onSelect"

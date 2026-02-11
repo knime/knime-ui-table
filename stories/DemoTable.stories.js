@@ -331,6 +331,12 @@ export default {
         category: "Auto column sizing",
       },
     },
+    enableHeaderCellSelection: {
+      name: "Header cell selection",
+      table: {
+        category: "Table Creator",
+      },
+    },
   },
 };
 
@@ -517,4 +523,39 @@ TableUIWithAutoSizeCalculation.args = {
     "2LineString",
     "4LineString",
   ],
+};
+
+export const TableCreator = Template.bind({});
+
+TableCreator.args = {
+  allDataLength: 10,
+  withSorting: false,
+  withPagination: false,
+  withColumnFilters: false,
+  withColumnSelection: false,
+  withGroupBy: false,
+  withSearch: false,
+  withHeaderSubMenu: false,
+  showBottomControls: false,
+  showCollapser: false,
+  showSubHeaders: true,
+  withSelection: false,
+  withCellSelection: true,
+  enableHeaderCellSelection: true,
+  withCellExpansion: false,
+  showActionButton: false,
+  showPopovers: false,
+  compactMode: false,
+  enableRowResize: false,
+  enableColumnResize: false,
+  enableVirtualScrolling: true,
+  containerHeight: "100%",
+  backgroundColor: "--knime-porcelain",
+  fixHeader: false,
+  showTableSize: true,
+  showSubMenus: false,
+  showGroupSubMenus: false,
+  numRowsAbove: 0,
+  numRowsBelow: 0,
+  allSlottedColumns: [],
 };

@@ -11,6 +11,8 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  bodyFocusin: [];
+  bodyFocusout: [];
 }>();
 
 const onArrowKeyDown = (event: KeyboardEvent) => {
@@ -56,7 +58,12 @@ const onKeyDown = (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <tbody tabindex="-1" @keydown.self="onKeyDown">
+  <tbody
+    :tabindex="-1"
+    @keydown.self="onKeyDown"
+    @focusin="emit('bodyFocusin')"
+    @focusout="emit('bodyFocusout')"
+  >
     <slot name="bodyContent" />
   </tbody>
 </template>

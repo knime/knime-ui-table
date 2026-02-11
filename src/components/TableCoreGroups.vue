@@ -26,6 +26,8 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  bodyFocusin: [];
+  bodyFocusout: [];
 }>();
 const { closeExpandedSubMenu, containerRef, overflowStyles } =
   useCommonScrollContainerProps();
@@ -54,6 +56,8 @@ defineExpose({
       "
       @clear-selection="emit('clearSelection')"
       @expand-selected-cell="emit('expandSelectedCell')"
+      @body-focusin="emit('bodyFocusin')"
+      @body-focusout="emit('bodyFocusout')"
     >
       <template #bodyContent>
         <Group

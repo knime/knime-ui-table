@@ -286,9 +286,14 @@ describe("CellSelectionOverlay.vue", () => {
       });
 
       it("does not scroll if the focus cell is inside the viewport of the body", async () => {
-        Element.prototype.getBoundingClientRect = vi
-          .fn()
-          .mockReturnValue({ width: 24, height: 14, top: 20, left: 0 });
+        Element.prototype.getBoundingClientRect = vi.fn().mockReturnValue({
+          width: 24,
+          height: 14,
+          top: 20,
+          left: 0,
+          bottom: 21,
+          right: 1,
+        });
 
         wrapper.vm.scrollFocusOverlayIntoView({
           containerBCR,
@@ -321,9 +326,9 @@ describe("CellSelectionOverlay.vue", () => {
 
       it.each([
         ["vertically upwards", { top: -15 }, { top: 17 }],
-        ["vertically downwards", { top: 145 }, { top: 17 }],
+        ["vertically downwards", { bottom: 145 }, { top: 17 }],
         ["horizontally upwards", { left: -32 }, { left: 0 }],
-        ["horizontally downwards", { left: 170 }, { left: 0 }],
+        ["horizontally downwards", { right: 170 }, { left: 0 }],
       ])(
         "does scroll %s if the focus cell is outside the viewport of the body",
         async (_, focusOverlayBCR, result) => {
@@ -331,7 +336,9 @@ describe("CellSelectionOverlay.vue", () => {
             width: 24,
             height: 14,
             top: 0,
+            bottom: 0,
             left: 0,
+            right: 0,
             ...focusOverlayBCR,
           });
 

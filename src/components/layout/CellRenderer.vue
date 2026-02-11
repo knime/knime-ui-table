@@ -63,7 +63,7 @@ defineExpose({
   getCellContentDimensions,
 });
 
-const onPointerOver = throttle(() => {
+const onPointerMove = throttle(() => {
   if (props.selectOnMove) {
     emit("select", { expandSelection: true });
   }
@@ -127,7 +127,7 @@ onMounted(changeExpandedCellViewIfNecessary);
       }
     "
     @dblclick="(event: MouseEvent) => enableExpand && expandAndSelect(event)"
-    @pointerover="onPointerOver"
+    @pointermove="onPointerMove"
     @pointerdown="onPointerDown"
     @input="(val: any) => emit('input', { value: val, cell: $el })"
   >

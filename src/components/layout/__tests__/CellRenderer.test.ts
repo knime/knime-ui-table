@@ -172,7 +172,7 @@ describe("CellRenderer.vue", () => {
   it("expands selection if selectOnMove is true and the pointer is moved over the cell", async () => {
     props.selectOnMove = true;
     const wrapper = shallowMountCellRenderer();
-    wrapper.find("td").trigger("pointerover");
+    wrapper.find("td").trigger("pointermove");
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted().select).toStrictEqual([
       [{ expandSelection: true }],

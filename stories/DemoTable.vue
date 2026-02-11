@@ -150,6 +150,7 @@ const props = defineProps({
   autoSizeRowsToRowWithMaxHeight: Boolean,
   fixedRowHeights: { type: Object, default: () => ({}) },
   defaultColumns: { type: Array, default: () => null },
+  enableHeaderCellSelection: Boolean,
 });
 
 const {
@@ -386,6 +387,7 @@ const tableConfig = reactive({
   showSelection: props.withSelection,
   disableSelection: props.disableSelection,
   enableCellSelection: props.withCellSelection,
+  enableHeaderCellSelection: props.enableHeaderCellSelection,
   enableDataValueViews: props.withCellExpansion,
   dataValueViewIsShown: false,
   showCollapser: props.showCollapser,

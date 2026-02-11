@@ -48,6 +48,8 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  bodyFocusin: [];
+  bodyFocusout: [];
 }>();
 
 const withLeftSideSize = (sizeManager: SizeManager) =>
@@ -182,6 +184,8 @@ defineExpose({
       "
       @clear-selection="emit('clearSelection')"
       @expand-selected-cell="emit('expandSelectedCell')"
+      @body-focusin="emit('bodyFocusin')"
+      @body-focusout="emit('bodyFocusout')"
     >
       <template #bodyContent>
         <slot name="cell-selection-overlay" />
