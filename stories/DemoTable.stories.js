@@ -337,6 +337,12 @@ export default {
         category: "Table Creator",
       },
     },
+    editableColumns: {
+      name: "Editable columns",
+      table: {
+        category: "Table Creator",
+      },
+    },
   },
 };
 
@@ -548,6 +554,7 @@ TableCreator.args = {
   compactMode: false,
   enableRowResize: false,
   enableColumnResize: false,
+  editableColumns: true,
   enableVirtualScrolling: true,
   containerHeight: "100%",
   backgroundColor: "--knime-porcelain",

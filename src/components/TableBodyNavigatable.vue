@@ -2,6 +2,7 @@
 import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { useDataValueViews } from "./composables/useDataValueViews";
+import { useStartEditingKeydown } from "./composables/useStartEditingKeydown";
 
 const emit = defineEmits<{
   moveSelection: [
@@ -11,6 +12,7 @@ const emit = defineEmits<{
   ];
   clearSelection: [];
   expandSelectedCell: [];
+  startEditing: [initialValue?: string];
   bodyFocusin: [];
   bodyFocusout: [];
 }>();
@@ -41,18 +43,40 @@ const onArrowKeyDown = (event: KeyboardEvent) => {
 const { isShown: selectedCellIsExpanded, close: closeExpandedSelectedCell } =
   useDataValueViews();
 
+const onEscape = (event: KeyboardEvent) => {
+  if (selectedCellIsExpanded.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeExpandedSelectedCell();
+  }
+};
+
+const onTab = (event: KeyboardEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const horizontalMove = event.shiftKey ? -1 : 1;
+  emit("moveSelection", horizontalMove, 0, false);
+};
+
+const { onKeydown: onStartEditingKeydown } = useStartEditingKeydown({
+  onExpandAndStartEditing: (initialValue?: string) => {
+    emit("expandSelectedCell");
+    emit("startEditing", initialValue);
+  },
+  onStartEditing: (initialValue?: string) => {
+    emit("startEditing", initialValue);
+  },
+});
+
 const onKeyDown = (event: KeyboardEvent) => {
   if (!event[getMetaOrCtrlKey()] && event.key.includes("Arrow")) {
     onArrowKeyDown(event);
   } else if (event.key === "Tab") {
-    emit("clearSelection");
-  } else if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    emit("expandSelectedCell");
-  } else if (event.key === "Escape" && selectedCellIsExpanded.value) {
-    event.preventDefault();
-    event.stopPropagation();
-    closeExpandedSelectedCell();
+    onTab(event);
+  } else if (event.key === "Escape") {
+    onEscape(event);
+  } else {
+    onStartEditingKeydown(event);
   }
 };
 </script>

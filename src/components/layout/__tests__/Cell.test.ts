@@ -61,6 +61,7 @@ describe("Cell.vue", () => {
       noPadding: false,
       paddingLeft: 10,
       defaultTopBottomPadding: 12,
+      noPaddingLeft: false,
       selectOnMove: false,
       size: 300,
       text: "cellValue",
@@ -68,6 +69,7 @@ describe("Cell.vue", () => {
       enableExpand: false,
       isSelected: false,
       isToBeExpanded: false,
+      isEditing: false,
     });
   });
 

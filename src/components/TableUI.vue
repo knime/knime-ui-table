@@ -1,6 +1,14 @@
 <script lang="ts">
 /* eslint-disable max-lines */
-import { type PropType, type Ref, computed, ref, toRef } from "vue";
+import {
+  type PropType,
+  type Ref,
+  computed,
+  nextTick,
+  ref,
+  toRef,
+  watch,
+} from "vue";
 
 import type { MenuItem } from "@knime/components";
 
@@ -28,6 +36,7 @@ import {
   useCellSelection,
 } from "./composables/useCellSelection";
 import { provideDataValueViewsIsShown } from "./composables/useDataValueViews";
+import { createEditingCellKeydownHandler } from "./composables/useEditCellKeydown";
 import BottomControls from "./control/BottomControls.vue";
 import TopControls from "./control/TopControls.vue";
 import ColumnFilters from "./filter/ColumnFilters.vue";
@@ -213,6 +222,8 @@ export default {
       rect: VirtualElementAnchor,
     ) => true,
     closeDataValueView: () => true,
+    headerCellStartEditing: (columnIndex: number, initialValue?: string) =>
+      true,
   },
   /* eslint-enable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
   setup(props, { emit }) {
@@ -301,6 +312,32 @@ export default {
     };
 
     const focusWithin = ref(false);
+    const toBeEditedCell = ref<null | CellPosition>(null);
+    const editingCellInitialValue = ref<null | string>(null);
+    const editingCell = computed(() =>
+      selectCellsOnMove.state ? null : toBeEditedCell.value,
+    );
+    const isEditingCell = computed(() => editingCell.value !== null);
+
+    const setToBeEditedCell = (
+      cellPosition: CellPosition | null,
+      initialValue?: string,
+    ) => {
+      toBeEditedCell.value = cellPosition;
+      editingCellInitialValue.value = initialValue ?? null;
+    };
+    const stopEditingCell = (rowInd?: number, colInd?: number) => {
+      const toBeEditedCellValue = toBeEditedCell.value;
+      if (
+        typeof rowInd !== "undefined" &&
+        typeof colInd !== "undefined" &&
+        toBeEditedCellValue &&
+        (toBeEditedCellValue.x !== colInd || toBeEditedCellValue.y !== rowInd)
+      ) {
+        return;
+      }
+      setToBeEditedCell(null);
+    };
 
     const toBeShownCell = ref<null | CellPosition>(null);
 
@@ -340,11 +377,18 @@ export default {
         event.stopPropagation();
         clearCellSelection();
       },
+      setToBeEditedCell,
+      editingCellInitialValue,
+      stopEditingCell,
       updateCellSelection,
       changeFocus,
       focusWithin,
       handleCopyOnKeydown,
       toBeShownCell,
+      toBeEditedCell,
+      editingCell,
+      isEditingCell,
+      createEditingCellKeydownHandler,
     };
   },
   data() {
@@ -676,8 +720,27 @@ export default {
       this.selectCell(
         { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
-        ignoreIfSelected,
+        ignoreIfSelected ||
+          Boolean(this.dataConfig.columnConfigs[cellInd]?.editable),
       );
+      this.stopEditingCell();
+    },
+    onCellSelectRowEvent(
+      cellInd: number,
+      rowInd: number,
+      groupInd: null | number,
+      ignoreIfSelected: boolean = false,
+    ) {
+      if (
+        this.toBeEditedCell &&
+        this.toBeEditedCell.x === cellInd &&
+        this.toBeEditedCell.y === rowInd
+      ) {
+        // If the cell to be edited is clicked again, do not interrupt editing
+        return;
+      }
+      this.onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected);
+      this.onStartEditingCell();
     },
     onExpandCellSelect(
       cellInd: number,
@@ -689,6 +752,7 @@ export default {
         { x: cellInd, y: rowInd },
         groupInd === null ? isTop : groupInd,
       );
+      this.stopEditingCell();
     },
     focusBody() {
       const tableCoreRef = this.getTableCoreComponent();
@@ -702,6 +766,7 @@ export default {
       }
     },
     onHeaderCellSelect(columnIndex: number) {
+      this.stopEditingCell();
       this.selectCell({ x: columnIndex, y: -1 }, 0, true);
     },
     onHeaderCellDeselect() {
@@ -775,6 +840,21 @@ export default {
         adaptedRowInd,
         adaptedGroupInd,
       );
+    },
+    async onKeyboardMoveSelectionFromEditingCell(
+      horizontalMove: number,
+      verticalMove: number,
+      expandSelection: boolean,
+    ) {
+      await this.onKeyboardMoveSelection(
+        horizontalMove,
+        verticalMove,
+        expandSelection,
+      );
+      if (this.selectedCell) {
+        this.focusBody();
+      }
+      this.stopEditingCell();
     },
     onMoveSelectionOutOfBodyUp({ columnInd }: { columnInd: number }) {
       this.clearCellSelection();
@@ -919,6 +999,15 @@ export default {
         // scroll current selection into view
         await this.onKeyboardMoveSelection(0, 0, true);
         this.toBeShownCell = this.selectedCell;
+      }
+    },
+
+    onStartEditingCell(initialValue?: string) {
+      if (
+        this.selectedCell &&
+        this.dataConfig.columnConfigs[this.selectedCell.x]?.editable
+      ) {
+        this.setToBeEditedCell(this.selectedCell, initialValue);
       }
     },
     onResizeRow(rowSizeDelta: number, scrollIndex: number) {
@@ -1122,6 +1211,7 @@ export default {
         @move-selection="onKeyboardMoveSelection"
         @clear-selection="clearCellSelection"
         @expand-selected-cell="expandSelectedCell"
+        @start-editing="onStartEditingCell"
         @body-focusin="changeFocus(true)"
         @body-focusout="onTableBodyFocusOut()"
       >
@@ -1141,10 +1231,16 @@ export default {
             :disable-row-height-transition="disableRowHeightTransition"
             :selected-cell-index="getCellIndex(selectedCell, rowInd)"
             :to-be-expanded-cell-index="getCellIndex(toBeShownCell, rowInd)"
+            :to-be-edited-cell-index="getCellIndex(editingCell, rowInd)"
             @row-select="onRowSelect($event, rowInd, groupInd || 0)"
             @cell-select="
               (cellInd, ignoreIfSelected) =>
-                onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected)
+                onCellSelectRowEvent(
+                  cellInd,
+                  rowInd,
+                  groupInd,
+                  ignoreIfSelected,
+                )
             "
             @data-value-view="
               (cellInd, anchor) => onDataValueView(cellInd, rowInd, anchor)
@@ -1188,6 +1284,22 @@ export default {
                 }"
               />
             </template>
+            <template #editable-cell="{ ind, cellElement }">
+              <slot
+                name="editable-cell"
+                :row-ind="rowInd"
+                :col-ind="ind"
+                :initial-value="editingCellInitialValue"
+                :cell-element="cellElement"
+                @keydown="
+                  (event: KeyboardEvent) =>
+                    createEditingCellKeydownHandler({
+                      moveSelection: onKeyboardMoveSelectionFromEditingCell,
+                    })(event)
+                "
+                @click-away="stopEditingCell"
+              />
+            </template>
             <template #rowCollapserContent>
               <slot name="collapserContent" :row="row" />
             </template>
@@ -1220,6 +1332,10 @@ export default {
             @select-column-cell-in-first-row="selectColumnCellInFirstRow"
             @header-cell-select="onHeaderCellSelect"
             @header-cell-deselect="onHeaderCellDeselect"
+            @header-cell-start-editing="
+              (columnIndex: number, initialValue?: string) =>
+                $emit('headerCellStartEditing', columnIndex, initialValue)
+            "
             @selection-keydown-down="onHeaderSelectionKeydownDown()"
           >
             <template #subHeader="slotProps">
@@ -1242,7 +1358,7 @@ export default {
         </template>
         <template #cell-selection-overlay>
           <CellSelectionOverlay
-            v-if="rectMinMax && selectedHeaderIndex === null"
+            v-if="rectMinMax && !isEditingCell && selectedHeaderIndex === null"
             ref="selectionOverlay"
             :rect="rectMinMax"
             :row-height="scrollerItemSize"

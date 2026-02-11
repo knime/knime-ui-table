@@ -151,6 +151,7 @@ const props = defineProps({
   fixedRowHeights: { type: Object, default: () => ({}) },
   defaultColumns: { type: Array, default: () => null },
   enableHeaderCellSelection: Boolean,
+  editableColumns: Boolean,
 });
 
 const {
@@ -330,6 +331,9 @@ const dataConfig = computed(() => {
         !props.withSpecificSortConfigs ||
         currentColumnSpecificSortConfigs.value[ind],
       headerColor: currentColumnHeaderColors.value[ind] ?? null,
+      editable: props.editableColumns,
+      noPadding: props.editableColumns,
+      noPaddingLeft: props.editableColumns,
     };
     dataConfig.columnConfigs.push(columnConfig);
   });
