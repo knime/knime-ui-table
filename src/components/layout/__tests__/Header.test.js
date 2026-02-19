@@ -207,6 +207,42 @@ describe("Header.vue", () => {
     );
   });
 
+  it("emits headerCellSelect on click when enableHeaderCellSelection is true and column is not already selected", () => {
+    props.tableConfig.enableHeaderCellSelection = true;
+    props.selectedHeaderIndex = 1;
+    wrapper = shallowMount(Header, { props });
+
+    wrapper
+      .findAll("th.column-header .column-header-content")
+      .at(0)
+      .trigger("click");
+    expect(wrapper.emitted().headerCellSelect).toBeTruthy();
+    expect(wrapper.emitted().headerCellSelect[0]).toStrictEqual([0]);
+  });
+
+  it("does not emit headerCellSelect on click when enableHeaderCellSelection is false", () => {
+    props.tableConfig.enableHeaderCellSelection = false;
+    wrapper = shallowMount(Header, { props });
+
+    wrapper
+      .findAll("th.column-header .column-header-content")
+      .at(0)
+      .trigger("click");
+    expect(wrapper.emitted().headerCellSelect).toBeFalsy();
+  });
+
+  it("does not emit headerCellSelect on click when the clicked column is already selected", () => {
+    props.tableConfig.enableHeaderCellSelection = true;
+    props.selectedHeaderIndex = 0;
+    wrapper = shallowMount(Header, { props });
+
+    wrapper
+      .findAll("th.column-header .column-header-content")
+      .at(0)
+      .trigger("click");
+    expect(wrapper.emitted().headerCellSelect).toBeFalsy();
+  });
+
   it("emits a toggleFilter event when the filter toggle is clicked", () => {
     wrapper = shallowMount(Header, { props });
 
