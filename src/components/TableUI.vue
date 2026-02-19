@@ -451,6 +451,7 @@ export default {
           return;
         }
         event.stopPropagation();
+        event.preventDefault();
         clearCellSelection();
       },
       setToBeEditedCell,

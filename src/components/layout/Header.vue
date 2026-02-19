@@ -243,6 +243,12 @@ export default {
       this.$emit("headerSelect", !this.isSelected);
     },
     onHeaderClick(ind: number, header: string) {
+      if (
+        this.tableConfig.enableHeaderCellSelection &&
+        this.selectedHeaderIndex !== ind
+      ) {
+        this.$emit("headerCellSelect", ind);
+      }
       if (this.isColumnSortable(ind)) {
         this.$emit("columnSort", ind, header);
       }
@@ -542,7 +548,7 @@ export default {
       >
         <KdsButton
           ref="new-column-button"
-          label="Add column"
+          label="Add"
           leading-icon="plus"
           size="small"
           @click="onNewColumnButtonClick"

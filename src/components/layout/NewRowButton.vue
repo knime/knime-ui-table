@@ -21,7 +21,7 @@ defineExpose({
   <div class="sticky-container">
     <KdsButton
       :ref="buttonRef"
-      label="Add row"
+      label="Add"
       leading-icon="plus"
       size="small"
       :style="{ margin: '4px' }"
