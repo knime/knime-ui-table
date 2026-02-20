@@ -137,6 +137,8 @@ const clickCell = async (wrapper: VueWrapper, row: number, col: number) => {
   const tableUIVm = wrapper.vm as any;
   tableUIVm.onCellSelectRowEvent(col, row, 0, false);
   await nextTick();
+  tableUIVm.onCellSelectRowEvent(col, row, 0, false);
+  await nextTick();
 };
 
 /**
@@ -245,10 +247,30 @@ describe("TableUI Cell Interaction", () => {
   });
 
   describe("entering states", () => {
-    it("click on a cell enters editable state", async () => {
+    it("first click on a cell selects it without entering editable state", async () => {
+      const wrapper = mountEditableTable();
+      const tableUIVm = wrapper.vm as any;
+      tableUIVm.onCellSelectRowEvent(1, 1, 0, false);
+      await nextTick();
+      expect(getEditableCell(wrapper)).toBeNull();
+      expect(getSelectedCell(wrapper)).toStrictEqual({ x: 1, y: 1 });
+      wrapper.unmount();
+    });
+
+    it("second click on already-selected cell enters editable state", async () => {
       const wrapper = mountEditableTable();
       await clickCell(wrapper, 1, 1);
       expect(getEditableCell(wrapper)).toStrictEqual({ x: 1, y: 1 });
+      wrapper.unmount();
+    });
+
+    it("clicking a cell that is part of a multi-cell selection does not start editing", async () => {
+      const wrapper = mountEditableTable();
+      const tableUIVm = wrapper.vm as any;
+      await dragCells(wrapper, { row: 0, col: 0 }, { row: 1, col: 2 });
+      tableUIVm.onCellSelectRowEvent(0, 0, 0, false);
+      await nextTick();
+      expect(getEditableCell(wrapper)).toBeNull();
       wrapper.unmount();
     });
 
@@ -269,7 +291,6 @@ describe("TableUI Cell Interaction", () => {
 
     beforeEach(async () => {
       wrapper = mountEditableTable();
-      // Click cell (1,1) to enter editable state
       await clickCell(wrapper, 1, 1);
     });
 

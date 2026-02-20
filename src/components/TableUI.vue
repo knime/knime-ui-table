@@ -272,6 +272,7 @@ export default {
       currentRectId,
       rectMinMax,
       selectedCell,
+      isSingleSelectedCell,
     } = useCellSelection(enableCellSelection);
 
     watch(selectedCell, (newCell) =>
@@ -440,6 +441,7 @@ export default {
       currentRectId,
       rectMinMax,
       selectedCell,
+      isSingleSelectedCell,
       selectCell,
       expandCellSelection,
       clearCellSelection: () => {
@@ -852,8 +854,14 @@ export default {
         // If the cell to be edited is clicked again, do not interrupt editing
         return;
       }
-      this.onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected);
-      this.onStartEditingCell();
+      const isEditable = Boolean(
+        this.dataConfig.columnConfigs[cellInd]?.editable,
+      );
+      if (isEditable && this.isSingleSelectedCell({ x: cellInd, y: rowInd })) {
+        this.onStartEditingCell();
+      } else {
+        this.onCellSelect(cellInd, rowInd, groupInd, ignoreIfSelected);
+      }
     },
     onExpandCellSelect(
       cellInd: number,
