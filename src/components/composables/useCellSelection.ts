@@ -112,5 +112,6 @@ export const useCellSelection = (enableCellSelection: Ref<boolean>) => {
     rectMinMax,
     selectedCell,
     currentRectId,
+    isSingleSelectedCell,
   };
 };
