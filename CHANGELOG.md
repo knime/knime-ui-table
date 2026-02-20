@@ -1,5 +1,11 @@
 # @knime/knime-ui-table
 
+## 0.7.2
+
+### Patch Changes
+
+- adde932: Start editing only on second click on a cell
+
 ## 0.7.1
 
 ### Patch Changes
