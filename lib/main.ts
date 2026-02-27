@@ -1,6 +1,7 @@
 import Table from "../src/components/Table.vue";
 import TableUI from "../src/components/TableUI.vue";
 import TableUIWithAutoSizeCalculation from "../src/components/TableUIWithAutoSizeCalculation.vue";
+import TopControls from "../src/components/control/TopControls.vue";
 import type DataConfig from "../src/types/DataConfig";
 import type { ColumnConfig, RowConfig } from "../src/types/DataConfig";
 import type FilterConfig from "../src/types/FilterConfig";
@@ -17,7 +18,13 @@ import type {
 } from "../src/types/TableConfig";
 import constants from "../src/util/constants";
 
-export { Table, TableUI, TableUIWithAutoSizeCalculation, constants };
+export {
+  Table,
+  TableUI,
+  TableUIWithAutoSizeCalculation,
+  TopControls,
+  constants,
+};
 export * from "../src/config/table.config";
 export * from "../src/config/time.config";
 
@@ -34,6 +41,8 @@ export { group } from "../src/util/transform/group";
 export { paginate } from "../src/util/transform/paginate";
 export { sort } from "../src/util/transform/sort";
 export { MIN_COLUMN_SIZE } from "@/util/constants";
+
+export { unpackObjectRepresentation, isMissingValue } from "../src/util/index";
 
 export type { Rect } from "../src/components/composables/useCellSelection";
 export type { PossibleValue, FilterConfig };
