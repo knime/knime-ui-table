@@ -87,7 +87,7 @@
   "overrides": {
     "semver@>=6.0.0 <6.3.1": ">=6.3.1",
     "postcss-url": {
-      "minimatch": "10.2.1"
+      "minimatch": "10.2.3"
     }
   },
   "files": [
