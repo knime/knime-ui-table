@@ -1,5 +1,11 @@
 # @knime/knime-ui-table
 
+## 0.7.3
+
+### Patch Changes
+
+- bbdf518: Export TopControls and value extraction utility methods
+
 ## 0.7.2
 
 ### Patch Changes
