@@ -37,6 +37,14 @@ export const isMissingValue = (val: any): val is { metadata: string } | null =>
   val === null ||
   (isObjectRepresentation(val) && val?.hasOwnProperty("metadata"));
 
+export const getMissingValueMessage = (
+  cellData: { metadata: string } | null,
+) => {
+  const metadata = cellData?.metadata;
+  const missingValueMsg = typeof metadata === "string" ? ` (${metadata})` : "";
+  return `Missing Value${missingValueMsg}`;
+};
+
 export const isEmpty = (val: any): val is { value: undefined } | undefined =>
   typeof unpackObjectRepresentation(val) === "undefined";
 
