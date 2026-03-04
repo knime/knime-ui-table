@@ -1,5 +1,11 @@
 # @knime/knime-ui-table
 
+## 0.8.0
+
+### Minor Changes
+
+- a016e28: Expose getMissingValueMessage
+
 ## 0.7.3
 
 ### Patch Changes
