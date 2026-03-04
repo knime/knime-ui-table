@@ -42,7 +42,11 @@ export { paginate } from "../src/util/transform/paginate";
 export { sort } from "../src/util/transform/sort";
 export { MIN_COLUMN_SIZE } from "@/util/constants";
 
-export { unpackObjectRepresentation, isMissingValue } from "../src/util/index";
+export {
+  unpackObjectRepresentation,
+  isMissingValue,
+  getMissingValueMessage,
+} from "../src/util/index";
 
 export type { Rect } from "../src/components/composables/useCellSelection";
 export type { PossibleValue, FilterConfig };

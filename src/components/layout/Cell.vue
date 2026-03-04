@@ -4,6 +4,7 @@ import { type Ref, computed, ref } from "vue";
 import {
   getCellPaddingLeft,
   getColor,
+  getMissingValueMessage,
   isMissingValue,
   unpackObjectRepresentation,
 } from "@/util";
@@ -36,10 +37,7 @@ const formattedValue = computed(() =>
 const title = computed(() => {
   const { cellData } = props;
   if (isMissingValue(cellData)) {
-    const metadata = cellData?.metadata;
-    const missingValueMsg =
-      typeof metadata === "string" ? ` (${metadata})` : "";
-    return `Missing Value${missingValueMsg}`;
+    return getMissingValueMessage(cellData);
   }
   if (isClickable.value) {
     return null;
