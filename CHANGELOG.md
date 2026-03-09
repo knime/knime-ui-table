@@ -1,5 +1,11 @@
 # @knime/knime-ui-table
 
+## 0.8.1
+
+### Patch Changes
+
+- 4c72752: Fix audit issue DOMPurify
+
 ## 0.8.0
 
 ### Minor Changes
