@@ -13,6 +13,7 @@ import {
 import type { MenuItem } from "@knime/components";
 
 import type DataConfig from "@/types/DataConfig";
+import type { ColumnConfig } from "@/types/DataConfig";
 import { VirtualElementAnchor } from "@/types/DataValueView";
 import type FilterConfig from "@/types/FilterConfig";
 import type TableConfig from "@/types/TableConfig";
@@ -177,6 +178,42 @@ export default {
     disableRowHeightTransition: {
       type: Boolean,
       default: false,
+    },
+    rowColumnKeys: {
+      type: Array as PropType<Array<ColumnConfig["key"]>>,
+      default: undefined,
+    },
+    rowColumnSizes: {
+      type: Array as PropType<Array<ColumnConfig["size"]>>,
+      default: undefined,
+    },
+    rowColumnFormatters: {
+      type: Array as PropType<Array<ColumnConfig["formatter"]>>,
+      default: undefined,
+    },
+    rowColumnClassGenerators: {
+      type: Array as PropType<Array<ColumnConfig["classGenerator"]>>,
+      default: undefined,
+    },
+    rowColumnHasSlotContent: {
+      type: Array as PropType<Array<ColumnConfig["hasSlotContent"]>>,
+      default: undefined,
+    },
+    rowColumnHasDataValueView: {
+      type: Array as PropType<Array<ColumnConfig["hasDataValueView"]>>,
+      default: undefined,
+    },
+    rowColumnNoPadding: {
+      type: Array as PropType<Array<ColumnConfig["noPadding"]>>,
+      default: undefined,
+    },
+    rowColumnNoPaddingLeft: {
+      type: Array as PropType<Array<ColumnConfig["noPaddingLeft"]>>,
+      default: undefined,
+    },
+    rowColumnClickables: {
+      type: Array as PropType<boolean[]>,
+      default: undefined,
     },
   },
   /* eslint-disable @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars  */
@@ -540,7 +577,58 @@ export default {
       );
     },
     columnSizes() {
-      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "size");
+      return (
+        this.rowColumnSizes ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "size")
+      );
+    },
+    columnFormatters() {
+      return (
+        this.rowColumnFormatters ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "formatter")
+      );
+    },
+    columnClassGenerators() {
+      return (
+        this.rowColumnClassGenerators ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "classGenerator")
+      );
+    },
+    columnHasSlotContent() {
+      return (
+        this.rowColumnHasSlotContent ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "hasSlotContent")
+      );
+    },
+    columnHasDataValueView() {
+      return (
+        this.rowColumnHasDataValueView ??
+        getPropertiesFromColumns(
+          this.dataConfig.columnConfigs,
+          "hasDataValueView",
+        )
+      );
+    },
+    columnNoPadding() {
+      return (
+        this.rowColumnNoPadding ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "noPadding")
+      );
+    },
+    columnNoPaddingLeft() {
+      return (
+        this.rowColumnNoPaddingLeft ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "noPaddingLeft")
+      );
+    },
+    columnClickables() {
+      return (
+        this.rowColumnClickables ??
+        getPropertiesFromColumns(
+          this.dataConfig.columnConfigs,
+          "popoverRenderer",
+        ).map((config) => Boolean(config))
+      );
     },
     columnTypes() {
       return getPropertiesFromColumns(this.dataConfig.columnConfigs, "type");
@@ -555,7 +643,10 @@ export default {
       );
     },
     columnKeys() {
-      return getPropertiesFromColumns(this.dataConfig.columnConfigs, "key");
+      return (
+        this.rowColumnKeys ??
+        getPropertiesFromColumns(this.dataConfig.columnConfigs, "key")
+      );
     },
     columnSortConfigs() {
       return getPropertiesFromColumns(
@@ -576,10 +667,7 @@ export default {
       );
     },
     slottedColumns() {
-      return getPropertiesFromColumns(
-        this.dataConfig.columnConfigs,
-        "hasSlotContent",
-      )
+      return this.columnHasSlotContent
         .map((hasSlotContent: any, colInd: any) =>
           hasSlotContent ? colInd : null,
         )
@@ -1483,6 +1571,15 @@ export default {
             :table-config="tableConfig"
             :show-drag-handle="enableRowResize"
             :column-configs="dataConfig.columnConfigs"
+            :column-keys="columnKeys"
+            :column-sizes="columnSizes"
+            :column-formatters="columnFormatters"
+            :column-class-generators="columnClassGenerators"
+            :column-has-slot-content="columnHasSlotContent"
+            :column-has-data-value-view="columnHasDataValueView"
+            :column-no-padding="columnNoPadding"
+            :column-no-padding-left="columnNoPaddingLeft"
+            :column-clickables="columnClickables"
             :row-config="dataConfig.rowConfig"
             :row-height="currentRowHeight"
             :min-row-height="minRowHeight"

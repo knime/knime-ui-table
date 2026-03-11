@@ -60,6 +60,15 @@ export interface RowProps {
   row?: any[];
   tableConfig: TableConfig;
   columnConfigs: ColumnConfig[];
+  columnKeys?: Array<ColumnConfig["key"]>;
+  columnSizes?: Array<ColumnConfig["size"]>;
+  columnFormatters?: Array<ColumnConfig["formatter"]>;
+  columnClassGenerators?: Array<ColumnConfig["classGenerator"]>;
+  columnHasSlotContent?: Array<ColumnConfig["hasSlotContent"]>;
+  columnHasDataValueView?: Array<ColumnConfig["hasDataValueView"]>;
+  columnNoPadding?: Array<ColumnConfig["noPadding"]>;
+  columnNoPaddingLeft?: Array<ColumnConfig["noPaddingLeft"]>;
+  columnClickables?: boolean[];
   rowConfig?: RowConfig;
   rowHeight?: number | "dynamic";
   isSelected?: boolean;
@@ -127,36 +136,43 @@ const activeDrag = ref(false);
 const rowHeightOnDragStart = ref(0);
 
 const columnKeys = computed(() =>
-  getPropertiesFromColumns(props.columnConfigs, "key"),
+  props.columnKeys ?? getPropertiesFromColumns(props.columnConfigs, "key"),
 );
 const columnSizes = computed(() =>
-  getPropertiesFromColumns(props.columnConfigs, "size"),
+  props.columnSizes ?? getPropertiesFromColumns(props.columnConfigs, "size"),
 );
 
 const formatters = computed(() =>
+  props.columnFormatters ??
   getPropertiesFromColumns(props.columnConfigs, "formatter"),
 );
 const classGenerators = computed(() =>
+  props.columnClassGenerators ??
   getPropertiesFromColumns(props.columnConfigs, "classGenerator"),
 );
 const slottedColumns = computed(() =>
+  props.columnHasSlotContent ??
   getPropertiesFromColumns(props.columnConfigs, "hasSlotContent"),
 );
 const hasDataValueView = computed(() =>
+  props.columnHasDataValueView ??
   getPropertiesFromColumns(props.columnConfigs, "hasDataValueView"),
 );
 
 const noPadding = computed(() =>
+  props.columnNoPadding ??
   getPropertiesFromColumns(props.columnConfigs, "noPadding"),
 );
 
 const noPaddingLeft = computed(() =>
+  props.columnNoPaddingLeft ??
   getPropertiesFromColumns(props.columnConfigs, "noPaddingLeft"),
 );
 
 const clickableColumns = computed(() =>
-  getPropertiesFromColumns(props.columnConfigs, "popoverRenderer").map(
-    (config) => Boolean(config),
+  props.columnClickables ??
+  getPropertiesFromColumns(props.columnConfigs, "popoverRenderer").map((config) =>
+    Boolean(config),
   ),
 );
 const filteredSubMenuItems = computed(() => {

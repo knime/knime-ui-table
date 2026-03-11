@@ -56,6 +56,42 @@ export default {
       type: Object as PropType<TableConfig>,
       default: () => ({}),
     },
+    rowColumnKeys: {
+      type: Array as PropType<Array<ColumnConfig["key"]>>,
+      default: undefined,
+    },
+    rowColumnSizes: {
+      type: Array as PropType<Array<ColumnConfig["size"]>>,
+      default: undefined,
+    },
+    rowColumnFormatters: {
+      type: Array as PropType<Array<ColumnConfig["formatter"]>>,
+      default: undefined,
+    },
+    rowColumnClassGenerators: {
+      type: Array as PropType<Array<ColumnConfig["classGenerator"]>>,
+      default: undefined,
+    },
+    rowColumnHasSlotContent: {
+      type: Array as PropType<Array<ColumnConfig["hasSlotContent"]>>,
+      default: undefined,
+    },
+    rowColumnHasDataValueView: {
+      type: Array as PropType<Array<ColumnConfig["hasDataValueView"]>>,
+      default: undefined,
+    },
+    rowColumnNoPadding: {
+      type: Array as PropType<Array<ColumnConfig["noPadding"]>>,
+      default: undefined,
+    },
+    rowColumnNoPaddingLeft: {
+      type: Array as PropType<Array<ColumnConfig["noPaddingLeft"]>>,
+      default: undefined,
+    },
+    rowColumnClickables: {
+      type: Array as PropType<boolean[]>,
+      default: undefined,
+    },
     /** This object contains all the options necessary to calculate the sizes based on the
      * content. In case only one of calculateForBody/calculateForHeader is true, the emitted object contains auto
      * sizes according to body/header. In case both are true, the maximum of both values is used. For fixedSizes only
@@ -472,6 +508,15 @@ export default {
     :data="data"
     :current-selection="currentSelection"
     :data-config="dataConfig"
+    :row-column-keys="rowColumnKeys"
+    :row-column-sizes="rowColumnSizes"
+    :row-column-formatters="rowColumnFormatters"
+    :row-column-class-generators="rowColumnClassGenerators"
+    :row-column-has-slot-content="rowColumnHasSlotContent"
+    :row-column-has-data-value-view="rowColumnHasDataValueView"
+    :row-column-no-padding="rowColumnNoPadding"
+    :row-column-no-padding-left="rowColumnNoPaddingLeft"
+    :row-column-clickables="rowColumnClickables"
     :table-config="tableConfig"
     :disable-row-height-transition="disableRowHeightTransition"
     @update:available-width="onUpdateAvailableWidth"
