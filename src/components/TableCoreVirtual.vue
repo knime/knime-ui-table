@@ -206,7 +206,12 @@ defineExpose({
             :special-column-sizes="specialColumnSizes"
             :table-config="tableConfig"
           >
-            <slot name="row" :row-ind="rowInd" :row="row" />
+            <slot
+              name="row"
+              :row-ind="rowInd"
+              :row="row"
+              :column-sizes="columnSizes"
+            />
           </VirtualRow>
         </div>
       </template>

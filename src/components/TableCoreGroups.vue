@@ -15,6 +15,7 @@ const props = defineProps<{
   tableConfig: TableConfig;
   currentRectId: any;
   currentBodyWidth: number;
+  columnSizes: number[];
 }>();
 
 const emit = defineEmits<{
@@ -84,6 +85,7 @@ defineExpose({
             :row="(row as any).data"
             :row-ind="rowInd"
             :group-ind="groupInd"
+            :column-sizes="columnSizes"
           />
         </Group>
       </template>

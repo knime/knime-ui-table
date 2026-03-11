@@ -1563,7 +1563,7 @@ export default {
         @body-focusin="changeFocus(true)"
         @body-focusout="onTableBodyFocusOut()"
       >
-        <template #row="{ row, groupInd = null, rowInd }">
+        <template #row="{ row, groupInd = null, rowInd, columnSizes: rowSizes }">
           <Row
             :ref="getRowRefName(groupInd, rowInd)"
             :row-data="row"
@@ -1572,7 +1572,7 @@ export default {
             :show-drag-handle="enableRowResize"
             :column-configs="dataConfig.columnConfigs"
             :column-keys="columnKeys"
-            :column-sizes="columnSizes"
+            :column-sizes="rowSizes"
             :column-formatters="columnFormatters"
             :column-class-generators="columnClassGenerators"
             :column-has-slot-content="columnHasSlotContent"

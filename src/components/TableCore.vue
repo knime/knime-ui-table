@@ -146,8 +146,14 @@ provideCommonScrollContainerProps(scrolledElement, {
         :width="currentBodyWidth"
       />
     </template>
-    <template #row="{ row, rowInd }">
-      <slot name="row" :row="row" :row-ind="rowInd" :is-top="true" />
+    <template #row="{ row, rowInd, columnSizes }">
+      <slot
+        name="row"
+        :row="row"
+        :row-ind="rowInd"
+        :is-top="true"
+        :column-sizes="columnSizes"
+      />
     </template>
     <template #cell-selection-overlay>
       <slot name="cell-selection-overlay" />
@@ -160,6 +166,7 @@ provideCommonScrollContainerProps(scrolledElement, {
     ref="tableCoreVirtual"
     :scroll-data="scrollData"
     :current-body-width="currentBodyWidth"
+    :column-sizes="columnSizes"
     :current-rect-id="currentRectId"
     :table-config="tableConfig"
     @group-sub-menu-click="
@@ -182,8 +189,14 @@ provideCommonScrollContainerProps(scrolledElement, {
     <template #cell-selection-overlay="{ groupInd }">
       <slot name="cell-selection-overlay" :group-ind="groupInd" />
     </template>
-    <template #row="{ row, rowInd, groupInd }">
-      <slot name="row" :row="row" :row-ind="rowInd" :group-ind="groupInd" />
+    <template #row="{ row, rowInd, groupInd, columnSizes }">
+      <slot
+        name="row"
+        :row="row"
+        :row-ind="rowInd"
+        :group-ind="groupInd"
+        :column-sizes="columnSizes"
+      />
     </template>
     <template #belowBody><slot name="belowBody" /></template>
   </TableCoreGroups>
