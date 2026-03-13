@@ -60,7 +60,8 @@ export default {
 
 <template>
   <span v-if="hasMultiplePages && currentItems">
-    Rows: {{ pageRangeStart }}-{{ pageRangeEnd }} of {{ currentItems }}
+    {{ rowLabel }}: {{ pageRangeStart }}&ndash;{{ pageRangeEnd }} of
+    {{ currentItems }}
   </span>
   <template v-if="showTableSize">
     <span v-if="currentItems === 0">

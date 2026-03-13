@@ -37,10 +37,11 @@ describe("TextDimensionAndRange.vue", () => {
         showTableSize: true,
         pageRangeStart: 1,
         pageRangeEnd: 25,
+        rowLabel: "RowsLabel",
       },
     });
     expect(wrapper.text())
-      .toContain("Rows: 1-25 of 100")
+      .toContain("RowsLabel: 1\u201325 of 100")
       .toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 0 });
     expect(wrapper.text())
@@ -48,17 +49,17 @@ describe("TextDimensionAndRange.vue", () => {
       .toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 50 });
     expect(wrapper.text())
-      .toContain("Rows: 1-25 of 50")
+      .toContain("RowsLabel: 1\u201325 of 50")
       .toContain("(100 total)")
       .toContain("Columns: 4");
     await wrapper.setProps({ showTableSize: false });
-    expect(wrapper.text()).toBe("Rows: 1-25 of 50");
+    expect(wrapper.text()).toBe("RowsLabel: 1\u201325 of 50");
     await wrapper.setProps({
       currentPage: 2,
       pageRangeStart: 26,
       pageRangeEnd: 50,
     });
-    expect(wrapper.text()).toBe("Rows: 26-50 of 50");
+    expect(wrapper.text()).toBe("RowsLabel: 26\u201350 of 50");
   });
 
   it("has single page", async () => {
@@ -72,9 +73,10 @@ describe("TextDimensionAndRange.vue", () => {
         showTableSize: true,
         pageRangeStart: 1,
         pageRangeEnd: 25,
+        rowLabel: "RowsLabel",
       },
     });
-    expect(wrapper.text()).toContain("Rows: 10").toContain("Columns: 4");
+    expect(wrapper.text()).toContain("RowsLabel: 10").toContain("Columns: 4");
     await wrapper.setProps({ currentItems: 0 });
     expect(wrapper.text())
       .toContain("No data (100 hidden)")
